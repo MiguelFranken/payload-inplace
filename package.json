@@ -1,0 +1,109 @@
+{
+  "name": "@miguelfranken/payload-visual-editor",
+  "version": "0.1.0-alpha.0",
+  "description": "Native-form visual composition for existing Payload CMS block schemas.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Miguel Franken",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MiguelFranken/payload-visual-editor.git"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@10.28.0",
+  "files": [
+    "dist"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./dist/exports/client.d.ts",
+      "import": "./dist/exports/client.js",
+      "default": "./dist/exports/client.js"
+    },
+    "./preview": {
+      "types": "./dist/exports/preview.d.ts",
+      "import": "./dist/exports/preview.js",
+      "default": "./dist/exports/preview.js"
+    },
+    "./bindings": {
+      "types": "./dist/exports/bindings.d.ts",
+      "import": "./dist/exports/bindings.js",
+      "default": "./dist/exports/bindings.js"
+    },
+    "./server": {
+      "types": "./dist/exports/server.d.ts",
+      "import": "./dist/exports/server.js",
+      "default": "./dist/exports/server.js"
+    },
+    "./types": {
+      "types": "./dist/exports/types.d.ts",
+      "import": "./dist/exports/types.js",
+      "default": "./dist/exports/types.js"
+    },
+    "./styles.css": "./dist/admin/styles.css"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src dev tests scripts",
+    "test:unit": "vitest run tests",
+    "test:int": "vitest run dev/int.spec.ts",
+    "test:int:postgres": "VE_DATABASE=postgres vitest run dev/int.spec.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:prod": "VE_PRODUCTION=1 playwright test",
+    "dev": "node dev/start-server.mjs",
+    "dev:generate-importmap": "PAYLOAD_CONFIG_PATH=dev/payload.config.ts payload generate:importmap",
+    "pack:check": "node scripts/check-package.mjs",
+    "test:consumer": "node scripts/check-consumer.mjs",
+    "release:check": "node scripts/validate-release.mjs"
+  },
+  "peerDependencies": {
+    "@payloadcms/ui": "3.91.0",
+    "next": "16.4.2",
+    "payload": "3.91.0",
+    "react": "19.2.6",
+    "react-dom": "19.2.6"
+  },
+  "devDependencies": {
+    "@payloadcms/db-mongodb": "3.91.0",
+    "@payloadcms/db-postgres": "3.91.0",
+    "@payloadcms/next": "3.91.0",
+    "@payloadcms/richtext-lexical": "3.91.0",
+    "@payloadcms/translations": "3.91.0",
+    "@payloadcms/ui": "3.91.0",
+    "@playwright/test": "1.58.2",
+    "@tsdown/css": "0.22.3",
+    "@types/node": "^24.0.0",
+    "@types/pg": "^8.15.0",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "eslint": "^9.39.1",
+    "graphql": "^16.12.0",
+    "mongodb-memory-server": "10.1.4",
+    "next": "16.4.2",
+    "payload": "3.91.0",
+    "pg": "^8.16.3",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "sharp": "0.34.2",
+    "tsdown": "0.22.3",
+    "tsx": "4.21.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "4.0.18"
+  }
+}

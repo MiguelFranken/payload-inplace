@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.next*/
+dev/.next*/
+test-results/
+playwright-report/
+coverage/
+*.tsbuildinfo
+*.tgz
+.env*
+!.env.example
+dev/media/
