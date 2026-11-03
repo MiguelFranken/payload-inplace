@@ -1,3 +1,5 @@
+> Historical iteration report. The final alpha.5 candidate and current acceptance are recorded in [the final validation report](2026-11-03-final.md).
+
 # Installed-artifact acceptance
 
 The separate `fixtures/installed-consumer` app is copied to an empty temporary directory. It installs the checked tarball and public npm peers, generates its own Payload import map, and runs production Turbopack builds against a disposable Postgres database. It imports no plugin source aliases and uses its own `stories.article.sections` schema, callout/quotation blocks, renderer and `/compose` editing route.

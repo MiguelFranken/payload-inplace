@@ -1,3 +1,5 @@
+> Historical iteration report. The final alpha.5 candidate and current acceptance are recorded in [the final validation report](2026-11-03-final.md).
+
 # Direct website editing interface review
 
 ## Scope and coverage
