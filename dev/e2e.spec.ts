@@ -255,9 +255,12 @@ test("frontend hover motion, narrow layout and native controls are accessible", 
     .getByRole("button", { name: "Close Appearance panel", exact: true })
     .click();
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page
-    .getByRole("button", { name: "Select content", exact: true })
-    .click();
+  const selectContent = page.getByRole("button", {
+    name: "Select content",
+    exact: true,
+  });
+  if ((await selectContent.getAttribute("aria-pressed")) !== "true")
+    await selectContent.click();
 
   await page
     .getByRole("heading", { name: currentHeading, exact: true })
@@ -380,7 +383,7 @@ for (const role of ["anonymous", "reader", "admin"])
         ).toBeVisible();
         await expect(
           page.getByRole("button", { name: "Select content", exact: true }),
-        ).toHaveAttribute("aria-pressed", "true");
+        ).toHaveAttribute("aria-pressed", "false");
       }
     } finally {
       await context.close();
@@ -412,10 +415,8 @@ test("hover outlines are optional and pause while native settings are open", asy
   page,
 }) => {
   await login(page);
-  const heading = page.getByRole("heading", {
-    name: "A public synthetic page",
-    exact: true,
-  });
+  const heading = page.locator('main [data-ve-field="heading"]').first();
+  const second = page.locator('main [data-ve-field="heading"]').nth(1);
   const outline = page.locator("[data-ve-hover-outline]");
   await heading.hover();
   await expect(outline).toBeHidden();
@@ -435,17 +436,13 @@ test("hover outlines are optional and pause while native settings are open", asy
   await expect(
     page.getByRole("complementary", { name: "Edit content" }),
   ).toBeVisible();
-  await page
-    .getByRole("heading", { name: "Second section", exact: true })
-    .hover();
+  await second.hover();
   await expect(outline).toBeHidden();
   await page
     .getByRole("complementary", { name: "Edit content" })
     .getByRole("button", { name: /^Close .+ panel$/ })
     .click();
-  await page
-    .getByRole("heading", { name: "Second section", exact: true })
-    .hover();
+  await second.hover();
   await expect(outline).toBeVisible();
   await enable.click();
   await expect(enable).toHaveAttribute("aria-pressed", "false");

@@ -28,7 +28,8 @@ export function InlineText({
   const current = useRef({ field, disabled });
   current.current = { field, disabled: disabled || field.disabled };
   const composing = useRef(false),
-    editing = useRef(false);
+    editing = useRef(false),
+    dirty = useRef(false);
   useLayoutEffect(() => {
     // The selection layer supplies the visible focus perimeter. Avoid a second browser text-line outline.
     // System high-contrast mode retains the native indicator as well.
@@ -57,13 +58,19 @@ export function InlineText({
       return element.innerText.replace(/\r\n/g, "\n");
     }
     function commit() {
-      if (composing.current || current.current.disabled) return;
+      if (!dirty.current || composing.current || current.current.disabled)
+        return;
+      dirty.current = false;
       const value = text();
       if (value !== (current.current.field.value || ""))
         current.current.field.setValue(value);
       element.dispatchEvent(
         new CustomEvent("pve:inline-geometry", { bubbles: true }),
       );
+    }
+    function input() {
+      dirty.current = true;
+      commit();
     }
     function begin() {
       if (current.current.disabled) return;
@@ -112,7 +119,7 @@ export function InlineText({
       element.textContent = value || placeholder;
     element.addEventListener("focus", begin);
     element.addEventListener("blur", finish);
-    element.addEventListener("input", commit);
+    element.addEventListener("input", input);
     element.addEventListener("keydown", key);
     element.addEventListener("compositionstart", startComposition);
     element.addEventListener("compositionend", endComposition);
@@ -151,7 +158,7 @@ export function InlineText({
       finish();
       element.removeEventListener("focus", begin);
       element.removeEventListener("blur", finish);
-      element.removeEventListener("input", commit);
+      element.removeEventListener("input", input);
       element.removeEventListener("keydown", key);
       element.removeEventListener("compositionstart", startComposition);
       element.removeEventListener("compositionend", endComposition);

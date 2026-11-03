@@ -1,6 +1,10 @@
 import AxeBuilder from "@axe-core/playwright";
 import { test, expect } from "@playwright/test";
-async function createEditor(page: any, collection = "pages") {
+async function createEditor(
+  page: any,
+  collection = "pages",
+  heading = "Immediate heading",
+) {
   await page.goto("/visual-editor/start?collection=pages&slug=demo");
   await page.getByLabel("Email", { exact: true }).fill("admin@example.test");
   await page
@@ -20,7 +24,7 @@ async function createEditor(page: any, collection = "pages") {
       layout: [
         {
           blockType: "hero",
-          heading: "Immediate heading",
+          heading,
           caption: "Keep caption",
           privateNote: "Retain private",
           appearance: { tone: "light", align: "start" },
@@ -860,7 +864,7 @@ test("German 320px dock contains every visible action and minimizes through its 
   await page.reload();
   const dock = page.getByRole("navigation", { name: "Editing toolbar" });
   await expect(
-    page.getByRole("button", { name: "Inhalte bearbeiten", exact: true }),
+    page.getByRole("button", { name: "Inhalte auswählen", exact: true }),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Abschnitte", exact: true }),
@@ -1181,4 +1185,46 @@ test("native custom fields inside named tabs stay editable after background save
     `/api/pages/${doc.id}?draft=true&depth=0`,
   );
   expect((await saved.json()).meta.title).toBe("Native named tab title");
+});
+
+/** Merely selecting content must never turn layout whitespace into a persisted content change. */
+test("focusing inline content does not save rendered whitespace until actual input", async ({
+  page,
+}) => {
+  const original = "First line\nSecond line";
+  const doc = await createEditor(page, "pages", original);
+  let writes = 0;
+  page.on("request", (request) => {
+    if (
+      request.method() === "PATCH" &&
+      new URL(request.url()).pathname === `/api/pages/${doc.id}`
+    )
+      writes++;
+  });
+  const heading = page.locator('main [data-ve-field="heading"]').first();
+  await heading.click();
+  await expect(heading).toHaveAttribute("contenteditable", "plaintext-only");
+  await heading.press("Tab");
+  await page.waitForTimeout(1700);
+  expect(writes).toBe(0);
+  expect(
+    (
+      await (
+        await page.request.get(`/api/pages/${doc.id}?draft=true&depth=0`)
+      ).json()
+    ).layout[0].heading,
+  ).toBe(original);
+  await heading.fill("An intentional change");
+  await page.keyboard.press("ControlOrMeta+s");
+  await expect
+    .poll(
+      async () =>
+        (
+          await (
+            await page.request.get(`/api/pages/${doc.id}?draft=true&depth=0`)
+          ).json()
+        ).layout[0].heading,
+    )
+    .toBe("An intentional change");
+  expect(writes).toBeGreaterThan(0);
 });

@@ -787,7 +787,7 @@ export function FrontendControls({
       >
         {expanded && (
           <InspectionLayer
-            inspecting={inspecting && !hasPanel && !recovery.failure}
+            inspecting={inspecting && !recovery.failure}
             highlighting={highlighting && !hasPanel}
             selected={hasPanel ? undefined : selection}
             onPick={pick}
