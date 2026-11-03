@@ -61,11 +61,13 @@ export async function EditorLauncher({
         {tool && <input type="hidden" name="tool" value={tool} />}
         <button
           type="submit"
-          className="pvl:flex pvl:min-h-11 pvl:cursor-pointer pvl:items-center pvl:gap-2 pvl:box-border pvl:max-w-[calc(100vw-32px)] pvl:rounded-xl pvl:border pvl:border-solid pvl:border-[var(--pve-border,#e3e4e8)] pvl:bg-[var(--pve-surface,#fff)] pvl:px-3 pvl:py-2 pvl:[font-family:inherit] pvl:text-sm pvl:font-medium pvl:text-[var(--pve-text,#202127)] pvl:shadow-[0_4px_24px_#0000001a] pvl:hover:bg-[var(--pve-hover,#f1f2f5)] pvl:focus-visible:outline-2 pvl:focus-visible:outline-offset-2 pvl:focus-visible:outline-[var(--pve-accent,#3451eb)]"
+          aria-label={de ? "Seite bearbeiten" : "Edit page"}
+          title={de ? "Seite bearbeiten" : "Edit page"}
+          className="pvl:flex! pvl:size-11! pvl:cursor-pointer pvl:items-center! pvl:justify-center! pvl:box-border pvl:rounded-xl! pvl:border-0! pvl:bg-[var(--pve-accent,#3451eb)]! pvl:p-0! pvl:text-[var(--pve-accent-contrast,#fff)]! pvl:shadow-[0_4px_24px_#00000026] pvl:hover:brightness-90 pvl:focus-visible:outline-2 pvl:focus-visible:outline-offset-2 pvl:focus-visible:outline-[var(--pve-accent,#3451eb)] pvl:motion-safe:active:scale-[0.96] pvl:motion-safe:transition-[scale,filter] pvl:motion-safe:duration-100"
         >
           <svg
-            width="16"
-            height="16"
+            width="20"
+            height="20"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -75,7 +77,6 @@ export async function EditorLauncher({
             <path d="m16 3 5 5-12 12-6 1 1-6L16 3Z" />
             <path d="m13 6 5 5" />
           </svg>
-          {de ? "Seite bearbeiten" : "Edit page"}
         </button>
       </form>
     </aside>

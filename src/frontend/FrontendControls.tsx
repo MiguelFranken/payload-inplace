@@ -78,6 +78,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuCheckboxItem,
   DropdownMenuSeparator,
 } from "./ui/menu.js";
 import { BlockReorder, sectionElement } from "./BlockReorder.js";
@@ -146,6 +147,7 @@ export function FrontendControls({
     [selection, setSelection] = useState<InspectionTarget>(),
     [outline, setOutline] = useState(false),
     [error, setError] = useState("");
+  const [highlighting, setHighlighting] = useState(false);
   const [generation, setGeneration] = useState(0);
   const inspector = useRef<HTMLElement>(null),
     inspectButton = useRef<HTMLButtonElement>(null),
@@ -742,7 +744,8 @@ export function FrontendControls({
       >
         {expanded && (
           <InspectionLayer
-            inspecting={inspecting && !recovery.failure}
+            inspecting={inspecting && !hasPanel && !recovery.failure}
+            highlighting={highlighting && !hasPanel}
             selected={outline ? undefined : selection}
             onPick={pick}
             describe={describe}
@@ -1203,11 +1206,15 @@ export function FrontendControls({
           <nav
             ref={dock}
             aria-label="Editing toolbar"
-            className={`pve:pointer-events-auto pve:flex pve:max-w-full pve:items-center pve:gap-1 pve:box-border pve:rounded-2xl pve:border pve:border-solid pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:bg-[var(--pve-surface,var(--theme-elevation-0,#fff))] pve:p-1.5 pve:shadow-[0_4px_24px_#0000001a] pve:[interpolate-size:allow-keywords] pve:motion-safe:transition-[width] pve:motion-safe:duration-200 pve:motion-safe:ease-[cubic-bezier(0.2,0,0,1)] pve:max-sm:gap-0 ${expanded ? "pve:w-max" : "pve:w-36"}`}
+            className={`pve:pointer-events-auto pve:flex pve:max-w-full pve:items-center pve:gap-1 pve:box-border pve:rounded-2xl pve:border pve:border-solid pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:bg-[var(--pve-surface,var(--theme-elevation-0,#fff))] pve:p-1.5 pve:shadow-[0_4px_24px_#0000001a] pve:[interpolate-size:allow-keywords] pve:motion-safe:transition-[width] pve:motion-safe:duration-200 pve:motion-safe:ease-[cubic-bezier(0.2,0,0,1)] pve:max-sm:gap-0 ${expanded ? "pve:w-max" : "pve:w-auto"}`}
           >
             {!expanded ? (
               <ChromeButton
                 ref={launcherButton}
+                size="icon"
+                variant="default"
+                aria-label={t("Edit page", "Seite bearbeiten")}
+                title={t("Edit page", "Seite bearbeiten")}
                 aria-expanded={false}
                 onClick={() => {
                   setExpanded(true);
@@ -1222,7 +1229,6 @@ export function FrontendControls({
                 }}
               >
                 <Pencil size={16} />
-                {t("Edit page", "Seite bearbeiten")}
               </ChromeButton>
             ) : (
               <>
@@ -1231,7 +1237,7 @@ export function FrontendControls({
                     ref={inspectButton}
                     className="pve:max-sm:px-2"
                     aria-label={t("Edit content", "Inhalte bearbeiten")}
-                    aria-pressed={!outline && !hasPanel}
+                    aria-pressed={inspecting && !outline && !hasPanel}
                     title={t("Edit content", "Inhalte bearbeiten")}
                     onClick={() => {
                       closeTools();
@@ -1285,6 +1291,24 @@ export function FrontendControls({
                     <MoreHorizontal size={18} />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
+                    {editorTools.tools.includes("content") && (
+                      <DropdownMenuCheckboxItem
+                        checked={highlighting}
+                        onCheckedChange={setHighlighting}
+                      >
+                        <MousePointer2 size={16} />
+                        {highlighting
+                          ? t(
+                              "Hide editable outlines",
+                              "Hervorhebungen ausblenden",
+                            )
+                          : t(
+                              "Highlight editable content",
+                              "Bearbeitbare Inhalte hervorheben",
+                            )}
+                        {highlighting && <Check size={16} />}
+                      </DropdownMenuCheckboxItem>
+                    )}
                     {editorTools.extensions
                       .filter((e) => e.showInDock !== false)
                       .map((e) => (

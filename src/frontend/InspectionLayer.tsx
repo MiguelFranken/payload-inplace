@@ -40,11 +40,14 @@ function readTarget(element: Element | null): InspectionTarget | undefined {
  */
 export function InspectionLayer({
   inspecting,
+  highlighting = false,
   selected,
   onPick,
   describe,
 }: {
   inspecting: boolean;
+  /** Hover feedback is opt-in; direct text selection can remain enabled independently. */
+  highlighting?: boolean;
   selected?: InspectionTarget;
   onPick: (target: InspectionTarget) => void;
   describe: (target: InspectionTarget) => string;
@@ -84,7 +87,9 @@ export function InspectionLayer({
       if (disposed) return;
       place(
         hover.current,
-        inspecting && hoverTarget !== selected?.element ? hoverTarget : null,
+        inspecting && highlighting && hoverTarget !== selected?.element
+          ? hoverTarget
+          : null,
         animate,
       );
       place(chosen.current, selected?.element || null, false);
@@ -101,7 +106,10 @@ export function InspectionLayer({
         );
     }
     function move(event: PointerEvent) {
-      if (ignored(event)) return;
+      if (ignored(event)) {
+        leave();
+        return;
+      }
       const target = readTarget(
         event.target instanceof Element ? event.target : null,
       );
@@ -143,7 +151,7 @@ export function InspectionLayer({
       hoverTarget = null;
       schedule(false);
     }
-    if (inspecting)
+    if (inspecting && highlighting)
       document.addEventListener("pointermove", move, { passive: true });
     document.addEventListener("click", click, true);
     document.addEventListener("submit", submit, true);
@@ -162,7 +170,7 @@ export function InspectionLayer({
       window.removeEventListener("scroll", scroll, true);
       window.removeEventListener("resize", scroll);
     };
-  }, [inspecting, selected, onPick, describe]);
+  }, [inspecting, highlighting, selected, onPick, describe]);
   const geometry =
     "pve:pointer-events-none pve:fixed pve:z-40 pve:box-border pve:left-[var(--pve-left)] pve:top-[var(--pve-top)] pve:w-[var(--pve-width)] pve:h-[var(--pve-height)] pve:rounded-sm pve:border-2 pve:border-solid pve:border-[var(--pve-accent,#3455db)]";
   return (

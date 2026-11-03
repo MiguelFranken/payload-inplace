@@ -50,10 +50,10 @@ for (const collection of ["pages", "offers"])
       exact: true,
     });
     await heading.hover();
-    await expect(page.locator("[data-ve-hover-outline]")).toBeVisible();
-    await page
-      .getByRole("button", { name: "Edit content", exact: true })
-      .click();
+    await expect(page.locator("[data-ve-hover-outline]")).toBeHidden();
+    await page.getByRole("button", { name: "More tools", exact: true }).click();
+    await page.getByRole("menuitemcheckbox", { name: "Highlight editable content" }).click();
+    await page.keyboard.press("Escape");
     await heading.hover();
     await expect(page.locator("[data-ve-hover-outline]")).toBeVisible();
     await page.screenshot({
