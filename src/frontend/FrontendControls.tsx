@@ -659,6 +659,13 @@ export function FrontendControls({
   );
   const hasPanel =
     expanded && (outline || (selected && settingsOpen) || Boolean(extension));
+  function minimize() {
+    setExpanded(false);
+    requestAnimationFrame(() => launcherButton.current?.focus());
+    setInspecting(false);
+    setSettingsOpen(false);
+    setSelection(undefined);
+  }
   const statusText = recovery.failure
     ? t("Not saved", "Nicht gespeichert")
     : processing || background
@@ -1224,6 +1231,13 @@ export function FrontendControls({
                       Save draft now
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="pve:sm:hidden"
+                      onClick={minimize}
+                    >
+                      <Minus size={16} />
+                      {t("Minimize editor", "Editor minimieren")}
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => void exit()}>
                       <LogOut size={16} />
                       {t("Exit editing", "Bearbeiten beenden")}
@@ -1237,7 +1251,7 @@ export function FrontendControls({
                 <span
                   role="status"
                   title={statusText}
-                  className="pve:flex pve:items-center pve:gap-1.5 pve:px-1 pve:text-xs pve:whitespace-nowrap pve:text-[var(--pve-muted,var(--theme-elevation-700,#646773))]"
+                  className="pve:max-[360px]:sr-only pve:flex pve:items-center pve:gap-1.5 pve:px-1 pve:text-xs pve:whitespace-nowrap pve:text-[var(--pve-muted,var(--theme-elevation-700,#646773))]"
                 >
                   <span
                     aria-hidden="true"
@@ -1278,18 +1292,10 @@ export function FrontendControls({
                   ))}
                 <ChromeButton
                   size="icon"
-                  className="pve:max-sm:size-9"
+                  className="pve:max-sm:hidden!"
                   aria-label={t("Minimize editor", "Editor minimieren")}
                   title={t("Minimize editor", "Editor minimieren")}
-                  onClick={() => {
-                    setExpanded(false);
-                    requestAnimationFrame(() =>
-                      launcherButton.current?.focus(),
-                    );
-                    setInspecting(false);
-                    setSettingsOpen(false);
-                    setSelection(undefined);
-                  }}
+                  onClick={minimize}
                 >
                   <Minus size={16} />
                 </ChromeButton>

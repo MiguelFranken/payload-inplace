@@ -1,6 +1,7 @@
 import { cookies, headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { createLocalReq, getPayload } from "payload";
+import { initI18n } from "@payloadcms/translations";
+import { createLocalReq, getPayload, getRequestLanguage } from "payload";
 import config, { editorOptions } from "@payload-config";
 import { importMap } from "../app/(payload)/admin/importMap.js";
 import { readEditContext } from "../../dist/exports/server.js";
@@ -20,7 +21,20 @@ export async function authorizedEditor(
   payload.importMap = importMap;
   const { user } = await payload.auth({ headers: requestHeaders });
   if (!user) deny();
-  const req = await createLocalReq({ user }, payload);
+  const language = getRequestLanguage({
+    config: payload.config,
+    cookies: await cookies(),
+    headers: requestHeaders,
+  });
+  const i18n = await initI18n({
+    config: payload.config.i18n,
+    language,
+    context: "api",
+  });
+  const req = await createLocalReq(
+    { user, req: { i18n, headers: new Headers(requestHeaders) } },
+    payload,
+  );
   req.headers = new Headers(requestHeaders);
   const token = (await cookies()).get(`payload-ve-${identifier}`)?.value || "";
   let result;

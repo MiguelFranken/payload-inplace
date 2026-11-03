@@ -1,5 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { en } from "@payloadcms/translations/languages/en";
+import { de } from "@payloadcms/translations/languages/de";
 import { buildConfig } from "payload";
 import { mongooseAdapter } from "@payloadcms/db-mongodb";
 import { postgresAdapter } from "@payloadcms/db-postgres";
@@ -131,6 +133,11 @@ const content = (slug: string, nested = false): CollectionConfig => ({
       fields: [
         { name: "title", label: "Search title", type: "text" },
         { name: "description", label: "Search description", type: "textarea" },
+        {
+          name: "synonyms",
+          type: "array",
+          fields: [{ name: "word", type: "text" }],
+        },
       ],
     },
   ],
@@ -207,6 +214,7 @@ export const editorOptions: VisualEditorOptions = {
   disabled: process.env.VE_DISABLED === "1",
 };
 export default buildConfig({
+  i18n: { fallbackLanguage: "en", supportedLanguages: { en, de } },
   admin: {
     user: "users",
     importMap: {

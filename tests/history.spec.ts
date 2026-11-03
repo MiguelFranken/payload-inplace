@@ -169,3 +169,24 @@ it("accepts empty native presentation skeletons but rejects every unknown author
     ),
   ).toBe(false);
 });
+
+it("reviews native zero-row controls only when the saved array is empty", () => {
+  expect(
+    candidateMatches({ meta: { synonyms: 0 } }, { meta: { synonyms: [] } }),
+  ).toBe(true);
+  expect(
+    candidateMatches(
+      { meta: { synonyms: 0 } },
+      { meta: { synonyms: [{ id: "row", word: "Saved" }] } },
+    ),
+  ).toBe(false);
+  expect(
+    candidateMatches({ meta: { synonyms: 1 } }, { meta: { synonyms: [] } }),
+  ).toBe(false);
+  expect(
+    candidateMatches(
+      { meta: { synonyms: [] } },
+      { meta: { synonyms: [{ id: "row" }] } },
+    ),
+  ).toBe(false);
+});

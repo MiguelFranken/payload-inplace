@@ -523,7 +523,7 @@ test("sections drag on list and page keeps native order, undo, policy and keyboa
     page.getByRole("navigation", { name: "Editing toolbar" }),
   ).toBeInViewport();
   await expect(
-    page.getByRole("button", { name: "Minimize editor", exact: true }),
+    page.getByRole("button", { name: "More tools", exact: true }),
   ).toBeInViewport();
   await expect(panel).toBeInViewport();
   expect(
@@ -841,5 +841,42 @@ test("an expired editing session reopens the saved draft with fresh authorizatio
   await page.getByRole("button", { name: "Edit page", exact: true }).click();
   await expect(
     page.getByRole("navigation", { name: "Editing toolbar" }),
+  ).toBeVisible();
+});
+
+test("German 320px dock contains every visible action and minimizes through its tools menu", async ({
+  page,
+}) => {
+  await createEditor(page);
+  await page
+    .context()
+    .addCookies([{ name: "payload-lng", value: "de", url: page.url() }]);
+  await page.setViewportSize({ width: 320, height: 740 });
+  await page.reload();
+  const dock = page.getByRole("navigation", { name: "Editing toolbar" });
+  await expect(
+    page.getByRole("button", { name: "Inhalte bearbeiten", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Abschnitte", exact: true }),
+  ).toBeVisible();
+  const bounds = await dock.boundingBox();
+  expect(bounds).toBeTruthy();
+  for (const button of await dock.getByRole("button").all()) {
+    if (!(await button.isVisible())) continue;
+    const box = await button.boundingBox();
+    expect(box!.x).toBeGreaterThanOrEqual(bounds!.x + 1);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(
+      bounds!.x + bounds!.width - 1,
+    );
+  }
+  await page
+    .getByRole("button", { name: "Weitere Werkzeuge", exact: true })
+    .click();
+  await page
+    .getByRole("menuitem", { name: "Editor minimieren", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Seite bearbeiten", exact: true }),
   ).toBeVisible();
 });

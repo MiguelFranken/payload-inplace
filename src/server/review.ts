@@ -51,6 +51,9 @@ export function candidateMatches(
     );
   }
   function matches(input: unknown, saved: unknown): boolean {
+    // Native unmounted row controls serialize an empty array as its zero row count.
+    // Only an actually empty saved array is equivalent; a non-empty array must retain exact values/IDs.
+    if (input === 0 && Array.isArray(saved) && saved.length === 0) return true;
     if (Array.isArray(input)) {
       if (!Array.isArray(saved) || input.length !== saved.length) return false;
       return input.every((row, index) => {

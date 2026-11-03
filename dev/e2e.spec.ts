@@ -229,7 +229,7 @@ test("frontend hover motion, narrow layout and native controls are accessible", 
     ),
   ).toBe(true);
   await expect(
-    page.getByRole("button", { name: "Minimize editor" }),
+    page.getByRole("button", { name: "More tools" }),
   ).toBeInViewport();
   await expect(editor).toHaveCount(0);
   const scrollBefore = await page.evaluate(() => scrollY);

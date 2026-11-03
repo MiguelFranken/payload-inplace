@@ -4,9 +4,11 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { randomBytes } from "node:crypto";
-const mediaDirectory = fs.mkdtempSync(
-  path.join(os.tmpdir(), "payload-ve-media-"),
-);
+const temporaryMedia = !process.env.VE_MEDIA_DIR;
+const mediaDirectory = temporaryMedia
+  ? fs.mkdtempSync(path.join(os.tmpdir(), "payload-ve-media-"))
+  : path.resolve(process.env.VE_MEDIA_DIR);
+fs.mkdirSync(mediaDirectory, { recursive: true });
 const port = process.env.VE_PORT || "3127";
 const postgres = process.env.VE_DATABASE === "postgres";
 if (postgres && !process.env.DATABASE_URL?.includes("/visual_editor"))
@@ -43,7 +45,8 @@ async function stop(signal = "SIGTERM") {
     });
   }
   await database?.stop();
-  fs.rmSync(mediaDirectory, { recursive: true, force: true });
+  if (temporaryMedia)
+    fs.rmSync(mediaDirectory, { recursive: true, force: true });
   if (process.env.VE_RUN_STATE)
     fs.rmSync(process.env.VE_RUN_STATE, { force: true });
 }
