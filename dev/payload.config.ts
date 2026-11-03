@@ -143,16 +143,33 @@ const content = (
         ]),
     { name: "unrelated", type: "text" },
     {
-      name: "meta",
-      label: "Search appearance",
-      type: "group",
-      fields: [
-        { name: "title", label: "Search title", type: "text" },
-        { name: "description", label: "Search description", type: "textarea" },
+      type: "tabs",
+      tabs: [
         {
-          name: "synonyms",
-          type: "array",
-          fields: [{ name: "word", type: "text" }],
+          name: "meta",
+          label: "Search appearance",
+          fields: [
+            {
+              name: "title",
+              label: "Search title",
+              type: "text",
+              admin: {
+                components: {
+                  Field: "./components/NativeSearchTitle#NativeSearchTitle",
+                },
+              },
+            },
+            {
+              name: "description",
+              label: "Search description",
+              type: "textarea",
+            },
+            {
+              name: "synonyms",
+              type: "array",
+              fields: [{ name: "word", type: "text" }],
+            },
+          ],
         },
       ],
     },

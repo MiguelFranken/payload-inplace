@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.1.0-alpha.4 — candidate
+## 0.1.0-alpha.5 — candidate
+
+- Preserve native unrestricted permissions when mounting fields from named tabs, including consumer custom fields after saves.
+
+## 0.1.0-alpha.4
 
 - Retain native validation errors per submission so slower form-state refreshes cannot remove correction links.
 - Isolate clean-consumer npm configuration from the developer's credentials and scoped registries.

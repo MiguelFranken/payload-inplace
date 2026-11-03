@@ -199,10 +199,11 @@ export function NativeFieldSlot({
       if (field.type === "tabs") {
         for (const tab of field.tabs) {
           const name = "name" in tab ? tab.name : undefined;
-          const tp =
-            name && permissions !== true
-              ? permissions?.[name]?.fields
-              : permissions;
+          const tp = !name
+            ? permissions
+            : permissions === true || permissions?.[name] === true
+              ? true
+              : permissions?.[name]?.fields;
           const hit = name
             ? name === remaining[0]
               ? find(

@@ -22,6 +22,7 @@ import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997e
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { VisualBlocksField as VisualBlocksField_d9cf3e7ea9648e96fe75a0ca5a6ad0b3 } from '@miguelfranken/payload-visual-editor/client'
+import { NativeSearchTitle as NativeSearchTitle_d92f48d00ffa582f1cd2bddd5ca2344f } from '../../../components/NativeSearchTitle'
 import { RevisionField as RevisionField_d9cf3e7ea9648e96fe75a0ca5a6ad0b3 } from '@miguelfranken/payload-visual-editor/client'
 import { ReviewPublishButton as ReviewPublishButton_d9cf3e7ea9648e96fe75a0ca5a6ad0b3 } from '@miguelfranken/payload-visual-editor/client'
 import { GuardedVersionView as GuardedVersionView_9920e01fa9814d59049aab6132058f82 } from '@miguelfranken/payload-visual-editor/rsc'
@@ -55,6 +56,7 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@miguelfranken/payload-visual-editor/client#VisualBlocksField": VisualBlocksField_d9cf3e7ea9648e96fe75a0ca5a6ad0b3,
+  "./components/NativeSearchTitle#NativeSearchTitle": NativeSearchTitle_d92f48d00ffa582f1cd2bddd5ca2344f,
   "@miguelfranken/payload-visual-editor/client#RevisionField": RevisionField_d9cf3e7ea9648e96fe75a0ca5a6ad0b3,
   "@miguelfranken/payload-visual-editor/client#ReviewPublishButton": ReviewPublishButton_d9cf3e7ea9648e96fe75a0ca5a6ad0b3,
   "@miguelfranken/payload-visual-editor/rsc#GuardedVersionView": GuardedVersionView_9920e01fa9814d59049aab6132058f82,

@@ -1147,3 +1147,34 @@ test("native save errors reveal an unmounted field and retry the same form", asy
   );
   expect((await saved.json()).title).toBe("Corrected native title");
 });
+
+test("native custom fields inside named tabs stay editable after background saves", async ({
+  page,
+}) => {
+  const doc = await createEditor(page);
+  const inline = await selectHeading(page);
+  await inline.fill("A saved native heading");
+  await page.keyboard.press("ControlOrMeta+s");
+  await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "More tools", exact: true }).click();
+  await page
+    .getByRole("menuitem", { name: "Search appearance", exact: true })
+    .click();
+  const panel = page.getByRole("complementary", {
+    name: "Search appearance",
+    exact: true,
+  });
+  const title = panel.getByRole("textbox", {
+    name: "Search title",
+    exact: true,
+  });
+  await expect(title).toBeVisible();
+  await title.fill("Native named tab title");
+  await page.keyboard.press("ControlOrMeta+s");
+  await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+  await expect(title).toHaveValue("Native named tab title");
+  const saved = await page.request.get(
+    `/api/pages/${doc.id}?draft=true&depth=0`,
+  );
+  expect((await saved.json()).meta.title).toBe("Native named tab title");
+});
