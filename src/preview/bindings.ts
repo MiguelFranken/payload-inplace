@@ -13,11 +13,18 @@ export function getBlockAttributes(
 }
 /** A field binding describes provenance, never server write authority. Repeated occurrences share it. */
 export function getFieldAttributes(
-  identity: BlockIdentity & { field: string },
+  identity: BlockIdentity & {
+    field: string;
+    edit?: "auto" | "inline" | "panel";
+  },
   active = false,
 ): Record<string, string> {
   return active
-    ? { ...getBlockAttributes(identity, true), "data-ve-field": identity.field }
+    ? {
+        ...getBlockAttributes(identity, true),
+        "data-ve-field": identity.field,
+        ...(identity.edit ? { "data-ve-edit": identity.edit } : {}),
+      }
     : {};
 }
 
@@ -34,4 +41,33 @@ export function getFieldGroupAttributes(
         "data-ve-fields": JSON.stringify(identity.fields),
       }
     : {};
+}
+
+/** Address a single native array row. Append a field to the returned data-ve-field path
+ * with getFieldAttributes for terminal text; row wrappers open only that row's settings.
+ * IDs are URI encoded so dots and reserved characters cannot become path separators.
+ */
+export function getArrayItemAttributes(
+  identity: BlockIdentity & { field: string; rowId: string | number },
+  active = false,
+): Record<string, string> {
+  if (!active) return {};
+  return getFieldAttributes(
+    {
+      ...identity,
+      field: getArrayItemPath(identity.field, identity.rowId),
+      edit: "panel",
+    },
+    true,
+  );
+}
+
+/** Build a stable dotted row or leaf path. Compose calls for nested arrays; no content values are serialized. */
+export function getArrayItemPath(
+  array: string,
+  rowId: string | number,
+  field?: string,
+): string {
+  const id = encodeURIComponent(String(rowId)).replace(/\./g, "%2E");
+  return `${array}.@${id}${field ? `.${field}` : ""}`;
 }

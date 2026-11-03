@@ -35,6 +35,7 @@ import {
 import type { BlocksFieldClientProps, ClientBlock } from "payload";
 import type { Activation } from "../types.js";
 import { availableBlocks } from "../schema/available-blocks.js";
+import { resolveBinding } from "../schema/resolve-binding.js";
 import { canUpdateInlineField } from "../schema/inline-access.js";
 import { collectSections } from "../schema/tree.js";
 import { sectionHeading } from "../schema/section-heading.js";
@@ -412,15 +413,25 @@ export function FrontendControls({
         ...element.querySelectorAll<HTMLElement>("[data-ve-field]"),
       ].find((node) => {
         const name = node.getAttribute("data-ve-field") || "",
-          candidate = namedField(fields, name),
-          state = form.getField(`${section.path}.${name}`);
+          resolved = resolveBinding({
+            fields,
+            value: form.getDataByPath(section.path),
+            binding: name,
+            permissions: section.permissions,
+          }),
+          candidate = resolved?.field,
+          state = resolved && form.getField(`${section.path}.${resolved.path}`);
         return (
           node.getAttribute("data-ve-root") === section.identity.root &&
           node.getAttribute("data-ve-ancestors") ===
             JSON.stringify(section.identity.ancestors || []) &&
           node.getAttribute("data-ve-block") === section.identity.blockId &&
           Boolean(state) &&
-          canUpdateInlineField(section.permissions, name) &&
+          resolved &&
+          !resolved.readOnly &&
+          !resolved.row &&
+          node.getAttribute("data-ve-edit") !== "panel" &&
+          canUpdateInlineField(section.permissions, resolved.permissionPath) &&
           candidate &&
           ["text", "textarea"].includes(candidate.type) &&
           !(candidate.admin as any)?.components?.Field &&
@@ -428,7 +439,7 @@ export function FrontendControls({
           !("hasMany" in candidate && candidate.hasMany) &&
           profile?.inlineEdit !== false &&
           (!Array.isArray(profile?.inlineEdit) ||
-            profile.inlineEdit.includes(name)) &&
+            profile.inlineEdit.includes(resolved.permissionPath)) &&
           state?.passesCondition !== false &&
           node.childElementCount === 0 &&
           !node.closest("a,button,input,textarea,select")
@@ -438,6 +449,8 @@ export function FrontendControls({
         pick({
           element: bound,
           field: bound.getAttribute("data-ve-field")!,
+          edit:
+            bound.getAttribute("data-ve-edit") === "panel" ? "panel" : "auto",
           identity: section.identity,
         });
         return;
@@ -587,7 +600,12 @@ export function FrontendControls({
       );
       const field =
         target.field && section?.block
-          ? namedField(section.block.fields, target.field)
+          ? resolveBinding({
+              fields: section.block.fields,
+              value: form.getDataByPath(section.path),
+              binding: target.field,
+              permissions: section.permissions,
+            })?.field
           : undefined;
       const label =
         field && "label" in field
@@ -614,22 +632,29 @@ export function FrontendControls({
             JSON.stringify(target.identity.ancestors || []),
       );
       const profile = blockControls?.[section?.block?.slug || ""];
-      const field =
+      const resolved =
         target.field && section?.block
-          ? namedField(
-              projectFields(section.block.fields, profile?.fields),
-              target.field,
-            )
+          ? resolveBinding({
+              fields: projectFields(section.block.fields, profile?.fields),
+              value: form.getDataByPath(section.path),
+              binding: target.field,
+              permissions: section.permissions,
+            })
           : undefined;
+      const field = resolved?.field;
       const inline =
         field &&
+        resolved &&
+        !resolved.row &&
+        !resolved.readOnly &&
+        target.edit !== "panel" &&
         ["text", "textarea"].includes(field.type) &&
         profile?.inlineEdit !== false &&
         (!Array.isArray(profile?.inlineEdit) ||
-          profile.inlineEdit.includes(target.field!)) &&
+          profile.inlineEdit.includes(resolved.permissionPath)) &&
         field.admin?.readOnly !== true &&
         !(field.admin as any)?.components?.Field &&
-        canUpdateInlineField(section?.permissions, target.field!) &&
+        canUpdateInlineField(section?.permissions, resolved.permissionPath) &&
         target.element.childElementCount === 0 &&
         !target.element.closest("a,button,input,textarea,select");
       return inline
@@ -658,15 +683,28 @@ export function FrontendControls({
   const configuredFields = selected?.block
     ? projectFields(selected.block.fields, profile?.fields)
     : [];
-  const candidate = selection?.field
-    ? namedField(configuredFields, selection.field)
-    : undefined;
+  const binding =
+    selection?.field && selected
+      ? resolveBinding({
+          fields: configuredFields,
+          value: form.getDataByPath(selected.path),
+          binding: selection.field,
+          permissions: selected.permissions,
+        })
+      : undefined;
+  const candidate = binding?.field;
+  const inlinePath =
+    binding && selected ? `${selected.path}.${binding.path}` : undefined;
   const quickField =
     candidate &&
+    binding &&
+    !binding.row &&
+    !binding.readOnly &&
+    selection?.edit !== "panel" &&
     ["text", "textarea"].includes(candidate.type) &&
     profile?.inlineEdit !== false &&
     (!Array.isArray(profile?.inlineEdit) ||
-      profile.inlineEdit.includes(selection?.field || ""))
+      profile.inlineEdit.includes(binding.permissionPath))
       ? candidate
       : undefined;
   const inlineEligible = useMemo(
@@ -681,9 +719,7 @@ export function FrontendControls({
     [quickField, selection?.element],
   );
   const inlineState = useFormFields(([fields]) =>
-    selected && selection?.field
-      ? fields[`${selected.path}.${selection.field}`]
-      : undefined,
+    inlinePath ? fields[inlinePath] : undefined,
   );
   const canInline =
     inlineEligible &&
@@ -691,7 +727,10 @@ export function FrontendControls({
     inlineState?.passesCondition !== false &&
     !inlineState?.customComponents?.Field &&
     !(quickField && "hasMany" in quickField && quickField.hasMany) &&
-    canUpdateInlineField(selected?.permissions, selection?.field || "") &&
+    canUpdateInlineField(
+      selected?.permissions,
+      binding?.permissionPath || "",
+    ) &&
     quickField?.admin?.readOnly !== true;
   useEffect(() => {
     if (selection && !canInline && !disabled) setSettingsOpen(true);
@@ -702,12 +741,55 @@ export function FrontendControls({
     canInline,
     disabled,
   ]);
-  const fields = canInline
-    ? excludeFields(configuredFields, [selection!.field!])
+  const grouped = selection?.fields?.map((path) =>
+    selected
+      ? resolveBinding({
+          fields: configuredFields,
+          value: form.getDataByPath(selected.path),
+          binding: path,
+          permissions: selected.permissions,
+        })
+      : undefined,
+  );
+  const groupScope =
+    grouped?.length &&
+    grouped.every(
+      (item) => item && !item.row && item.parentPath === grouped[0]?.parentPath,
+    )
+      ? grouped[0]
+      : undefined;
+  const scope = binding || groupScope;
+  const relativeParent = binding?.row ? binding.path : scope?.parentPath;
+  const panelPath = selected
+    ? [selected.path, relativeParent].filter(Boolean).join(".")
+    : "";
+  const panelSchemaPath = selected
+    ? [
+        selected.schemaPath,
+        binding?.row ? binding.schemaPath : scope?.parentSchemaPath,
+      ]
+        .filter(Boolean)
+        .join(".")
+    : "";
+  const panelPermissions = binding?.row
+    ? binding.row.permissions
+    : scope
+      ? scope.permissions
+      : selected?.permissions;
+  const fields = binding
+    ? binding.row
+      ? binding.row.fields
+      : canInline
+        ? excludeFields(binding.siblings, [
+            (binding.field as { name: string }).name,
+          ])
+        : [binding.field]
     : selection?.field
-      ? projectFields(configuredFields, [selection.field])
+      ? []
       : selection?.fields
-        ? projectFields(configuredFields, selection.fields)
+        ? groupScope
+          ? grouped!.map((item) => item!.field)
+          : []
         : configuredFields;
 
   const extension = editorTools.extensions.find(
@@ -797,14 +879,14 @@ export function FrontendControls({
         )}
         {expanded && selected && selection && canInline && (
           <NativeFieldsOwner
-            key={`${selected.path}.${selection.field}`}
-            path={`${selected.path}.${selection.field}`}
+            key={inlinePath}
+            path={inlinePath!}
             activate={() => (selection.element as HTMLElement).focus()}
           >
             <InlineText
-              key={`${selected.path}.${selection.field}`}
+              key={inlinePath}
               element={selection.element as HTMLElement}
-              path={`${selected.path}.${selection.field}`}
+              path={inlinePath!}
               label={describe(selection)}
               multiline={quickField?.type === "textarea"}
               point={selection.point}
@@ -906,22 +988,23 @@ export function FrontendControls({
               >
                 {fields?.length ? (
                   <NativeFieldsOwner
-                    key={`${selected.path}:${quickField ? selection?.field : "all"}`}
-                    paths={fieldOwnershipPaths(fields, selected.path)}
+                    key={`${panelPath}:${selection?.field || "all"}`}
+                    paths={fieldOwnershipPaths(fields, panelPath)}
                   >
                     <RenderFields
                       fields={fields}
-                      parentPath={selected.path}
-                      parentSchemaPath={selected.schemaPath}
+                      parentPath={panelPath}
+                      parentSchemaPath={panelSchemaPath}
                       parentIndexPath=""
-                      permissions={selected.permissions}
-                      readOnly={disabled}
+                      permissions={panelPermissions}
+                      readOnly={disabled || scope?.readOnly}
                       forceRender
                     />
                   </NativeFieldsOwner>
                 ) : (
                   <p>
-                    This block is unavailable. Existing content is retained.
+                    This content is no longer available at this location. Select
+                    it again to continue.
                   </p>
                 )}
                 {selection?.field || selection?.fields ? (

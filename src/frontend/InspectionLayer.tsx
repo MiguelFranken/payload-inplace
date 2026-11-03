@@ -8,6 +8,7 @@ export interface InspectionTarget {
   point?: { x: number; y: number };
   identity: BlockIdentity;
   field?: string;
+  edit?: "auto" | "inline" | "panel";
   fields?: string[];
   element: Element;
 }
@@ -37,6 +38,12 @@ function readTarget(element: Element | null): InspectionTarget | undefined {
       return;
     return {
       fields: fields || undefined,
+      edit:
+        bound.getAttribute("data-ve-edit") === "panel"
+          ? "panel"
+          : bound.getAttribute("data-ve-edit") === "inline"
+            ? "inline"
+            : "auto",
       element: bound,
       identity: {
         root: bound.getAttribute("data-ve-root") || "",

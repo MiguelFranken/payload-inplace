@@ -461,3 +461,46 @@ test("hover outlines are optional and pause while native settings are open", asy
   await page.locator('main [data-ve-field="heading"]').first().hover();
   await expect(outline).toBeHidden();
 });
+
+test("array leaves edit inline and an item opens only its own native fields", async ({
+  page,
+}) => {
+  await login(page);
+  const row = page
+    .locator('main [data-ve-edit="panel"][data-ve-field^="items.@"]')
+    .first();
+  const leaf = row.locator('[data-ve-field$=".label"]');
+  await leaf.click();
+  await expect(leaf).toHaveAttribute("contenteditable", "plaintext-only");
+  await expect(
+    page.getByRole("complementary", { name: "Edit content" }),
+  ).toHaveCount(0);
+  await leaf.fill("Nested inline draft");
+  await leaf.press("Tab");
+  await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+  await page
+    .getByRole("button", { name: "Options for Label", exact: true })
+    .click();
+  const panel = page.getByRole("complementary", { name: "Edit content" });
+  // A terminal field owns its native input; settings must not remount the containing array.
+  await expect(panel.locator(".array-field")).toHaveCount(0);
+  await page
+    .getByRole("button", { name: "Close Label panel", exact: true })
+    .click();
+  // Click the row's own padding instead of its terminal paragraph.
+  await row.click({ position: { x: 4, y: 3 } });
+  await expect(
+    panel.getByRole("textbox", { name: "Label", exact: true }),
+  ).toBeVisible();
+  await expect(panel.locator(".array-field")).toHaveCount(0);
+  await expect(panel.getByRole("textbox")).toHaveCount(2);
+  await panel
+    .getByRole("textbox", { name: "Label", exact: true })
+    .fill("Scoped row draft");
+  await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+  await expect(leaf).toHaveText("Scoped row draft");
+  await page.reload();
+  await expect(
+    page.locator('main [data-ve-field$=".label"]').first(),
+  ).toHaveText("Scoped row draft");
+});
