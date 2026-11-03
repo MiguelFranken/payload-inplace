@@ -2,7 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { en } from "@payloadcms/translations/languages/en";
 import { de } from "@payloadcms/translations/languages/de";
-import { buildConfig } from "payload";
+import { buildConfig, validations } from "payload";
 import { mongooseAdapter } from "@payloadcms/db-mongodb";
 import { postgresAdapter } from "@payloadcms/db-postgres";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
@@ -10,7 +10,15 @@ import { postgresConcurrency } from "../dist/exports/postgres.js";
 import { visualEditor } from "../dist/index.js";
 import { seed } from "./seed";
 import type { VisualEditorOptions } from "../dist/exports/types.js";
-import type { Block, CollectionConfig } from "payload";
+import type {
+  Block,
+  CollectionConfig,
+  TextFieldSingleValidation,
+} from "payload";
+const validateDemoTitle: TextFieldSingleValidation = (value, options) =>
+  value === "Rejected title"
+    ? "Use a different title."
+    : validations.text(value, options);
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const editor = ({ req }: any) =>
   Boolean(req.user && ["admin", "editor"].includes(req.user.role));
@@ -101,8 +109,7 @@ const content = (
       name: "title",
       type: "text",
       required: true,
-      validate: (value: unknown) =>
-        value === "Rejected title" ? "Use a different title." : true,
+      ...(validateDrafts ? { validate: validateDemoTitle } : {}),
       hooks: {
         beforeValidate: [
           ({ value }) => (typeof value === "string" ? value.trim() : value),
