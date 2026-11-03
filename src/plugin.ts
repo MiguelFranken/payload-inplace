@@ -1,3 +1,4 @@
+import { trustedEditorOrigins } from "./server/origins.js";
 import { readEditorCookie, validatePagePath } from "./server/page-context.js";
 import type {
   Config,
@@ -22,7 +23,7 @@ import {
 
 /** Compose opt-in roots without replacing native persistence, existing hooks or unrelated controls. */
 export function visualEditor(options: VisualEditorOptions): Plugin {
-  const origin = new URL(options.previewOrigin).origin;
+  const trustedOrigins = trustedEditorOrigins(options);
   const ids = new Set<string>();
   for (const extension of [
     ...(options.extensions || []),
@@ -268,7 +269,7 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
               "Cache-Control": "private, no-store",
               Vary: "Cookie",
             };
-            if (req.headers.get("origin") !== origin)
+            if (!trustedOrigins.has(req.headers.get("origin") || ""))
               return Response.json(
                 { error: "Invalid origin" },
                 { status: 403, headers },
@@ -349,7 +350,10 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
               Vary: "Cookie",
               "X-Content-Type-Options": "nosniff",
             };
-            if (options.disabled || req.headers.get("origin") !== origin)
+            if (
+              options.disabled ||
+              !trustedOrigins.has(req.headers.get("origin") || "")
+            )
               return Response.json(
                 { error: "Invalid origin" },
                 { status: 403, headers },
@@ -385,7 +389,10 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
               const pagePath =
                 resolvedPagePath === undefined
                   ? undefined
-                  : validatePagePath(resolvedPagePath, origin);
+                  : validatePagePath(
+                      resolvedPagePath,
+                      req.headers.get("origin")!,
+                    );
               const context = createContext(
                 req,
                 target,
@@ -393,7 +400,7 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
                 pagePath,
               );
               const token = signContext(context, req.payload.secret);
-              const cookie = `payload-ve-${context.nonce}=${token}; HttpOnly; SameSite=Strict; Path=${pagePath ? "/" : editorPath}; Max-Age=${Math.floor((context.expires - Date.now()) / 1000)}${origin.startsWith("https:") ? "; Secure" : ""}`;
+              const cookie = `payload-ve-${context.nonce}=${token}; HttpOnly; SameSite=Strict; Path=${pagePath ? "/" : editorPath}; Max-Age=${Math.floor((context.expires - Date.now()) / 1000)}${req.headers.get("origin")?.startsWith("https:") ? "; Secure" : ""}`;
               if (nativeForm) {
                 const requested = String(values?.get("tool") || "content");
                 const available = await resolveTools(options, {
@@ -453,7 +460,10 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
           method: "post",
           handler: async (req) => {
             const headers = { "Cache-Control": "private, no-store" };
-            if (req.headers.get("origin") !== origin || !req.user)
+            if (
+              !trustedOrigins.has(req.headers.get("origin") || "") ||
+              !req.user
+            )
               return Response.json(
                 { error: "Invalid session" },
                 { status: 403, headers },
@@ -475,7 +485,7 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
               status: 204,
               headers: {
                 ...headers,
-                "Set-Cookie": `payload-ve-${input.nonce}=; HttpOnly; SameSite=Strict; Path=${active?.pagePath ? "/" : editorPath}; Max-Age=0${origin.startsWith("https:") ? "; Secure" : ""}`,
+                "Set-Cookie": `payload-ve-${input.nonce}=; HttpOnly; SameSite=Strict; Path=${active?.pagePath ? "/" : editorPath}; Max-Age=0${req.headers.get("origin")?.startsWith("https:") ? "; Secure" : ""}`,
               },
             });
           },
@@ -488,7 +498,7 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
               "Cache-Control": "private, no-store",
               Vary: "Cookie",
             };
-            if (req.headers.get("origin") !== origin)
+            if (!trustedOrigins.has(req.headers.get("origin") || ""))
               return Response.json(
                 { error: "Invalid origin" },
                 { status: 403, headers },

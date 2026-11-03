@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.0-alpha.15 — candidate
+
+- Keep the selected field’s label, tint, DOM and focus stable through native draft saves.
+- Resize the contextual panel from its top and left edges, with keyboard controls and viewport bounds.
+- Preserve Payload’s native root-unit scale inside isolated styles; adapt field layouts to panel width.
+- Measure fragment-bound canvas blocks through their rendered content and retain stable drag bindings across native moves.
+- Accept additional exact, server-configured preview origins for deployment aliases.
+
 ## 0.1.0-alpha.14 — candidate
 
 - Preserve rendered fallback text when inline editing begins; save only real input and ignore detached DOM during teardown.

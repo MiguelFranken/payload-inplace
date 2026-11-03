@@ -890,7 +890,7 @@ export function FrontendControls({
         role="region"
         aria-label="Website editor"
         data-ve-ui=""
-        className="pve:fixed pve:inset-0 pve:pointer-events-none pve:z-[var(--pve-z-index,2147483000)] pve:font-[family-name:var(--pve-font-family,system-ui)] pve:text-[var(--pve-text,var(--theme-text,#202127))] pve:[&_[class*='upload-relationship-details']_button]:min-h-11! pve:[&_[class*='upload-relationship-details']_button]:min-w-11! pve:[&_[class*='upload-relationship-details']_[class*='meta']]:text-[var(--theme-elevation-700)]! pve:[&_[class*='dragAndDropText']]:text-[var(--theme-elevation-700)]! pve:[&_[class*='orText']]:text-[var(--theme-elevation-700)]! pve:[&_.clear-indicator]:min-h-10! pve:[&_.clear-indicator]:min-w-10! pve:[&_.dropdown-indicator]:min-h-10! pve:[&_.dropdown-indicator]:min-w-10!"
+        className="pve:@container/pve-native pve:fixed pve:inset-0 pve:pointer-events-none pve:z-[var(--pve-z-index,2147483000)] pve:font-[family-name:var(--pve-font-family,system-ui)] pve:text-[var(--pve-text,var(--theme-text,#202127))] pve:[&_[class*='upload-relationship-details']_button]:min-h-11! pve:[&_[class*='upload-relationship-details']_button]:min-w-11! pve:[&_[class*='upload-relationship-details']_[class*='meta']]:text-[var(--theme-elevation-700)]! pve:[&_[class*='dragAndDropText']]:text-[var(--theme-elevation-700)]! pve:[&_[class*='orText']]:text-[var(--theme-elevation-700)]!"
       >
         {expanded && (
           <InspectionLayer
@@ -902,7 +902,7 @@ export function FrontendControls({
             hint={describeAction}
           />
         )}
-        {expanded && selected && selection && canInline && (
+        {expanded && selected && selection && canInline && !hasPanel && (
           <NativeFieldsOwner
             key={inlinePath}
             path={inlinePath!}

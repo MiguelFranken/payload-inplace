@@ -33,6 +33,19 @@ import {
 } from "../preview/geometry.js";
 import { Button } from "./ui/button.js";
 const key = (s: NativeSection) => JSON.stringify(s.identity);
+// Renderer-owned roots may be fragments/display:contents. dnd-kit must measure the
+// same rendered union as the visible page outline, rather than a zero wrapper box.
+function measureCanvas(node: HTMLElement) {
+  const { top, right, bottom, left, width, height } =
+    elementRect(node) || node.getBoundingClientRect();
+  // dnd-kit spreads the measurement into its scroll-adjusted Rect. DOMRect's
+  // coordinates are prototype getters, so return enumerable values explicitly.
+  return { top, right, bottom, left, width, height };
+}
+const canvasMeasurements = {
+  draggable: { measure: measureCanvas },
+  droppable: { measure: measureCanvas },
+};
 export function sectionLabel(s: NativeSection) {
   return typeof s.block?.labels?.singular === "string"
     ? s.block.labels.singular
@@ -135,6 +148,7 @@ export function BlockReorder({
   return (
     <DndContext
       sensors={sensors}
+      measuring={canvas ? canvasMeasurements : undefined}
       collisionDetection={collision}
       onDragStart={(e) => {
         setActive(String(e.active.id));
@@ -244,9 +258,12 @@ function ReorderItem({
     if (bar.current) observer.observe(bar.current);
     function draw(timestamp: number) {
       frame = 0;
-      element = sectionElement(s);
+      const next = sectionElement(s);
+      if (next !== element) {
+        element = next;
+        setNodeRef(element || null);
+      }
       const rect = element && elementRect(element);
-      setNodeRef(element || null);
       setBound(Boolean(rect));
       if (!rect || !overlay.current) return;
       if (bar.current) {
@@ -298,7 +315,7 @@ function ReorderItem({
       window.removeEventListener("resize", schedule);
       setNodeRef(null);
     };
-  }, [canvas, s.path, id, setNodeRef]);
+  }, [canvas, id, setNodeRef]);
   const label = sectionLabel(s);
   const handle = (
     <Button

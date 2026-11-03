@@ -1070,7 +1070,7 @@ test("large documents keep native inline input within the active interaction bud
     .getByRole("heading", { name: "Large document heading", exact: true })
     .click();
   const inline = page.locator('main [contenteditable="plaintext-only"]');
-  await inline.evaluate((element) => {
+  await inline.evaluate((element: HTMLElement) => {
     const samples: number[] = [];
     (window as any).__inlineFrames = samples;
     element.addEventListener("input", () => {
@@ -1413,4 +1413,177 @@ test("in-place activation and exit preserve the website, URL and viewport while 
         (window as any).__editorFooter === document.querySelector("footer"),
     ),
   ).toBe(true);
+});
+
+test("the selected field retains its label and tint through a delayed save without moving its caret or dock", async ({
+  page,
+}) => {
+  const doc = await createEditor(page);
+  let release!: () => void, started!: () => void;
+  const held = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const saving = new Promise<void>((resolve) => {
+    started = resolve;
+  });
+  let delayed = false;
+  await page.route(`**/api/pages/${doc.id}?*`, async (route) => {
+    if (route.request().method() === "PATCH" && !delayed) {
+      delayed = true;
+      started();
+      await held;
+    }
+    await route.continue();
+  });
+  try {
+    const inline = await selectHeading(page);
+    const outline = page.locator("[data-ve-selection-outline]");
+    const caption = outline.locator("span").first();
+    await expect(caption).toBeVisible();
+    await expect(caption).toContainText("Heading");
+    const tint = await outline.evaluate(
+      (element: Element) => getComputedStyle(element).backgroundColor,
+    );
+    expect(tint).not.toBe("rgba(0, 0, 0, 0)");
+    const dock = page.getByRole("navigation", { name: "Editing toolbar" });
+    const initialDock = (await dock.boundingBox())!;
+    await inline.evaluate((element: HTMLElement) => {
+      (window as any).__stableInline = element;
+    });
+    await inline.fill("A steady headline");
+    await saving;
+    await expect(caption).toBeVisible();
+    expect(
+      await outline.evaluate(
+        (element: Element) => getComputedStyle(element).backgroundColor,
+      ),
+    ).toBe(tint);
+    release();
+    await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+    await expect(caption).toBeVisible();
+    await expect(inline).toBeFocused();
+    expect(
+      await inline.evaluate(
+        (element: HTMLElement) => element === (window as any).__stableInline,
+      ),
+    ).toBe(true);
+    expect(
+      await outline.evaluate(
+        (element: Element) => getComputedStyle(element).backgroundColor,
+      ),
+    ).toBe(tint);
+    const savedDock = (await dock.boundingBox())!;
+    expect(savedDock.x).toBeCloseTo(initialDock.x, 0);
+    expect(savedDock.y).toBeCloseTo(initialDock.y, 0);
+    expect(savedDock.width).toBeCloseTo(initialDock.width, 0);
+    await page.screenshot({ path: "test-results/stable-inline-selection.png" });
+  } finally {
+    release();
+  }
+});
+
+test("native field panels resize from the top and left, retain fields and match the admin input scale", async ({
+  page,
+  context,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  const doc = await createEditor(page);
+  const inline = await selectHeading(page);
+  await page
+    .getByRole("button", { name: "Options for Heading", exact: true })
+    .click();
+  const panel = page.getByRole("complementary", {
+    name: "Edit content",
+    exact: true,
+  });
+  await panel
+    .getByRole("button", { name: "Edit all section fields", exact: true })
+    .click();
+  const field = panel
+    .getByRole("textbox", { name: "Heading", exact: false })
+    .first();
+  await expect(field).toHaveValue("Immediate heading");
+  const before = (await panel.boundingBox())!;
+  const inputBefore = await field.evaluate((element: HTMLElement) => {
+    (window as any).__panelField = element;
+    const css = getComputedStyle(element);
+    return {
+      height: css.height,
+      size: css.fontSize,
+      padding: css.padding,
+      line: css.lineHeight,
+    };
+  });
+  // This is Payload's desktop baseline, independent of the website's 16px html font size.
+  expect(inputBefore.size).toBe("13px");
+  expect(inputBefore.height).toBe("40px");
+  const width = panel.getByRole("separator", { name: "Resize panel width" });
+  const left = (await width.boundingBox())!;
+  await page.mouse.move(left.x + left.width / 2, left.y + left.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(left.x - 180, left.y + left.height / 2, { steps: 12 });
+  await page.mouse.up();
+  const wider = (await panel.boundingBox())!;
+  expect(wider.width).toBeGreaterThan(before.width + 170);
+  expect(wider.x + wider.width).toBeCloseTo(before.x + before.width, 0);
+  const height = panel.getByRole("separator", { name: "Resize panel height" });
+  const top = (await height.boundingBox())!;
+  await page.mouse.move(top.x + top.width / 2, top.y + 3);
+  await page.mouse.down();
+  await page.mouse.move(top.x + top.width / 2, top.y - 140, { steps: 12 });
+  await page.mouse.up();
+  const taller = (await panel.boundingBox())!;
+  expect(taller.height).toBeGreaterThan(wider.height + 120);
+  expect(taller.y + taller.height).toBeCloseTo(wider.y + wider.height, 0);
+  expect(
+    await field.evaluate(
+      (element: HTMLElement) => element === (window as any).__panelField,
+    ),
+  ).toBe(true);
+  await field.fill("Resize keeps the field mounted");
+  await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+  await expect(field).toBeFocused();
+  await width.focus();
+  await width.press("ArrowRight");
+  expect((await panel.boundingBox())!.width).toBeCloseTo(taller.width - 16, 0);
+  await page.screenshot({ path: "test-results/native-resizable-panel.png" });
+  await page.setViewportSize({ width: 320, height: 740 });
+  const narrow = (await panel.boundingBox())!;
+  expect(narrow.x).toBeGreaterThanOrEqual(0);
+  expect(narrow.x + narrow.width).toBeLessThanOrEqual(320);
+  expect(narrow.y).toBeGreaterThanOrEqual(0);
+  await expect(field).toHaveValue("Resize keeps the field mounted");
+  await page.screenshot({
+    path: "test-results/native-resizable-panel-320.png",
+  });
+  // Compare the same native field in the real admin, at the same desktop viewport.
+  const admin = await context.newPage();
+  try {
+    await admin.setViewportSize({ width: 1440, height: 1000 });
+    await admin.goto(`/admin/collections/pages/${doc.id}`);
+    const expand = admin
+      .getByRole("button", { name: /Show all|Expand all/ })
+      .first();
+    if (await expand.count()) await expand.click();
+    const native = admin
+      .getByRole("textbox", { name: "Heading", exact: false })
+      .first();
+    await expect(native).toBeVisible();
+    expect(
+      await native.evaluate((element: HTMLElement) => {
+        const css = getComputedStyle(element);
+        return {
+          height: css.height,
+          size: css.fontSize,
+          padding: css.padding,
+          line: css.lineHeight,
+        };
+      }),
+    ).toEqual(inputBefore);
+  } finally {
+    await admin.close();
+  }
+  expect(errors).toEqual([]);
+  void inline;
 });
