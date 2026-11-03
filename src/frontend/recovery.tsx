@@ -97,7 +97,8 @@ export function NativeSubmissionMonitor() {
           paths.length
             ? {
                 kind: "validation",
-                message: "Correct the highlighted fields, then retry saving.",
+                message:
+                  "Some fields need attention. Open a field below to correct it, then retry saving.",
                 paths,
               }
             : {

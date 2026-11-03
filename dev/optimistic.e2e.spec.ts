@@ -1,5 +1,6 @@
+import AxeBuilder from "@axe-core/playwright";
 import { test, expect } from "@playwright/test";
-async function createEditor(page: any) {
+async function createEditor(page: any, collection = "pages") {
   await page.goto("/visual-editor/start?collection=pages&slug=demo");
   await page.getByLabel("Email", { exact: true }).fill("admin@example.test");
   await page
@@ -11,7 +12,7 @@ async function createEditor(page: any) {
   await expect(
     page.getByRole("navigation", { name: "Editing toolbar" }),
   ).toBeVisible();
-  const response = await page.request.post("/api/pages", {
+  const response = await page.request.post(`/api/${collection}`, {
     data: {
       title: "Optimistic proof",
       slug: `optimistic-${Date.now()}`,
@@ -31,7 +32,7 @@ async function createEditor(page: any) {
   });
   expect(response.ok()).toBeTruthy();
   const doc = (await response.json()).doc;
-  await page.goto(`/visual-editor/start?collection=pages&id=${doc.id}`);
+  await page.goto(`/visual-editor/start?collection=${collection}&id=${doc.id}`);
   await page
     .getByRole("button", { name: "Start editing", exact: true })
     .click();
@@ -879,4 +880,264 @@ test("German 320px dock contains every visible action and minimizes through its 
   await expect(
     page.getByRole("button", { name: "Seite bearbeiten", exact: true }),
   ).toBeVisible();
+});
+
+test("native dark controls remain accessible without changing the website theme", async ({
+  page,
+}) => {
+  await createEditor(page);
+  const websiteTheme = await page.locator("html").getAttribute("data-theme");
+  await page
+    .context()
+    .addCookies([{ name: "payload-theme", value: "dark", url: page.url() }]);
+  await page.reload();
+  await expect(page.locator('[data-ve-ui][data-theme="dark"]')).toHaveCount(1);
+  await page
+    .getByRole("heading", { name: "Immediate heading", exact: true })
+    .click();
+  await page.getByRole("button", { name: "More tools", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Appearance", exact: true }).click();
+  const panel = page.getByRole("complementary", {
+    name: "Appearance",
+    exact: true,
+  });
+  await expect(
+    panel.getByRole("combobox", { name: "Background" }),
+  ).toBeVisible();
+  expect(
+    await panel.evaluate(
+      (element) => getComputedStyle(element).backgroundColor,
+    ),
+  ).not.toBe("rgb(255, 255, 255)");
+  expect(await page.locator("html").getAttribute("data-theme")).toBe(
+    websiteTheme,
+  );
+  const audit = await new AxeBuilder({ page })
+    .include("[data-ve-ui]")
+    .analyze();
+  expect(audit.violations).toEqual([]);
+  await page.screenshot({ path: "test-results/frontend-dark.png" });
+});
+
+test("repeated contextual disclosure releases its document listeners and observers", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const types = new Set([
+      "pointermove",
+      "pointerleave",
+      "keydown",
+      "scroll",
+      "resize",
+      "focus",
+      "message",
+      "submit",
+    ]);
+    const active = new Map<string, { type: string }>();
+    const ids = new WeakMap<object, number>();
+    let next = 0;
+    const add = EventTarget.prototype.addEventListener,
+      remove = EventTarget.prototype.removeEventListener;
+    const key = (
+      target: EventTarget,
+      type: string,
+      callback: any,
+      options: any,
+    ) => {
+      if (
+        (target !== document && target !== window) ||
+        !callback ||
+        !types.has(type)
+      )
+        return;
+      if (!ids.has(callback)) ids.set(callback, ++next);
+      return `${target === document ? "document" : "window"}:${type}:${ids.get(callback)}:${typeof options === "boolean" ? options : Boolean(options?.capture)}`;
+    };
+    EventTarget.prototype.addEventListener = function (
+      type,
+      callback,
+      options,
+    ) {
+      const id = key(this, type, callback, options);
+      if (id) active.set(id, { type });
+      return add.call(this, type, callback, options);
+    };
+    EventTarget.prototype.removeEventListener = function (
+      type,
+      callback,
+      options,
+    ) {
+      const id = key(this, type, callback, options);
+      if (id) active.delete(id);
+      return remove.call(this, type, callback, options);
+    };
+    const observed = new Set<Set<Element>>();
+    const NativeResizeObserver = window.ResizeObserver;
+    window.ResizeObserver = class extends NativeResizeObserver {
+      targets = new Set<Element>();
+      constructor(callback: ResizeObserverCallback) {
+        super(callback);
+        observed.add(this.targets);
+      }
+      observe(target: Element, options?: ResizeObserverOptions) {
+        this.targets.add(target);
+        super.observe(target, options);
+      }
+      unobserve(target: Element) {
+        this.targets.delete(target);
+        super.unobserve(target);
+      }
+      disconnect() {
+        this.targets.clear();
+        super.disconnect();
+      }
+    };
+    (window as any).__editorLifecycle = () => ({
+      listeners: active.size,
+      resizeTargets: [...observed].reduce(
+        (count, targets) => count + targets.size,
+        0,
+      ),
+      pointerMove: [...active.values()].filter(
+        (value) => value.type === "pointermove",
+      ).length,
+    });
+  });
+  await createEditor(page);
+  const cycle = async () => {
+    await page.getByRole("button", { name: "Sections", exact: true }).click();
+    await page
+      .getByRole("button", { name: "Close Sections panel", exact: true })
+      .click();
+  };
+  await cycle();
+  const before = await page.evaluate(() => (window as any).__editorLifecycle());
+  expect(before.pointerMove).toBeGreaterThan(0);
+  for (let index = 0; index < 6; index++) await cycle();
+  await expect
+    .poll(() => page.evaluate(() => (window as any).__editorLifecycle()))
+    .toEqual(before);
+});
+
+test("large documents keep native inline input within the active interaction budget", async ({
+  page,
+}, testInfo) => {
+  test.setTimeout(120000);
+  await createEditor(page);
+  const response = await page.request.post("/api/pages", {
+    data: {
+      title: "Large document",
+      slug: `large-${Date.now()}`,
+      _status: "draft",
+      layout: [
+        {
+          blockType: "hero",
+          heading: "Large document heading",
+          privateNote: "Retain this",
+        },
+        ...Array.from({ length: 74 }, (_, index) => ({
+          blockType: "text",
+          heading: `Section ${index + 1}`,
+        })),
+      ],
+    },
+  });
+  expect(response.ok()).toBe(true);
+  const document = (await response.json()).doc;
+  await page.goto(`/visual-editor/start?collection=pages&id=${document.id}`);
+  await page
+    .getByRole("button", { name: "Start editing", exact: true })
+    .click();
+  await page
+    .getByRole("heading", { name: "Large document heading", exact: true })
+    .click();
+  const inline = page.locator('main [contenteditable="plaintext-only"]');
+  await inline.evaluate((element) => {
+    const samples: number[] = [];
+    (window as any).__inlineFrames = samples;
+    element.addEventListener("input", () => {
+      const start = performance.now();
+      requestAnimationFrame(() => samples.push(performance.now() - start));
+    });
+  });
+  await inline.press("End");
+  await inline.pressSequentially(" feels immediate");
+  await expect
+    .poll(() => page.evaluate(() => (window as any).__inlineFrames.length))
+    .toBeGreaterThanOrEqual(15);
+  const frames: number[] = await page.evaluate(
+    () => (window as any).__inlineFrames,
+  );
+  const ordered = [...frames].sort((a, b) => a - b),
+    p95 = ordered[Math.ceil(ordered.length * 0.95) - 1];
+  expect(p95).toBeLessThan(100);
+  await page.keyboard.press("ControlOrMeta+s");
+  await expect
+    .poll(
+      async () =>
+        (
+          await (
+            await page.request.get(
+              `/api/pages/${document.id}?draft=true&depth=0`,
+            )
+          ).json()
+        ).layout[0].heading,
+    )
+    .toBe("Large document heading feels immediate");
+  await testInfo.attach("large-document-budget", {
+    body: JSON.stringify({
+      blocks: 75,
+      samples: frames.length,
+      inputFrameP95Ms: p95,
+      budgetMs: 100,
+    }),
+    contentType: "application/json",
+  });
+});
+
+test("native save errors reveal an unmounted field and retry the same form", async ({
+  page,
+}) => {
+  const doc = await createEditor(page, "validatedPages");
+  await page.getByRole("button", { name: "More tools", exact: true }).click();
+  await page
+    .getByRole("menuitem", { name: "Page details", exact: true })
+    .click();
+  const details = page.getByRole("complementary", {
+    name: "Page details",
+    exact: true,
+  });
+  await details.getByRole("textbox", { name: /^Title/ }).fill("Rejected title");
+  await details
+    .getByRole("button", { name: "Close Page details panel", exact: true })
+    .click();
+  await page.keyboard.press("ControlOrMeta+s");
+  await page.getByRole("button", { name: "Edit Title", exact: true }).click();
+  const correction = page.getByRole("complementary", {
+    name: "Fix field",
+    exact: true,
+  });
+  const title = correction.getByRole("textbox", { name: /^Title/ });
+  await expect(title).toHaveValue("Rejected title");
+  await expect(title).toBeFocused();
+  await expect(
+    correction.getByText("Use a different title.", { exact: true }).first(),
+  ).toBeVisible();
+  await page.setViewportSize({ width: 320, height: 760 });
+  await page.screenshot({
+    path: "test-results/native-validation-correction.png",
+  });
+  await title.fill("Corrected native title");
+  await correction
+    .getByRole("button", { name: "Retry saving", exact: true })
+    .click();
+  await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+  await expect(correction).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "More tools", exact: true }),
+  ).toBeFocused();
+  const saved = await page.request.get(
+    `/api/validatedPages/${doc.id}?draft=true&depth=0`,
+  );
+  expect((await saved.json()).title).toBe("Corrected native title");
 });

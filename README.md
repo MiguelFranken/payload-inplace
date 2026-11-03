@@ -2,7 +2,7 @@
 
 Experimental native-form visual composition for existing Payload CMS blocks. The public plugin owns editor behavior; applications keep their schemas, renderers, permissions and business rules.
 
-The current candidate is **not production ready**. Actual Workshops acceptance, broader compatibility coverage and release/rollback gates remain open. A separate clean installed app now verifies the baseline independently of the source demo. Implemented safety behavior and its measured validation are tracked separately. See [validation](docs/validation.md).
+The current candidate is an **experimental prerelease**. Local Workshops acceptance and a separate installed app validate the pinned runtime; production deployment and npm account publication remain distinct delivery steps. A separate clean installed app now verifies the baseline independently of the source demo. Implemented safety behavior and its measured validation are tracked separately. See [validation](docs/validation.md).
 
 ## Development
 
@@ -92,6 +92,8 @@ Custom panels use `NativeFieldSlot` to claim existing fields without duplicate m
 Plugin presentation uses Tailwind 4 CLI, prefixed utilities and no Preflight. CSS inputs contain directives/theme configuration; compiled styles are generated, not hand edited. Owned frontend controls adapt shadcn Base UI registry components; native Payload complex fields retain native styling. Consumers can override `--pve-surface`, `--pve-text`, `--pve-muted`, `--pve-border`, `--pve-accent`, panel dimensions and the other tokens in `src/admin/tailwind.css`. No global reset is applied to the website. Reduced-motion preferences disable selection and disclosure transitions.
 
 ## Distribution
+
+See the tested [compatibility contract](docs/compatibility.md), [release and rollback procedure](docs/release.md), and [candidate changes](CHANGELOG.md).
 
 Source is intended for `MiguelFranken/payload-visual-editor` under MIT. The selected package registry is public npm (`registry.npmjs.org`) with anonymous installs, independently of GitHub source visibility. No stable registry publication is claimed. Local immutable tarballs are produced by `pack:check`, with their checksum in `test-results/package.json`.
 

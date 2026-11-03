@@ -25,3 +25,6 @@ dev/protected.styles.css
 
 src/frontend/inline.styles.css
 src/frontend/inline-styles.generated.ts
+
+release-input-*/
+release-output/

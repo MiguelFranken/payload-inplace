@@ -7,7 +7,7 @@ export default withPayload(
     distDir: process.env.VE_PRODUCTION === "1" ? ".next-prod" : ".next-e2e",
     turbopack: { root },
     devIndicators: false,
-    serverExternalPackages: ["mongodb-memory-server"],
+    serverExternalPackages: ["mongodb-memory-server", "payload"],
     experimental: { serverActions: { bodySizeLimit: "4mb" } },
   },
   { devBundleServerPackages: false },

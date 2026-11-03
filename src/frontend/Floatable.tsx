@@ -86,7 +86,7 @@ export function Floatable({
       </header>
       <div
         ref={body}
-        className="pve:max-h-[min(60dvh,calc(100dvh-160px))] pve:overflow-auto pve:overscroll-contain pve:p-4"
+        className="pve:max-h-[min(60dvh,calc(100dvh-var(--pve-dock-height,56px)-100px))] pve:overflow-auto pve:overscroll-contain pve:p-4"
       >
         {children}
       </div>

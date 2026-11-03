@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { unstable_rethrow } from "next/navigation";
 import { handleServerFunctions } from "@payloadcms/next/layouts";
 import type { ServerFunctionClient } from "payload";
@@ -73,6 +74,11 @@ export default async function Page({
   });
   return (
     <FrontendEditor
+      theme={
+        (await cookies()).get("payload-theme")?.value === "dark"
+          ? "dark"
+          : "light"
+      }
       req={req}
       token={token}
       options={editorOptions}

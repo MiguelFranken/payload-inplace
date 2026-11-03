@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import postcss from "postcss";
-import selectorParser from "postcss-selector-parser";
+import { nativeShadowSelector } from "./native-shadow-selectors.mjs";
 const native = fs.readFileSync(
   new URL(import.meta.resolve("@payloadcms/next/css")),
   "utf8",
@@ -9,17 +9,7 @@ const tree = postcss.parse(native);
 tree.walkRules((rule) => {
   if (rule.parent?.type === "atrule" && /keyframes$/.test(rule.parent.name))
     return;
-  rule.selector = selectorParser((selectors) => {
-    selectors.walkPseudos((pseudo) => {
-      if (pseudo.value === ":root") pseudo.value = ":host";
-    });
-    selectors.walkTags((tag) => {
-      if (tag.value === "html")
-        tag.replaceWith(selectorParser.pseudo({ value: ":host" }));
-      if (tag.value === "body")
-        tag.replaceWith(selectorParser.className({ value: "pve-native-root" }));
-    });
-  }).processSync(rule.selector);
+  rule.selector = nativeShadowSelector(rule.selector);
 });
 const css = `${tree.toString()}\n${fs.readFileSync("src/admin/styles.css", "utf8")}`;
 fs.mkdirSync("src/frontend", { recursive: true });

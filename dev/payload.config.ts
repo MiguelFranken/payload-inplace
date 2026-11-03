@@ -79,7 +79,11 @@ const blocks: Block[] = [
     fields: [{ name: "heading", type: "text" }],
   },
 ];
-const content = (slug: string, nested = false): CollectionConfig => ({
+const content = (
+  slug: string,
+  nested = false,
+  validateDrafts = false,
+): CollectionConfig => ({
   slug,
   admin: { useAsTitle: "title", listSearchableFields: ["title", "slug"] },
   access: {
@@ -88,12 +92,17 @@ const content = (slug: string, nested = false): CollectionConfig => ({
     update: editor,
     delete: editor,
   },
-  versions: { drafts: { autosave: { interval: 1500 } }, maxPerDoc: 50 },
+  versions: {
+    drafts: { autosave: { interval: 1500 }, validate: validateDrafts },
+    maxPerDoc: 50,
+  },
   fields: [
     {
       name: "title",
       type: "text",
       required: true,
+      validate: (value: unknown) =>
+        value === "Rejected title" ? "Use a different title." : true,
       hooks: {
         beforeValidate: [
           ({ value }) => (typeof value === "string" ? value.trim() : value),
@@ -203,6 +212,7 @@ export const editorOptions: VisualEditorOptions = {
     process.env.VE_DATABASE === "postgres" ? postgresConcurrency() : undefined,
   collections: {
     pages: { roots: ["layout"] },
+    validatedPages: { roots: ["layout"] },
     offers: { roots: ["detailPage.layout"] },
   },
   policies: {
@@ -259,6 +269,7 @@ export default buildConfig({
       fields: [{ name: "alt", type: "text" }],
     },
     content("pages"),
+    content("validatedPages", false, true),
     content("offers", true),
   ],
   db:

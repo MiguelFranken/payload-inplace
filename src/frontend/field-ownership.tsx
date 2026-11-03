@@ -126,7 +126,7 @@ export function NativeFieldsOwner({
   );
 }
 /** Mount an existing named native field in a consumer floatable, preserving schema paths, conditions and effective permissions.
- * This initial public slot supports named groups/tabs and metadata fields; visual block fields are owned by the selected-content surface.
+ * Full document paths may traverse groups, tabs, arrays and native block rows. Selection-relative paths resolve against the current block identity.
  */
 export function NativeFieldSlot({
   path,

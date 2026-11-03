@@ -1,9 +1,10 @@
 import fs from "node:fs";
+import policy from "../release.config.mjs";
 const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
 if (
-  pkg.name !== "@miguelfranken/payload-visual-editor" ||
-  pkg.publishConfig?.registry !== "https://registry.npmjs.org" ||
-  pkg.publishConfig?.access !== "public"
+  pkg.name !== policy.package ||
+  pkg.publishConfig?.registry !== policy.registry ||
+  pkg.publishConfig?.access !== policy.access
 )
   throw Error("Explicit public npm distribution policy required");
 if (!/^\d+\.\d+\.\d+(?:-[a-z0-9.-]+)?$/.test(pkg.version))

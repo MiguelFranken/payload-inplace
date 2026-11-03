@@ -61,7 +61,7 @@ import { SelectionSettings } from "./SelectionSettings.js";
 import { ExtensionAction } from "./ExtensionAction.js";
 import { Floatable } from "./Floatable.js";
 import { useVisualEditor } from "./tools-context.js";
-import { NativeFieldsOwner } from "./field-ownership.js";
+import { NativeFieldsOwner, NativeFieldSlot } from "./field-ownership.js";
 import { InspectionLayer, type InspectionTarget } from "./InspectionLayer.js";
 
 import { Button as ChromeButton } from "./ui/button.js";
@@ -107,20 +107,30 @@ export function FrontendControls({
     null,
   );
   const [customTool, setCustomTool] = useState<string | null>(null);
+  const [validationPath, setValidationPath] = useState<string | null>(null);
   const locale = useLocale();
   const closeTools = useCallback(() => {
     editorTools.openPanels.forEach(editorTools.closePanel);
     setCustomTool(null);
+    setValidationPath(null);
   }, [editorTools.openPanels, editorTools.closePanel]);
   useEffect(() => {
     if (editorTools.openPanels.length) {
       setOutline(false);
       setSettingsOpen(false);
       setCustomTool(null);
+      setValidationPath(null);
     }
   }, [editorTools.openPanels]);
+  useEffect(() => {
+    if (validationPath && recovery.failure?.kind !== "validation") {
+      setValidationPath(null);
+      queueMicrotask(() => toolsButton.current?.focus());
+    }
+  }, [recovery.failure, validationPath]);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const feedbackStack = useRef<HTMLDivElement>(null);
   const dock = useRef<HTMLElement>(null),
     rootElement = useRef<HTMLDivElement>(null);
   const [actionResult, setActionResult] = useState("");
@@ -320,7 +330,7 @@ export function FrontendControls({
         )
       ) {
         const focus =
-          customTool || editorTools.openPanels.length
+          validationPath || customTool || editorTools.openPanels.length
             ? toolsButton.current
             : outline
               ? sectionsButton.current
@@ -341,6 +351,7 @@ export function FrontendControls({
     saveDraft,
     closeTools,
     customTool,
+    validationPath,
     editorTools.openPanels,
     outline,
   ]);
@@ -555,14 +566,14 @@ export function FrontendControls({
     editorTools.setSelection(selection?.identity);
   }, [selection]);
   useEffect(() => {
-    if (!dock.current || !rootElement.current) return;
+    if (!feedbackStack.current || !rootElement.current) return;
     const observer = new ResizeObserver(() =>
       rootElement.current?.style.setProperty(
         "--pve-dock-height",
-        `${dock.current?.offsetHeight || 140}px`,
+        `${feedbackStack.current?.offsetHeight || 56}px`,
       ),
     );
-    observer.observe(dock.current);
+    observer.observe(feedbackStack.current);
     return () => observer.disconnect();
   }, []);
   const describe = useCallback(
@@ -658,14 +669,56 @@ export function FrontendControls({
     (e) => e.id === (customTool || editorTools.openPanels.at(-1)),
   );
   const hasPanel =
-    expanded && (outline || (selected && settingsOpen) || Boolean(extension));
+    expanded &&
+    (outline ||
+      (selected && settingsOpen) ||
+      Boolean(extension) ||
+      Boolean(validationPath));
   function minimize() {
+    closeTools();
     setExpanded(false);
     requestAnimationFrame(() => launcherButton.current?.focus());
     setInspecting(false);
     setSettingsOpen(false);
     setSelection(undefined);
   }
+  function validationLabel(path: string) {
+    const section = sections
+      .filter((section) => path.startsWith(section.path + "."))
+      .sort((a, b) => b.path.length - a.path.length)[0];
+    const relative = section ? path.slice(section.path.length + 1) : path;
+    const field = namedField(
+      section?.block?.fields || info.docConfig?.fields || [],
+      relative.replace(/\.\d+(?=\.|$)/g, ""),
+    );
+    const label = field && "label" in field ? field.label : undefined;
+    const text =
+      typeof label === "string"
+        ? label
+        : label && typeof label === "object"
+          ? label[i18n.language] || label.en
+          : undefined;
+    return (
+      text ||
+      (relative.split(".").at(-1) || t("Field", "Feld"))
+        .replace(/([a-z])([A-Z])/g, "$1 $2")
+        .replace(/^./, (c) => c.toUpperCase())
+    );
+  }
+  function correctField(path: string) {
+    closeTools();
+    setSettingsOpen(false);
+    setSelection(undefined);
+    setExpanded(true);
+    if (path === context.target.root) setOutline(true);
+    else {
+      setOutline(false);
+      setValidationPath(path);
+    }
+  }
+  const validationMessage = useFormFields(([fields]) =>
+    validationPath ? fields[validationPath]?.errorMessage : undefined,
+  );
   const statusText = recovery.failure
     ? t("Not saved", "Nicht gespeichert")
     : processing || background
@@ -749,6 +802,35 @@ export function FrontendControls({
           data-ve-panel-stack=""
           className="pve:fixed pve:right-3 pve:bottom-[calc(var(--pve-dock-height,56px)+24px)] pve:z-60 pve:sm:right-5"
         >
+          {expanded &&
+            validationPath &&
+            recovery.failure?.kind === "validation" && (
+              <Floatable
+                key={validationPath}
+                title={t("Fix field", "Feld korrigieren")}
+                returnFocus={toolsButton}
+                onClose={() => setValidationPath(null)}
+              >
+                <div className="pve:grid pve:gap-4">
+                  {validationMessage && (
+                    <p
+                      role="alert"
+                      className="pve:m-0 pve:text-sm pve:leading-relaxed"
+                    >
+                      {validationMessage}
+                    </p>
+                  )}
+                  <NativeFieldSlot path={validationPath} />
+                  <ChromeButton
+                    className="pve:justify-self-start"
+                    variant="default"
+                    onClick={() => void retry()}
+                  >
+                    {t("Retry saving", "Erneut speichern")}
+                  </ChromeButton>
+                </div>
+              </Floatable>
+            )}
           {expanded && selected && settingsOpen && !outline && (
             <Floatable
               title={title}
@@ -996,10 +1078,16 @@ export function FrontendControls({
             </Floatable>
           )}
         </div>
-        <div className="pve:fixed pve:right-3 pve:bottom-3 pve:z-80 pve:max-w-[calc(100vw-24px)] pve:sm:right-5 pve:sm:bottom-4">
-          {(error || recovery.failure || serverPreview.error || actionResult) &&
+        <div
+          ref={feedbackStack}
+          className="pve:fixed pve:right-3 pve:bottom-3 pve:z-80 pve:max-w-[calc(100vw-24px)] pve:sm:right-5 pve:sm:bottom-4"
+        >
+          {(error ||
+            (recovery.failure && !validationPath) ||
+            serverPreview.error ||
+            actionResult) &&
             expanded && (
-              <div className="pve:pointer-events-auto pve:mb-2 pve:box-border pve:max-w-[min(520px,calc(100vw-24px))] pve:rounded-xl pve:border pve:border-solid pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:bg-[var(--pve-surface,var(--theme-elevation-0,#fff))] pve:p-3 pve:text-sm pve:leading-relaxed pve:shadow-lg">
+              <div className="pve:pointer-events-auto pve:mb-2 pve:box-border pve:max-h-[min(50dvh,360px)] pve:overflow-auto pve:overscroll-contain pve:max-w-[min(520px,calc(100vw-24px))] pve:rounded-xl pve:border pve:border-solid pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:bg-[var(--pve-surface,var(--theme-elevation-0,#fff))] pve:p-3 pve:text-sm pve:leading-relaxed pve:shadow-lg">
                 {error && (
                   <p role="alert" className="pve:m-0">
                     {error}
@@ -1029,10 +1117,21 @@ export function FrontendControls({
                     </ChromeButton>
                   </>
                 )}
-                {recovery.failure && (
+                {recovery.failure && !validationPath && (
                   <div role="alert">
                     <p className="pve:mt-0">{recovery.failure.message}</p>
                     <div className="pve:flex pve:flex-wrap pve:gap-2">
+                      {recovery.failure.kind === "validation" &&
+                        recovery.failure.paths?.map((path) => (
+                          <ChromeButton
+                            key={path}
+                            size="sm"
+                            variant="outline"
+                            onClick={() => correctField(path)}
+                          >
+                            {t("Edit", "Bearbeiten:")} {validationLabel(path)}
+                          </ChromeButton>
+                        ))}
                       <ChromeButton
                         size="sm"
                         variant="outline"
