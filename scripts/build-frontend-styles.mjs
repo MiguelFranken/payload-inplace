@@ -11,7 +11,38 @@ tree.walkRules((rule) => {
     return;
   rule.selector = nativeShadowSelector(rule.selector);
 });
-const css = `${tree.toString()}\n${fs.readFileSync("src/admin/styles.css", "utf8")}`;
+// Lexical's separately bundled feature styles must cross the same shadow boundary.
+// Remove exact rules already present in core UI, preserving upstream cascade and conditional groups.
+const lexical = postcss.parse(
+  fs.readFileSync(
+    new URL(
+      "./bundled.css",
+      import.meta.resolve("@payloadcms/richtext-lexical/client"),
+    ),
+    "utf8",
+  ),
+);
+const seen = new Set();
+function ruleKey(rule) {
+  const parents = [];
+  for (
+    let parent = rule.parent;
+    parent && parent.type !== "root";
+    parent = parent.parent
+  )
+    if (parent.type === "atrule")
+      parents.unshift(`@${parent.name} ${parent.params}`);
+  return `${parents.join("/")}:${rule.toString()}`;
+}
+tree.walkRules((rule) => seen.add(ruleKey(rule)));
+lexical.walkRules((rule) => {
+  if (!(rule.parent?.type === "atrule" && /keyframes$/.test(rule.parent.name)))
+    rule.selector = nativeShadowSelector(rule.selector);
+  const key = ruleKey(rule);
+  if (seen.has(key)) rule.remove();
+  else seen.add(key);
+});
+const css = `${tree.toString()}\n${lexical.toString()}\n${fs.readFileSync("src/admin/styles.css", "utf8")}`;
 fs.mkdirSync("src/frontend", { recursive: true });
 fs.writeFileSync(
   "src/frontend/theme.generated.ts",
