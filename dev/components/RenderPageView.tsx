@@ -26,6 +26,9 @@ export function RenderPageView({
         const identity = { root, blockId: block.id };
         if (block.hidden) return null;
         const Heading = index === 0 ? "h1" : "h2";
+        const heading =
+          block.heading ||
+          (block.blockType === "serverData" ? document.title : undefined);
         return (
           <section
             key={block.id}
@@ -35,10 +38,10 @@ export function RenderPageView({
             <Heading
               {...getFieldAttributes({ ...identity, field: "heading" }, active)}
               data-ve-placeholder={
-                active && !block.heading ? "Add a heading" : undefined
+                active && !heading ? "Add a heading" : undefined
               }
             >
-              {block.heading || (active ? "Add a heading" : "")}
+              {heading || (active ? "Add a heading" : "")}
             </Heading>
             {(block.caption || (active && block.blockType === "hero")) && (
               <p

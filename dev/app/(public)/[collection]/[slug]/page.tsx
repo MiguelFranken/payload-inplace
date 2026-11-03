@@ -50,7 +50,7 @@ export default async function Page({
       );
     }
   }
-  return (
+  const content = (
     <>
       <RenderPage
         document={result.docs[0]}
@@ -59,4 +59,5 @@ export default async function Page({
       {launcher}
     </>
   );
+  return content;
 }

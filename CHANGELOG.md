@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.0-alpha.14 — candidate
+
+- Preserve rendered fallback text when inline editing begins; save only real input and ignore detached DOM during teardown.
+- Activate and exit editing on the actual website URL with a soft refresh, preserving shared page chrome, query parameters, fragments and viewport.
+- Scope draft activation to signed, freshly authorized page sessions; keep public and active rendering entries separate.
+- Defer native fields/styles and bridge Payload server functions without importing its admin layout; support the pinned Turbopack runtime through `/next` and `/native`.
+- Wait for the activation bridge on cold hydration and reuse Payload's native unsaved-navigation guard.
+
 ## 0.1.0-alpha.5 — candidate
 
 - Preserve native unrestricted permissions when mounting fields from named tabs, including consumer custom fields after saves.

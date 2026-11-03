@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { unstable_rethrow } from "next/navigation";
-import { handleServerFunctions } from "@payloadcms/next/layouts";
+import { handleServerFunctions } from "@miguel.franken/payload-visual-editor/native";
 import type { ServerFunctionClient } from "payload";
 import config, { editorOptions } from "@payload-config";
 import { FrontendEditor } from "../../../../dist/exports/rsc.js";
@@ -19,6 +19,10 @@ export default async function Page({
   searchParams: Promise<{ context?: string }>;
 }) {
   const { context: identifier } = await searchParams;
+  return <DocumentEditor identifier={identifier!} />;
+}
+/** The same document editor can be mounted inside a host website route without replacing its layout. */
+export async function DocumentEditor({ identifier }: { identifier: string }) {
   const { req, context, token } = await authorizedEditor(identifier);
   const serverFunction: ServerFunctionClient = async (args) => {
     "use server";

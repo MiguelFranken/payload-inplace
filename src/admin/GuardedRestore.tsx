@@ -2,7 +2,7 @@
 import { Button, useConfig, useTranslation } from "@payloadcms/ui";
 import { useState } from "react";
 import { DocumentReview } from "./DocumentReview.js";
-import "./styles.css";
+
 /** Restoring creates a guarded draft; publication remains a separate reviewed operation. */
 export function GuardedRestore({
   collection,

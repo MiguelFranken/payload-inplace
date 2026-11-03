@@ -1,7 +1,9 @@
 "use client";
+import { useEditorPageTransition } from "../launcher/EditorPageTransition.js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   RenderFields,
+  LeaveWithoutSaving,
   useLocale,
   PublishButton,
   useConfig,
@@ -459,6 +461,7 @@ export function FrontendControls({
     pick({ element, identity: section.identity });
     setSettingsOpen(true);
   }
+  const refreshPage = useEditorPageTransition();
   async function exit() {
     if (
       modified &&
@@ -470,12 +473,25 @@ export function FrontendControls({
       )
     )
       return;
-    await fetch(`${config.routes.api}/visual-editor/deactivate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nonce: context.nonce }),
-    });
-    window.location.assign(exitURL);
+    const response = await fetch(
+      `${config.routes.api}/visual-editor/deactivate`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nonce: context.nonce }),
+      },
+    );
+    if (!response.ok) {
+      setError(
+        t(
+          "Could not leave editing. Please try again.",
+          "Editor konnte nicht geschlossen werden. Bitte erneut versuchen.",
+        ),
+      );
+      return;
+    }
+    if (context.pagePath && refreshPage) refreshPage();
+    else window.location.assign(exitURL);
   }
   async function reopenEditor() {
     if (
@@ -501,6 +517,10 @@ export function FrontendControls({
       );
       if (!response.ok) throw new Error("activation denied");
       const { context: fresh } = await response.json();
+      if (fresh.pagePath && refreshPage) {
+        refreshPage();
+        return;
+      }
       const next = new URL(window.location.href);
       next.searchParams.set("context", fresh.nonce);
       window.location.assign(next.href);
@@ -860,6 +880,11 @@ export function FrontendControls({
           : t("Draft saved", "Entwurf gespeichert");
   return (
     <ChromePortalProvider container={portalContainer}>
+      <LeaveWithoutSaving
+        disablePreventLeave={
+          !modified && !processing && !background && !recovery.failure
+        }
+      />
       <div
         ref={rootElement}
         role="region"

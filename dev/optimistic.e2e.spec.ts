@@ -4,6 +4,9 @@ async function createEditor(
   page: any,
   collection = "pages",
   heading = "Immediate heading",
+  inheritedHeading = false,
+  skipOpen = false,
+  slugPrefix = "optimistic",
 ) {
   await page.goto("/visual-editor/start?collection=pages&slug=demo");
   await page.getByLabel("Email", { exact: true }).fill("admin@example.test");
@@ -19,7 +22,7 @@ async function createEditor(
   const response = await page.request.post(`/api/${collection}`, {
     data: {
       title: "Optimistic proof",
-      slug: `optimistic-${Date.now()}`,
+      slug: `${slugPrefix}-${Date.now()}`,
       _status: "draft",
       layout: [
         {
@@ -30,12 +33,16 @@ async function createEditor(
           appearance: { tone: "light", align: "start" },
         },
         { blockType: "text", heading: "Second editable section" },
-        { blockType: "serverData", heading: "Server-only fragment" },
+        {
+          blockType: "serverData",
+          heading: inheritedHeading ? undefined : "Server-only fragment",
+        },
       ],
     },
   });
   expect(response.ok()).toBeTruthy();
   const doc = (await response.json()).doc;
+  if (skipOpen) return doc;
   await page.goto(`/visual-editor/start?collection=${collection}&id=${doc.id}`);
   await page
     .getByRole("button", { name: "Start editing", exact: true })
@@ -578,6 +585,9 @@ test("context panels preserve keyboard focus and compact disclosure", async ({
   await more.focus();
   await more.press("Enter");
   await expect(page.getByRole("menu", { name: "More tools" })).toBeVisible();
+  await expect(
+    page.getByRole("menuitem", { name: "Page details", exact: true }),
+  ).toBeFocused();
   await page.keyboard.press("ArrowDown");
   await expect(
     page.getByRole("menuitem", { name: "Check saved content", exact: true }),
@@ -1227,4 +1237,162 @@ test("focusing inline content does not save rendered whitespace until actual inp
     )
     .toBe("An intentional change");
   expect(writes).toBeGreaterThan(0);
+});
+
+test("inline adoption preserves rendered fallbacks until the user changes them", async ({
+  page,
+}) => {
+  const doc = await createEditor(page, "pages", "Immediate heading", true);
+  const heading = page.locator('main [data-ve-field="heading"]').nth(2);
+  await heading.click();
+  await expect(heading).toHaveAttribute("contenteditable", "plaintext-only");
+  await expect(heading).toHaveText("Optimistic proof");
+  await heading.press("Tab");
+  await expect(heading).toHaveText("Optimistic proof");
+  await expect(
+    page.getByRole("status", { name: "Draft saved", exact: true }),
+  ).toBeVisible();
+  await heading.click();
+  await heading.press("End");
+  await heading.pressSequentially(" with an explicit override");
+  await page.keyboard.press("ControlOrMeta+s");
+  await expect
+    .poll(
+      async () =>
+        (
+          await (
+            await page.request.get(`/api/pages/${doc.id}?draft=true&depth=0`)
+          ).json()
+        ).layout[2].heading,
+    )
+    .toBe("Optimistic proof with an explicit override");
+  await expect(heading).toHaveText(
+    "Optimistic proof with an explicit override",
+  );
+});
+
+test("in-place activation and exit preserve the website, URL and viewport while loading unpublished drafts", async ({
+  page,
+}) => {
+  const doc = await createEditor(
+    page,
+    "pages",
+    "Immediate heading",
+    false,
+    true,
+    "inplace",
+  );
+  const review = await page.request.post("/api/visual-editor/review", {
+    headers: { Origin: new URL(page.url()).origin },
+    data: {
+      target: { collection: "pages", id: doc.id, root: "layout" },
+      candidate: doc,
+    },
+  });
+  expect(review.ok(), await review.text()).toBeTruthy();
+  const publish = await page.request.patch(`/api/pages/${doc.id}`, {
+    data: {
+      ...doc,
+      _status: "published",
+      _veReviewToken: (await review.json()).token,
+    },
+  });
+  expect(publish.ok(), await publish.text()).toBeTruthy();
+  const live = (await publish.json()).doc;
+  const draft = await page.request.patch(`/api/pages/${doc.id}?draft=true`, {
+    data: {
+      _veRevision: live._veRevision,
+      layout: live.layout.map((block: any, index: number) =>
+        index === 0 ? { ...block, heading: "Unpublished headline" } : block,
+      ),
+    },
+  });
+  expect(draft.ok(), await draft.text()).toBeTruthy();
+  await page.context().clearCookies({ name: /^payload-ve-/ });
+  await page.goto(`/pages/${doc.slug}?campaign=kept#site-footer`);
+  await expect(
+    page.getByRole("heading", { name: "Immediate heading", exact: true }),
+  ).toBeVisible();
+  await page.evaluate(() => {
+    (window as any).__editorDocument = document;
+    (window as any).__editorHeader = document.querySelector("header");
+    (window as any).__editorFooter = document.querySelector("footer");
+    window.scrollTo({ top: 180, behavior: "instant" });
+  });
+  const url = page.url(),
+    y = await page.evaluate(() => scrollY);
+  await page.getByRole("button", { name: "Edit page", exact: true }).click();
+  await expect(
+    page.getByRole("navigation", { name: "Editing toolbar" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Unpublished headline", exact: true }),
+  ).toBeVisible();
+  expect(page.url()).toBe(url);
+  expect(
+    await page.evaluate(
+      () =>
+        (window as any).__editorDocument === document &&
+        (window as any).__editorHeader === document.querySelector("header") &&
+        (window as any).__editorFooter === document.querySelector("footer"),
+    ),
+  ).toBe(true);
+  await expect.poll(() => page.evaluate(() => scrollY)).toBeCloseTo(y, 0);
+  let releaseSave!: () => void, startedSave!: () => void;
+  const heldSave = new Promise<void>((resolve) => {
+    releaseSave = resolve;
+  });
+  const saveStarted = new Promise<void>((resolve) => {
+    startedSave = resolve;
+  });
+  let delayed = false;
+  await page.route(`**/api/pages/${doc.id}?*`, async (route) => {
+    if (route.request().method() === "PATCH" && !delayed) {
+      delayed = true;
+      startedSave();
+      await heldSave;
+    }
+    await route.continue();
+  });
+  const inline = page.locator('main [data-ve-field="heading"]').first();
+  await inline.click();
+  await inline.fill("Kept while saving");
+  await saveStarted;
+  try {
+    await page
+      .getByRole("link", { name: "Website navigation", exact: true })
+      .click();
+    await expect(
+      page.getByRole("button", { name: "Stay on this page", exact: true }),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "Stay on this page", exact: true })
+      .click();
+    expect(page.url()).toBe(url);
+    await expect(inline).toHaveText("Kept while saving");
+  } finally {
+    releaseSave();
+  }
+  await expect(
+    page.getByRole("status", { name: "Draft saved", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "More tools", exact: true }).click();
+  await page
+    .getByRole("menuitem", { name: "Exit editing", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Edit page", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Immediate heading", exact: true }),
+  ).toBeVisible();
+  expect(page.url()).toBe(url);
+  expect(
+    await page.evaluate(
+      () =>
+        (window as any).__editorDocument === document &&
+        (window as any).__editorHeader === document.querySelector("header") &&
+        (window as any).__editorFooter === document.querySelector("footer"),
+    ),
+  ).toBe(true);
 });
