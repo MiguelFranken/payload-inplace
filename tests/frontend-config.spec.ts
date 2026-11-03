@@ -75,3 +75,13 @@ it("keeps concurrent frontend component maps off the shared Payload instance", (
   expect(first.user).toBe(req.user);
   expect(first.context).toBe(req.context);
 });
+
+it("preserves the request map when native Local API operations replace a cold payload instance", () => {
+  const original: any = { importMap: undefined, db: {} };
+  const map = { field: () => null };
+  const req = withFrontendImportMap({ payload: original } as any, map);
+  req.payload = original;
+  expect(req.payload.importMap).toBe(map);
+  expect(req.payload.db).toBe(original.db);
+  expect(original.importMap).toBeUndefined();
+});

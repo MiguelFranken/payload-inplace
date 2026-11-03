@@ -55,10 +55,19 @@ export function withFrontendImportMap(
   req: PayloadRequest,
   importMap: ImportMap,
 ): PayloadRequest {
-  return {
-    ...req,
-    payload: Object.create(req.payload, {
+  const scope = (payload: PayloadRequest["payload"]) =>
+    Object.create(payload, {
       importMap: { value: importMap, writable: true, enumerable: true },
-    }),
-  };
+    });
+  let payload = scope(req.payload);
+  // Native createLocalReq reassigns req.payload during Local API access checks.
+  // Preserve the map on that replacement too, including a cold instance with no admin map.
+  return Object.defineProperty({ ...req }, "payload", {
+    enumerable: true,
+    configurable: true,
+    get: () => payload,
+    set: (next: PayloadRequest["payload"]) => {
+      payload = scope(next);
+    },
+  });
 }
