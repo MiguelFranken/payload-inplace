@@ -22,3 +22,6 @@ src/launcher/styles.css
 src/launcher/styles.generated.ts
 
 dev/protected.styles.css
+
+src/frontend/inline.styles.css
+src/frontend/inline-styles.generated.ts

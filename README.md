@@ -94,3 +94,5 @@ Plugin presentation uses Tailwind 4 CLI, prefixed utilities and no Preflight. CS
 ## Distribution
 
 Source is intended for `MiguelFranken/payload-visual-editor` under MIT. The selected package registry is public npm (`registry.npmjs.org`) with anonymous installs, independently of GitHub source visibility. No stable registry publication is claimed. Local immutable tarballs are produced by `pack:check`, with their checksum in `test-results/package.json`.
+
+Existing reviewed domain commands can opt into `operationalWrites[collection]` with a server-only `authorize(req)` callback and explicit named `paths` outside configured visual roots. This is intended for operational data such as capacity. It does not grant access, skip revision checks, or permit publication of a sparse patch: pass the complete live document snapshot plus the latest revision, changing only allowed paths. Preserve any separate editorial draft using the returned revision. Never base authorization on request-body flags; use the existing domain command's server-owned request context. See the real transaction test in `dev/int.spec.ts` and `src/server/operational-write.ts`.

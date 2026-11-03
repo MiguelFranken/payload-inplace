@@ -44,7 +44,7 @@ import {
   ownsTypingOrModal,
   restoreRoot,
 } from "../adapters/payload-form.js";
-import { structureError } from "../state/policy.js";
+import { structureTransitionError } from "../state/policy.js";
 import type { StructuralPolicy } from "../state/policy.js";
 import { ReviewPublishButton } from "../admin/ReviewPublishButton.js";
 import { installNativeUploadLabels } from "../admin/native-accessibility.js";
@@ -157,7 +157,8 @@ export function FrontendControls({
     policy?.first === slug && rootRows[0]?.blockType !== slug;
   const blockChoices = nativeBlockChoices.filter(
     (block) =>
-      !structureError(
+      !structureTransitionError(
+        rootRows,
         atStart(block.slug)
           ? [{ blockType: block.slug }, ...rootRows]
           : [...rootRows, { blockType: block.slug }],

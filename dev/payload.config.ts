@@ -112,7 +112,17 @@ const content = (slug: string, nested = false): CollectionConfig => ({
             ],
           },
         ]
-      : [{ name: "layout", type: "blocks" as const, blocks }]),
+      : [
+          {
+            type: "tabs" as const,
+            tabs: [
+              {
+                label: "Content",
+                fields: [{ name: "layout", type: "blocks" as const, blocks }],
+              },
+            ],
+          },
+        ]),
     { name: "unrelated", type: "text" },
     {
       name: "meta",
@@ -126,6 +136,12 @@ const content = (slug: string, nested = false): CollectionConfig => ({
   ],
 });
 export const editorOptions: VisualEditorOptions = {
+  operationalWrites: {
+    offers: {
+      paths: ["unrelated"],
+      authorize: (req) => req.context.reviewedDemoOperation === true,
+    },
+  },
   fieldPanels: [
     {
       id: "search-appearance",

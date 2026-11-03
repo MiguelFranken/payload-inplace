@@ -54,6 +54,26 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
         throw new Error(
           `Visual editing requires native drafts on ${collection.slug}`,
         );
+      for (const path of options.operationalWrites?.[collection.slug]?.paths ||
+        []) {
+        if (
+          !/^[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*)*$/.test(path) ||
+          path
+            .split(".")
+            .some((part) =>
+              ["constructor", "prototype", "__proto__"].includes(part),
+            ) ||
+          setting.roots.some(
+            (root) =>
+              path === root ||
+              path.startsWith(root + ".") ||
+              root.startsWith(path + "."),
+          )
+        )
+          throw new Error(
+            "Operational write paths must be safe named fields outside visual roots",
+          );
+      }
       const fields = cloneFields(collection.fields);
       const validatePolicy: CollectionBeforeChangeHook = ({
         data,
@@ -181,7 +201,11 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
               ...collection.hooks,
               beforeOperation: [
                 guardActivation,
-                revisionGuard(collection.slug, options.concurrency),
+                revisionGuard(
+                  collection.slug,
+                  options.concurrency,
+                  options.operationalWrites?.[collection.slug],
+                ),
                 ...(collection.hooks?.beforeOperation ?? []),
               ],
               beforeChange: [

@@ -40,6 +40,16 @@ export function candidateMatches(
   candidate: Record<string, unknown>,
   draft: Record<string, unknown>,
 ): boolean {
+  // Payload's unflattened native state can leave empty presentational-container skeletons.
+  // These contain no authored value; unknown primitives, nulls and arrays must still fail closed.
+  function emptyContainer(value: unknown): boolean {
+    return (
+      value !== null &&
+      typeof value === "object" &&
+      !Array.isArray(value) &&
+      Object.values(value).every(emptyContainer)
+    );
+  }
   function matches(input: unknown, saved: unknown): boolean {
     if (Array.isArray(input)) {
       if (!Array.isArray(saved) || input.length !== saved.length) return false;
@@ -59,9 +69,10 @@ export function candidateMatches(
     if (input && typeof input === "object") {
       if (!saved || typeof saved !== "object" || Array.isArray(saved))
         return false;
-      return Object.entries(input).every(
-        ([key, value]) =>
-          Object.hasOwn(saved, key) && matches(value, (saved as any)[key]),
+      return Object.entries(input).every(([key, value]) =>
+        Object.hasOwn(saved, key)
+          ? matches(value, (saved as any)[key])
+          : emptyContainer(value),
       );
     }
     return Object.is(input, saved);
@@ -70,8 +81,10 @@ export function candidateMatches(
   // projection while the review displays the complete authorized draft. Row identities/order stay exact.
   return Object.entries(candidate)
     .filter(([key]) => !ignored.has(key))
-    .every(
-      ([key, value]) => Object.hasOwn(draft, key) && matches(value, draft[key]),
+    .every(([key, value]) =>
+      Object.hasOwn(draft, key)
+        ? matches(value, draft[key])
+        : emptyContainer(value),
     );
 }
 function mac(value: string, secret: string) {

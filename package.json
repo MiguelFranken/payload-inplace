@@ -1,6 +1,6 @@
 {
   "name": "@miguelfranken/payload-visual-editor",
-  "version": "0.1.0-alpha.0",
+  "version": "0.1.0-alpha.1",
   "description": "Native-form visual composition for existing Payload CMS block schemas.",
   "type": "module",
   "license": "MIT",
@@ -93,7 +93,7 @@
     "release:check": "node scripts/validate-release.mjs",
     "test:graph": "node scripts/check-production-graph.mjs",
     "test:postgres": "node scripts/postgres-test.mjs",
-    "build:css": "tailwindcss -i src/admin/tailwind.css -o src/admin/styles.css --minify && tailwindcss -i src/preview/tailwind.css -o src/preview/styles.css --minify && tailwindcss -i dev/tailwind.css -o dev/styles.css --minify && tailwindcss -i dev/protected.tailwind.css -o dev/protected.styles.css --minify && tailwindcss -i src/launcher/tailwind.css -o src/launcher/styles.css --minify && node scripts/build-frontend-styles.mjs",
+    "build:css": "tailwindcss -i src/admin/tailwind.css -o src/admin/styles.css --minify && tailwindcss -i src/preview/tailwind.css -o src/preview/styles.css --minify && tailwindcss -i dev/tailwind.css -o dev/styles.css --minify && tailwindcss -i dev/protected.tailwind.css -o dev/protected.styles.css --minify && tailwindcss -i src/launcher/tailwind.css -o src/launcher/styles.css --minify && tailwindcss -i src/frontend/inline.tailwind.css -o src/frontend/inline.styles.css --minify && node scripts/build-frontend-styles.mjs",
     "test:installed-consumer": "node scripts/test-installed-consumer.mjs"
   },
   "peerDependencies": {

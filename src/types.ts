@@ -31,6 +31,11 @@ export interface VisualEditorOptions {
     Record<string, import("./state/policy.js").StructuralPolicy>
   >;
   concurrency?: ConcurrencyAdapter;
+  /** Server-owned business commands may update explicit operational paths in the complete live snapshot.
+   * Native access, transaction locks and expected revision remain mandatory. Paths cannot overlap visual roots.
+   * This callback is never serialized and must authorize an existing reviewed domain command, never client data.
+   */
+  operationalWrites?: Record<string, OperationalWritePolicy>;
   /** Default tools can be omitted or capability-gated. This never grants native document/field permissions. */
   tools?: Partial<Record<EditorTool, boolean | EditorCapability>>;
   /** Consumer-owned tools resolve through Payload's import map and the same native Form. */
@@ -53,6 +58,12 @@ export interface EditContext {
 export interface ConcurrencyAdapter {
   name: string;
   lock: (req: PayloadRequest, key: string) => Promise<void>;
+}
+
+/** A bounded exception for operational state such as capacity, independent from draft editorial publication. */
+export interface OperationalWritePolicy {
+  paths: string[];
+  authorize: (req: PayloadRequest) => boolean | Promise<boolean>;
 }
 
 /** Browser-visible activation never includes the signed cookie or underlying authentication session ID. */

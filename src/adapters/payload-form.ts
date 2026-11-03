@@ -6,7 +6,7 @@ import {
   materializeStructuralRestore,
 } from "../state/history.js";
 import { indexBlocks, resolveIdentity } from "../state/identity.js";
-import { structureError } from "../state/policy.js";
+import { structureTransitionError } from "../state/policy.js";
 import type { StructuralPolicy } from "../state/policy.js";
 import type { StructuralHistory } from "../state/history.js";
 type NativeForm = ReturnType<typeof useForm>;
@@ -84,7 +84,7 @@ export function applyCommand(
     next.length > data.length
   )
     return `At most ${options.max} sections are allowed.`;
-  const error = structureError(next, options.policy);
+  const error = structureTransitionError(data, next, options.policy);
   if (error) return error;
   if (
     !options.history.checkpoint(form.getFields(), container, {

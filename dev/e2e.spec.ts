@@ -65,6 +65,8 @@ for (const collection of ["pages", "offers"])
       page.getByRole("complementary", { name: "Edit content" }),
     ).toHaveCount(0);
     const replacement = `Frontend draft ${collection}`;
+    await expect(inline).toHaveCSS("outline-style", "none");
+    await expect(page.locator("[data-ve-selection-outline]")).toBeVisible();
     await inline.fill(replacement);
     await inline.press("Tab");
     await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();

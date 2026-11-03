@@ -28,3 +28,13 @@ The frontend uses a compact horizontal dock and a single contextual panel. Secti
 - Explicit compatibility matrix, publication workflow, rollout and rollback verification. The npm package remains unpublished.
 
 No production deployment, customer data mutation or customer communication is claimed. Passing demo tests does not close consumer acceptance or release gates.
+
+## Alpha.1 integration findings (2026-11-03)
+
+Real Workshops Pages exposed an empty native presentational skeleton (`_index-*`) in the Form projection. Review now accepts only recursively empty object containers absent from saved data; unknown primitives, arrays, nulls, changed authored values and changed row identities remain rejected. The demo's Pages layout now uses an unnamed native tab to exercise that schema shape.
+
+A draft with several required singleton sections can be constructed incrementally. Existing required sections cannot be removed or duplicated, and publication still applies the complete structural policy. Inline focus now uses compiled, prefixed Tailwind utilities in the active document head so the editor's selection perimeter does not compete with the browser's text-line outline; forced-colors mode retains its native indicator. Classes and styles are removed on unmount.
+
+`operationalWrites` is a server-only integration contract for existing reviewed business commands. It retains native access and expected-revision locking. A permitted publication must contain the complete current live snapshot, differing only at explicitly configured operational paths outside visual roots. A sparse patch, an editorial change, an unapproved context and a stale revision are rejected. Consumers remain responsible for restoring a concurrent private draft with the returned revision; the real Postgres integration test exercises separate live/draft content through this sequence.
+
+Local checks: 47 unit tests, 6 real Postgres integration tests, typecheck and lint passed. The 19 production browser cases passed for the inline-focus, transparent-tab review and incremental-policy changes; the subsequent operational-write addition is covered by the real Postgres cases and will also run through CI's complete browser suite. Workshops consumer acceptance remains in progress.

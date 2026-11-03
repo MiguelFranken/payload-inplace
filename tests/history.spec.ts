@@ -146,3 +146,26 @@ it("schema composition preserves host editor instances, regexes and callback ide
   expect(cloned[0].fields[0].custom.pattern).toBe(pattern);
   expect(cloned[0].fields[0].blocks[0].fields[0].editor).toBe(editor);
 });
+
+it("accepts empty native presentation skeletons but rejects every unknown authored value", () => {
+  const saved = {
+    title: "Saved",
+    layout: [{ id: "a", blockType: "hero", heading: "Hello" }],
+  };
+  const native = { ...saved, "_index-4-0": { layout: { hero: {} } } };
+  expect(candidateMatches(native, saved)).toBe(true);
+  for (const value of ["unsaved", null, [], 0, false])
+    expect(
+      candidateMatches(
+        { ...saved, "_index-4-0": { layout: { hero: value } } },
+        saved,
+      ),
+    ).toBe(false);
+  expect(candidateMatches({ ...native, title: "Unsaved" }, saved)).toBe(false);
+  expect(
+    candidateMatches(
+      { ...native, layout: [{ ...saved.layout[0], id: "b" }] },
+      saved,
+    ),
+  ).toBe(false);
+});

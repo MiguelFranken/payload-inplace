@@ -353,3 +353,139 @@ it.runIf(process.env.VE_DATABASE === "postgres")(
     ).rejects.toMatchObject({ status: 409 });
   },
 );
+
+it.skipIf(process.env.VE_DATABASE !== "postgres")(
+  "keeps bounded operational writes separate from private drafts and still requires revision/access",
+  async () => {
+    const user = (
+      await payload.find({
+        collection: "users",
+        where: { role: { equals: "admin" } },
+        overrideAccess: true,
+      })
+    ).docs[0];
+    const req = await createLocalReq(
+      { user: { ...user, collection: "users" } },
+      payload,
+    );
+    const created: any = await payload.create({
+      collection: "offers",
+      req,
+      overrideAccess: false,
+      draft: true,
+      data: {
+        title: "Operational acceptance",
+        slug: `operational-${Date.now()}`,
+        _status: "draft",
+        unrelated: "Operational initial",
+        detailPage: {
+          layout: [{ blockType: "hero", heading: "Public heading" }],
+        },
+      } as any,
+    });
+    const live: any = await payload.update({
+      collection: "offers",
+      id: created.id,
+      req,
+      overrideAccess: false,
+      data: {
+        ...created,
+        _status: "published",
+        _veReviewToken: signReview(
+          req,
+          "offers",
+          created.id,
+          created._veRevision,
+          created,
+        ),
+      } as any,
+    });
+    const privateDraft: any = await payload.update({
+      collection: "offers",
+      id: live.id,
+      req,
+      overrideAccess: false,
+      draft: true,
+      data: {
+        ...live,
+        _status: "draft",
+        detailPage: {
+          layout: live.detailPage.layout.map((row: any) => ({
+            ...row,
+            heading: "Private heading",
+          })),
+        },
+      } as any,
+    });
+    const candidate = {
+      ...live,
+      _veRevision: privateDraft._veRevision,
+      unrelated: "Operational updated",
+    };
+    await expect(
+      payload.update({
+        collection: "offers",
+        id: live.id,
+        req,
+        overrideAccess: false,
+        data: candidate as any,
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    req.context.reviewedDemoOperation = true;
+    await expect(
+      payload.update({
+        collection: "offers",
+        id: live.id,
+        req,
+        overrideAccess: false,
+        data: { ...candidate, _veRevision: live._veRevision } as any,
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    await expect(
+      payload.update({
+        collection: "offers",
+        id: live.id,
+        req,
+        overrideAccess: false,
+        data: { ...candidate, title: "Unreviewed editorial title" } as any,
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    const operational: any = await payload.update({
+      collection: "offers",
+      id: live.id,
+      req,
+      overrideAccess: false,
+      data: candidate as any,
+    });
+    await payload.update({
+      collection: "offers",
+      id: live.id,
+      req,
+      overrideAccess: false,
+      draft: true,
+      data: {
+        ...privateDraft,
+        unrelated: operational.unrelated,
+        _veRevision: operational._veRevision,
+      } as any,
+    });
+    const published: any = await payload.findByID({
+      collection: "offers",
+      id: live.id,
+      draft: false,
+      overrideAccess: false,
+    });
+    const draft: any = await payload.findByID({
+      collection: "offers",
+      id: live.id,
+      draft: true,
+      req,
+      overrideAccess: false,
+    });
+    expect(published.detailPage.layout[0].heading).toBe("Public heading");
+    expect(draft.detailPage.layout[0].heading).toBe("Private heading");
+    expect(published.unrelated).toBe("Operational updated");
+    expect(draft.unrelated).toBe("Operational updated");
+    expect(draft._veRevision).toBe(operational._veRevision + 1);
+  },
+);

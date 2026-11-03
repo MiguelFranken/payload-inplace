@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useLayoutEffect, useRef } from "react";
+import { createPortal } from "react-dom";
+import { inlineStyles } from "./inline-styles.generated.js";
 import { useField } from "@payloadcms/ui";
 import { useInlinePreviewGuard } from "./inline-preview.js";
 
@@ -28,6 +30,16 @@ export function InlineText({
   const composing = useRef(false),
     editing = useRef(false);
   useLayoutEffect(() => {
+    // The selection layer supplies the visible focus perimeter. Avoid a second browser text-line outline.
+    // System high-contrast mode retains the native indicator as well.
+    const classes =
+      "pvi:focus:outline-none! pvi:forced-colors:focus:[outline:auto]!".split(
+        " ",
+      );
+    const addedClasses = classes.filter(
+      (name) => !element.classList.contains(name),
+    );
+    element.classList.add(...addedClasses);
     const original = new Map(
       [
         "contenteditable",
@@ -143,6 +155,7 @@ export function InlineText({
       element.removeEventListener("keydown", key);
       element.removeEventListener("compositionstart", startComposition);
       element.removeEventListener("compositionend", endComposition);
+      element.classList.remove(...addedClasses);
       for (const [name, value] of original) {
         if (value === null) element.removeAttribute(name);
         else element.setAttribute(name, value);
@@ -171,5 +184,8 @@ export function InlineText({
       if (element.textContent !== value) element.textContent = value;
     }
   }, [field.value, element]);
-  return null;
+  return createPortal(
+    <style data-ve-inline-styles="">{inlineStyles}</style>,
+    element.ownerDocument.head,
+  );
 }

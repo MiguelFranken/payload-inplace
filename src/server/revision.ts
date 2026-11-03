@@ -4,7 +4,8 @@ import type {
   CollectionBeforeOperationHook,
   CollectionBeforeChangeHook,
 } from "payload";
-import type { ConcurrencyAdapter } from "../types.js";
+import { operationalSnapshotMatches } from "./operational-write.js";
+import type { ConcurrencyAdapter, OperationalWritePolicy } from "../types.js";
 export const REVISION = "_veRevision";
 const contextKey = "payloadVisualEditorRevision";
 /** Reject stale standard-CMS and visual saves at the write authority, before their latest-document read.
@@ -13,6 +14,7 @@ const contextKey = "payloadVisualEditorRevision";
 export function revisionGuard(
   collection: string,
   adapter: ConcurrencyAdapter,
+  operationalPolicy?: OperationalWritePolicy,
 ): CollectionBeforeOperationHook {
   return async ({ args, operation, req }) => {
     if (
@@ -78,8 +80,36 @@ export function revisionGuard(
         "This document changed in another editor. Keep your changes, reload and review the latest draft before retrying.",
         409,
       );
+    const publishes =
+      operation === "update" &&
+      !(args as any).draft &&
+      (args as any).data?._status !== "draft";
+    let operational = false;
     if (
       !system &&
+      publishes &&
+      operationalPolicy &&
+      (await operationalPolicy.authorize(req))
+    ) {
+      const published = (await req.payload.findByID({
+        collection: collection as any,
+        id,
+        draft: false,
+        depth: 0,
+        req,
+        overrideAccess: false,
+      })) as Record<string, unknown>;
+      operational =
+        published._status === "published" &&
+        operationalSnapshotMatches(
+          (args as any).data,
+          published,
+          operationalPolicy.paths,
+        );
+    }
+    if (
+      !system &&
+      !operational &&
       operation === "update" &&
       !(args as any).draft &&
       (args as any).data?._status !== "draft" &&
