@@ -171,7 +171,9 @@ test("installed nested-root native fields, optimistic draft and reviewed publish
       .getByRole("button", { name: "Move Callout section", exact: true })
       .boundingBox();
     const heading = await page
-      .getByRole("heading", { name: "Packed app draft", exact: true })
+      .locator(
+        `main [data-ve-block="${doc.article.sections[0].id}"][data-ve-field="headline"]`,
+      )
       .boundingBox();
     expect(grip).not.toBeNull();
     expect(heading).not.toBeNull();
