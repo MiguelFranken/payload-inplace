@@ -4,7 +4,7 @@ Evidence distinguishes source implementation, built tarballs, actual consumer in
 
 ## Current baseline
 
-Payload/UI/Postgres adapter 3.91.0, Next 16.4.2 with explicit Turbopack, React/DOM 19.2.6, Tailwind 4.3.3, Base UI 1.9.0, pnpm 10.28.0. Local commands run on Node 26. Node 24 CI passed the prior source milestone at 3987418; the expanded installed-consumer gate is rerun for the latest head before it is claimed green.
+Payload/UI/Postgres adapter 3.91.0, Next 16.4.2 with explicit Turbopack, React/DOM 19.2.6, Tailwind 4.3.3, Base UI 1.9.0, pnpm 10.28.0. Local commands run on Node 26. Node 24.22.1 CI run 41564926240 passed head b073be9, including the real clean installed consumer. Exact revisions, hashes and coverage are recorded in `validation/2026-11-03-ci.json`.
 
 ## Executed checks
 
@@ -23,7 +23,6 @@ The frontend uses a compact horizontal dock and a single contextual panel. Secti
 
 ## Open release gates
 
-- Green public Node 24 CI for the current source candidate.
 - Immutable installed package acceptance in the actual Workshops app, including three representative integration passes and documented public/auth/cache boundaries.
 - Matching immutable package acceptance across Workshops and the separate clean installed consumer. The second app passes its baseline; this does not establish Workshops acceptance.
 - Explicit compatibility matrix, publication workflow, rollout and rollback verification. The npm package remains unpublished.

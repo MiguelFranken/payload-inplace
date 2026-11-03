@@ -1,0 +1,69 @@
+{
+  "runURL": "https://github.com/MiguelFranken/payload-visual-editor/actions/runs/41564926240",
+  "headSHA": "b073be917d39b96bae15a4b2107e1db7fb9ea020",
+  "checkedOutSHA": "ec6266eaa377cab2cfea637fde9a449c8da1d150",
+  "runtime": "v24.22.1",
+  "package": {
+    "version": "0.1.0-alpha.0",
+    "sha256": "8d6a97457d7556eea0e48fa7b0214a951521912412e350aa31ce76d0f0e5eca8"
+  },
+  "peers": {
+    "payload": "3.91.0",
+    "@payloadcms/ui": "3.91.0",
+    "@payloadcms/db-postgres": "3.91.0",
+    "next": "16.4.2",
+    "react": "19.2.6",
+    "react-dom": "19.2.6"
+  },
+  "databaseVersion": "postgres (PostgreSQL) 17.11",
+  "templateSHA256": "719c900d2f0d773163d9271da6c42d43871616616537c8a407c60a516eefb2f0",
+  "dependencyLockSHA256": "6216ef870cdd0bca403b84c427332c880ed9a95ec8aba6018fb2e335cc26ae92",
+  "importMapGenerated": true,
+  "installedCases": [
+    {
+      "name": "installed public isolation: anonymous",
+      "status": "passed",
+      "durationMs": 1916
+    },
+    {
+      "name": "installed public isolation: reader",
+      "status": "passed",
+      "durationMs": 2049
+    },
+    {
+      "name": "installed public isolation: author",
+      "status": "passed",
+      "durationMs": 1911
+    },
+    {
+      "name": "installed nested-root native fields, optimistic draft and reviewed publish",
+      "status": "passed",
+      "durationMs": 4998
+    }
+  ],
+  "disabledCases": [
+    {
+      "name": "installed public isolation: anonymous",
+      "status": "passed",
+      "durationMs": 1906
+    },
+    {
+      "name": "installed public isolation: reader",
+      "status": "passed",
+      "durationMs": 2067
+    },
+    {
+      "name": "installed public isolation: author",
+      "status": "passed",
+      "durationMs": 1908
+    },
+    {
+      "name": "installed nested-root native fields, optimistic draft and reviewed publish",
+      "status": "skipped",
+      "durationMs": 81
+    }
+  ],
+  "extractedPackageFilesMatchLocalCandidate": true,
+  "localArchiveSHA256": "8b8bf62c41fc2a030c2f3e6b753bba85082e08fcdfc563f27bd9d1cb65fecb99",
+  "scope": "Node 24 canonical CI artifact; archive bytes differ from local Node 26 packing but every extracted package file matches"
+}
