@@ -1309,7 +1309,26 @@ test("in-place activation and exit preserve the website, URL and viewport while 
   });
   expect(draft.ok(), await draft.text()).toBeTruthy();
   await page.context().clearCookies({ name: /^payload-ve-/ });
-  await page.goto(`/pages/${doc.slug}?campaign=kept#site-footer`);
+  let releaseHydration!: () => void;
+  const hydrationHeld = new Promise<void>((resolve) => {
+    releaseHydration = resolve;
+  });
+  const deferScript = async (route: import("@playwright/test").Route) => {
+    await hydrationHeld;
+    await route.continue();
+  };
+  await page.route("**/_next/static/**/*.js", deferScript);
+  try {
+    await page.goto(`/pages/${doc.slug}?campaign=kept#site-footer`, {
+      waitUntil: "commit",
+    });
+    await expect(
+      page.getByRole("button", { name: "Edit page", exact: true }),
+    ).toBeDisabled();
+  } finally {
+    releaseHydration();
+    await page.unroute("**/_next/static/**/*.js", deferScript);
+  }
   await expect(
     page.getByRole("heading", { name: "Immediate heading", exact: true }),
   ).toBeVisible();
