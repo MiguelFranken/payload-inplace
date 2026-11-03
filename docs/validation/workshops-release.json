@@ -1,156 +1,31 @@
 {
-  "packageVersion": "0.1.0-alpha.5",
-  "packageSHA256": "04402fb423609d7d9b14a123023c270c77e53487394254df2a25f96a7098bc2b",
-  "packageSourceSHA": "947bd9633931cb7e107eca88c336bfc62b398c04",
-  "packageValidationRun": "https://github.com/MiguelFranken/payload-visual-editor/actions/runs/41626397329",
-  "appSHA": "012b0c972b132dafe0db775745aa39d91ef6318c",
+  "packageVersion": "0.1.0-alpha.11",
+  "packageSHA256": "558f604400797be35593b43a100d6d3c84e5444360ac4869a2d2c72e471e5ab0",
+  "packageSourceSHA": "021aaa6e983c28865d64eec7f17effabe5728053",
+  "packageValidationRun": "https://github.com/MiguelFranken/payload-visual-editor/actions/runs/41658520822",
+  "appSHA": "c647295b51fc417ac3d273905f71d424a27d1a78",
   "appPullRequest": "https://github.com/MiguelFranken/fluid-bodies/pull/397",
-  "appCI": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/41628216648",
+  "appCI": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/41660888151",
   "result": "passed",
   "active": {
-    "appSHA": "012b0c972b132dafe0db775745aa39d91ef6318c",
+    "appSHA": "c647295b51fc417ac3d273905f71d424a27d1a78",
     "dirty": false,
-    "runId": "20261103T112944Z-48194",
+    "runId": "20261103T150944Z-32499",
     "result": "passed",
     "totals": {
       "failed": 0,
-      "passed": 12,
+      "passed": 1,
       "skipped": 0,
-      "total": 12
+      "total": 1
     },
     "tests": [
-      {
-        "title": "chromium > admin-workshop-live-preview.spec.ts > native workshop autosave refreshes the latest draft after an overlapping preview refresh",
-        "status": "passed",
-        "durationMs": 28373
-      },
-      {
-        "title": "chromium > visual-editor-public-resources.spec.ts > public resources exclude editor work: anonymous",
-        "status": "passed",
-        "durationMs": 9778
-      },
-      {
-        "title": "chromium > visual-editor-public-resources.spec.ts > public resources exclude editor work: staff inactive",
-        "status": "passed",
-        "durationMs": 10299
-      },
-      {
-        "title": "chromium > visual-editor-security.spec.ts > warm public caches and stale Draft Mode never expose a private page after logout",
-        "status": "passed",
-        "durationMs": 5271
-      },
       {
         "title": "chromium > visual-editor.spec.ts > website editing uses the installed native Form and keeps drafts private",
         "status": "passed",
-        "durationMs": 11585
-      },
-      {
-        "title": "chromium > visual-editor.spec.ts > workshop website editing preserves the empty booking state",
-        "status": "passed",
-        "durationMs": 24693
-      },
-      {
-        "title": "chromium > visual-editor.spec.ts > workshop website editing preserves the upcoming booking state",
-        "status": "passed",
-        "durationMs": 27846
-      },
-      {
-        "title": "chromium > visual-editor.spec.ts > workshop website editing preserves the sold-out booking state",
-        "status": "passed",
-        "durationMs": 25043
-      },
-      {
-        "title": "chromium > workshop-capacity.spec.ts > Admin capacity workflow > empty default: asks for scope, preserves existing sessions and unpublished content",
-        "status": "passed",
-        "durationMs": 14629
-      },
-      {
-        "title": "chromium > workshop-capacity.spec.ts > Admin capacity workflow > bulk future change: lists conflicts, requires skip consent and refreshes a stale review",
-        "status": "passed",
-        "durationMs": 18921
-      },
-      {
-        "title": "chromium > workshop-capacity.spec.ts > Admin capacity workflow > session page: rejects a reduction below occupied places, accepts the exact minimum and supports increases",
-        "status": "passed",
-        "durationMs": 8954
-      },
-      {
-        "title": "chromium > workshop-capacity.spec.ts > Admin capacity workflow > series: new-only changes future generation while existing occurrences keep their capacity",
-        "status": "passed",
-        "durationMs": 11920
+        "durationMs": 28305
       }
     ]
   },
-  "disabled": {
-    "appSHA": "012b0c972b132dafe0db775745aa39d91ef6318c",
-    "dirty": false,
-    "runId": "20261103T113602Z-51969",
-    "result": "passed",
-    "totals": {
-      "failed": 0,
-      "passed": 2,
-      "skipped": 0,
-      "total": 2
-    },
-    "tests": [
-      {
-        "title": "chromium > visual-editor-public-resources.spec.ts > public resources exclude editor work: anonymous",
-        "status": "passed",
-        "durationMs": 7782
-      },
-      {
-        "title": "chromium > visual-editor-public-resources.spec.ts > public resources exclude editor work: staff inactive",
-        "status": "passed",
-        "durationMs": 12533
-      }
-    ]
-  },
-  "independentEnabledPublic": {
-    "appSHA": "012b0c972b132dafe0db775745aa39d91ef6318c",
-    "dirty": false,
-    "runId": "20261103T113811Z-54386",
-    "result": "passed",
-    "totals": {
-      "failed": 0,
-      "passed": 2,
-      "skipped": 0,
-      "total": 2
-    },
-    "tests": [
-      {
-        "title": "chromium > visual-editor-public-resources.spec.ts > public resources exclude editor work: anonymous",
-        "status": "passed",
-        "durationMs": 7793
-      },
-      {
-        "title": "chromium > visual-editor-public-resources.spec.ts > public resources exclude editor work: staff inactive",
-        "status": "passed",
-        "durationMs": 8863
-      }
-    ]
-  },
-  "migration": {
-    "generatedBy": "Payload migrate:create add_website_editor_revisions",
-    "name": "20261103_112332_add_website_editor_revisions",
-    "changes": "Four additive numeric DEFAULT 0 live/version revision columns; no editorial backfill",
-    "freshProductionClone": "all pending migrations passed; no customer communications",
-    "schemaProbe": "payload:migrate:create schema_probe --skip-empty: no migration generated"
-  },
-  "checks": {
-    "productionTurbopackBuild": "passed",
-    "appLocalTypechecks": [
-      "workshops",
-      "storefront",
-      "workshops-e2e"
-    ],
-    "focusedUnits": 21,
-    "incomingAgentCatalogTests": 6,
-    "authoredFileLint": "passed",
-    "wiki": "54 notes passed; one existing non-blocking warning"
-  },
-  "rollbackArchive": {
-    "version": "0.1.0-alpha.2",
-    "sha256": "940e9d10607f2ffa8eadc017a722f32343142e0bab30dc2cac7168aa668cdef6"
-  },
-  "scope": "Local isolated production build only. Authoring disabled by default; no application production rollout or npm publication."
+  "report": "https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/466",
+  "scope": "Exact main-CI archive installed in clean Workshops checkout; normal HTTPS Portless dev acceptance with synthetic records. Previous alpha.5 production matrix remains historical evidence. npm and remote preview validation are in progress."
 }
