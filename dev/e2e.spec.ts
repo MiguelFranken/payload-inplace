@@ -262,9 +262,7 @@ test("frontend hover motion, narrow layout and native controls are accessible", 
   if ((await selectContent.getAttribute("aria-pressed")) !== "true")
     await selectContent.click();
 
-  await page
-    .getByRole("heading", { name: currentHeading, exact: true })
-    .hover();
+  await page.locator('main [data-ve-field="heading"]').first().hover();
   await expect(page.locator("[data-ve-hover-outline]")).toHaveCSS(
     "transition-duration",
     "0s",
@@ -429,6 +427,20 @@ test("hover outlines are optional and pause while native settings are open", asy
   await expect(enable).toHaveAttribute("aria-pressed", "true");
   await heading.hover();
   await expect(outline).toBeVisible();
+  await expect(
+    page.locator("[data-ve-hover-outline],[data-ve-selection-outline]"),
+  ).toHaveCount(1);
+  await second.hover();
+  await expect
+    .poll(async () =>
+      Math.abs(
+        (await outline.boundingBox())!.y - (await second.boundingBox())!.y,
+      ),
+    )
+    .toBeLessThan(1);
+  await expect(
+    page.locator("[data-ve-hover-outline],[data-ve-selection-outline]"),
+  ).toHaveCount(1);
   await heading.click();
   await page
     .getByRole("button", { name: "Options for Heading", exact: true })

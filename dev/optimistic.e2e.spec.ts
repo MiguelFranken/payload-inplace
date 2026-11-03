@@ -701,7 +701,7 @@ test("direct editing stays active across text, panels and section navigation", a
   await expect(
     page
       .getByRole("navigation", { name: "Editing toolbar" })
-      .getByText("Edit", { exact: true }),
+      .getByText("Select", { exact: true }),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Sections", exact: true }),
