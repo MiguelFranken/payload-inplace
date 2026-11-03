@@ -8,10 +8,13 @@ export interface InspectionTarget {
   point?: { x: number; y: number };
   identity: BlockIdentity;
   field?: string;
+  fields?: string[];
   element: Element;
 }
 function readTarget(element: Element | null): InspectionTarget | undefined {
-  const bound = element?.closest("[data-ve-field],[data-ve-block]");
+  const bound = element?.closest(
+    "[data-ve-field],[data-ve-fields],[data-ve-block]",
+  );
   if (!bound) return;
   try {
     const ancestors = JSON.parse(
@@ -22,7 +25,18 @@ function readTarget(element: Element | null): InspectionTarget | undefined {
       ancestors.some((a) => typeof a !== "string")
     )
       return;
+    const fields: unknown = JSON.parse(
+      bound.getAttribute("data-ve-fields") || "null",
+    );
+    if (
+      fields !== null &&
+      (!Array.isArray(fields) ||
+        fields.length > 50 ||
+        fields.some((field) => typeof field !== "string" || !field))
+    )
+      return;
     return {
+      fields: fields || undefined,
       element: bound,
       identity: {
         root: bound.getAttribute("data-ve-root") || "",
@@ -44,6 +58,7 @@ export function InspectionLayer({
   selected,
   onPick,
   describe,
+  hint,
 }: {
   inspecting: boolean;
   /** Hover feedback is opt-in; direct text selection can remain enabled independently. */
@@ -51,9 +66,9 @@ export function InspectionLayer({
   selected?: InspectionTarget;
   onPick: (target: InspectionTarget) => void;
   describe: (target: InspectionTarget) => string;
+  hint?: (target: InspectionTarget) => string;
 }) {
   const hover = useRef<HTMLDivElement>(null),
-    chosen = useRef<HTMLDivElement>(null),
     caption = useRef<HTMLSpanElement>(null);
   useEffect(() => {
     let frame = 0,
@@ -80,19 +95,27 @@ export function InspectionLayer({
       }))
         box.style.setProperty(`--pve-${key}`, `${value}px`);
       box.removeAttribute("hidden");
-      if (box === hover.current) box.dataset.labelBelow = String(rect.top < 32);
+      if (box === hover.current) {
+        box.dataset.labelBelow = String(rect.top < 32);
+        box.style.setProperty(
+          "--pve-label-offset",
+          `${Math.max(0, 8 - rect.left)}px`,
+        );
+      }
     }
     function draw(animate: boolean) {
       frame = 0;
       if (disposed) return;
-      place(
-        hover.current,
-        inspecting && highlighting && hoverTarget !== selected?.element
-          ? hoverTarget
-          : null,
-        animate,
+      const hovered = inspecting && highlighting ? hoverTarget : null;
+      const target = hovered || selected?.element || null;
+      const box = hover.current;
+      box?.toggleAttribute("data-ve-hover-outline", Boolean(hovered));
+      box?.toggleAttribute(
+        "data-ve-selection-outline",
+        Boolean(target && target === selected?.element),
       );
-      place(chosen.current, selected?.element || null, false);
+      if (caption.current) caption.current.hidden = !hovered;
+      place(box, target, animate && Boolean(hovered));
     }
     function schedule(animate = false) {
       if (frame) cancelAnimationFrame(frame);
@@ -117,7 +140,7 @@ export function InspectionLayer({
       hoverTarget = target?.element || null;
       if (caption.current)
         caption.current.textContent = target
-          ? `${describe(target)} · Click to edit`
+          ? `${describe(target)} · ${hint?.(target) || "Click to edit"}`
           : "";
       schedule(true);
     }
@@ -170,28 +193,20 @@ export function InspectionLayer({
       window.removeEventListener("scroll", scroll, true);
       window.removeEventListener("resize", scroll);
     };
-  }, [inspecting, highlighting, selected, onPick, describe]);
+  }, [inspecting, highlighting, selected, onPick, describe, hint]);
   const geometry =
     "pve:pointer-events-none pve:fixed pve:z-40 pve:box-border pve:left-[var(--pve-left)] pve:top-[var(--pve-top)] pve:w-[var(--pve-width)] pve:h-[var(--pve-height)] pve:rounded-sm pve:border-2 pve:border-solid pve:border-[var(--pve-accent,#3455db)]";
   return (
     <>
       <div
-        ref={chosen}
-        hidden
-        data-ve-selection-outline=""
-        aria-hidden="true"
-        className={geometry}
-      />
-      <div
         ref={hover}
         hidden
-        data-ve-hover-outline=""
         aria-hidden="true"
-        className={`${geometry} pve:bg-[var(--pve-hover-fill,#3455db0d)] pve:motion-safe:data-[animate=true]:transition-[left,top,width,height,opacity] pve:motion-safe:data-[animate=true]:duration-100 pve:motion-safe:data-[animate=true]:ease-[cubic-bezier(0.2,0,0,1)]`}
+        className={`${geometry} pve:data-[ve-hover-outline]:bg-[var(--pve-hover-fill,#3455db0d)] pve:motion-safe:data-[animate=true]:transition-[left,top,width,height,opacity] pve:motion-safe:data-[animate=true]:duration-100 pve:motion-safe:data-[animate=true]:ease-[cubic-bezier(0.2,0,0,1)]`}
       >
         <span
           ref={caption}
-          className="pve:absolute pve:bottom-full pve:start-0 pve:max-w-60 pve:rounded-t-md pve:bg-[var(--pve-accent,#3455db)] pve:px-2 pve:py-1 pve:font-sans pve:text-xs pve:leading-relaxed pve:text-white pve:in-data-[label-below=true]:bottom-auto pve:in-data-[label-below=true]:top-full"
+          className="pve:absolute pve:bottom-full pve:start-[var(--pve-label-offset,0px)] pve:max-w-[min(240px,calc(100vw-16px))] pve:rounded-t-md pve:bg-[var(--pve-accent,#3455db)] pve:px-2 pve:py-1 pve:font-sans pve:text-xs pve:leading-relaxed pve:text-white pve:in-data-[label-below=true]:bottom-auto pve:in-data-[label-below=true]:top-full"
         />
       </div>
     </>

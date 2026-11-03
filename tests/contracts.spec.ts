@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { resolveRoot } from "../src/schema/resolve.js";
 import { indexBlocks, resolveIdentity } from "../src/state/identity.js";
-import { getBlockAttributes } from "../src/preview/bindings.js";
+import {
+  getBlockAttributes,
+  getFieldGroupAttributes,
+} from "../src/preview/bindings.js";
 import { PROTOCOL, validateMessage } from "../src/preview/protocol.js";
 import { signContext, verifyContext } from "../src/server/context.js";
 describe("authoring contracts", () => {
@@ -77,6 +80,20 @@ describe("authoring contracts", () => {
     expect(
       validateMessage({ ...event, origin: "https://attacker.test" }, expected),
     ).toBe(false);
+  });
+  it("keeps grouped rendered targets explicit and absent from public HTML", () => {
+    const identity = {
+      root: "layout",
+      blockId: "a",
+      fields: ["media", "caption"],
+    };
+    expect(getFieldGroupAttributes(identity)).toEqual({});
+    expect(getFieldGroupAttributes(identity, true)).toEqual({
+      "data-ve-block": "a",
+      "data-ve-root": "layout",
+      "data-ve-ancestors": "[]",
+      "data-ve-fields": '["media","caption"]',
+    });
   });
   it("requires intact unexpired signed activation", () => {
     const context = {

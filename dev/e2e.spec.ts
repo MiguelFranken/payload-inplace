@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 async function login(page: any, role = "admin") {
   await page.goto("/visual-editor/start?collection=pages&slug=demo");
+  await page.waitForLoadState("networkidle");
   await page.getByLabel("Email", { exact: true }).fill(`${role}@example.test`);
   await page
     .getByLabel("Password", { exact: true })
@@ -30,7 +31,9 @@ async function open(page: any, collection: string, id?: string | number) {
   ).toBeVisible();
 }
 async function inspect(page: any, heading: string) {
-  await page.getByRole("button", { name: "Edit content", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Select content", exact: true })
+    .click();
   await page.getByRole("heading", { name: heading, exact: true }).click();
   await page
     .getByRole("button", { name: "Options for Heading", exact: true })
@@ -51,9 +54,9 @@ for (const collection of ["pages", "offers"])
     });
     await heading.hover();
     await expect(page.locator("[data-ve-hover-outline]")).toBeHidden();
-    await page.getByRole("button", { name: "More tools", exact: true }).click();
-    await page.getByRole("menuitemcheckbox", { name: "Highlight editable content" }).click();
-    await page.keyboard.press("Escape");
+    await page
+      .getByRole("button", { name: "Select content", exact: true })
+      .click();
     await heading.hover();
     await expect(page.locator("[data-ve-hover-outline]")).toBeVisible();
     await page.screenshot({
@@ -154,7 +157,7 @@ test("frontend field selection preserves native media, rich text and structural 
   await editor.getByRole("button", { name: "Choose from existing" }).click();
   await page.getByText(media.filename, { exact: true }).click();
   await expect(editor.getByText(media.filename, { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Close Hero panel" }).click();
+  await page.getByRole("button", { name: "Close Heading panel" }).click();
   await page.getByRole("button", { name: "Sections" }).click();
   await page
     .getByRole("complementary", { name: "Sections" })
@@ -252,7 +255,10 @@ test("frontend hover motion, narrow layout and native controls are accessible", 
     .getByRole("button", { name: "Close Appearance panel", exact: true })
     .click();
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.getByRole("button", { name: "Edit content", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Select content", exact: true })
+    .click();
+
   await page
     .getByRole("heading", { name: currentHeading, exact: true })
     .hover();
@@ -373,7 +379,7 @@ for (const role of ["anonymous", "reader", "admin"])
           page.getByRole("navigation", { name: "Editing toolbar" }),
         ).toBeVisible();
         await expect(
-          page.getByRole("button", { name: "Edit content", exact: true }),
+          page.getByRole("button", { name: "Select content", exact: true }),
         ).toHaveAttribute("aria-pressed", "true");
       }
     } finally {
@@ -399,4 +405,50 @@ test("direct denied preview exposes neither draft output nor bridge execution", 
     ),
   ).toBe(false);
   expect(response?.headers()["cache-control"]).toContain("no-store");
+});
+
+/** Hover assistance is an explicit preference and must yield to native field editing. */
+test("hover outlines are optional and pause while native settings are open", async ({
+  page,
+}) => {
+  await login(page);
+  const heading = page.getByRole("heading", {
+    name: "A public synthetic page",
+    exact: true,
+  });
+  const outline = page.locator("[data-ve-hover-outline]");
+  await heading.hover();
+  await expect(outline).toBeHidden();
+  const enable = page.getByRole("button", {
+    name: "Select content",
+    exact: true,
+  });
+  await expect(enable).toHaveAttribute("aria-pressed", "false");
+  await enable.click();
+  await expect(enable).toHaveAttribute("aria-pressed", "true");
+  await heading.hover();
+  await expect(outline).toBeVisible();
+  await heading.click();
+  await page
+    .getByRole("button", { name: "Options for Heading", exact: true })
+    .click();
+  await expect(
+    page.getByRole("complementary", { name: "Edit content" }),
+  ).toBeVisible();
+  await page
+    .getByRole("heading", { name: "Second section", exact: true })
+    .hover();
+  await expect(outline).toBeHidden();
+  await page
+    .getByRole("complementary", { name: "Edit content" })
+    .getByRole("button", { name: /^Close .+ panel$/ })
+    .click();
+  await page
+    .getByRole("heading", { name: "Second section", exact: true })
+    .hover();
+  await expect(outline).toBeVisible();
+  await enable.click();
+  await expect(enable).toHaveAttribute("aria-pressed", "false");
+  await page.locator('main [data-ve-field="heading"]').first().hover();
+  await expect(outline).toBeHidden();
 });

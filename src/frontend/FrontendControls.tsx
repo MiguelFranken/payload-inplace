@@ -78,7 +78,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuCheckboxItem,
   DropdownMenuSeparator,
 } from "./ui/menu.js";
 import { BlockReorder, sectionElement } from "./BlockReorder.js";
@@ -586,22 +585,58 @@ export function FrontendControls({
           JSON.stringify(s.identity.ancestors) ===
             JSON.stringify(target.identity.ancestors || []),
       );
-      const field = section?.block?.fields.find(
-        (f) => "name" in f && f.name === target.field,
-      );
+      const field =
+        target.field && section?.block
+          ? namedField(section.block.fields, target.field)
+          : undefined;
       const label =
         field && "label" in field
           ? field.label
           : section?.block?.labels?.singular;
       return typeof label === "string"
         ? label
-        : target.field
-          ? target.field
-              .replace(/([a-z])([A-Z])/g, "$1 $2")
-              .replace(/^./, (c) => c.toUpperCase())
-          : t("Content section", "Inhaltsabschnitt");
+        : label && typeof label === "object"
+          ? label[i18n.language] || label.en || t("Content", "Inhalt")
+          : target.field
+            ? target.field
+                .replace(/([a-z])([A-Z])/g, "$1 $2")
+                .replace(/^./, (c) => c.toUpperCase())
+            : t("Content section", "Inhaltsabschnitt");
     },
     [sections, i18n.language],
+  );
+  const describeAction = useCallback(
+    (target: InspectionTarget) => {
+      const section = sections.find(
+        (section) =>
+          section.identity.blockId === target.identity.blockId &&
+          JSON.stringify(section.identity.ancestors) ===
+            JSON.stringify(target.identity.ancestors || []),
+      );
+      const profile = blockControls?.[section?.block?.slug || ""];
+      const field =
+        target.field && section?.block
+          ? namedField(
+              projectFields(section.block.fields, profile?.fields),
+              target.field,
+            )
+          : undefined;
+      const inline =
+        field &&
+        ["text", "textarea"].includes(field.type) &&
+        profile?.inlineEdit !== false &&
+        (!Array.isArray(profile?.inlineEdit) ||
+          profile.inlineEdit.includes(target.field!)) &&
+        field.admin?.readOnly !== true &&
+        !(field.admin as any)?.components?.Field &&
+        canUpdateInlineField(section?.permissions, target.field!) &&
+        target.element.childElementCount === 0 &&
+        !target.element.closest("a,button,input,textarea,select");
+      return inline
+        ? t("Edit text", "Text bearbeiten")
+        : t("Open settings", "Einstellungen öffnen");
+    },
+    [sections, blockControls, i18n.language],
   );
   const fixedSelected = Boolean(
     selected &&
@@ -659,13 +694,21 @@ export function FrontendControls({
     canUpdateInlineField(selected?.permissions, selection?.field || "") &&
     quickField?.admin?.readOnly !== true;
   useEffect(() => {
-    if (selection?.field && !canInline && !disabled) setSettingsOpen(true);
-  }, [selection?.element, selection?.field, canInline, disabled]);
+    if (selection && !canInline && !disabled) setSettingsOpen(true);
+  }, [
+    selection?.element,
+    selection?.field,
+    selection?.fields,
+    canInline,
+    disabled,
+  ]);
   const fields = canInline
     ? excludeFields(configuredFields, [selection!.field!])
-    : candidate && selection?.field
+    : selection?.field
       ? projectFields(configuredFields, [selection.field])
-      : configuredFields;
+      : selection?.fields
+        ? projectFields(configuredFields, selection.fields)
+        : configuredFields;
 
   const extension = editorTools.extensions.find(
     (e) => e.id === (customTool || editorTools.openPanels.at(-1)),
@@ -746,9 +789,10 @@ export function FrontendControls({
           <InspectionLayer
             inspecting={inspecting && !hasPanel && !recovery.failure}
             highlighting={highlighting && !hasPanel}
-            selected={outline ? undefined : selection}
+            selected={hasPanel ? undefined : selection}
             onPick={pick}
             describe={describe}
+            hint={describeAction}
           />
         )}
         {expanded && selected && selection && canInline && (
@@ -839,7 +883,7 @@ export function FrontendControls({
             )}
           {expanded && selected && settingsOpen && !outline && (
             <Floatable
-              title={title}
+              title={selection?.field ? describe(selection) : title}
               label="Edit content"
               returnFocus={inspectButton}
               onBack={
@@ -860,7 +904,7 @@ export function FrontendControls({
                   inspector.current = node;
                 }}
               >
-                {fields ? (
+                {fields?.length ? (
                   <NativeFieldsOwner
                     key={`${selected.path}:${quickField ? selection?.field : "all"}`}
                     paths={fieldOwnershipPaths(fields, selected.path)}
@@ -880,11 +924,13 @@ export function FrontendControls({
                     This block is unavailable. Existing content is retained.
                   </p>
                 )}
-                {selection?.field ? (
+                {selection?.field || selection?.fields ? (
                   <ChromeButton
                     variant="outline"
                     onClick={() =>
-                      setSelection((s) => (s ? { ...s, field: undefined } : s))
+                      setSelection((s) =>
+                        s ? { ...s, field: undefined, fields: undefined } : s,
+                      )
                     }
                   >
                     {t(
@@ -1236,14 +1282,17 @@ export function FrontendControls({
                   <ChromeButton
                     ref={inspectButton}
                     className="pve:max-sm:px-2"
-                    aria-label={t("Edit content", "Inhalte bearbeiten")}
-                    aria-pressed={inspecting && !outline && !hasPanel}
-                    title={t("Edit content", "Inhalte bearbeiten")}
+                    aria-label={t("Select content", "Inhalte auswählen")}
+                    aria-pressed={highlighting && !outline && !hasPanel}
+                    title={t("Select content", "Inhalte auswählen")}
                     onClick={() => {
                       closeTools();
                       setOutline(false);
                       setSettingsOpen(false);
                       setInspecting(true);
+                      setHighlighting(
+                        (active) => hasPanel || outline || !active,
+                      );
                       setSelection(undefined);
                     }}
                   >
@@ -1252,10 +1301,10 @@ export function FrontendControls({
                       className="pve:hidden pve:sm:block"
                     />
                     <span className="pve:sm:hidden">
-                      {t("Edit", "Bearbeiten")}
+                      {t("Select", "Auswählen")}
                     </span>
                     <span className="pve:hidden pve:sm:inline">
-                      {t("Edit content", "Inhalte bearbeiten")}
+                      {t("Select content", "Inhalte auswählen")}
                     </span>
                   </ChromeButton>
                 )}
@@ -1291,24 +1340,6 @@ export function FrontendControls({
                     <MoreHorizontal size={18} />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                    {editorTools.tools.includes("content") && (
-                      <DropdownMenuCheckboxItem
-                        checked={highlighting}
-                        onCheckedChange={setHighlighting}
-                      >
-                        <MousePointer2 size={16} />
-                        {highlighting
-                          ? t(
-                              "Hide editable outlines",
-                              "Hervorhebungen ausblenden",
-                            )
-                          : t(
-                              "Highlight editable content",
-                              "Bearbeitbare Inhalte hervorheben",
-                            )}
-                        {highlighting && <Check size={16} />}
-                      </DropdownMenuCheckboxItem>
-                    )}
                     {editorTools.extensions
                       .filter((e) => e.showInDock !== false)
                       .map((e) => (

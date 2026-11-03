@@ -42,7 +42,9 @@ async function createEditor(page: any, collection = "pages") {
   return doc;
 }
 async function selectHeading(page: any) {
-  await page.getByRole("button", { name: "Edit content", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Select content", exact: true })
+    .click();
   await page
     .getByRole("heading", { name: "Immediate heading", exact: true })
     .click();
@@ -363,7 +365,9 @@ test("an empty native layout can add its first section and edit its empty headin
   await page
     .getByRole("button", { name: "Close Sections panel", exact: true })
     .click();
-  await page.getByRole("button", { name: "Edit content", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Select content", exact: true })
+    .click();
   await page
     .getByRole("heading", { name: "Add a heading", exact: true })
     .click();
@@ -599,7 +603,7 @@ test("context panels preserve keyboard focus and compact disclosure", async ({
   await expect(launcher).toBeFocused();
   await launcher.press("Enter");
   await expect(
-    page.getByRole("button", { name: "Edit content", exact: true }),
+    page.getByRole("button", { name: "Select content", exact: true }),
   ).toBeFocused();
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(

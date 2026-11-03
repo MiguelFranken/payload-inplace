@@ -20,3 +20,18 @@ export function getFieldAttributes(
     ? { ...getBlockAttributes(identity, true), "data-ve-field": identity.field }
     : {};
 }
+
+/** Bind one rendered object (for example an image with caption) to several native fields.
+ * This opens a scoped native settings panel; it never enables contenteditable or grants write permission.
+ */
+export function getFieldGroupAttributes(
+  identity: BlockIdentity & { fields: readonly string[] },
+  active = false,
+): Record<string, string> {
+  return active && identity.fields.length
+    ? {
+        ...getBlockAttributes(identity, true),
+        "data-ve-fields": JSON.stringify(identity.fields),
+      }
+    : {};
+}

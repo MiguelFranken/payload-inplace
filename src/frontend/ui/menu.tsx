@@ -54,17 +54,3 @@ export function DropdownMenuSeparator() {
     <Menu.Separator className="pve:my-1 pve:h-px pve:bg-[var(--pve-border,var(--theme-border-color,#e3e4e8))]" />
   );
 }
-/** Native Base UI checkbox semantics expose the persistent highlight preference to keyboard and assistive technology. */
-export function DropdownMenuCheckboxItem({
-  children,
-  ...props
-}: Menu.CheckboxItem.Props) {
-  return (
-    <Menu.CheckboxItem
-      {...props}
-      className="pve:flex pve:min-h-10 pve:cursor-default pve:items-center pve:gap-2.5 pve:rounded-lg pve:px-3 pve:text-sm pve:outline-none pve:data-highlighted:bg-[var(--pve-hover,var(--theme-elevation-100,#f1f2f5))]"
-    >
-      {children}
-    </Menu.CheckboxItem>
-  );
-}
