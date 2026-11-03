@@ -105,14 +105,34 @@ function graph() {
     sandbox,
   );
   const publicModules = Object.values(sandbox.__RSC_MANIFEST)[0].clientModules;
-  const forbidden = Object.keys(publicModules).filter((source) =>
-    /payload-visual-editor|@payloadcms[+/]ui|richtext.*lexical.*client/.test(
-      source,
-    ),
+  const registrations = Object.keys(publicModules).filter((source) =>
+    source.endsWith("/dist/launcher/DeferredLauncher.js"),
+  );
+  for (const source of registrations) {
+    const content = fs.readFileSync(
+      path.join(directory, source.replace(/^\[project\]\//, "")),
+      "utf8",
+    );
+    if (
+      Buffer.byteLength(content) > 4096 ||
+      /@payloadcms|\.css|useEffect|useLayoutEffect/.test(content)
+    )
+      throw Error(`Installed deferred registration is not inert: ${source}`);
+  }
+  const forbidden = Object.keys(publicModules).filter(
+    (source) =>
+      !registrations.includes(source) &&
+      /payload-visual-editor|@payloadcms[+/]ui|richtext.*lexical.*client/.test(
+        source,
+      ),
   );
   if (forbidden.length)
     throw Error(`Installed public client leak: ${forbidden.join(", ")}`);
-  return { modules: Object.keys(publicModules), editorClientModules: 0 };
+  return {
+    modules: Object.keys(publicModules),
+    deferredRegistrations: registrations.length,
+    editorClientModules: 0,
+  };
 }
 function reports() {
   const report = JSON.parse(

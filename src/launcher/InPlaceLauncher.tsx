@@ -19,14 +19,16 @@ export function InPlaceLauncher({
 }) {
   const refresh = useEditorPageTransition();
   const pending = useEditorPagePending();
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   useEffect(() => {
     if (!pending) setBusy(false);
   }, [pending]);
   async function activate(event: FormEvent<HTMLFormElement>) {
-    if (!refresh) return;
     event.preventDefault();
+    if (!refresh || !hydrated) return;
     if (busy) return;
     setBusy(true);
     setError("");
@@ -60,11 +62,11 @@ export function InPlaceLauncher({
       method="post"
       action={action}
       onSubmit={activate}
-      aria-busy={busy || !refresh}
+      aria-busy={busy || !refresh || !hydrated}
       className="pvl:fixed pvl:end-5 pvl:bottom-4 pvl:z-[var(--pve-z-index,2147483000)] pvl:m-0 pvl:font-[family-name:var(--pve-font-family,system-ui)]"
     >
       <fieldset
-        disabled={busy || !refresh}
+        disabled={busy || !refresh || !hydrated}
         className="pvl:m-0 pvl:border-0 pvl:p-0"
       >
         {children}
