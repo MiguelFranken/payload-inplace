@@ -1,58 +1,55 @@
 {
   "packageName": "@miguel.franken/payload-visual-editor",
-  "packageVersion": "0.1.0-alpha.13",
-  "packageSHA256": "4a2cd3ce64214a890c24b3a9d6ec85fcbcc9d6b137f8703f56f024b228eecbea",
-  "packageSourceSHA": "2a97821dbd0ee8dfc07936a94b8ccb92ff4f7a77",
-  "packageValidationRun": "https://github.com/MiguelFranken/payload-visual-editor/actions/runs/41669947989",
-  "appSHA": "96bcaa0dbef49b919c354751ff1f6b2c428d9c77",
+  "packageVersion": "0.1.0-alpha.14",
+  "packageSHA256": "0de798021cd6de343e5f470afe6f24311549649dc85d1f5647224885abe7e6b3",
+  "packageSourceSHA": "0cf1166325c1a94879cb743f9f114d17fbf8f3fb",
+  "packageValidationRun": "https://github.com/MiguelFranken/payload-visual-editor/actions/runs/41735505823",
+  "appSHA": "ef1559115c0e64f4f92416c56a7e17aa8cdc1da4",
   "appPullRequest": "https://github.com/MiguelFranken/fluid-bodies/pull/397",
   "result": "passed",
   "active": {
-    "appSHA": "96bcaa0dbef49b919c354751ff1f6b2c428d9c77",
+    "appSHA": "ef1559115c0e64f4f92416c56a7e17aa8cdc1da4",
     "dirty": false,
-    "runId": "20261103T161952Z-47476",
+    "runId": "20261103T231119Z-49394",
     "result": "passed",
     "totals": {
+      "passed": 5,
       "failed": 0,
-      "passed": 1,
       "skipped": 0,
-      "total": 1
+      "total": 5
     },
     "tests": [
       {
+        "title": "chromium > visual-editor-public-baseline.spec.ts > published website keeps native editor resources unloaded",
+        "status": "passed",
+        "durationMs": 6133
+      },
+      {
         "title": "chromium > visual-editor.spec.ts > website editing uses the installed native Form and keeps drafts private",
         "status": "passed",
-        "durationMs": 39312
+        "durationMs": 18142
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > workshop website editing preserves the empty booking state",
+        "status": "passed",
+        "durationMs": 23614
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > workshop website editing preserves the upcoming booking state",
+        "status": "passed",
+        "durationMs": 25124
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > workshop website editing preserves the sold-out booking state",
+        "status": "passed",
+        "durationMs": 24582
       }
     ]
   },
-  "report": "https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/472",
-  "scope": "Public npm alpha.13 installed through a frozen lockfile, deployed to an isolated Vercel preview and validated with synthetic Page records. Production rollout remains separately controlled.",
+  "report": "https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/493",
+  "scope": "Canonical main-CI archive installed in a clean committed Workshops checkout. Production Turbopack Page/Workshop acceptance, same URL/query/hash/document/header/footer/viewport, matching headline appearance, nested fields, media, review/publication, three booking states and public isolation. Isolated app preview delivery follows registry publication; no production rollout.",
   "artifactEquivalence": {
-    "previousSourceSHA": "8f9275da5eb58785460b16bdf152fc0e8b488005",
-    "sha256": "4a2cd3ce64214a890c24b3a9d6ec85fcbcc9d6b137f8703f56f024b228eecbea",
-    "result": "byte-for-byte identical after release workflow path correction"
-  },
-  "appCI": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/41671887929",
-  "preview": {
-    "id": "dpl_A49ckd2X7s8JyvihvXuFpHde4Ed9",
-    "url": "https://fluid-bodies-workshops-gx5fwq1dc-fluid-bodies.vercel.app",
-    "readyState": "READY",
-    "sourceSHA": "96bcaa0dbef49b919c354751ff1f6b2c428d9c77",
-    "deploymentWorkflow": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/41671888008"
-  },
-  "npm": {
-    "package": "@miguel.franken/payload-visual-editor",
-    "version": "0.1.0-alpha.13",
-    "tarball": "https://registry.npmjs.org/@miguel.franken/payload-visual-editor/-/payload-visual-editor-0.1.0-alpha.13.tgz",
-    "anonymousArchiveSHA256": "4a2cd3ce64214a890c24b3a9d6ec85fcbcc9d6b137f8703f56f024b228eecbea",
-    "publicationRun": "https://github.com/MiguelFranken/payload-visual-editor/actions/runs/41671085064",
-    "publishJob": "success",
-    "provenance": {
-      "url": "https://registry.npmjs.org/-/npm/v1/attestations/@miguel.franken%2fpayload-visual-editor@0.1.0-alpha.13",
-      "provenance": {
-        "predicateType": "https://slsa.dev/provenance/v1"
-      }
-    }
+    "localArchiveFiles": "byte-for-byte identical to the independently validated local alpha.14 archive",
+    "result": "passed"
   }
 }
