@@ -10,7 +10,7 @@ export function proxy(request: NextRequest) {
     /^\/(pages|offers)\/[^/]+$/.test(path) &&
     hasPageEditorSession(request.headers, path)
   ) {
-    const url = request.nextUrl.clone();
+    const url = new URL(request.url);
     url.pathname = `/pve${path}`;
     const response = NextResponse.rewrite(url);
     response.headers.set("Cache-Control", "private, no-store");

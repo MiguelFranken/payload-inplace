@@ -23,3 +23,7 @@ Activation waits until its shared client bridge hydrates; the disabled server fa
 The production Postgres browser suite covers fallback text, delayed acknowledgements, validation/retry, nested arrays, native fields, pointer/keyboard reordering and the same-page transition. The transition test verifies unpublished draft loading, original document/header/footer identity, URL/search/hash, scroll restoration, exit and cancelled navigation during a held save. The actual consumer additionally compares headline computed styles before and during editing and checks page/console errors.
 
 The old dedicated route remains a compatibility path for hosts that omit `resolvePagePath`. Cross-origin frontends, globals and localized editing remain outside this candidate. Drafts are shared CMS drafts, not private editor branches.
+
+## Reverse-proxy URL preservation
+
+The host enables Next's supported `skipProxyUrlNormalize` flag and builds the rewrite destination from the original `request.url`, changing only the pathname. Matching still uses `request.nextUrl.pathname`. NextURL normalizes loopback IPs to `localhost`; behind TLS termination that changed authority was classified as an external rewrite and attempted TLS against a plain HTTP backend. Keeping the original authority avoids that extra request for arbitrary ports and IPv4/IPv6, while hosted origins stay untouched. The consumer validates this through real HTTPS Portless activation and saving, not only direct HTTP production tests.

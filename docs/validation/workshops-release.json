@@ -51,5 +51,26 @@
   "artifactEquivalence": {
     "localArchiveFiles": "byte-for-byte identical to the independently validated local alpha.14 archive",
     "result": "passed"
+  },
+  "npm": {
+    "version": "0.1.0-alpha.14",
+    "next": "0.1.0-alpha.14",
+    "sha256": "0de798021cd6de343e5f470afe6f24311549649dc85d1f5647224885abe7e6b3",
+    "tarball": "https://registry.npmjs.org/@miguel.franken/payload-visual-editor/-/payload-visual-editor-0.1.0-alpha.14.tgz",
+    "integrity": "sha512-jWAbirlvhva97BBvpzK2lduEtlRGo9GOtCHhV/Hre3K7dLh27yw6P2nbu4GpAs6gwUZueIUONC6MacSH7pBYVw==",
+    "attestations": {
+      "url": "https://registry.npmjs.org/-/npm/v1/attestations/@miguel.franken%2fpayload-visual-editor@0.1.0-alpha.14",
+      "provenance": {
+        "predicateType": "https://slsa.dev/provenance/v1"
+      }
+    },
+    "publicationRun": "https://github.com/MiguelFranken/payload-visual-editor/actions/runs/41737638499"
+  },
+  "httpsPortlessAcceptance": {
+    "appSHA": "e8e4ef707c1687cfab09bc11a1702ae361720f64",
+    "dirty": false,
+    "report": "https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/495",
+    "result": "passed",
+    "scope": "real HTTPS Portless same-page activation/native editing, draft save, review/publication, URL/query/hash/shared chrome/viewport preservation, no page/console errors"
   }
 }
