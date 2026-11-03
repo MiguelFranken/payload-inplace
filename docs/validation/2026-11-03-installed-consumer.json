@@ -1,0 +1,300 @@
+{
+  "package": {
+    "version": "0.1.0-alpha.0",
+    "sha256": "8b8bf62c41fc2a030c2f3e6b753bba85082e08fcdfc563f27bd9d1cb65fecb99"
+  },
+  "packageSourceSHA": "ea20dcbbea9e89f86ad3cfb984aba14b9f0e96a4",
+  "harnessSourceSHA": "ea20dcbbea9e89f86ad3cfb984aba14b9f0e96a4",
+  "templateSHA256": "719c900d2f0d773163d9271da6c42d43871616616537c8a407c60a516eefb2f0",
+  "dependencyLockSHA256": "e1006f6283dc6cfe822753b751899180f5717e5c69f9cd8a393d9212eac5a585",
+  "runtime": "v26.0.0",
+  "peers": {
+    "payload": "3.91.0",
+    "@payloadcms/ui": "3.91.0",
+    "@payloadcms/db-postgres": "3.91.0",
+    "next": "16.4.2",
+    "react": "19.2.6",
+    "react-dom": "19.2.6"
+  },
+  "databaseVersion": "postgres (PostgreSQL) 17.11",
+  "importMapGenerated": true,
+  "scope": "separate clean installed app; stories.article.sections; production Turbopack; disposable Postgres",
+  "installed": {
+    "disabled": false,
+    "publicGraph": {
+      "modules": [
+        "[project]/node_modules/.pnpm/next@16.4.2_@playwright+test@1.58.2_@types+node@24.19.2_react-dom@19.2.6_react@19.2.6__react@19.2.6_sass@1.77.4/node_modules/next/dist/esm/client/components/layout-router.js",
+        "[project]/node_modules/.pnpm/next@16.4.2_@playwright+test@1.58.2_@types+node@24.19.2_react-dom@19.2.6_react@19.2.6__react@19.2.6_sass@1.77.4/node_modules/next/dist/esm/client/components/render-from-template-context.js",
+        "[project]/node_modules/.pnpm/next@16.4.2_@playwright+test@1.58.2_@types+node@24.19.2_react-dom@19.2.6_react@19.2.6__react@19.2.6_sass@1.77.4/node_modules/next/dist/esm/client/components/client-page.js",
+        "[project]/node_modules/.pnpm/next@16.4.2_@playwright+test@1.58.2_@types+node@24.19.2_react-dom@19.2.6_react@19.2.6__react@19.2.6_sass@1.77.4/node_modules/next/dist/esm/client/components/client-segment.js",
+        "[project]/node_modules/.pnpm/next@16.4.2_@playwright+test@1.58.2_@types+node@24.19.2_react-dom@19.2.6_react@19.2.6__react@19.2.6_sass@1.77.4/node_modules/next/dist/esm/client/components/http-access-fallback/error-boundary.js",
+        "[project]/node_modules/.pnpm/next@16.4.2_@playwright+test@1.58.2_@types+node@24.19.2_react-dom@19.2.6_react@19.2.6__react@19.2.6_sass@1.77.4/node_modules/next/dist/esm/lib/framework/boundary-components.js",
+        "[project]/node_modules/.pnpm/next@16.4.2_@playwright+test@1.58.2_@types+node@24.19.2_react-dom@19.2.6_react@19.2.6__react@19.2.6_sass@1.77.4/node_modules/next/dist/esm/lib/metadata/generate/icon-mark.js",
+        "[project]/node_modules/.pnpm/next@16.4.2_@playwright+test@1.58.2_@types+node@24.19.2_react-dom@19.2.6_react@19.2.6__react@19.2.6_sass@1.77.4/node_modules/next/dist/client/components/builtin/global-error.js"
+      ],
+      "editorClientModules": 0
+    },
+    "cases": [
+      {
+        "name": "installed public isolation: anonymous",
+        "status": "passed",
+        "durationMs": 1780
+      },
+      {
+        "name": "installed public isolation: reader",
+        "status": "passed",
+        "durationMs": 1772
+      },
+      {
+        "name": "installed public isolation: author",
+        "status": "passed",
+        "durationMs": 1716
+      },
+      {
+        "name": "installed nested-root native fields, optimistic draft and reviewed publish",
+        "status": "passed",
+        "durationMs": 3533
+      }
+    ],
+    "resources": [
+      {
+        "role": "anonymous",
+        "resources": [
+          {
+            "path": "/_next/static/chunks/0xg6fs89o7rbm.js",
+            "bytes": 159548
+          },
+          {
+            "path": "/_next/static/chunks/124yikkp5in-g.js",
+            "bytes": 30179
+          },
+          {
+            "path": "/_next/static/chunks/20wen1g5_o_lo.js",
+            "bytes": 13311
+          },
+          {
+            "path": "/_next/static/chunks/24c90_jw-bs5o.js",
+            "bytes": 229942
+          },
+          {
+            "path": "/_next/static/chunks/33u1purozzywd.css",
+            "bytes": 2930
+          },
+          {
+            "path": "/_next/static/chunks/3g_x8kyk8e3fg.js",
+            "bytes": 13888
+          },
+          {
+            "path": "/_next/static/chunks/turbopack-2c3mg3r-05n1w.js",
+            "bytes": 11255
+          }
+        ]
+      },
+      {
+        "role": "reader",
+        "resources": [
+          {
+            "path": "/_next/static/chunks/0xg6fs89o7rbm.js",
+            "bytes": 159548
+          },
+          {
+            "path": "/_next/static/chunks/124yikkp5in-g.js",
+            "bytes": 30179
+          },
+          {
+            "path": "/_next/static/chunks/20wen1g5_o_lo.js",
+            "bytes": 13311
+          },
+          {
+            "path": "/_next/static/chunks/24c90_jw-bs5o.js",
+            "bytes": 229942
+          },
+          {
+            "path": "/_next/static/chunks/33u1purozzywd.css",
+            "bytes": 2930
+          },
+          {
+            "path": "/_next/static/chunks/3g_x8kyk8e3fg.js",
+            "bytes": 13888
+          },
+          {
+            "path": "/_next/static/chunks/turbopack-2c3mg3r-05n1w.js",
+            "bytes": 11255
+          }
+        ]
+      },
+      {
+        "role": "author",
+        "resources": [
+          {
+            "path": "/_next/static/chunks/0xg6fs89o7rbm.js",
+            "bytes": 159548
+          },
+          {
+            "path": "/_next/static/chunks/124yikkp5in-g.js",
+            "bytes": 30179
+          },
+          {
+            "path": "/_next/static/chunks/20wen1g5_o_lo.js",
+            "bytes": 13311
+          },
+          {
+            "path": "/_next/static/chunks/24c90_jw-bs5o.js",
+            "bytes": 229942
+          },
+          {
+            "path": "/_next/static/chunks/33u1purozzywd.css",
+            "bytes": 2930
+          },
+          {
+            "path": "/_next/static/chunks/3g_x8kyk8e3fg.js",
+            "bytes": 13888
+          },
+          {
+            "path": "/_next/static/chunks/turbopack-2c3mg3r-05n1w.js",
+            "bytes": 11255
+          }
+        ]
+      }
+    ]
+  },
+  "disabled": {
+    "disabled": true,
+    "publicGraph": {
+      "modules": [
+        "[project]/node_modules/.pnpm/next@16.4.2_@playwright+test@1.58.2_@types+node@24.19.2_react-dom@19.2.6_react@19.2.6__react@19.2.6_sass@1.77.4/node_modules/next/dist/esm/client/components/layout-router.js",
+        "[project]/node_modules/.pnpm/next@16.4.2_@playwright+test@1.58.2_@types+node@24.19.2_react-dom@19.2.6_react@19.2.6__react@19.2.6_sass@1.77.4/node_modules/next/dist/esm/client/components/render-from-template-context.js",
+        "[project]/node_modules/.pnpm/next@16.4.2_@playwright+test@1.58.2_@types+node@24.19.2_react-dom@19.2.6_react@19.2.6__react@19.2.6_sass@1.77.4/node_modules/next/dist/esm/client/components/client-page.js",
+        "[project]/node_modules/.pnpm/next@16.4.2_@playwright+test@1.58.2_@types+node@24.19.2_react-dom@19.2.6_react@19.2.6__react@19.2.6_sass@1.77.4/node_modules/next/dist/esm/client/components/client-segment.js",
+        "[project]/node_modules/.pnpm/next@16.4.2_@playwright+test@1.58.2_@types+node@24.19.2_react-dom@19.2.6_react@19.2.6__react@19.2.6_sass@1.77.4/node_modules/next/dist/esm/client/components/http-access-fallback/error-boundary.js",
+        "[project]/node_modules/.pnpm/next@16.4.2_@playwright+test@1.58.2_@types+node@24.19.2_react-dom@19.2.6_react@19.2.6__react@19.2.6_sass@1.77.4/node_modules/next/dist/esm/lib/framework/boundary-components.js",
+        "[project]/node_modules/.pnpm/next@16.4.2_@playwright+test@1.58.2_@types+node@24.19.2_react-dom@19.2.6_react@19.2.6__react@19.2.6_sass@1.77.4/node_modules/next/dist/esm/lib/metadata/generate/icon-mark.js",
+        "[project]/node_modules/.pnpm/next@16.4.2_@playwright+test@1.58.2_@types+node@24.19.2_react-dom@19.2.6_react@19.2.6__react@19.2.6_sass@1.77.4/node_modules/next/dist/client/components/builtin/global-error.js"
+      ],
+      "editorClientModules": 0
+    },
+    "cases": [
+      {
+        "name": "installed public isolation: anonymous",
+        "status": "passed",
+        "durationMs": 1652
+      },
+      {
+        "name": "installed public isolation: reader",
+        "status": "passed",
+        "durationMs": 1782
+      },
+      {
+        "name": "installed public isolation: author",
+        "status": "passed",
+        "durationMs": 1710
+      },
+      {
+        "name": "installed nested-root native fields, optimistic draft and reviewed publish",
+        "status": "skipped",
+        "durationMs": 49
+      }
+    ],
+    "resources": [
+      {
+        "role": "anonymous",
+        "resources": [
+          {
+            "path": "/_next/static/chunks/0xg6fs89o7rbm.js",
+            "bytes": 159548
+          },
+          {
+            "path": "/_next/static/chunks/124yikkp5in-g.js",
+            "bytes": 30179
+          },
+          {
+            "path": "/_next/static/chunks/20wen1g5_o_lo.js",
+            "bytes": 13311
+          },
+          {
+            "path": "/_next/static/chunks/24c90_jw-bs5o.js",
+            "bytes": 229942
+          },
+          {
+            "path": "/_next/static/chunks/33u1purozzywd.css",
+            "bytes": 2930
+          },
+          {
+            "path": "/_next/static/chunks/3g_x8kyk8e3fg.js",
+            "bytes": 13888
+          },
+          {
+            "path": "/_next/static/chunks/turbopack-2c3mg3r-05n1w.js",
+            "bytes": 11255
+          }
+        ]
+      },
+      {
+        "role": "reader",
+        "resources": [
+          {
+            "path": "/_next/static/chunks/0xg6fs89o7rbm.js",
+            "bytes": 159548
+          },
+          {
+            "path": "/_next/static/chunks/124yikkp5in-g.js",
+            "bytes": 30179
+          },
+          {
+            "path": "/_next/static/chunks/20wen1g5_o_lo.js",
+            "bytes": 13311
+          },
+          {
+            "path": "/_next/static/chunks/24c90_jw-bs5o.js",
+            "bytes": 229942
+          },
+          {
+            "path": "/_next/static/chunks/33u1purozzywd.css",
+            "bytes": 2930
+          },
+          {
+            "path": "/_next/static/chunks/3g_x8kyk8e3fg.js",
+            "bytes": 13888
+          },
+          {
+            "path": "/_next/static/chunks/turbopack-2c3mg3r-05n1w.js",
+            "bytes": 11255
+          }
+        ]
+      },
+      {
+        "role": "author",
+        "resources": [
+          {
+            "path": "/_next/static/chunks/0xg6fs89o7rbm.js",
+            "bytes": 159548
+          },
+          {
+            "path": "/_next/static/chunks/124yikkp5in-g.js",
+            "bytes": 30179
+          },
+          {
+            "path": "/_next/static/chunks/20wen1g5_o_lo.js",
+            "bytes": 13311
+          },
+          {
+            "path": "/_next/static/chunks/24c90_jw-bs5o.js",
+            "bytes": 229942
+          },
+          {
+            "path": "/_next/static/chunks/33u1purozzywd.css",
+            "bytes": 2930
+          },
+          {
+            "path": "/_next/static/chunks/3g_x8kyk8e3fg.js",
+            "bytes": 13888
+          },
+          {
+            "path": "/_next/static/chunks/turbopack-2c3mg3r-05n1w.js",
+            "bytes": 11255
+          }
+        ]
+      }
+    ]
+  }
+}

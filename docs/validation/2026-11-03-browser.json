@@ -5,12 +5,12 @@
     {
       "name": "frontend inline editing, native draft and reviewed publication: pages",
       "status": "passed",
-      "durationMs": 4402
+      "durationMs": 4380
     },
     {
       "name": "frontend inline editing, native draft and reviewed publication: offers",
       "status": "passed",
-      "durationMs": 3362
+      "durationMs": 3354
     },
     {
       "name": "frontend field selection preserves native media, rich text and structural history",
@@ -20,62 +20,62 @@
     {
       "name": "frontend hover motion, narrow layout and native controls are accessible",
       "status": "passed",
-      "durationMs": 1481
+      "durationMs": 1314
     },
     {
       "name": "inactive public resources and sampled timing: anonymous",
       "status": "passed",
-      "durationMs": 4750
+      "durationMs": 4748
     },
     {
       "name": "inactive public resources and sampled timing: reader",
       "status": "passed",
-      "durationMs": 4835
+      "durationMs": 4839
     },
     {
       "name": "inactive public resources and sampled timing: admin",
       "status": "passed",
-      "durationMs": 5313
+      "durationMs": 5400
     },
     {
       "name": "direct denied preview exposes neither draft output nor bridge execution",
       "status": "passed",
-      "durationMs": 113
+      "durationMs": 110
     },
     {
       "name": "instant inline edits and appearance survive delayed native saves and newer typing",
       "status": "passed",
-      "durationMs": 8977
+      "durationMs": 8792
     },
     {
       "name": "failed native save retains optimistic text and offers explicit recovery",
       "status": "passed",
-      "durationMs": 6595
+      "durationMs": 6601
     },
     {
       "name": "multiple fields edited during a pending save survive and unchanged server normalization is accepted",
       "status": "passed",
-      "durationMs": 4805
+      "durationMs": 4790
     },
     {
       "name": "server preview unavailable preserves the working form after a saved draft",
       "status": "passed",
-      "durationMs": 2783
+      "durationMs": 2789
     },
     {
       "name": "server preview denied preserves the working form after a saved draft",
       "status": "passed",
-      "durationMs": 3712
+      "durationMs": 3695
     },
     {
       "name": "an empty native layout can add its first section and edit its empty heading in place",
       "status": "passed",
-      "durationMs": 3611
+      "durationMs": 3658
     },
     {
       "name": "sections drag on list and page keeps native order, undo, policy and keyboard cancellation",
       "status": "passed",
-      "durationMs": 9928
+      "durationMs": 9924
     },
     {
       "name": "context panels preserve keyboard focus and compact disclosure",
@@ -85,17 +85,17 @@
     {
       "name": "direct editing stays active across text, panels and section navigation",
       "status": "passed",
-      "durationMs": 2915
+      "durationMs": 2891
     },
     {
       "name": "keyboard save keeps the caret and newer text, Escape closes settings without disabling editing",
       "status": "passed",
-      "durationMs": 2751
+      "durationMs": 2745
     },
     {
       "name": "an expired editing session reopens the saved draft with fresh authorization",
       "status": "passed",
-      "durationMs": 1107
+      "durationMs": 1121
     }
   ],
   "axe": {

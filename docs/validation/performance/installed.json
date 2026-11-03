@@ -7,8 +7,8 @@
       "node": "v26.0.0",
       "samples": [
         {
-          "ttfb": 5.399999976158142,
-          "dom": 22.899999976158142,
+          "ttfb": 5,
+          "dom": 17.5,
           "requests": 9,
           "decodedResourceBytes": 460281,
           "resources": [
@@ -43,8 +43,8 @@
           ]
         },
         {
-          "ttfb": 9.5,
-          "dom": 22.600000023841858,
+          "ttfb": 10.400000095367432,
+          "dom": 22.399999976158142,
           "requests": 8,
           "decodedResourceBytes": 460281,
           "resources": [
@@ -79,8 +79,8 @@
           ]
         },
         {
-          "ttfb": 12.399999976158142,
-          "dom": 22.299999952316284,
+          "ttfb": 12.299999952316284,
+          "dom": 23.399999976158142,
           "requests": 8,
           "decodedResourceBytes": 460281,
           "resources": [
@@ -122,8 +122,8 @@
       "node": "v26.0.0",
       "samples": [
         {
-          "ttfb": 11.5,
-          "dom": 26.200000047683716,
+          "ttfb": 9.300000071525574,
+          "dom": 28.799999952316284,
           "requests": 9,
           "decodedResourceBytes": 460281,
           "resources": [
@@ -158,8 +158,8 @@
           ]
         },
         {
-          "ttfb": 17.100000023841858,
-          "dom": 30.800000071525574,
+          "ttfb": 16.899999976158142,
+          "dom": 30.899999976158142,
           "requests": 8,
           "decodedResourceBytes": 460281,
           "resources": [
@@ -194,8 +194,8 @@
           ]
         },
         {
-          "ttfb": 16.399999976158142,
-          "dom": 26.799999952316284,
+          "ttfb": 17.59999990463257,
+          "dom": 29.299999952316284,
           "requests": 8,
           "decodedResourceBytes": 460281,
           "resources": [
@@ -237,8 +237,8 @@
       "node": "v26.0.0",
       "samples": [
         {
-          "ttfb": 8.200000047683716,
-          "dom": 31.600000023841858,
+          "ttfb": 10.600000023841858,
+          "dom": 25.299999952316284,
           "requests": 9,
           "decodedResourceBytes": 460281,
           "resources": [
@@ -255,12 +255,12 @@
               "bytes": 30179
             },
             {
-              "url": "/_next/static/chunks/3bieweqjq9y4j.js",
-              "bytes": 13888
-            },
-            {
               "url": "/_next/static/chunks/turbopack-2c3mg3r-05n1w.js",
               "bytes": 11255
+            },
+            {
+              "url": "/_next/static/chunks/3bieweqjq9y4j.js",
+              "bytes": 13888
             },
             {
               "url": "/_next/static/chunks/0xg6fs89o7rbm.js",
@@ -273,8 +273,8 @@
           ]
         },
         {
-          "ttfb": 17.799999952316284,
-          "dom": 35.299999952316284,
+          "ttfb": 14.5,
+          "dom": 26.899999976158142,
           "requests": 8,
           "decodedResourceBytes": 460281,
           "resources": [
@@ -309,8 +309,8 @@
           ]
         },
         {
-          "ttfb": 17.899999976158142,
-          "dom": 30.600000023841858,
+          "ttfb": 16.100000023841858,
+          "dom": 28.299999952316284,
           "requests": 8,
           "decodedResourceBytes": 460281,
           "resources": [
