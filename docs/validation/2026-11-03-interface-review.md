@@ -17,7 +17,7 @@ Conventions inspected: repository `AGENTS.md`, copied `better-interface` and all
 
 ## Findings
 
-No actionable interface findings remain in the reviewed flow. The owner's previous rejection was treated as a task-flow problem: entry is one click, three successive inline fields require three content clicks and zero mode-rearming clicks, section navigation and settings have separate controls, invalid additions are absent, and structural undo preserves later text. Those changes are implemented and covered by behavioral browser tests.
+No actionable interface findings remain in the reviewed flow. A separate installed-consumer review subsequently found heading-name assumptions and drag chips covering tightly padded text; schema-derived labels and collision-aware grip placement resolve those generic issues, with dedicated unit and installed-browser assertions. The owner's previous rejection was treated as a task-flow problem: entry is one click, three successive inline fields require three content clicks and zero mode-rearming clicks, section navigation and settings have separate controls, invalid additions are absent, and structural undo preserves later text. Those changes are implemented and covered by behavioral browser tests.
 
 ## Verification
 
@@ -25,7 +25,7 @@ No actionable interface findings remain in the reviewed flow. The owner's previo
 - Browser checks exercise native media/RTE editing, real rendered rich text, inline editing/save/publish, delayed responses with later typing, failed saves, denied/unavailable preview reads, explicit recovery, empty-layout construction, list/page pointer and keyboard reordering, cancellation, fixed-first rules, and keyboard panel/menu/select focus.
 - An actual in-app browser walk independently verified one-click entry and immediate focus on existing page text. No user's page text was changed during this review.
 - The rendered default white surface gave text `rgb(47,47,47)` 13.39:1, muted text `rgb(74,74,74)` 8.86:1, and white on primary `rgb(52,81,235)` 5.96:1. These measurements do not certify consumer-overridden colors.
-- Typecheck/lint/build, 32 unit tests and five real Postgres integration tests pass. They complement rendered review and do not substitute for it.
+- Typecheck/lint/build, 40 unit tests and five real Postgres integration tests pass. They complement rendered review and do not substitute for it.
 
 **Not verified:** full assistive-technology speech output, forced-colors mode, browser 200% zoom beyond the 320px reflow test, dark themes, RTL, every translation, touch-device hardware and arbitrary consumer overrides. Native media/RTE full interactions were reviewed on desktop; narrow controls include hero fields/select/upload. Actual Workshops and a separate installed consumer are outside this interface verdict and retain their project acceptance gates.
 

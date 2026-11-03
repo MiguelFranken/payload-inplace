@@ -2,7 +2,7 @@
 
 Experimental native-form visual composition for existing Payload CMS blocks. The public plugin owns editor behavior; applications keep their schemas, renderers, permissions and business rules.
 
-The current candidate is **not production ready**. Real packaged consumer acceptance, a genuine second app, compatibility coverage and release CI remain open gates. Implemented safety behavior and its measured validation are tracked separately. See [validation](docs/validation.md).
+The current candidate is **not production ready**. Actual Workshops acceptance, broader compatibility coverage and release/rollback gates remain open. A separate clean installed app now verifies the baseline independently of the source demo. Implemented safety behavior and its measured validation are tracked separately. See [validation](docs/validation.md).
 
 ## Development
 
@@ -27,11 +27,12 @@ corepack pnpm test:int
 VE_PORT=3137 corepack pnpm exec node scripts/postgres-test.mjs e2e
 corepack pnpm pack:check
 corepack pnpm test:consumer
+corepack pnpm test:installed-consumer
 corepack pnpm exec node scripts/postgres-test.mjs
 corepack pnpm release:check
 ```
 
-The Postgres command needs local Docker and uses a disposable container with a random localhost port. It cleans up in `finally`.
+Postgres integration and installed-consumer commands need local Docker and use disposable containers with random localhost database ports. The installed consumer uses an empty temporary app directory, anonymous public-npm peers and the exact checked tarball; commit source before `pack:check` so its receipt has immutable provenance. It cleans up in `finally`.
 
 ## Integration contract
 
@@ -84,7 +85,7 @@ The standard CMS remains the fallback. All edits use the single native Form and 
 
 ## Consumer controls and theme
 
-Built-in `tools` can be disabled or server capability-gated. `fieldPanels` declare existing document/selection field paths and optional block-type applicability. Custom `extensions` register panel/control components through Payload's import map, or explicit server actions with optional saved-revision and confirmation requirements. The compact horizontal dock opens one contextual panel at a time; secondary extensions live in More tools. Sections support list and on-page drag handles, keyboard moves and native structural undo. See [dock and reordering](docs/adr/0005-compact-editor-and-reordering.md).
+Built-in `tools` can be disabled or server capability-gated. `fieldPanels` declare existing document/selection field paths and optional block-type applicability. Custom `extensions` register panel/control components through Payload's import map, or explicit server actions with optional saved-revision and confirmation requirements. The compact horizontal dock opens one contextual panel at a time; secondary extensions live in More tools. Sections show readable native content names across consumer field names and support list/on-page dragging, keyboard moves and native structural undo. Page controls avoid rendered field text; dense layouts retain the section-list alternative. See [dock and reordering](docs/adr/0005-compact-editor-and-reordering.md).
 
 Custom panels use `NativeFieldSlot` to claim existing fields without duplicate mounts; controls use `useVisualEditor` to open panels or invoke registered actions. Action inputs never grant authority, and consumer writes remain in their existing access-checked domain services. [Workshops analysis](docs/adr/0004-workshops-extension-boundaries.md) explains the balance with real application examples.
 

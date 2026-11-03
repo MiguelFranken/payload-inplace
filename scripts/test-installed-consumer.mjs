@@ -183,7 +183,9 @@ try {
   const entries = fs
     .readdirSync(directory, { recursive: true })
     .filter(
-      (name) => /\.(?:tsx?|mjs|json)$/.test(name) && name !== "candidate.tgz",
+      (name) =>
+        name !== "candidate.tgz" &&
+        fs.statSync(path.join(directory, name)).isFile(),
     )
     .sort();
   for (const name of entries)
@@ -239,6 +241,35 @@ try {
   await run(["install", "--no-frozen-lockfile"]);
   await run(["exec", "tsx", "seed.ts"], { CONSUMER_SEED: "1" });
   await run(["exec", "payload", "generate:importmap"]);
+  const importMap = fs.readFileSync(
+    path.join(directory, "app/(payload)/admin/importMap.js"),
+    "utf8",
+  );
+  if (!importMap.includes("@miguelfranken/payload-visual-editor/client#"))
+    throw Error("Installed plugin entries missing from generated import map");
+  const peers = Object.fromEntries(
+    [
+      "payload",
+      "@payloadcms/ui",
+      "@payloadcms/db-postgres",
+      "next",
+      "react",
+      "react-dom",
+    ].map((name) => [
+      name,
+      JSON.parse(
+        fs.readFileSync(
+          path.join(directory, "node_modules", name, "package.json"),
+          "utf8",
+        ),
+      ).version,
+    ]),
+  );
+  const databaseVersion = execFileSync(
+    "docker",
+    ["exec", container, "postgres", "--version"],
+    { encoding: "utf8" },
+  ).trim();
   await run(["typecheck"]);
   const installed = await check(false),
     disabled = await check(true);
@@ -268,6 +299,9 @@ try {
           fs.readFileSync(path.join(directory, "pnpm-lock.yaml")),
         ),
         runtime: process.version,
+        peers,
+        databaseVersion,
+        importMapGenerated: true,
         scope:
           "separate clean installed app; stories.article.sections; production Turbopack; disposable Postgres",
         installed,
