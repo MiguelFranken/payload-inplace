@@ -3,6 +3,7 @@ import { createContext, use, useEffect, useRef, useState } from "react";
 import {
   useDocumentInfo,
   useForm,
+  useFormFields,
   useFormBackgroundProcessing,
   useFormProcessing,
 } from "@payloadcms/ui";
@@ -12,6 +13,7 @@ export type EditorFailure = {
   kind: "network" | "session" | "conflict" | "validation";
   message: string;
   paths?: string[];
+  fieldErrors?: Record<string, string>;
 };
 type Recovery = {
   failure: EditorFailure | null;
@@ -54,6 +56,27 @@ export function NativeSubmissionMonitor() {
   const processing = useFormProcessing(),
     background = useFormBackgroundProcessing();
   const checkedAttempt = useRef(0);
+  // Native onChange refreshes can clear field metadata before the status request returns.
+  // Retain errors for this submission only; values and persistence still belong to Form.
+  const nativeErrors = useFormFields(([fields]) =>
+    JSON.stringify(
+      Object.entries(fields)
+        .filter(([, field]) => field.valid === false)
+        .map(([path, field]) => [
+          path,
+          typeof field.errorMessage === "string" ? field.errorMessage : "",
+        ]),
+    ),
+  );
+  const captured = useRef<{ attempt: number; errors: [string, string][] }>({
+    attempt: 0,
+    errors: [],
+  });
+  if (captured.current.attempt !== recovery.attempt)
+    captured.current = { attempt: recovery.attempt, errors: [] };
+  if (recovery.attempt > recovery.acknowledged.current && nativeErrors !== "[]")
+    captured.current.errors = JSON.parse(nativeErrors);
+
   const busy = useRef(false),
     current = useRef({ processing, background, form, info });
   current.current = { processing, background, form, info };
@@ -90,9 +113,15 @@ export function NativeSubmissionMonitor() {
         form.setModified(true);
         form.setDisabled(true);
       } else if (failed) {
-        const paths = Object.entries(form.getFields())
-          .filter(([, field]) => field.valid === false)
-          .map(([path]) => path);
+        const errors = new Map<string, string>(captured.current.errors);
+        for (const [path, field] of Object.entries(form.getFields())) {
+          if (field.valid === false)
+            errors.set(
+              path,
+              typeof field.errorMessage === "string" ? field.errorMessage : "",
+            );
+        }
+        const paths = [...errors.keys()];
         recovery.setFailure(
           paths.length
             ? {
@@ -100,6 +129,7 @@ export function NativeSubmissionMonitor() {
                 message:
                   "Some fields need attention. Open a field below to correct it, then retry saving.",
                 paths,
+                fieldErrors: Object.fromEntries(errors),
               }
             : {
                 kind: "network",

@@ -717,7 +717,10 @@ export function FrontendControls({
     }
   }
   const validationMessage = useFormFields(([fields]) =>
-    validationPath ? fields[validationPath]?.errorMessage : undefined,
+    validationPath
+      ? fields[validationPath]?.errorMessage ||
+        recovery.failure?.fieldErrors?.[validationPath]
+      : undefined,
   );
   const statusText = recovery.failure
     ? t("Not saved", "Nicht gespeichert")

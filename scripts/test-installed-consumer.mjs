@@ -38,7 +38,12 @@ const env = Object.fromEntries(
     process.env[key] ? [[key, process.env[key]]] : [],
   ),
 );
+fs.writeFileSync(
+  path.join(directory, ".npmrc"),
+  "registry=https://registry.npmjs.org\n",
+);
 Object.assign(env, {
+  NPM_CONFIG_USERCONFIG: path.join(directory, ".npmrc"),
   NEXT_TELEMETRY_DISABLED: "1",
   PAYLOAD_CONFIG_PATH: path.join(directory, "payload.config.ts"),
   PAYLOAD_SECRET: randomBytes(32).toString("hex"),
@@ -55,7 +60,10 @@ async function run(args, extra = {}) {
   childInFlight = child;
   const code = await new Promise((resolve, reject) => {
     child.once("error", reject);
-    child.once("exit", resolve);
+    child.once("exit", (code, signal) => {
+      if (signal) console.error(`Clean consumer subprocess stopped: ${signal}`);
+      resolve(code);
+    });
   });
   childInFlight = undefined;
   if (code !== 0) {

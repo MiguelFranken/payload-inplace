@@ -1099,6 +1099,12 @@ test("native save errors reveal an unmounted field and retry the same form", asy
   page,
 }) => {
   const doc = await createEditor(page, "validatedPages");
+  // Model a slow revision check while native onChange metadata refreshes complete.
+  await page.route("**/visual-editor/status?*", async (route) => {
+    const response = await route.fetch();
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    await route.fulfill({ response });
+  });
   await page.getByRole("button", { name: "More tools", exact: true }).click();
   await page
     .getByRole("menuitem", { name: "Page details", exact: true })

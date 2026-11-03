@@ -1,6 +1,11 @@
 # Changelog
 
-## 0.1.0-alpha.3 — candidate
+## 0.1.0-alpha.4 — candidate
+
+- Retain native validation errors per submission so slower form-state refreshes cannot remove correction links.
+- Isolate clean-consumer npm configuration from the developer's credentials and scoped registries.
+
+## 0.1.0-alpha.3
 
 - Edit bound plain text directly on the website through one native Payload Form, with immediate optimistic preview and background native persistence.
 - Use a compact horizontal dock, one contextual panel, shadcn Base UI menus/selects, list/page drag-and-drop and keyboard structural undo.
