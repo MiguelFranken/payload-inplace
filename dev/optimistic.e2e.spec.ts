@@ -1327,7 +1327,6 @@ test("in-place activation and exit preserve the website, URL and viewport while 
     ).toBeDisabled();
   } finally {
     releaseHydration();
-    await page.unroute("**/_next/static/**/*.js", deferScript);
   }
   await expect(
     page.getByRole("heading", { name: "Immediate heading", exact: true }),
