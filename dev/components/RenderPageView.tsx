@@ -2,6 +2,8 @@ import { RichText } from "@payloadcms/richtext-lexical/react";
 import {
   getBlockAttributes,
   getFieldAttributes,
+  getArrayItemAttributes,
+  getArrayItemPath,
 } from "../../dist/exports/bindings.js";
 /** The exact same server renderer serves public and authorized preview surfaces. */
 export function RenderPageView({
@@ -66,7 +68,27 @@ export function RenderPageView({
             )}
             {(Array.isArray(block.items) ? block.items : []).map(
               (item: any) => (
-                <p key={item.id}>{item.label}</p>
+                <div
+                  key={item.id}
+                  {...getArrayItemAttributes(
+                    { ...identity, field: "items", rowId: item.id },
+                    active,
+                  )}
+                  className="demo:py-3"
+                >
+                  <p
+                    {...getFieldAttributes(
+                      {
+                        ...identity,
+                        field: getArrayItemPath("items", item.id, "label"),
+                        edit: "inline",
+                      },
+                      active,
+                    )}
+                  >
+                    {item.label}
+                  </p>
+                </div>
               ),
             )}
             {block.blockType === "serverData" &&

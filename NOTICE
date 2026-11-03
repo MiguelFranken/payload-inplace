@@ -1,4 +1,4 @@
-Payload Visual Editor contains generated native UI foundation styles from @payloadcms/next 3.91.0, distributed under the following license. Native runtime styling remains owned by its upstream package.
+Payload Visual Editor contains generated native UI foundation styles from @payloadcms/next 3.91.0 and @payloadcms/richtext-lexical 3.91.0, distributed under the following license. Native runtime styling remains owned by its upstream package.
 
 MIT License
 

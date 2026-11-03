@@ -77,7 +77,10 @@ const blocks: Block[] = [
       {
         name: "items",
         type: "array",
-        fields: [{ name: "label", type: "text" }],
+        fields: [
+          { name: "label", type: "text" },
+          { name: "note", type: "textarea" },
+        ],
       },
     ],
   },

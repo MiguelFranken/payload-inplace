@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 async function login(page: any, role = "admin") {
   await page.goto("/visual-editor/start?collection=pages&slug=demo");
+  await page.waitForLoadState("networkidle");
   await page.getByLabel("Email", { exact: true }).fill(`${role}@example.test`);
   await page
     .getByLabel("Password", { exact: true })
@@ -30,7 +31,9 @@ async function open(page: any, collection: string, id?: string | number) {
   ).toBeVisible();
 }
 async function inspect(page: any, heading: string) {
-  await page.getByRole("button", { name: "Edit content", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Select content", exact: true })
+    .click();
   await page.getByRole("heading", { name: heading, exact: true }).click();
   await page
     .getByRole("button", { name: "Options for Heading", exact: true })
@@ -50,9 +53,9 @@ for (const collection of ["pages", "offers"])
       exact: true,
     });
     await heading.hover();
-    await expect(page.locator("[data-ve-hover-outline]")).toBeVisible();
+    await expect(page.locator("[data-ve-hover-outline]")).toBeHidden();
     await page
-      .getByRole("button", { name: "Edit content", exact: true })
+      .getByRole("button", { name: "Select content", exact: true })
       .click();
     await heading.hover();
     await expect(page.locator("[data-ve-hover-outline]")).toBeVisible();
@@ -154,7 +157,7 @@ test("frontend field selection preserves native media, rich text and structural 
   await editor.getByRole("button", { name: "Choose from existing" }).click();
   await page.getByText(media.filename, { exact: true }).click();
   await expect(editor.getByText(media.filename, { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Close Hero panel" }).click();
+  await page.getByRole("button", { name: "Close Heading panel" }).click();
   await page.getByRole("button", { name: "Sections" }).click();
   await page
     .getByRole("complementary", { name: "Sections" })
@@ -252,10 +255,14 @@ test("frontend hover motion, narrow layout and native controls are accessible", 
     .getByRole("button", { name: "Close Appearance panel", exact: true })
     .click();
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.getByRole("button", { name: "Edit content", exact: true }).click();
-  await page
-    .getByRole("heading", { name: currentHeading, exact: true })
-    .hover();
+  const selectContent = page.getByRole("button", {
+    name: "Select content",
+    exact: true,
+  });
+  if ((await selectContent.getAttribute("aria-pressed")) !== "true")
+    await selectContent.click();
+
+  await page.locator('main [data-ve-field="heading"]').first().hover();
   await expect(page.locator("[data-ve-hover-outline]")).toHaveCSS(
     "transition-duration",
     "0s",
@@ -373,8 +380,8 @@ for (const role of ["anonymous", "reader", "admin"])
           page.getByRole("navigation", { name: "Editing toolbar" }),
         ).toBeVisible();
         await expect(
-          page.getByRole("button", { name: "Edit content", exact: true }),
-        ).toHaveAttribute("aria-pressed", "true");
+          page.getByRole("button", { name: "Select content", exact: true }),
+        ).toHaveAttribute("aria-pressed", "false");
       }
     } finally {
       await context.close();
@@ -399,4 +406,101 @@ test("direct denied preview exposes neither draft output nor bridge execution", 
     ),
   ).toBe(false);
   expect(response?.headers()["cache-control"]).toContain("no-store");
+});
+
+/** Hover assistance is an explicit preference and must yield to native field editing. */
+test("hover outlines are optional and pause while native settings are open", async ({
+  page,
+}) => {
+  await login(page);
+  const heading = page.locator('main [data-ve-field="heading"]').first();
+  const second = page.locator('main [data-ve-field="heading"]').nth(1);
+  const outline = page.locator("[data-ve-hover-outline]");
+  await heading.hover();
+  await expect(outline).toBeHidden();
+  const enable = page.getByRole("button", {
+    name: "Select content",
+    exact: true,
+  });
+  await expect(enable).toHaveAttribute("aria-pressed", "false");
+  await enable.click();
+  await expect(enable).toHaveAttribute("aria-pressed", "true");
+  await heading.hover();
+  await expect(outline).toBeVisible();
+  await expect(
+    page.locator("[data-ve-hover-outline],[data-ve-selection-outline]"),
+  ).toHaveCount(1);
+  await second.hover();
+  await expect
+    .poll(async () =>
+      Math.abs(
+        (await outline.boundingBox())!.y - (await second.boundingBox())!.y,
+      ),
+    )
+    .toBeLessThan(1);
+  await expect(
+    page.locator("[data-ve-hover-outline],[data-ve-selection-outline]"),
+  ).toHaveCount(1);
+  await heading.click();
+  await page
+    .getByRole("button", { name: "Options for Heading", exact: true })
+    .click();
+  await expect(
+    page.getByRole("complementary", { name: "Edit content" }),
+  ).toBeVisible();
+  await second.hover();
+  await expect(outline).toBeHidden();
+  await page
+    .getByRole("complementary", { name: "Edit content" })
+    .getByRole("button", { name: /^Close .+ panel$/ })
+    .click();
+  await second.hover();
+  await expect(outline).toBeVisible();
+  await enable.click();
+  await expect(enable).toHaveAttribute("aria-pressed", "false");
+  await page.locator('main [data-ve-field="heading"]').first().hover();
+  await expect(outline).toBeHidden();
+});
+
+test("array leaves edit inline and an item opens only its own native fields", async ({
+  page,
+}) => {
+  await login(page);
+  const row = page
+    .locator('main [data-ve-edit="panel"][data-ve-field^="items.@"]')
+    .first();
+  const leaf = row.locator('[data-ve-field$=".label"]');
+  await leaf.click();
+  await expect(leaf).toHaveAttribute("contenteditable", "plaintext-only");
+  await expect(
+    page.getByRole("complementary", { name: "Edit content" }),
+  ).toHaveCount(0);
+  await leaf.fill("Nested inline draft");
+  await leaf.press("Tab");
+  await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+  await page
+    .getByRole("button", { name: "Options for Label", exact: true })
+    .click();
+  const panel = page.getByRole("complementary", { name: "Edit content" });
+  // A terminal field owns its native input; settings must not remount the containing array.
+  await expect(panel.locator(".array-field")).toHaveCount(0);
+  await page
+    .getByRole("button", { name: "Close Label panel", exact: true })
+    .click();
+  // Click the row's own padding instead of its terminal paragraph.
+  await row.click({ position: { x: 4, y: 3 } });
+  await expect(
+    panel.getByRole("textbox", { name: "Label", exact: true }),
+  ).toBeVisible();
+  await expect(panel.locator(".array-field")).toHaveCount(0);
+  await expect(panel.getByRole("textbox")).toHaveCount(2);
+  await panel
+    .getByRole("textbox", { name: "Label", exact: true })
+    .fill("Scoped row draft");
+  await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+  await expect(leaf).toHaveText("Scoped row draft");
+  await page.reload();
+  await expect(
+    page.locator('main [data-ve-field$=".label"]').first(),
+  ).toHaveText("Scoped row draft");
 });

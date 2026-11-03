@@ -1,6 +1,6 @@
 {
   "name": "@miguelfranken/payload-visual-editor",
-  "version": "0.1.0-alpha.5",
+  "version": "0.1.0-alpha.11",
   "description": "Native-form visual composition for existing Payload CMS block schemas.",
   "type": "module",
   "license": "MIT",

@@ -4,6 +4,10 @@ import { buildFormState } from "@payloadcms/ui/utilities/buildFormState";
 import { getClientConfig } from "@payloadcms/ui/utilities/getClientConfig";
 import type { ReactNode } from "react";
 import type { VisualEditorOptions } from "../types.js";
+import {
+  frontendConfig,
+  withFrontendImportMap,
+} from "../server/frontend-config.js";
 import { readEditContext } from "../server/context.js";
 import { resolveRoot } from "../schema/resolve.js";
 import { RenderServerComponent } from "@payloadcms/ui/elements/RenderServerComponent";
@@ -42,7 +46,7 @@ export async function FrontendEditor({
   theme?: "light" | "dark";
 }) {
   const { context, document } = await readEditContext(req, token, options);
-  req.payload.importMap = importMap;
+  req = withFrontendImportMap(req, importMap);
   const available = await resolveTools(options, {
     req,
     target: context.target,
@@ -126,7 +130,7 @@ export async function FrontendEditor({
   });
   const permissions = await getAccessResults({ req });
   const nativeClientConfig = getClientConfig({
-    config: req.payload.config,
+    config: frontendConfig(req.payload.config),
     i18n: req.i18n,
     importMap,
     user: req.user!,
