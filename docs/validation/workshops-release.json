@@ -1,16 +1,16 @@
 {
-  "packageVersion": "0.1.0-alpha.11",
-  "packageSHA256": "558f604400797be35593b43a100d6d3c84e5444360ac4869a2d2c72e471e5ab0",
-  "packageSourceSHA": "021aaa6e983c28865d64eec7f17effabe5728053",
-  "packageValidationRun": "https://github.com/MiguelFranken/payload-visual-editor/actions/runs/41658520822",
-  "appSHA": "c647295b51fc417ac3d273905f71d424a27d1a78",
+  "packageName": "@miguel.franken/payload-visual-editor",
+  "packageVersion": "0.1.0-alpha.13",
+  "packageSHA256": "4a2cd3ce64214a890c24b3a9d6ec85fcbcc9d6b137f8703f56f024b228eecbea",
+  "packageSourceSHA": "8f9275da5eb58785460b16bdf152fc0e8b488005",
+  "packageValidationRun": "https://github.com/MiguelFranken/payload-visual-editor/actions/runs/41667663418",
+  "appSHA": "c9cc9ec3e40b371e1da21c694ecf82632cf69a96",
   "appPullRequest": "https://github.com/MiguelFranken/fluid-bodies/pull/397",
-  "appCI": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/41660888151",
   "result": "passed",
   "active": {
-    "appSHA": "c647295b51fc417ac3d273905f71d424a27d1a78",
+    "appSHA": "c9cc9ec3e40b371e1da21c694ecf82632cf69a96",
     "dirty": false,
-    "runId": "20261103T150944Z-32499",
+    "runId": "20261103T155831Z-16160",
     "result": "passed",
     "totals": {
       "failed": 0,
@@ -22,10 +22,10 @@
       {
         "title": "chromium > visual-editor.spec.ts > website editing uses the installed native Form and keeps drafts private",
         "status": "passed",
-        "durationMs": 28305
+        "durationMs": 40180
       }
     ]
   },
-  "report": "https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/466",
-  "scope": "Exact main-CI archive installed in clean Workshops checkout; normal HTTPS Portless dev acceptance with synthetic records. Previous alpha.5 production matrix remains historical evidence. npm and remote preview validation are in progress."
+  "report": "https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/471",
+  "scope": "Exact clean main-CI alpha.13 archive installed in a committed Workshops checkout. Normal HTTPS Portless dev acceptance; synthetic records only. Registry OIDC publication and final remote preview acceptance follow this release gate."
 }
