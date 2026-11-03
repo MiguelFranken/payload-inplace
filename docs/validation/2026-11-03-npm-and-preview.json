@@ -1,0 +1,79 @@
+{
+  "verifiedAt": "2026-11-03",
+  "release": "https://github.com/MiguelFranken/payload-visual-editor/releases/tag/v0.1.0-alpha.13",
+  "packageSourceSHA": "2a97821dbd0ee8dfc07936a94b8ccb92ff4f7a77",
+  "workshops": {
+    "packageName": "@miguel.franken/payload-visual-editor",
+    "packageVersion": "0.1.0-alpha.13",
+    "packageSHA256": "4a2cd3ce64214a890c24b3a9d6ec85fcbcc9d6b137f8703f56f024b228eecbea",
+    "packageSourceSHA": "2a97821dbd0ee8dfc07936a94b8ccb92ff4f7a77",
+    "packageValidationRun": "https://github.com/MiguelFranken/payload-visual-editor/actions/runs/41669947989",
+    "appSHA": "96bcaa0dbef49b919c354751ff1f6b2c428d9c77",
+    "appPullRequest": "https://github.com/MiguelFranken/fluid-bodies/pull/397",
+    "result": "passed",
+    "active": {
+      "appSHA": "96bcaa0dbef49b919c354751ff1f6b2c428d9c77",
+      "dirty": false,
+      "runId": "20261103T161952Z-47476",
+      "result": "passed",
+      "totals": {
+        "failed": 0,
+        "passed": 1,
+        "skipped": 0,
+        "total": 1
+      },
+      "tests": [
+        {
+          "title": "chromium > visual-editor.spec.ts > website editing uses the installed native Form and keeps drafts private",
+          "status": "passed",
+          "durationMs": 39312
+        }
+      ]
+    },
+    "report": "https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/472",
+    "scope": "Public npm alpha.13 installed through a frozen lockfile, deployed to an isolated Vercel preview and validated with synthetic Page records. Production rollout remains separately controlled.",
+    "artifactEquivalence": {
+      "previousSourceSHA": "8f9275da5eb58785460b16bdf152fc0e8b488005",
+      "sha256": "4a2cd3ce64214a890c24b3a9d6ec85fcbcc9d6b137f8703f56f024b228eecbea",
+      "result": "byte-for-byte identical after release workflow path correction"
+    },
+    "appCI": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/41671887929",
+    "preview": {
+      "id": "dpl_A49ckd2X7s8JyvihvXuFpHde4Ed9",
+      "url": "https://fluid-bodies-workshops-gx5fwq1dc-fluid-bodies.vercel.app",
+      "readyState": "READY",
+      "sourceSHA": "96bcaa0dbef49b919c354751ff1f6b2c428d9c77",
+      "deploymentWorkflow": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/41671888008"
+    },
+    "npm": {
+      "package": "@miguel.franken/payload-visual-editor",
+      "version": "0.1.0-alpha.13",
+      "tarball": "https://registry.npmjs.org/@miguel.franken/payload-visual-editor/-/payload-visual-editor-0.1.0-alpha.13.tgz",
+      "anonymousArchiveSHA256": "4a2cd3ce64214a890c24b3a9d6ec85fcbcc9d6b137f8703f56f024b228eecbea",
+      "publicationRun": "https://github.com/MiguelFranken/payload-visual-editor/actions/runs/41671085064",
+      "publishJob": "success",
+      "provenance": {
+        "url": "https://registry.npmjs.org/-/npm/v1/attestations/@miguel.franken%2fpayload-visual-editor@0.1.0-alpha.13",
+        "provenance": {
+          "predicateType": "https://slsa.dev/provenance/v1"
+        }
+      }
+    }
+  },
+  "browser": {
+    "adapter": "Codex in-app browser",
+    "result": "working after desktop restart",
+    "previewConsoleErrors": 0,
+    "previewViewport": 778,
+    "previewPageWidth": 778,
+    "editorElementsOnAnonymousHomepage": 0,
+    "review": "Actual deployed desktop and mobile native-row captures inspected; page layout and scoped native fields retained."
+  },
+  "channels": {
+    "next": "0.1.0-alpha.13",
+    "bootstrap": "0.1.0-alpha.12",
+    "latest": "0.1.0-alpha.12",
+    "cleanup": "npm rejected latest-tag removal with HTTP 400 after web verification. No version was removed. Consumers pin alpha.13 or use next."
+  },
+  "scope": "Experimental public npm release and isolated Workshops preview complete; production app not merged or deployed."
+}
