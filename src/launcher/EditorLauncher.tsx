@@ -2,9 +2,10 @@ import type { PayloadRequest } from "payload";
 import type { EditorTarget, VisualEditorOptions } from "../types.js";
 import { authorizeTarget } from "../server/context.js";
 import { resolveTools } from "../server/tools.js";
+import { DeferredInPlaceLauncher as InPlaceLauncher } from "./DeferredLauncher.js";
 import { launcherStyles } from "./styles.generated.js";
 /** Mount only for an authenticated CMS editor. Hosts can skip all auth work when their auth cookie is absent.
- * One explicit POST activation require no launcher JavaScript, including on anonymous route chunks.
+ * In-place hosts use a small activation adapter; anonymous routes never mount it.
  * Public HTML and published data remain separate from authoring: this serializes only a target and capability-filtered labels, never draft values or activation proof.
  */
 export async function EditorLauncher({
@@ -44,41 +45,55 @@ export async function EditorLauncher({
       : panel
         ? `panel:${panel.id}`
         : undefined;
+  const fields = (
+    <>
+      <input type="hidden" name="collection" value={target.collection} />
+      <input type="hidden" name="id" value={target.id} />
+      <input type="hidden" name="root" value={target.root} />
+      {tool && <input type="hidden" name="tool" value={tool} />}
+      <button
+        type="submit"
+        aria-label={de ? "Seite bearbeiten" : "Edit page"}
+        title={de ? "Seite bearbeiten" : "Edit page"}
+        className="pvl:flex! pvl:size-11! pvl:cursor-pointer pvl:items-center! pvl:justify-center! pvl:box-border pvl:rounded-xl! pvl:border-0! pvl:bg-[var(--pve-accent,#3451eb)]! pvl:p-0! pvl:text-[var(--pve-accent-contrast,#fff)]! pvl:shadow-[0_4px_24px_#00000026] pvl:hover:brightness-90 pvl:focus-visible:outline-2 pvl:focus-visible:outline-offset-2 pvl:focus-visible:outline-[var(--pve-accent,#3451eb)] pvl:motion-safe:active:scale-[0.96] pvl:motion-safe:transition-[scale,filter] pvl:motion-safe:duration-100 pvl:disabled:cursor-wait pvl:disabled:opacity-60"
+      >
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          aria-hidden="true"
+        >
+          <path d="m16 3 5 5-12 12-6 1 1-6L16 3Z" />
+          <path d="m13 6 5 5" />
+        </svg>
+      </button>
+    </>
+  );
+  const action = `${req.payload.config.routes.api}/visual-editor/activate`;
+  const className =
+    "pvl:fixed pvl:end-5 pvl:bottom-4 pvl:z-[var(--pve-z-index,2147483000)] pvl:m-0 pvl:font-[family-name:var(--pve-font-family,system-ui)]";
   return (
     <aside
       data-ve-launcher=""
       aria-label={de ? "Seitenwerkzeuge" : "Page tools"}
     >
       <style>{launcherStyles}</style>
-      <form
-        method="post"
-        action={`${req.payload.config.routes.api}/visual-editor/activate`}
-        className="pvl:fixed pvl:end-5 pvl:bottom-4 pvl:z-[var(--pve-z-index,2147483000)] pvl:m-0 pvl:font-[family-name:var(--pve-font-family,system-ui)]"
-      >
-        <input type="hidden" name="collection" value={target.collection} />
-        <input type="hidden" name="id" value={target.id} />
-        <input type="hidden" name="root" value={target.root} />
-        {tool && <input type="hidden" name="tool" value={tool} />}
-        <button
-          type="submit"
-          aria-label={de ? "Seite bearbeiten" : "Edit page"}
-          title={de ? "Seite bearbeiten" : "Edit page"}
-          className="pvl:flex! pvl:size-11! pvl:cursor-pointer pvl:items-center! pvl:justify-center! pvl:box-border pvl:rounded-xl! pvl:border-0! pvl:bg-[var(--pve-accent,#3451eb)]! pvl:p-0! pvl:text-[var(--pve-accent-contrast,#fff)]! pvl:shadow-[0_4px_24px_#00000026] pvl:hover:brightness-90 pvl:focus-visible:outline-2 pvl:focus-visible:outline-offset-2 pvl:focus-visible:outline-[var(--pve-accent,#3451eb)] pvl:motion-safe:active:scale-[0.96] pvl:motion-safe:transition-[scale,filter] pvl:motion-safe:duration-100"
+      {options.resolvePagePath ? (
+        <InPlaceLauncher
+          action={action}
+          de={de}
+          editorPath={options.editorPath || "/visual-editor"}
         >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            aria-hidden="true"
-          >
-            <path d="m16 3 5 5-12 12-6 1 1-6L16 3Z" />
-            <path d="m13 6 5 5" />
-          </svg>
-        </button>
-      </form>
+          {fields}
+        </InPlaceLauncher>
+      ) : (
+        <form method="post" action={action} className={className}>
+          {fields}
+        </form>
+      )}
     </aside>
   );
 }

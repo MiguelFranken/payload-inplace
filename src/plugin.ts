@@ -1,3 +1,4 @@
+import { readEditorCookie, validatePagePath } from "./server/page-context.js";
 import type {
   Config,
   Plugin,
@@ -15,6 +16,7 @@ import {
   authorizeTarget,
   createContext,
   signContext,
+  verifyContext,
   readEditContext,
 } from "./server/context.js";
 
@@ -375,9 +377,23 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
                   { status: 400, headers },
                 );
               const document = await authorizeTarget(req, target, options);
-              const context = createContext(req, target, options.sessionTTL);
+              const resolvedPagePath = await options.resolvePagePath?.({
+                req,
+                target,
+                document,
+              });
+              const pagePath =
+                resolvedPagePath === undefined
+                  ? undefined
+                  : validatePagePath(resolvedPagePath, origin);
+              const context = createContext(
+                req,
+                target,
+                options.sessionTTL,
+                pagePath,
+              );
               const token = signContext(context, req.payload.secret);
-              const cookie = `payload-ve-${context.nonce}=${token}; HttpOnly; SameSite=Strict; Path=${editorPath}; Max-Age=${Math.floor((context.expires - Date.now()) / 1000)}${origin.startsWith("https:") ? "; Secure" : ""}`;
+              const cookie = `payload-ve-${context.nonce}=${token}; HttpOnly; SameSite=Strict; Path=${pagePath ? "/" : editorPath}; Max-Age=${Math.floor((context.expires - Date.now()) / 1000)}${origin.startsWith("https:") ? "; Secure" : ""}`;
               if (nativeForm) {
                 const requested = String(values?.get("tool") || "content");
                 const available = await resolveTools(options, {
@@ -402,7 +418,9 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
                   headers: {
                     ...headers,
                     "Set-Cookie": cookie,
-                    Location: `${editorPath}?context=${encodeURIComponent(context.nonce)}&tool=${encodeURIComponent(tool)}`,
+                    Location:
+                      pagePath ||
+                      `${editorPath}?context=${encodeURIComponent(context.nonce)}&tool=${encodeURIComponent(tool)}`,
                   },
                 });
               }
@@ -412,6 +430,7 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
                     nonce: context.nonce,
                     target: context.target,
                     expires: context.expires,
+                    ...(pagePath ? { pagePath } : {}),
                   },
                 },
                 {
@@ -448,11 +467,15 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
                 { error: "Invalid context" },
                 { status: 400, headers },
               );
+            const active = verifyContext(
+              readEditorCookie(req, input.nonce),
+              req.payload.secret,
+            );
             return new Response(null, {
               status: 204,
               headers: {
                 ...headers,
-                "Set-Cookie": `payload-ve-${input.nonce}=; HttpOnly; SameSite=Strict; Path=${editorPath}; Max-Age=0${origin.startsWith("https:") ? "; Secure" : ""}`,
+                "Set-Cookie": `payload-ve-${input.nonce}=; HttpOnly; SameSite=Strict; Path=${active?.pagePath ? "/" : editorPath}; Max-Age=0${origin.startsWith("https:") ? "; Secure" : ""}`,
               },
             });
           },

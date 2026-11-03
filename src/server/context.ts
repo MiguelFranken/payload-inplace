@@ -43,6 +43,11 @@ export function verifyContext(
       typeof c.user !== "string" ||
       typeof c.session !== "string" ||
       typeof c.nonce !== "string" ||
+      (c.pagePath !== undefined &&
+        (typeof c.pagePath !== "string" ||
+          !c.pagePath.startsWith("/") ||
+          c.pagePath.startsWith("//") ||
+          /[?#\\]/.test(c.pagePath))) ||
       !Number.isFinite(c.expires) ||
       c.expires <= now
     )
@@ -116,11 +121,13 @@ export function createContext(
   req: PayloadRequest,
   target: EditorTarget,
   ttl = 900000,
+  pagePath?: string,
 ): EditContext {
   if (!req.user || !currentSession(req))
     throw new Error("Session-backed authentication required");
   return {
     target,
+    ...(pagePath ? { pagePath } : {}),
     user: `${req.user.collection}:${req.user.id}`,
     session: currentSession(req),
     expires: Date.now() + Math.min(ttl, 900000),

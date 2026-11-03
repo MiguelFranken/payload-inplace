@@ -2,6 +2,9 @@ import { defineConfig } from "tsdown";
 export default defineConfig({
   entry: {
     index: "src/index.ts",
+    "exports/routing": "src/exports/routing.ts",
+    "exports/next": "src/exports/next.ts",
+    "exports/native": "src/exports/native.ts",
     "exports/entry": "src/exports/entry.ts",
     "exports/launcher": "src/exports/launcher.ts",
     "exports/frontend": "src/exports/frontend.ts",
@@ -18,7 +21,10 @@ export default defineConfig({
   target: "es2022",
   platform: "neutral",
   clean: true,
-  deps: { skipNodeModulesBundle: true, neverBundle: [/^node:/] },
+  deps: {
+    skipNodeModulesBundle: true,
+    neverBundle: [/^node:/, /^@payload-visual-editor\/native-handler$/],
+  },
   dts: true,
   css: { inject: true },
 });

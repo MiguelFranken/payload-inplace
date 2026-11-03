@@ -179,6 +179,10 @@ const content = (
   ],
 });
 export const editorOptions: VisualEditorOptions = {
+  resolvePagePath: ({ target, document }) =>
+    document.slug?.startsWith("inplace-")
+      ? `/${target.collection}/${document.slug}`
+      : undefined,
   operationalWrites: {
     offers: {
       paths: ["unrelated"],

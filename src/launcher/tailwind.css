@@ -1,5 +1,16 @@
 @layer pvl-theme, pvl-utilities;
 @import "tailwindcss/theme.css" layer(pvl-theme) prefix(pvl);
-@import "tailwindcss/utilities.css" layer(pvl-utilities) prefix(pvl) source(none);
+@import "tailwindcss/utilities.css" layer(pvl-utilities) prefix(pvl)
+  source(none);
 @source "./EditorLauncher.tsx";
-@theme inline { --text-sm: var(--pve-font-body, 14px); --text-xs: var(--pve-font-caption, 12px); --spacing: 4px; }
+@theme inline {
+  --text-sm: var(--pve-font-body, 14px);
+  --text-xs: var(--pve-font-caption, 12px);
+  --spacing: 4px;
+}
+
+@source "./InPlaceLauncher.tsx";
+
+@source "./EditorPageTransition.tsx";
+
+@source "./DeferredLauncher.tsx";

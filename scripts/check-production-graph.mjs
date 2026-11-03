@@ -18,59 +18,83 @@ const published = manifest("(public)/[collection]/[slug]"),
 export function assertPublicGraph(modules) {
   for (const source of Object.keys(modules))
     if (
+      !source.endsWith("/dist/launcher/DeferredLauncher.js") &&
       /(?:\[project\]\/dist\/|@payloadcms[+/]ui|@payloadcms[+/]richtext|lexical|visual-editor)/.test(
         source,
       )
     )
       throw Error(`Public client module leak: ${source}`);
 }
-assertPublicGraph(published.clientModules);
-// Positive and intentional negative controls prevent empty or ineffective assertions.
+// The route manifest registers both published and authorized RSC branches. The production
+// browser observation identifies which registered chunks were actually delivered publicly.
+const observation = JSON.parse(
+  fs.readFileSync("test-results/public-anonymous.json", "utf8"),
+);
+if (!observation.production || observation.samples.length !== 3)
+  throw Error("Fresh production anonymous resource observations required");
+const delivered = new Set(
+  observation.samples.flatMap((sample) =>
+    sample.resources.map((resource) => resource.url),
+  ),
+);
+const deliveredModules = Object.fromEntries(
+  Object.entries(published.clientModules).filter(([, module]) =>
+    module.chunks.some((chunk) =>
+      delivered.has(chunk.startsWith("/_next/") ? chunk : `/_next/${chunk}`),
+    ),
+  ),
+);
+if (!Object.keys(deliveredModules).length)
+  throw Error("Empty delivered graph cannot prove isolation");
+assertPublicGraph(deliveredModules);
 if (
   !Object.keys(preview.clientModules).some((source) =>
-    source.includes("[project]/dist/frontend/FrontendShell.js"),
+    source.includes("[project]/dist/frontend/DeferredEditor.js"),
   )
 )
   throw Error("Active editor graph missing native shell");
 let rejected = false;
 try {
   assertPublicGraph({
-    ...published.clientModules,
+    ...deliveredModules,
     "[project]/dist/preview/PreviewBridge.js": {},
   });
 } catch {
   rejected = true;
 }
 if (!rejected) throw Error("Leak negative control failed");
-const chunks = [
-  ...new Set(Object.values(published.clientModules).flatMap((m) => m.chunks)),
-];
+const bootstrap = fs.readFileSync("dist/launcher/DeferredLauncher.js", "utf8");
+if (
+  Buffer.byteLength(bootstrap) > 4096 ||
+  /@payloadcms|\.css|useEffect|useLayoutEffect/.test(bootstrap)
+)
+  throw Error(
+    "The inert public registration must stay small and free of native UI/styles/effects",
+  );
 let bytes = 0;
-for (const chunk of chunks) {
+for (const chunk of delivered) {
   const content = fs.readFileSync(
     path.join(root, chunk.replace("/_next/", "")),
     "utf8",
   );
   bytes += Buffer.byteLength(content);
-  if (/payload-visual-editor\/v1|data-ve-overlay|ve-workspace/.test(content))
-    throw Error(`Editor implementation in public/shared chunk ${chunk}`);
+  if (
+    /payload-visual-editor\/v1|data-ve-overlay|ve-workspace|data-ve-ui|pve:inline-geometry/.test(
+      content,
+    )
+  )
+    throw Error(`Editor implementation delivered in public chunk ${chunk}`);
 }
-const css = Object.values(published.entryCSSFiles).flat();
-if (css.some((x) => /visual-editor|admin\/styles/.test(JSON.stringify(x))))
-  throw Error("Public editor styles");
-fs.mkdirSync("test-results", { recursive: true });
 fs.writeFileSync(
   "test-results/production-graph.json",
   JSON.stringify(
     {
-      modules: Object.keys(published.clientModules),
-      chunks,
-      decodedClientReferenceJSBytes: bytes,
+      registeredModules: Object.keys(published.clientModules).length,
+      deliveredModules: Object.keys(deliveredModules),
+      chunks: [...delivered],
+      decodedDeliveredBytes: bytes,
       heavyEditorModules: 0,
-      launcherClientModules: Object.keys(published.clientModules).filter(
-        (source) => source.includes("[project]/dist/launcher/Launcher.js"),
-      ).length,
-      editorCSS: 0,
+      deferredRegistrationBytes: Buffer.byteLength(bootstrap),
       activeControl: true,
       negativeControl: true,
     },
@@ -79,5 +103,5 @@ fs.writeFileSync(
   ),
 );
 console.log(
-  `Production graph passed: ${chunks.length} framework client-reference chunks, ${bytes} decoded bytes; editor graph isolated`,
+  `Production delivered graph passed: ${delivered.size} JS/CSS resources, ${bytes} decoded bytes; native editor remains unloaded`,
 );

@@ -1,3 +1,4 @@
+import { writeFile } from "node:fs/promises";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 async function login(page: any, role = "admin") {
@@ -320,9 +321,10 @@ for (const role of ["anonymous", "reader", "admin"])
         page.off("response", response);
         page.off("request", request);
         const resources = await Promise.all(sources);
+        // Authorized inactive editors may load the small launcher/viewport bridge; native fields/preview/styles must stay unloaded.
         expect(
           resources.filter((r) =>
-            /payload-visual-editor\/v1|data-ve-overlay|ve-workspace|data-ve-ui|data-ve-hover-outline/.test(
+            /payload-visual-editor\/v1|data-ve-overlay|ve-workspace|data-ve-preview|data-ve-hover-outline|document-fields/.test(
               r.text,
             ),
           ),
@@ -352,6 +354,14 @@ for (const role of ["anonymous", "reader", "admin"])
           resources: resources.map(({ url, bytes }) => ({ url, bytes })),
         });
       }
+      await writeFile(
+        `test-results/public-${role}.json`,
+        JSON.stringify(
+          { role, production: process.env.VE_PRODUCTION === "1", samples },
+          null,
+          2,
+        ),
+      );
       await testInfo.attach(`public-${role}.json`, {
         body: JSON.stringify(
           {

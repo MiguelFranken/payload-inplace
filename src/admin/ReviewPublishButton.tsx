@@ -17,7 +17,7 @@ import { useModalDismiss } from "./native-accessibility.js";
 import { DocumentReview } from "./DocumentReview.js";
 import { Button as ChromeButton } from "../frontend/ui/button.js";
 import { chrome } from "./chrome.js";
-import "./styles.css";
+
 /** Document-wide saved-draft review uses the same native Form submit path as standard publishing. */
 export function ReviewPublishButton({
   compact = false,
@@ -162,23 +162,13 @@ export function ReviewPublishButton({
             />
           </div>
           <footer
-            className={`pve:shrink-0 pve:border-0 pve:border-t pve:border-solid pve:p-5 ${chrome.controls} ${chrome.border}`}
+            className={`pve:shrink-0 pve:justify-end pve:border-0 pve:border-t pve:border-solid pve:p-5 ${chrome.controls} ${chrome.border}`}
           >
             {error && (
               <p role="alert" className="pve:w-full pve:text-sm">
                 {error}
               </p>
             )}
-            <Button
-              type="button"
-              margin={false}
-              disabled={processing || background || form.disabled}
-              onClick={() => void publish()}
-            >
-              {de
-                ? "Geprüften Entwurf veröffentlichen"
-                : "Publish reviewed draft"}
-            </Button>
             <Button
               type="button"
               margin={false}
@@ -189,6 +179,16 @@ export function ReviewPublishButton({
               }}
             >
               {de ? "Schließen" : "Close review"}
+            </Button>
+            <Button
+              type="button"
+              margin={false}
+              disabled={processing || background || form.disabled}
+              onClick={() => void publish()}
+            >
+              {de
+                ? "Geprüften Entwurf veröffentlichen"
+                : "Publish reviewed draft"}
             </Button>
           </footer>
         </Modal>

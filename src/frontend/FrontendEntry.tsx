@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { EditorTarget } from "../types.js";
 import "../admin/styles.css";
@@ -19,6 +20,7 @@ export function FrontendEntry({
   signedIn: boolean;
   children?: React.ReactNode;
 }) {
+  const router = useRouter();
   const [email, setEmail] = useState(""),
     [password, setPassword] = useState(""),
     [busy, setBusy] = useState(false),
@@ -49,6 +51,10 @@ export function FrontendEntry({
           "Editing is unavailable for this account. Check your document permissions or sign in with another account.",
         );
       const { context } = await response.json();
+      if (context.pagePath) {
+        router.replace(context.pagePath);
+        return;
+      }
       window.location.assign(
         `${editorPath}?context=${encodeURIComponent(context.nonce)}`,
       );

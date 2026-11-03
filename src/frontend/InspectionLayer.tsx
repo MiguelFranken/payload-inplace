@@ -158,15 +158,14 @@ export function InspectionLayer({
           event.target.closest("[data-ve-inline-active]"))
       )
         return;
-      // Authoring is a read-only rendering capability. Host renderers also suppress their business effects.
-      event.preventDefault();
-      event.stopImmediatePropagation();
       if (!inspecting) return;
       const target = readTarget(
         event.target instanceof Element ? event.target : null,
       );
-      if (target)
-        onPick({ ...target, point: { x: event.clientX, y: event.clientY } });
+      if (!target) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      onPick({ ...target, point: { x: event.clientX, y: event.clientY } });
     }
     function submit(event: Event) {
       if (!ignored(event)) {

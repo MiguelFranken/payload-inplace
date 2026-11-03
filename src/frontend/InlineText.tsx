@@ -27,6 +27,7 @@ export function InlineText({
     guard = useInlinePreviewGuard();
   const current = useRef({ field, disabled });
   current.current = { field, disabled: disabled || field.disabled };
+  const beginEditing = useRef<(() => void) | null>(null);
   const composing = useRef(false),
     editing = useRef(false),
     dirty = useRef(false);
@@ -58,7 +59,12 @@ export function InlineText({
       return element.innerText.replace(/\r\n/g, "\n");
     }
     function commit() {
-      if (!dirty.current || composing.current || current.current.disabled)
+      if (
+        !dirty.current ||
+        composing.current ||
+        current.current.disabled ||
+        !element.isConnected
+      )
         return;
       dirty.current = false;
       const value = text();
@@ -73,17 +79,23 @@ export function InlineText({
       commit();
     }
     function begin() {
-      if (current.current.disabled) return;
+      if (current.current.disabled || editing.current) return;
       editing.current = true;
       guard.begin();
-      if (placeholder && !current.current.field.value) element.textContent = "";
+      if (
+        placeholder &&
+        element.textContent === placeholder &&
+        !current.current.field.value
+      )
+        element.textContent = "";
     }
+    beginEditing.current = begin;
     function finish() {
       if (!editing.current) return;
       commit();
       editing.current = false;
       guard.end();
-      if (!current.current.field.value && placeholder)
+      if (element.isConnected && placeholder && !element.textContent)
         element.textContent = placeholder;
     }
     function key(event: KeyboardEvent) {
@@ -114,9 +126,8 @@ export function InlineText({
     element.setAttribute("aria-multiline", String(multiline));
     element.setAttribute("tabindex", "0");
     element.setAttribute("data-ve-inline-active", "");
-    const value = current.current.field.value || "";
-    if (element.textContent !== (value || placeholder))
-      element.textContent = value || placeholder;
+    // Adopt the rendered DOM. Optional fields may intentionally display inherited/fallback
+    // content; focusing must never replace that content with an empty native value.
     element.addEventListener("focus", begin);
     element.addEventListener("blur", finish);
     element.addEventListener("input", input);
@@ -155,6 +166,7 @@ export function InlineText({
       selection?.addRange(range);
     }
     return () => {
+      beginEditing.current = null;
       finish();
       element.removeEventListener("focus", begin);
       element.removeEventListener("blur", finish);
@@ -174,7 +186,13 @@ export function InlineText({
       "contenteditable",
       disabled || field.disabled ? "false" : "plaintext-only",
     );
-    if (disabled && editing.current) {
+    if (
+      !disabled &&
+      !field.disabled &&
+      element.ownerDocument.activeElement === element
+    )
+      beginEditing.current?.();
+    if ((disabled || field.disabled) && editing.current) {
       element.blur();
     }
   }, [disabled, field.disabled, element]);
@@ -184,13 +202,8 @@ export function InlineText({
       element.setAttribute("aria-description", field.errorMessage);
     else element.removeAttribute("aria-description");
   }, [field.valid, field.errorMessage, element]);
-  useEffect(() => {
-    if (!editing.current && !composing.current) {
-      const value =
-        field.value || element.getAttribute("data-ve-placeholder") || "";
-      if (element.textContent !== value) element.textContent = value;
-    }
-  }, [field.value, element]);
+  // The consumer renderer owns model-to-DOM updates. This adapter owns only
+  // native input-to-Form updates, avoiding a second writer during focus/blur.
   return createPortal(
     <style data-ve-inline-styles="">{inlineStyles}</style>,
     element.ownerDocument.head,

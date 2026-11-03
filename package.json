@@ -1,6 +1,6 @@
 {
   "name": "@miguel.franken/payload-visual-editor",
-  "version": "0.1.0-alpha.13",
+  "version": "0.1.0-alpha.14",
   "description": "Native-form visual composition for existing Payload CMS block schemas.",
   "type": "module",
   "license": "MIT",
@@ -71,6 +71,20 @@
     "./entry": {
       "types": "./dist/exports/entry.d.ts",
       "import": "./dist/exports/entry.js"
+    },
+    "./next": {
+      "types": "./dist/exports/next.d.ts",
+      "import": "./dist/exports/next.js",
+      "default": "./dist/exports/next.js"
+    },
+    "./native": {
+      "types": "./dist/exports/native.d.ts",
+      "import": "./dist/exports/native.js",
+      "default": "./dist/exports/native.js"
+    },
+    "./routing": {
+      "types": "./dist/exports/routing.d.ts",
+      "import": "./dist/exports/routing.js"
     }
   },
   "publishConfig": {

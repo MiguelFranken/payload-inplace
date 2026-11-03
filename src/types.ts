@@ -17,8 +17,12 @@ export interface VisualEditorOptions {
   collections: Record<string, { roots: string[] }>;
   previewOrigin: string;
   previewPath?: string;
-  /** Protected frontend editing route; activation cookies never accompany ordinary public browsing. */
+  /** Legacy dedicated editing route. Same-page hosts explicitly opt into a signed website session through resolvePagePath. */
   editorPath?: string;
+  /** Resolve the real website pathname to enable in-place activation. Draft authorization remains document/session scoped. */
+  resolvePagePath?: (
+    context: EditorCapabilityContext,
+  ) => string | undefined | Promise<string | undefined>;
   disabled?: boolean;
   canEdit: (args: {
     req: PayloadRequest;
@@ -52,6 +56,8 @@ export interface EditContext {
   session: string;
   expires: number;
   nonce: string;
+  /** Server-resolved website path. Present only for same-page editing, never an authorization substitute. */
+  pagePath?: string;
 }
 
 /** Lock the exact write transaction before Payload reads the latest draft. Unsupported adapters must throw. */
@@ -67,7 +73,10 @@ export interface OperationalWritePolicy {
 }
 
 /** Browser-visible activation never includes the signed cookie or underlying authentication session ID. */
-export type Activation = Pick<EditContext, "target" | "nonce" | "expires">;
+export type Activation = Pick<
+  EditContext,
+  "target" | "nonce" | "expires" | "pagePath"
+>;
 
 /** Built-in tools are independently configurable; draft persistence still uses the single native Form. */
 export type EditorTool = "content" | "sections" | "history" | "publish";

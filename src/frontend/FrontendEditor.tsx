@@ -1,7 +1,10 @@
 import type { ImportMap, PayloadRequest, ServerFunctionClient } from "payload";
-import { docAccessOperation, getAccessResults } from "payload";
+import {
+  createClientConfig,
+  docAccessOperation,
+  getAccessResults,
+} from "payload";
 import { buildFormState } from "@payloadcms/ui/utilities/buildFormState";
-import { getClientConfig } from "@payloadcms/ui/utilities/getClientConfig";
 import type { ReactNode } from "react";
 import type { VisualEditorOptions } from "../types.js";
 import {
@@ -12,8 +15,10 @@ import { readEditContext } from "../server/context.js";
 import { resolveRoot } from "../schema/resolve.js";
 import { RenderServerComponent } from "@payloadcms/ui/elements/RenderServerComponent";
 import { editorLabel, resolveTools } from "../server/tools.js";
-import { ConfiguredFieldPanel } from "./ConfiguredFieldPanel.js";
-import { FrontendShell } from "./FrontendShell.js";
+import {
+  DeferredConfiguredFieldPanel as ConfiguredFieldPanel,
+  DeferredFrontendShell as FrontendShell,
+} from "./DeferredEditor.js";
 import { frontendStyles } from "./theme.generated.js";
 
 /** Prepare one native Payload Form for an explicitly activated frontend document.
@@ -129,7 +134,9 @@ export async function FrontendEditor({
     req,
   });
   const permissions = await getAccessResults({ req });
-  const nativeClientConfig = getClientConfig({
+  // Payload's getClientConfig cache is keyed only by language. A frontend projection must not
+  // reuse or replace an admin request's component graph; build this explicitly authorized projection locally.
+  const nativeClientConfig = createClientConfig({
     config: frontendConfig(req.payload.config),
     i18n: req.i18n,
     importMap,
@@ -177,6 +184,7 @@ export async function FrontendEditor({
         target: context.target,
         nonce: context.nonce,
         expires: context.expires,
+        ...(context.pagePath ? { pagePath: context.pagePath } : {}),
       }}
       blockControls={options.blockControls}
       tools={available.tools}
