@@ -1,2 +1,11 @@
-import type { ReactNode } from 'react'
-export default function Layout({ children }: { children: ReactNode }) { return <html lang="en"><body style={{ margin:0,fontFamily:'system-ui' }}>{children}</body></html> }
+import "../../styles.css";
+import type { ReactNode } from "react";
+export default function Layout({ children }: { children: ReactNode }) {
+  return (
+    <html lang="en">
+      <body className="demo:m-0 demo:font-sans demo:bg-white demo:text-neutral-950">
+        {children}
+      </body>
+    </html>
+  );
+}

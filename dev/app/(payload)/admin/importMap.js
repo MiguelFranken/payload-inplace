@@ -22,7 +22,13 @@ import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997e
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { VisualBlocksField as VisualBlocksField_d9cf3e7ea9648e96fe75a0ca5a6ad0b3 } from '@miguelfranken/payload-visual-editor/client'
+import { NativeSearchTitle as NativeSearchTitle_d92f48d00ffa582f1cd2bddd5ca2344f } from '../../../components/NativeSearchTitle'
+import { RevisionField as RevisionField_d9cf3e7ea9648e96fe75a0ca5a6ad0b3 } from '@miguelfranken/payload-visual-editor/client'
+import { ReviewPublishButton as ReviewPublishButton_d9cf3e7ea9648e96fe75a0ca5a6ad0b3 } from '@miguelfranken/payload-visual-editor/client'
+import { GuardedVersionView as GuardedVersionView_9920e01fa9814d59049aab6132058f82 } from '@miguelfranken/payload-visual-editor/rsc'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
+import { DemoPageDetails as DemoPageDetails_743174ed3366105df44127ddc7c174a9 } from '../../../components/DemoPageTools'
+import { DemoPageTools as DemoPageTools_743174ed3366105df44127ddc7c174a9 } from '../../../components/DemoPageTools'
 
 /** @type import('payload').ImportMap */
 export const importMap = {
@@ -50,5 +56,11 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@miguelfranken/payload-visual-editor/client#VisualBlocksField": VisualBlocksField_d9cf3e7ea9648e96fe75a0ca5a6ad0b3,
-  "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
+  "./components/NativeSearchTitle#NativeSearchTitle": NativeSearchTitle_d92f48d00ffa582f1cd2bddd5ca2344f,
+  "@miguelfranken/payload-visual-editor/client#RevisionField": RevisionField_d9cf3e7ea9648e96fe75a0ca5a6ad0b3,
+  "@miguelfranken/payload-visual-editor/client#ReviewPublishButton": ReviewPublishButton_d9cf3e7ea9648e96fe75a0ca5a6ad0b3,
+  "@miguelfranken/payload-visual-editor/rsc#GuardedVersionView": GuardedVersionView_9920e01fa9814d59049aab6132058f82,
+  "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1,
+  "./components/DemoPageTools#DemoPageDetails": DemoPageDetails_743174ed3366105df44127ddc7c174a9,
+  "./components/DemoPageTools#DemoPageTools": DemoPageTools_743174ed3366105df44127ddc7c174a9
 }

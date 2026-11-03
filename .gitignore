@@ -10,3 +10,21 @@ coverage/
 .env*
 !.env.example
 dev/media/
+
+# Tailwind output (compiled and packaged by build)
+src/admin/styles.css
+src/preview/styles.css
+dev/styles.css
+
+src/frontend/theme.generated.ts
+
+src/launcher/styles.css
+src/launcher/styles.generated.ts
+
+dev/protected.styles.css
+
+src/frontend/inline.styles.css
+src/frontend/inline-styles.generated.ts
+
+release-input-*/
+release-output/

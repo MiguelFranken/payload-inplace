@@ -1,0 +1,71 @@
+name: release
+on:
+  workflow_dispatch:
+    inputs:
+      validation_run:
+        description: Successful main push validation run ID
+        required: true
+        type: string
+      archive_sha256:
+        description: Exact validated and Workshops-tested archive SHA256
+        required: true
+        type: string
+      dist_tag:
+        description: Explicit distribution channel
+        type: choice
+        options: [next, latest]
+        default: next
+      publish:
+        description: Publish the verified artifact to public npm
+        type: boolean
+        default: false
+permissions:
+  contents: read
+  actions: read
+jobs:
+  prepare:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - name: Verify immutable candidate and consumer receipts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VALIDATION_RUN: ${{ inputs.validation_run }}
+          ARCHIVE_SHA256: ${{ inputs.archive_sha256 }}
+          DIST_TAG: ${{ inputs.dist_tag }}
+        run: node scripts/prepare-release.mjs "$VALIDATION_RUN" "$ARCHIVE_SHA256" "$DIST_TAG"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: release-candidate
+          path: release-output
+  publish:
+    if: inputs.publish
+    needs: prepare
+    environment: npm
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    steps:
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: release-candidate
+          path: candidate
+      - name: Verify checksum and publish the exact archive
+        env:
+          EXPECTED_SHA256: ${{ inputs.archive_sha256 }}
+        run: |
+          node --input-type=module -e 'import fs from "node:fs"; import {createHash} from "node:crypto"; const p=JSON.parse(fs.readFileSync("candidate/plan.json")); if(createHash("sha256").update(fs.readFileSync("candidate/candidate.tgz")).digest("hex")!==process.env.EXPECTED_SHA256 || p.sha256!==process.env.EXPECTED_SHA256 || !["next","latest"].includes(p.tag) || (p.version.includes("-") && p.tag!=="next")) throw Error("Release integrity failure");'
+          node --input-type=module -e 'import fs from "node:fs"; import {execFileSync} from "node:child_process"; const p=JSON.parse(fs.readFileSync("candidate/plan.json")); execFileSync("npm",["publish","candidate/candidate.tgz","--registry=https://registry.npmjs.org","--access=public","--provenance","--ignore-scripts",`--tag=${p.tag}`],{stdio:"inherit"});'

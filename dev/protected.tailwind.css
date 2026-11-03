@@ -1,0 +1,5 @@
+@layer demo-theme, demo-utilities;
+@import "tailwindcss/theme.css" layer(demo-theme) prefix(demo);
+@import "tailwindcss/utilities.css" layer(demo-utilities) prefix(demo)
+  source(none);
+@source "./app/(protected)/**/*.tsx";

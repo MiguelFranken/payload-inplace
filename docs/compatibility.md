@@ -1,0 +1,27 @@
+# Supported candidate contract
+
+The initial candidate intentionally pins one runtime combination. Broad peer ranges would claim evidence that does not exist.
+
+| Surface | Verified scope | Boundary |
+| --- | --- | --- |
+| Payload / UI / Postgres adapter | 3.91.0 | All packages must match exactly |
+| Next / React / React DOM | 16.4.2 / 19.2.6 / 19.2.6, production Turbopack | Other versions and bundlers are unverified |
+| Node / pnpm | Node 24 CI, Node 26 local; pnpm 10.28.0 | Node 24 is the release runtime |
+| Database | Postgres 17.11, real transactional competing writers | Mongo is a development/demo single-writer fallback; no atomic concurrency guarantee |
+| Documents | Collections with existing blocks roots; nested groups/tabs/arrays and blockReferences | No globals, localized editing or cross-origin frontend |
+| Native fields | Text, selects, upload/media drawers, arrays, Lexical and custom native components | Plain-text inline mode does not edit embedded Lexical nodes |
+| Browser | Chromium desktop and 320px reflow, keyboard, reduced motion | Firefox/WebKit, hardware touch, RTL and full assistive-technology speech are unverified |
+| Theme / language | Native light/dark controls; English/German editor copy | Consumer token overrides need their own contrast review |
+| Deployment | Same-origin local production builds, private/no-store editor responses, published public caches | No production CDN/service-worker guarantee is claimed without deployment-specific checks |
+
+The exact installed-consumer and Workshops package hashes live in `docs/validation`; historical reports retain their original candidate identifiers. Source-demo success is not a substitute for installed package acceptance.
+
+## Public resources and permissions are different guarantees
+
+The public route graph and actual script/style/API requests must exclude native editor clients until activation. Static asset URLs are public and are not secrets. A server-rendered minimized launcher is allowed only after a fresh CMS-editor capability check; it does not load the native form. Anonymous/customer visits do not initialize Payload merely to discover editor eligibility.
+
+The active route independently checks the current user, native document permissions and the signed document-scoped activation on every protected operation. Draft Mode and cookies alone grant no access. Draft data never enters shared public cache functions. Disabling the UI preserves revision columns and native write guards.
+
+## Measurement method
+
+CI uses a production build, an active-route graph positive control, an injected forbidden-module negative control and browser resources for anonymous, reader and inactive author identities. The clean installed app compares enabled/disabled public resource sets byte for byte. Timing samples are local diagnostic evidence, not a universal latency claim. The active 75-block typing probe records frame latency against a 100ms p95 budget. Geometry work is frame-coalesced; drag only commits the native mutation on drop. History is bounded and scoped to structural operations.

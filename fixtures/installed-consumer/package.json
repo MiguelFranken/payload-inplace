@@ -1,0 +1,34 @@
+{
+  "name": "payload-editor-clean-consumer",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.28.0",
+  "scripts": {
+    "build": "tailwindcss -i site.tailwind.css -o site.generated.css --minify && next build --turbopack",
+    "start": "next start --hostname 127.0.0.1 --port 3147",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@miguelfranken/payload-visual-editor": "file:./candidate.tgz",
+    "@payloadcms/db-postgres": "3.91.0",
+    "@payloadcms/next": "3.91.0",
+    "@payloadcms/richtext-lexical": "3.91.0",
+    "@payloadcms/ui": "3.91.0",
+    "graphql": "16.12.0",
+    "next": "16.4.2",
+    "payload": "3.91.0",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "sharp": "0.34.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.58.2",
+    "@tailwindcss/cli": "4.3.3",
+    "tailwindcss": "4.3.3",
+    "@types/node": "^24.0.0",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "typescript": "5.9.3",
+    "tsx": "4.21.0"
+  }
+}

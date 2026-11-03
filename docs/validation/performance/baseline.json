@@ -1,0 +1,350 @@
+{
+  "scope": "local synthetic demo; decoded JS/CSS bytes, not transfer-compressed bytes; bounded idle observation",
+  "measurements": [
+    {
+      "role": "anonymous",
+      "disabled": true,
+      "node": "v26.0.0",
+      "samples": [
+        {
+          "ttfb": 7.600000023841858,
+          "dom": 56.10000002384186,
+          "requests": 9,
+          "decodedResourceBytes": 460281,
+          "resources": [
+            {
+              "url": "/_next/static/chunks/0x72bnk464y6c.css",
+              "bytes": 2158
+            },
+            {
+              "url": "/_next/static/chunks/20wen1g5_o_lo.js",
+              "bytes": 13311
+            },
+            {
+              "url": "/_next/static/chunks/124yikkp5in-g.js",
+              "bytes": 30179
+            },
+            {
+              "url": "/_next/static/chunks/3bieweqjq9y4j.js",
+              "bytes": 13888
+            },
+            {
+              "url": "/_next/static/chunks/turbopack-2c3mg3r-05n1w.js",
+              "bytes": 11255
+            },
+            {
+              "url": "/_next/static/chunks/0xg6fs89o7rbm.js",
+              "bytes": 159548
+            },
+            {
+              "url": "/_next/static/chunks/24c90_jw-bs5o.js",
+              "bytes": 229942
+            }
+          ]
+        },
+        {
+          "ttfb": 12.200000047683716,
+          "dom": 23.100000023841858,
+          "requests": 8,
+          "decodedResourceBytes": 460281,
+          "resources": [
+            {
+              "url": "/_next/static/chunks/0x72bnk464y6c.css",
+              "bytes": 2158
+            },
+            {
+              "url": "/_next/static/chunks/20wen1g5_o_lo.js",
+              "bytes": 13311
+            },
+            {
+              "url": "/_next/static/chunks/124yikkp5in-g.js",
+              "bytes": 30179
+            },
+            {
+              "url": "/_next/static/chunks/24c90_jw-bs5o.js",
+              "bytes": 229942
+            },
+            {
+              "url": "/_next/static/chunks/0xg6fs89o7rbm.js",
+              "bytes": 159548
+            },
+            {
+              "url": "/_next/static/chunks/turbopack-2c3mg3r-05n1w.js",
+              "bytes": 11255
+            },
+            {
+              "url": "/_next/static/chunks/3bieweqjq9y4j.js",
+              "bytes": 13888
+            }
+          ]
+        },
+        {
+          "ttfb": 12.800000071525574,
+          "dom": 21.899999976158142,
+          "requests": 8,
+          "decodedResourceBytes": 460281,
+          "resources": [
+            {
+              "url": "/_next/static/chunks/0x72bnk464y6c.css",
+              "bytes": 2158
+            },
+            {
+              "url": "/_next/static/chunks/20wen1g5_o_lo.js",
+              "bytes": 13311
+            },
+            {
+              "url": "/_next/static/chunks/124yikkp5in-g.js",
+              "bytes": 30179
+            },
+            {
+              "url": "/_next/static/chunks/24c90_jw-bs5o.js",
+              "bytes": 229942
+            },
+            {
+              "url": "/_next/static/chunks/0xg6fs89o7rbm.js",
+              "bytes": 159548
+            },
+            {
+              "url": "/_next/static/chunks/turbopack-2c3mg3r-05n1w.js",
+              "bytes": 11255
+            },
+            {
+              "url": "/_next/static/chunks/3bieweqjq9y4j.js",
+              "bytes": 13888
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "role": "reader",
+      "disabled": true,
+      "node": "v26.0.0",
+      "samples": [
+        {
+          "ttfb": 8.899999976158142,
+          "dom": 29.699999928474426,
+          "requests": 9,
+          "decodedResourceBytes": 460281,
+          "resources": [
+            {
+              "url": "/_next/static/chunks/0x72bnk464y6c.css",
+              "bytes": 2158
+            },
+            {
+              "url": "/_next/static/chunks/20wen1g5_o_lo.js",
+              "bytes": 13311
+            },
+            {
+              "url": "/_next/static/chunks/124yikkp5in-g.js",
+              "bytes": 30179
+            },
+            {
+              "url": "/_next/static/chunks/turbopack-2c3mg3r-05n1w.js",
+              "bytes": 11255
+            },
+            {
+              "url": "/_next/static/chunks/3bieweqjq9y4j.js",
+              "bytes": 13888
+            },
+            {
+              "url": "/_next/static/chunks/0xg6fs89o7rbm.js",
+              "bytes": 159548
+            },
+            {
+              "url": "/_next/static/chunks/24c90_jw-bs5o.js",
+              "bytes": 229942
+            }
+          ]
+        },
+        {
+          "ttfb": 12.599999904632568,
+          "dom": 22.600000023841858,
+          "requests": 8,
+          "decodedResourceBytes": 460281,
+          "resources": [
+            {
+              "url": "/_next/static/chunks/0x72bnk464y6c.css",
+              "bytes": 2158
+            },
+            {
+              "url": "/_next/static/chunks/20wen1g5_o_lo.js",
+              "bytes": 13311
+            },
+            {
+              "url": "/_next/static/chunks/124yikkp5in-g.js",
+              "bytes": 30179
+            },
+            {
+              "url": "/_next/static/chunks/24c90_jw-bs5o.js",
+              "bytes": 229942
+            },
+            {
+              "url": "/_next/static/chunks/0xg6fs89o7rbm.js",
+              "bytes": 159548
+            },
+            {
+              "url": "/_next/static/chunks/turbopack-2c3mg3r-05n1w.js",
+              "bytes": 11255
+            },
+            {
+              "url": "/_next/static/chunks/3bieweqjq9y4j.js",
+              "bytes": 13888
+            }
+          ]
+        },
+        {
+          "ttfb": 17.100000023841858,
+          "dom": 25.300000071525574,
+          "requests": 8,
+          "decodedResourceBytes": 460281,
+          "resources": [
+            {
+              "url": "/_next/static/chunks/0x72bnk464y6c.css",
+              "bytes": 2158
+            },
+            {
+              "url": "/_next/static/chunks/20wen1g5_o_lo.js",
+              "bytes": 13311
+            },
+            {
+              "url": "/_next/static/chunks/124yikkp5in-g.js",
+              "bytes": 30179
+            },
+            {
+              "url": "/_next/static/chunks/24c90_jw-bs5o.js",
+              "bytes": 229942
+            },
+            {
+              "url": "/_next/static/chunks/0xg6fs89o7rbm.js",
+              "bytes": 159548
+            },
+            {
+              "url": "/_next/static/chunks/turbopack-2c3mg3r-05n1w.js",
+              "bytes": 11255
+            },
+            {
+              "url": "/_next/static/chunks/3bieweqjq9y4j.js",
+              "bytes": 13888
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "role": "admin",
+      "disabled": true,
+      "node": "v26.0.0",
+      "samples": [
+        {
+          "ttfb": 7.5,
+          "dom": 22.300000071525574,
+          "requests": 9,
+          "decodedResourceBytes": 460281,
+          "resources": [
+            {
+              "url": "/_next/static/chunks/0x72bnk464y6c.css",
+              "bytes": 2158
+            },
+            {
+              "url": "/_next/static/chunks/20wen1g5_o_lo.js",
+              "bytes": 13311
+            },
+            {
+              "url": "/_next/static/chunks/124yikkp5in-g.js",
+              "bytes": 30179
+            },
+            {
+              "url": "/_next/static/chunks/3bieweqjq9y4j.js",
+              "bytes": 13888
+            },
+            {
+              "url": "/_next/static/chunks/turbopack-2c3mg3r-05n1w.js",
+              "bytes": 11255
+            },
+            {
+              "url": "/_next/static/chunks/0xg6fs89o7rbm.js",
+              "bytes": 159548
+            },
+            {
+              "url": "/_next/static/chunks/24c90_jw-bs5o.js",
+              "bytes": 229942
+            }
+          ]
+        },
+        {
+          "ttfb": 9.900000095367432,
+          "dom": 19.700000047683716,
+          "requests": 8,
+          "decodedResourceBytes": 460281,
+          "resources": [
+            {
+              "url": "/_next/static/chunks/0x72bnk464y6c.css",
+              "bytes": 2158
+            },
+            {
+              "url": "/_next/static/chunks/20wen1g5_o_lo.js",
+              "bytes": 13311
+            },
+            {
+              "url": "/_next/static/chunks/124yikkp5in-g.js",
+              "bytes": 30179
+            },
+            {
+              "url": "/_next/static/chunks/24c90_jw-bs5o.js",
+              "bytes": 229942
+            },
+            {
+              "url": "/_next/static/chunks/0xg6fs89o7rbm.js",
+              "bytes": 159548
+            },
+            {
+              "url": "/_next/static/chunks/turbopack-2c3mg3r-05n1w.js",
+              "bytes": 11255
+            },
+            {
+              "url": "/_next/static/chunks/3bieweqjq9y4j.js",
+              "bytes": 13888
+            }
+          ]
+        },
+        {
+          "ttfb": 17.90000009536743,
+          "dom": 27.90000009536743,
+          "requests": 8,
+          "decodedResourceBytes": 460281,
+          "resources": [
+            {
+              "url": "/_next/static/chunks/0x72bnk464y6c.css",
+              "bytes": 2158
+            },
+            {
+              "url": "/_next/static/chunks/20wen1g5_o_lo.js",
+              "bytes": 13311
+            },
+            {
+              "url": "/_next/static/chunks/124yikkp5in-g.js",
+              "bytes": 30179
+            },
+            {
+              "url": "/_next/static/chunks/24c90_jw-bs5o.js",
+              "bytes": 229942
+            },
+            {
+              "url": "/_next/static/chunks/0xg6fs89o7rbm.js",
+              "bytes": 159548
+            },
+            {
+              "url": "/_next/static/chunks/turbopack-2c3mg3r-05n1w.js",
+              "bytes": 11255
+            },
+            {
+              "url": "/_next/static/chunks/3bieweqjq9y4j.js",
+              "bytes": 13888
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

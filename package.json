@@ -1,6 +1,6 @@
 {
   "name": "@miguelfranken/payload-visual-editor",
-  "version": "0.1.0-alpha.0",
+  "version": "0.1.0-alpha.5",
   "description": "Native-form visual composition for existing Payload CMS block schemas.",
   "type": "module",
   "license": "MIT",
@@ -14,7 +14,8 @@
   },
   "packageManager": "pnpm@10.28.0",
   "files": [
-    "dist"
+    "dist",
+    "NOTICE"
   ],
   "sideEffects": [
     "**/*.css"
@@ -50,14 +51,34 @@
       "import": "./dist/exports/types.js",
       "default": "./dist/exports/types.js"
     },
-    "./styles.css": "./dist/admin/styles.css"
+    "./styles.css": "./dist/admin/styles.css",
+    "./postgres": {
+      "types": "./dist/exports/postgres.d.ts",
+      "import": "./dist/exports/postgres.js"
+    },
+    "./rsc": {
+      "types": "./dist/exports/rsc.d.ts",
+      "import": "./dist/exports/rsc.js"
+    },
+    "./frontend": {
+      "types": "./dist/exports/frontend.d.ts",
+      "import": "./dist/exports/frontend.js"
+    },
+    "./launcher": {
+      "types": "./dist/exports/launcher.d.ts",
+      "import": "./dist/exports/launcher.js"
+    },
+    "./entry": {
+      "types": "./dist/exports/entry.d.ts",
+      "import": "./dist/exports/entry.js"
+    }
   },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org"
   },
   "scripts": {
-    "build": "tsdown",
+    "build": "pnpm build:css && tsdown",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src dev tests scripts",
     "test:unit": "vitest run tests",
@@ -66,12 +87,18 @@
     "test:e2e": "playwright test",
     "test:e2e:prod": "VE_PRODUCTION=1 playwright test",
     "dev": "node dev/start-server.mjs",
-    "dev:generate-importmap": "PAYLOAD_CONFIG_PATH=dev/payload.config.ts payload generate:importmap",
+    "dev:generate-importmap": "VE_DATABASE=postgres PAYLOAD_CONFIG_PATH=dev/payload.config.ts payload generate:importmap",
     "pack:check": "node scripts/check-package.mjs",
     "test:consumer": "node scripts/check-consumer.mjs",
-    "release:check": "node scripts/validate-release.mjs"
+    "release:check": "node scripts/validate-release.mjs",
+    "test:graph": "node scripts/check-production-graph.mjs",
+    "test:postgres": "node scripts/postgres-test.mjs",
+    "build:css": "tailwindcss -i src/admin/tailwind.css -o src/admin/styles.css --minify && tailwindcss -i src/preview/tailwind.css -o src/preview/styles.css --minify && tailwindcss -i dev/tailwind.css -o dev/styles.css --minify && tailwindcss -i dev/protected.tailwind.css -o dev/protected.styles.css --minify && tailwindcss -i src/launcher/tailwind.css -o src/launcher/styles.css --minify && tailwindcss -i src/frontend/inline.tailwind.css -o src/frontend/inline.styles.css --minify && node scripts/build-frontend-styles.mjs",
+    "test:installed-consumer": "node scripts/test-installed-consumer.mjs",
+    "release:prepare": "node scripts/prepare-release.mjs"
   },
   "peerDependencies": {
+    "@payloadcms/db-postgres": "3.91.0",
     "@payloadcms/ui": "3.91.0",
     "next": "16.4.2",
     "payload": "3.91.0",
@@ -79,6 +106,7 @@
     "react-dom": "19.2.6"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
     "@payloadcms/db-mongodb": "3.91.0",
     "@payloadcms/db-postgres": "3.91.0",
     "@payloadcms/next": "3.91.0",
@@ -86,6 +114,7 @@
     "@payloadcms/translations": "3.91.0",
     "@payloadcms/ui": "3.91.0",
     "@playwright/test": "1.58.2",
+    "@tailwindcss/cli": "4.3.3",
     "@tsdown/css": "0.22.3",
     "@types/node": "^24.0.0",
     "@types/pg": "^8.15.0",
@@ -97,13 +126,31 @@
     "next": "16.4.2",
     "payload": "3.91.0",
     "pg": "^8.16.3",
+    "postcss": "8.5.32",
+    "postcss-selector-parser": "7.1.7",
+    "prettier": "3.6.2",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "sharp": "0.34.2",
+    "tailwindcss": "4.3.3",
     "tsdown": "0.22.3",
     "tsx": "4.21.0",
     "typescript": "5.9.3",
     "typescript-eslint": "^8.0.0",
     "vitest": "4.0.18"
+  },
+  "peerDependenciesMeta": {
+    "@payloadcms/db-postgres": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@base-ui/react": "1.9.0",
+    "@dnd-kit/core": "6.3.1",
+    "@dnd-kit/sortable": "10.0.0",
+    "@dnd-kit/utilities": "3.2.2",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "lucide-react": "1.66.0"
   }
 }

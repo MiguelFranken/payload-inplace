@@ -1,0 +1,6 @@
+@layer site-theme, site-utilities;
+@import "tailwindcss/theme.css" layer(site-theme) prefix(site);
+@import "tailwindcss/utilities.css" layer(site-utilities) prefix(site)
+  source(none);
+@source "./app/**/*.tsx";
+@source "./components/**/*.tsx";
