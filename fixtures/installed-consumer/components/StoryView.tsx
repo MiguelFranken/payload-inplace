@@ -2,7 +2,7 @@ import { RichText } from "@payloadcms/richtext-lexical/react";
 import {
   getBlockAttributes,
   getFieldAttributes,
-} from "@miguelfranken/payload-visual-editor/bindings";
+} from "@miguel.franken/payload-visual-editor/bindings";
 /** The consumer's own view shares markup between its public server page and active client projection. */
 export function StoryView({
   document,

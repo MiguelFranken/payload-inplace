@@ -108,7 +108,7 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
             components: {
               ...field.admin?.components,
               Field: {
-                path: "@miguelfranken/payload-visual-editor/client#VisualBlocksField",
+                path: "@miguel.franken/payload-visual-editor/client#VisualBlocksField",
                 clientProps: {
                   root,
                   policy: options.policies?.[collection.slug]?.[root],
@@ -152,7 +152,7 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
           admin: {
             components: {
               Field:
-                "@miguelfranken/payload-visual-editor/client#RevisionField",
+                "@miguel.franken/payload-visual-editor/client#RevisionField",
             },
           },
         });
@@ -179,7 +179,7 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
                   ...collection.admin?.components?.views?.edit,
                   version: {
                     Component:
-                      "@miguelfranken/payload-visual-editor/rsc#GuardedVersionView",
+                      "@miguel.franken/payload-visual-editor/rsc#GuardedVersionView",
                   },
                 } as EditConfig,
               },
@@ -187,7 +187,7 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
                 ...collection.admin?.components?.edit,
                 PublishButton:
                   collection.admin?.components?.edit?.PublishButton ??
-                  "@miguelfranken/payload-visual-editor/client#ReviewPublishButton",
+                  "@miguel.franken/payload-visual-editor/client#ReviewPublishButton",
               },
             },
           }

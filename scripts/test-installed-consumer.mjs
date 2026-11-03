@@ -253,7 +253,7 @@ try {
     path.join(directory, "app/(payload)/admin/importMap.js"),
     "utf8",
   );
-  if (!importMap.includes("@miguelfranken/payload-visual-editor/client#"))
+  if (!importMap.includes("@miguel.franken/payload-visual-editor/client#"))
     throw Error("Installed plugin entries missing from generated import map");
   const peers = Object.fromEntries(
     [

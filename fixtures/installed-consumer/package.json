@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@miguelfranken/payload-visual-editor": "file:./candidate.tgz",
+    "@miguel.franken/payload-visual-editor": "file:./candidate.tgz",
     "@payloadcms/db-postgres": "3.91.0",
     "@payloadcms/next": "3.91.0",
     "@payloadcms/richtext-lexical": "3.91.0",

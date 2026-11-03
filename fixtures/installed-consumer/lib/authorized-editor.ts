@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { createLocalReq, getPayload } from "payload";
 import config, { editorOptions } from "@payload-config";
 import { importMap } from "../app/(payload)/admin/importMap.js";
-import { readEditContext } from "@miguelfranken/payload-visual-editor/server";
+import { readEditContext } from "@miguel.franken/payload-visual-editor/server";
 /** Every frontend render and native server-function call checks the current session and activation again. */
 export async function authorizedEditor(
   identifier: string | undefined,

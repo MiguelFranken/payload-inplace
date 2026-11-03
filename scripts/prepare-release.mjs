@@ -86,7 +86,7 @@ try {
     }),
   );
   if (
-    pkg.name !== "@miguelfranken/payload-visual-editor" ||
+    pkg.name !== "@miguel.franken/payload-visual-editor" ||
     pkg.version !== installed.package.version ||
     pkg.publishConfig?.access !== "public" ||
     pkg.publishConfig?.registry !== "https://registry.npmjs.org"

@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { createLocalReq, getPayload } from "payload";
 import config, { editorOptions } from "@payload-config";
-import { EditorLauncher } from "@miguelfranken/payload-visual-editor/launcher";
+import { EditorLauncher } from "@miguel.franken/payload-visual-editor/launcher";
 import { StoryView } from "../../../../components/StoryView";
 export default async function Page({
   params,

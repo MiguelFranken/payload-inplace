@@ -1,6 +1,6 @@
 # Candidate release and non-destructive rollback
 
-Public source: [MiguelFranken/payload-visual-editor](https://github.com/MiguelFranken/payload-visual-editor). Distribution policy: public npm, package `@miguelfranken/payload-visual-editor`, anonymous installation. No stable npm publication or application production deployment is represented by this candidate preparation.
+Public source: [MiguelFranken/payload-visual-editor](https://github.com/MiguelFranken/payload-visual-editor). Distribution policy: public npm, package `@miguel.franken/payload-visual-editor`, anonymous installation. No stable npm publication or application production deployment is represented by this candidate preparation.
 
 ## Reproduce an immutable candidate
 
