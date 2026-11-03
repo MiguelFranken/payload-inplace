@@ -59,6 +59,14 @@ fs.writeFileSync(
   JSON.stringify(
     {
       archive,
+      sourceSHA: execFileSync("git", ["rev-parse", "HEAD"], {
+        encoding: "utf8",
+      }).trim(),
+      sourceDirty: Boolean(
+        execFileSync("git", ["status", "--porcelain"], {
+          encoding: "utf8",
+        }).trim(),
+      ),
       sha256: createHash("sha256")
         .update(fs.readFileSync(archive))
         .digest("hex"),

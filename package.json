@@ -93,7 +93,8 @@
     "release:check": "node scripts/validate-release.mjs",
     "test:graph": "node scripts/check-production-graph.mjs",
     "test:postgres": "node scripts/postgres-test.mjs",
-    "build:css": "tailwindcss -i src/admin/tailwind.css -o src/admin/styles.css --minify && tailwindcss -i src/preview/tailwind.css -o src/preview/styles.css --minify && tailwindcss -i dev/tailwind.css -o dev/styles.css --minify && tailwindcss -i dev/protected.tailwind.css -o dev/protected.styles.css --minify && tailwindcss -i src/launcher/tailwind.css -o src/launcher/styles.css --minify && node scripts/build-frontend-styles.mjs"
+    "build:css": "tailwindcss -i src/admin/tailwind.css -o src/admin/styles.css --minify && tailwindcss -i src/preview/tailwind.css -o src/preview/styles.css --minify && tailwindcss -i dev/tailwind.css -o dev/styles.css --minify && tailwindcss -i dev/protected.tailwind.css -o dev/protected.styles.css --minify && tailwindcss -i src/launcher/tailwind.css -o src/launcher/styles.css --minify && node scripts/build-frontend-styles.mjs",
+    "test:installed-consumer": "node scripts/test-installed-consumer.mjs"
   },
   "peerDependencies": {
     "@payloadcms/db-postgres": "3.91.0",

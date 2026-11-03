@@ -37,6 +37,7 @@ import type { Activation } from "../types.js";
 import { availableBlocks } from "../schema/available-blocks.js";
 import { canUpdateInlineField } from "../schema/inline-access.js";
 import { collectSections } from "../schema/tree.js";
+import { sectionHeading } from "../schema/section-heading.js";
 import { StructuralHistory } from "../state/history.js";
 import {
   applyCommand,
@@ -715,6 +716,7 @@ export function FrontendControls({
         {expanded && outline && (
           <BlockReorder
             sections={sections}
+            getHeading={(section) => sectionHeading(section, form.getFields())}
             disabled={disabled}
             canvas
             onMove={(a, b) =>
@@ -877,6 +879,9 @@ export function FrontendControls({
               <div className="pve:grid pve:gap-2">
                 <BlockReorder
                   sections={sections}
+                  getHeading={(section) =>
+                    sectionHeading(section, form.getFields())
+                  }
                   disabled={disabled}
                   onMove={(a, b) =>
                     commandFor(a, {

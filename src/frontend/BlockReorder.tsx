@@ -26,7 +26,11 @@ import {
 } from "@dnd-kit/sortable";
 import { GripVertical, Layers, Settings2, LockKeyhole } from "lucide-react";
 import type { NativeSection } from "../schema/tree.js";
-import { elementRect } from "../preview/geometry.js";
+import {
+  elementRect,
+  pageHandlePosition,
+  boundTextRects,
+} from "../preview/geometry.js";
 import { Button } from "./ui/button.js";
 const key = (s: NativeSection) => JSON.stringify(s.identity);
 export function sectionLabel(s: NativeSection) {
@@ -57,8 +61,10 @@ export function BlockReorder({
   onPick,
   onSettings,
   lockedReason,
+  getHeading,
 }: {
   sections: NativeSection[];
+  getHeading: (section: NativeSection) => string | undefined;
   disabled: boolean;
   canvas?: boolean;
   onMove: (from: NativeSection, to: NativeSection) => string | undefined;
@@ -163,6 +169,7 @@ export function BlockReorder({
           <ReorderItem
             key={key(s)}
             section={s}
+            heading={getHeading(s)}
             disabled={disabled || s.readOnly}
             lock={lockedReason?.(s)}
             canvas={canvas}
@@ -198,8 +205,10 @@ function ReorderItem({
   onPick,
   onSettings,
   lock,
+  heading,
 }: {
   section: NativeSection;
+  heading?: string;
   disabled: boolean;
   canvas: boolean;
   active: string | null;
@@ -223,6 +232,7 @@ function ReorderItem({
       disabled: disabled || Boolean(lock),
       data: { parent: s.parent },
     });
+  const bar = useRef<HTMLDivElement>(null);
   const overlay = useRef<HTMLDivElement>(null),
     [bound, setBound] = useState(false);
   useEffect(() => {
@@ -231,13 +241,35 @@ function ReorderItem({
       element: HTMLElement | undefined;
     const observer = new ResizeObserver(schedule);
     observer.observe(document.body);
-    function draw() {
+    if (bar.current) observer.observe(bar.current);
+    function draw(timestamp: number) {
       frame = 0;
       element = sectionElement(s);
       const rect = element && elementRect(element);
       setNodeRef(element || null);
       setBound(Boolean(rect));
       if (!rect || !overlay.current) return;
+      if (bar.current) {
+        // Visibility keeps the grip measurable while removing it from hit testing and keyboard order when no safe space exists.
+        const position = pageHandlePosition(
+          rect,
+          {
+            width: bar.current.offsetWidth || 160,
+            height: bar.current.offsetHeight || 44,
+          },
+          boundTextRects(timestamp),
+          window.innerWidth,
+        );
+        bar.current.style.setProperty(
+          "--pve-grip-left",
+          `${(position?.left || 0) - rect.left - 8}px`,
+        );
+        bar.current.style.setProperty(
+          "--pve-grip-top",
+          `${(position?.top || 0) - rect.top - 8}px`,
+        );
+        bar.current.dataset.obscured = String(!position);
+      }
       for (const [name, value] of Object.entries({
         left: rect.left + 8,
         top: rect.top + 8,
@@ -293,11 +325,18 @@ function ReorderItem({
         className="pve:pointer-events-none pve:fixed pve:left-[var(--pve-drag-left)] pve:top-[var(--pve-drag-top)] pve:w-[var(--pve-drag-width)] pve:h-[var(--pve-drag-height)] pve:z-40"
       >
         <div
-          className={`pve:pointer-events-auto pve:absolute pve:left-0 pve:top-0 pve:flex pve:items-center pve:gap-1 pve:rounded-lg pve:border pve:border-solid pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:bg-[var(--pve-surface,var(--theme-elevation-0,#fff))] pve:text-[var(--pve-text,var(--theme-text,#202127))] pve:shadow-sm ${isDragging ? "pve:opacity-40" : ""}`}
+          ref={bar}
+          data-obscured="true"
+          className={`pve:pointer-events-auto pve:absolute pve:left-[var(--pve-grip-left)] pve:top-[var(--pve-grip-top)] pve:max-w-[calc(100vw-16px)] pve:data-[obscured=true]:invisible pve:flex pve:items-center pve:gap-1 pve:rounded-lg pve:border pve:border-solid pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:bg-[var(--pve-surface,var(--theme-elevation-0,#fff))] pve:text-[var(--pve-text,var(--theme-text,#202127))] pve:shadow-sm ${isDragging ? "pve:opacity-40" : ""}`}
         >
           {handle}
-          <Button size="sm" onClick={onPick}>
-            {label}
+          <Button
+            size="sm"
+            onClick={onPick}
+            title={label}
+            className="pve:min-w-0 pve:max-w-40"
+          >
+            <span className="pve:truncate">{label}</span>
             {lock && <span className="pve:sr-only"> · {lock}</span>}
           </Button>
         </div>
@@ -329,7 +368,7 @@ function ReorderItem({
       <button
         type="button"
         onClick={onPick}
-        title={typeof s.value.heading === "string" ? s.value.heading : label}
+        title={heading || label}
         className="pve:flex pve:min-h-10 pve:min-w-0 pve:flex-1 pve:items-center pve:gap-2.5 pve:rounded-lg pve:border-0 pve:bg-transparent pve:px-1 pve:text-left pve:font-inherit pve:text-inherit pve:cursor-pointer pve:outline-none pve:focus-visible:ring-2 pve:focus-visible:ring-[var(--pve-accent,#3451eb)]"
       >
         <Layers
@@ -338,10 +377,7 @@ function ReorderItem({
         />
         <span className="pve:min-w-0">
           <span className="pve:block pve:truncate pve:text-sm pve:font-medium">
-            {s.index + 1}.{" "}
-            {typeof s.value.heading === "string" && s.value.heading
-              ? s.value.heading
-              : label}
+            {s.index + 1}. {heading || label}
           </span>
           <span
             className="pve:block pve:max-w-36 pve:truncate pve:text-xs pve:leading-5 pve:text-[var(--pve-muted,var(--theme-elevation-700,#646773))]"
