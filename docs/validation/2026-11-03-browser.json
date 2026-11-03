@@ -1,0 +1,105 @@
+{
+  "scope": "isolated production Postgres demo; default English/light desktop and 320px; no production consumer acceptance",
+  "command": "VE_PORT=3137 node scripts/postgres-test.mjs e2e",
+  "cases": [
+    {
+      "name": "frontend inline editing, native draft and reviewed publication: pages",
+      "status": "passed",
+      "durationMs": 4402
+    },
+    {
+      "name": "frontend inline editing, native draft and reviewed publication: offers",
+      "status": "passed",
+      "durationMs": 3362
+    },
+    {
+      "name": "frontend field selection preserves native media, rich text and structural history",
+      "status": "passed",
+      "durationMs": 4089
+    },
+    {
+      "name": "frontend hover motion, narrow layout and native controls are accessible",
+      "status": "passed",
+      "durationMs": 1481
+    },
+    {
+      "name": "inactive public resources and sampled timing: anonymous",
+      "status": "passed",
+      "durationMs": 4750
+    },
+    {
+      "name": "inactive public resources and sampled timing: reader",
+      "status": "passed",
+      "durationMs": 4835
+    },
+    {
+      "name": "inactive public resources and sampled timing: admin",
+      "status": "passed",
+      "durationMs": 5313
+    },
+    {
+      "name": "direct denied preview exposes neither draft output nor bridge execution",
+      "status": "passed",
+      "durationMs": 113
+    },
+    {
+      "name": "instant inline edits and appearance survive delayed native saves and newer typing",
+      "status": "passed",
+      "durationMs": 8977
+    },
+    {
+      "name": "failed native save retains optimistic text and offers explicit recovery",
+      "status": "passed",
+      "durationMs": 6595
+    },
+    {
+      "name": "multiple fields edited during a pending save survive and unchanged server normalization is accepted",
+      "status": "passed",
+      "durationMs": 4805
+    },
+    {
+      "name": "server preview unavailable preserves the working form after a saved draft",
+      "status": "passed",
+      "durationMs": 2783
+    },
+    {
+      "name": "server preview denied preserves the working form after a saved draft",
+      "status": "passed",
+      "durationMs": 3712
+    },
+    {
+      "name": "an empty native layout can add its first section and edit its empty heading in place",
+      "status": "passed",
+      "durationMs": 3611
+    },
+    {
+      "name": "sections drag on list and page keeps native order, undo, policy and keyboard cancellation",
+      "status": "passed",
+      "durationMs": 9928
+    },
+    {
+      "name": "context panels preserve keyboard focus and compact disclosure",
+      "status": "passed",
+      "durationMs": 959
+    },
+    {
+      "name": "direct editing stays active across text, panels and section navigation",
+      "status": "passed",
+      "durationMs": 2915
+    },
+    {
+      "name": "keyboard save keeps the caret and newer text, Escape closes settings without disabling editing",
+      "status": "passed",
+      "durationMs": 2751
+    },
+    {
+      "name": "an expired editing session reopens the saved draft with fresh authorization",
+      "status": "passed",
+      "durationMs": 1107
+    }
+  ],
+  "axe": {
+    "frontend-axe-desktop": [],
+    "frontend-axe-mobile": []
+  }
+}

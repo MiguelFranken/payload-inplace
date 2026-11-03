@@ -10,9 +10,7 @@
     "jsx": "preserve",
     "baseUrl": ".",
     "paths": {
-      "@payload-config": [
-        "./payload.config.ts"
-      ]
+      "@payload-config": ["./payload.config.ts"]
     }
   },
   "include": [
@@ -21,7 +19,5 @@
     ".next-e2e/types/**/*.ts",
     ".next-prod/types/**/*.ts"
   ],
-  "exclude": [
-    "../node_modules"
-  ]
+  "exclude": ["../node_modules"]
 }

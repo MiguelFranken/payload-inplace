@@ -1,1 +1,1 @@
-export { getBlockAttributes, getFieldAttributes } from '../preview/bindings.js'
+export { getBlockAttributes, getFieldAttributes } from "../preview/bindings.js";

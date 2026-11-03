@@ -1,2 +1,2 @@
-'use client'
-export { PreviewBridge } from '../preview/PreviewBridge.js'
+"use client";
+export { PreviewBridge } from "../preview/PreviewBridge.js";
