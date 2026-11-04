@@ -536,6 +536,15 @@ test("sections drag on list and page keeps native order, undo, policy and keyboa
   await expect(
     page.locator(`[data-ve-canvas-handle="${doc.layout[1].id}"]`),
   ).toHaveAttribute("data-ve-drag-over", "true");
+  // KeyboardSensor attaches its document movement listener asynchronously after
+  // start; aria-pressed is already synchronous. Complete a browser frame cycle
+  // before the next physical key, also allowing the tall fixture to be measured.
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      ),
+  );
   await page.keyboard.press("ArrowDown");
   await expect(
     page.locator(`[data-ve-canvas-handle="${doc.layout[2].id}"]`),
@@ -565,6 +574,12 @@ test("sections drag on list and page keeps native order, undo, policy and keyboa
   await page.keyboard.press("Space");
   await expect(text).toHaveAttribute("aria-pressed", "true");
   await expect(rows.nth(1)).toHaveAttribute("data-ve-drag-over", "true");
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      ),
+  );
   await page.keyboard.press("ArrowDown");
   await page.keyboard.press("Escape");
   await expect.poll(order).toEqual(before);
