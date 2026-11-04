@@ -138,9 +138,12 @@ test("installed nested-root native fields, optimistic draft and reviewed publish
     expect(doc.article.sections[0].tone).toBe("quiet");
     expect(doc.article.sections).toHaveLength(2);
     await page.getByRole("button", { name: /^Close .+ panel$/ }).click();
-    await page
-      .getByRole("button", { name: "Select content", exact: true })
-      .click();
+    const select = page.getByRole("button", {
+      name: "Select content",
+      exact: true,
+    });
+    if ((await select.getAttribute("aria-pressed")) !== "true")
+      await select.click();
     await page.locator('[data-ve-field="readingTime"]').click();
     await page
       .getByRole("button", { name: "Increase 12", exact: true })
@@ -164,6 +167,31 @@ test("installed nested-root native fields, optimistic draft and reviewed publish
       page.getByRole("spinbutton", { name: "Reading Time", exact: true }),
     ).toHaveValue("13");
     await page.getByRole("button", { name: /^Close .+ panel$/ }).click();
+    // The same structured native value can hand from Payload controls to the lazy
+    // inline runtime in an independently installed archive, then publish normally.
+    await page.locator('[data-ve-field="body"]').first().click();
+    const inlineRich = page.locator(
+      '[data-ve-inline-active][data-ve-field="body"]',
+    );
+    await expect(
+      page.getByRole("toolbar", { name: "Text formatting", exact: true }),
+    ).toBeVisible();
+    await inlineRich.pressSequentially(" Packed inline rich text");
+    await expect
+      .poll(async () =>
+        JSON.stringify(
+          (
+            await (
+              await page.request.get(
+                `/api/stories/${doc.id}?draft=true&depth=0`,
+              )
+            ).json()
+          ).article.sections[0].body,
+        ),
+      )
+      .toContain("Packed inline rich text");
+    await expect(inlineRich).toBeFocused();
+    await inlineRich.press("Escape");
 
     await page
       .getByRole("button", { name: "Review changes", exact: true })

@@ -24,3 +24,7 @@ The JSON timing report is `test-results/unit-domains.json`; HTML, lcov and JSON 
 React compiler rules are disabled because the project does not enable React Compiler and intentionally synchronizes native Payload/DOM state. Existing documented status-tooltip/scroll-region tab stops retain their narrow accessibility exception. No rule is silently mapped to a weaker equivalent. The narrow typed ESLint pass uses the real project service; ordinary Oxlint does not claim type-aware enforcement.
 
 References: [Oxlint usage](https://oxc.rs/docs/guide/usage/linter), [migration](https://oxc.rs/docs/guide/usage/linter/migrate-from-eslint.html), [type-aware prerequisites](https://oxc.rs/docs/guide/usage/linter/type-aware.html), [typed promise rule](https://typescript-eslint.io/rules/no-floating-promises/).
+
+## Measured lint cost
+
+Three serial same-input runs compare the pre-roadmap ESLint recommended configuration (only moved/generated ignores adapted) with the new checks. Median process-inclusive times were 1,357ms for legacy ESLint, 717ms for Oxlint and 3,866ms for retained ESLint with typed promise checks. The combined gate is stronger and slower; no speedup is claimed. `docs/validation/performance/lint-timings.json` retains the exact samples and method. Removing retained rules merely to make these numbers smaller is not allowed.

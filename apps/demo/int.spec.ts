@@ -1138,7 +1138,7 @@ it("keeps consumer-owned pattern storage behind native record ACL without changi
     operation: "save",
     label: "Synthetic section",
     identity: { root: "layout", blockId: section.id },
-    expectedRevision: document._veRevision,
+    expectedRevision: document._veRevision ?? document.updatedAt,
   });
   const list: any = await patternOperation(req, options, {
     proof,
@@ -1152,17 +1152,17 @@ it("keeps consumer-owned pattern storage behind native record ACL without changi
   });
   expect(copy.content.heading).toBe(section.heading);
   expect(copy.content.items[0].id).not.toBe(section.items[0].id);
-  expect(
-    (
-      (await payload.findByID({
-        collection: "pages",
-        id: document.id,
-        req,
-        overrideAccess: false,
-        draft: true,
-      })) as any
-    )._veRevision,
-  ).toBe(document._veRevision);
+  const unchanged: any = await payload.findByID({
+    collection: "pages",
+    id: document.id,
+    req,
+    overrideAccess: false,
+    draft: true,
+  });
+  expect(unchanged._veRevision ?? unchanged.updatedAt).toBe(
+    document._veRevision ?? document.updatedAt,
+  );
+  expect(unchanged.layout).toEqual(document.layout);
   const other = await request("admin"),
     otherProof = signContext(createContext(other, target), payload.secret);
   const otherList: any = await patternOperation(other, options, {

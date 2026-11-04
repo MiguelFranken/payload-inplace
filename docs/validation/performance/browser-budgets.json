@@ -1,0 +1,728 @@
+{
+  "method": "Production Chromium, same-page activation, fresh cache-disabled context, localhost. Actual ResourceTiming JS/CSS encoded/decoded/transfer bytes include all native peers. CDP ScriptDuration is execution, separate from traced parse/compile aggregate (nested events may overlap). Action latency includes Playwright readiness checks. Not a network/device simulation or universal user benchmark.",
+  "baseline": {
+    "commit": "e0338e870feabe7ce19e732bfbf67e9df59021c8",
+    "sourceDirty": true,
+    "buildId": "9YuUetEtdQ88YVY1WO10c",
+    "node": "v24.21.0",
+    "browser": "145.0.7632.6",
+    "method": "Production Chromium, same-page activation, fresh cache-disabled context, localhost. Actual ResourceTiming JS/CSS encoded/decoded/transfer bytes include all native peers. CDP ScriptDuration is execution, separate from traced parse/compile aggregate (nested events may overlap). Action latency includes Playwright readiness checks. Not a network/device simulation or universal user benchmark.",
+    "phases": {
+      "activation": {
+        "elapsed": 930.7999999523163,
+        "requests": 51,
+        "chunkRequests": 39,
+        "decoded": 5349771,
+        "encoded": 1575714,
+        "transfer": 1587414,
+        "scriptMs": 67.89200000000001,
+        "taskMs": 272.461,
+        "longTasks": [
+          {
+            "start": 218.39999997615814,
+            "duration": 50
+          }
+        ],
+        "resources": [
+          {
+            "path": "/api/visual-editor/activate",
+            "encoded": 170,
+            "decoded": 170,
+            "transfer": 470,
+            "type": "fetch"
+          },
+          {
+            "path": "/shop",
+            "encoded": 89961,
+            "decoded": 570968,
+            "transfer": 90261,
+            "type": "fetch"
+          },
+          {
+            "path": "/_next/static/chunks/1l9apu4iesvci.css",
+            "encoded": 1062,
+            "decoded": 4465,
+            "transfer": 1362,
+            "type": "link"
+          },
+          {
+            "path": "/_next/static/chunks/3c_6gydv624zb.css",
+            "encoded": 1100,
+            "decoded": 9975,
+            "transfer": 1400,
+            "type": "link"
+          },
+          {
+            "path": "/_next/static/chunks/2h0ajyj_brp--.css",
+            "encoded": 497,
+            "decoded": 2601,
+            "transfer": 797,
+            "type": "link"
+          },
+          {
+            "path": "/_next/static/chunks/2do7kfo662xwp.css",
+            "encoded": 40600,
+            "decoded": 297077,
+            "transfer": 40900,
+            "type": "link"
+          },
+          {
+            "path": "/_next/static/chunks/3tszusuu4wgmv.css",
+            "encoded": 141,
+            "decoded": 141,
+            "transfer": 441,
+            "type": "link"
+          },
+          {
+            "path": "/_next/static/chunks/3qf6wz90wbvcw.css",
+            "encoded": 786,
+            "decoded": 786,
+            "transfer": 1086,
+            "type": "link"
+          },
+          {
+            "path": "/_next/static/chunks/3yl9nl02ye797.css",
+            "encoded": 2814,
+            "decoded": 14714,
+            "transfer": 3114,
+            "type": "link"
+          },
+          {
+            "path": "/_next/static/chunks/09-lroeo88rbm.js",
+            "encoded": 1435,
+            "decoded": 5954,
+            "transfer": 1735,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/0zp4zftzeukl-.js",
+            "encoded": 14698,
+            "decoded": 39962,
+            "transfer": 14998,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/3dq3ra0jkzl1l.js",
+            "encoded": 5251,
+            "decoded": 17270,
+            "transfer": 5551,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/2dmg-vwknfc_y.js",
+            "encoded": 9652,
+            "decoded": 25400,
+            "transfer": 9952,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/38dtlsbnv7jq6.js",
+            "encoded": 12738,
+            "decoded": 35131,
+            "transfer": 13038,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/0v16at3ulp66a.js",
+            "encoded": 9178,
+            "decoded": 29702,
+            "transfer": 9478,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/34xb4kka925sn.js",
+            "encoded": 136821,
+            "decoded": 555838,
+            "transfer": 137121,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/388zkxo6z-awa.js",
+            "encoded": 32552,
+            "decoded": 102526,
+            "transfer": 32852,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/2vb7_56_b50m6.js",
+            "encoded": 91676,
+            "decoded": 293929,
+            "transfer": 91976,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/2xq4_ztcslphu.js",
+            "encoded": 13859,
+            "decoded": 42905,
+            "transfer": 14159,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/3q-wwcsl5kbro.js",
+            "encoded": 15640,
+            "decoded": 46868,
+            "transfer": 15940,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/3k-sp-ctw8icd.js",
+            "encoded": 53892,
+            "decoded": 167717,
+            "transfer": 54192,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/2g-medi70ecch.js",
+            "encoded": 318486,
+            "decoded": 1006128,
+            "transfer": 318786,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/1swian7xq3gse.js",
+            "encoded": 662,
+            "decoded": 662,
+            "transfer": 962,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/0x3ch_rpyf1wt.js",
+            "encoded": 11097,
+            "decoded": 31123,
+            "transfer": 11397,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/12zxfnyvaqygt.js",
+            "encoded": 9486,
+            "decoded": 25911,
+            "transfer": 9786,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/2_2nhqjzs0cxe.js",
+            "encoded": 28555,
+            "decoded": 81761,
+            "transfer": 28855,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/38se1-nm32gkn.js",
+            "encoded": 14465,
+            "decoded": 40162,
+            "transfer": 14765,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/1b62ugwlane1s.js",
+            "encoded": 32693,
+            "decoded": 101733,
+            "transfer": 32993,
+            "type": "script"
+          },
+          {
+            "path": "/api/media/file/studio-1200x800.webp",
+            "encoded": 90940,
+            "decoded": 90940,
+            "transfer": 91240,
+            "type": "img"
+          },
+          {
+            "path": "/api/media/file/arc-chair-1122x1402.webp",
+            "encoded": 135574,
+            "decoded": 135574,
+            "transfer": 135874,
+            "type": "img"
+          },
+          {
+            "path": "/_next/static/chunks/09-lroeo88rbm.js",
+            "encoded": 1435,
+            "decoded": 5954,
+            "transfer": 1735,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/0zp4zftzeukl-.js",
+            "encoded": 14698,
+            "decoded": 39962,
+            "transfer": 14998,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/3dq3ra0jkzl1l.js",
+            "encoded": 5251,
+            "decoded": 17270,
+            "transfer": 5551,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/2dmg-vwknfc_y.js",
+            "encoded": 9652,
+            "decoded": 25400,
+            "transfer": 9952,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/38dtlsbnv7jq6.js",
+            "encoded": 12738,
+            "decoded": 35131,
+            "transfer": 13038,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/0v16at3ulp66a.js",
+            "encoded": 9178,
+            "decoded": 29702,
+            "transfer": 9478,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/34xb4kka925sn.js",
+            "encoded": 136821,
+            "decoded": 555838,
+            "transfer": 137121,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/2vb7_56_b50m6.js",
+            "encoded": 91676,
+            "decoded": 293929,
+            "transfer": 91976,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/388zkxo6z-awa.js",
+            "encoded": 32552,
+            "decoded": 102526,
+            "transfer": 32852,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/2xq4_ztcslphu.js",
+            "encoded": 13859,
+            "decoded": 42905,
+            "transfer": 14159,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/3q-wwcsl5kbro.js",
+            "encoded": 15640,
+            "decoded": 46868,
+            "transfer": 15940,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/2g-medi70ecch.js",
+            "encoded": 318486,
+            "decoded": 1006128,
+            "transfer": 318786,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/3k-sp-ctw8icd.js",
+            "encoded": 53892,
+            "decoded": 167717,
+            "transfer": 54192,
+            "type": "script"
+          },
+          {
+            "path": "/api/media/file/studio-1200x800.webp",
+            "encoded": 90940,
+            "decoded": 90940,
+            "transfer": 91240,
+            "type": "img"
+          },
+          {
+            "path": "/api/media/file/arc-chair-1122x1402.webp",
+            "encoded": 135574,
+            "decoded": 135574,
+            "transfer": 135874,
+            "type": "img"
+          },
+          {
+            "path": "/api/media/file/studio-1200x800.webp",
+            "encoded": 90940,
+            "decoded": 90940,
+            "transfer": 91240,
+            "type": "img"
+          },
+          {
+            "path": "/api/media/file/arc-chair-1122x1402.webp",
+            "encoded": 135574,
+            "decoded": 135574,
+            "transfer": 135874,
+            "type": "img"
+          },
+          {
+            "path": "/api/payload-preferences/locale",
+            "encoded": 36,
+            "decoded": 36,
+            "transfer": 336,
+            "type": "fetch"
+          },
+          {
+            "path": "/api/users/me",
+            "encoded": 5679,
+            "decoded": 5679,
+            "transfer": 5979,
+            "type": "fetch"
+          },
+          {
+            "path": "/api/media/file/studio.png",
+            "encoded": 2297570,
+            "decoded": 2297570,
+            "transfer": 2297870,
+            "type": "img"
+          },
+          {
+            "path": "/api/media/file/arc-chair.png",
+            "encoded": 2205846,
+            "decoded": 2205846,
+            "transfer": 2206146,
+            "type": "img"
+          }
+        ]
+      },
+      "nativePanel": {
+        "elapsed": 127.09999990463257,
+        "requests": 4,
+        "chunkRequests": 0,
+        "decoded": 0,
+        "encoded": 0,
+        "transfer": 0,
+        "scriptMs": 34.21099999999999,
+        "taskMs": 83.82400000000001,
+        "longTasks": [],
+        "resources": [
+          {
+            "path": "/api/media",
+            "encoded": 648,
+            "decoded": 648,
+            "transfer": 948,
+            "type": "fetch"
+          },
+          {
+            "path": "/api/products",
+            "encoded": 184,
+            "decoded": 184,
+            "transfer": 484,
+            "type": "fetch"
+          },
+          {
+            "path": "/api/media/file/arc-chair.png",
+            "encoded": 2205846,
+            "decoded": 2205846,
+            "transfer": 2206146,
+            "type": "img"
+          },
+          {
+            "path": "/api/media/file/arc-chair.png",
+            "encoded": 2205846,
+            "decoded": 2205846,
+            "transfer": 2206146,
+            "type": "img"
+          }
+        ]
+      },
+      "catalogue": {
+        "elapsed": 388.39999997615814,
+        "requests": 3,
+        "chunkRequests": 2,
+        "decoded": 46763,
+        "encoded": 16901,
+        "transfer": 17501,
+        "scriptMs": 14.160000000000005,
+        "taskMs": 57.63200000000002,
+        "longTasks": [],
+        "resources": [
+          {
+            "path": "/_next/static/chunks/1cw0ub27svfgi.js",
+            "encoded": 1513,
+            "decoded": 3350,
+            "transfer": 1813,
+            "type": "script"
+          },
+          {
+            "path": "/_next/static/chunks/3_hdzr_5y9v8-.js",
+            "encoded": 15388,
+            "decoded": 43413,
+            "transfer": 15688,
+            "type": "script"
+          },
+          {
+            "path": "/api/media/file/studio.png",
+            "encoded": 2297570,
+            "decoded": 2297570,
+            "transfer": 2297870,
+            "type": "img"
+          }
+        ]
+      },
+      "review": {
+        "elapsed": 485.2999999523163,
+        "requests": 2,
+        "chunkRequests": 1,
+        "decoded": 4205,
+        "encoded": 1443,
+        "transfer": 1743,
+        "scriptMs": 12.485999999999997,
+        "taskMs": 47.783999999999935,
+        "longTasks": [],
+        "resources": [
+          {
+            "path": "/api/visual-editor/review",
+            "encoded": 4932,
+            "decoded": 4932,
+            "transfer": 5232,
+            "type": "fetch"
+          },
+          {
+            "path": "/_next/static/chunks/0qb8nbzqme54k.js",
+            "encoded": 1443,
+            "decoded": 4205,
+            "transfer": 1743,
+            "type": "script"
+          }
+        ]
+      },
+      "versions": {
+        "elapsed": 82.80000007152557,
+        "requests": 1,
+        "chunkRequests": 1,
+        "decoded": 9107,
+        "encoded": 3387,
+        "transfer": 3687,
+        "scriptMs": 15.942999999999985,
+        "taskMs": 38.443000000000005,
+        "longTasks": [],
+        "resources": [
+          {
+            "path": "/_next/static/chunks/2bwmhlusk590t.js",
+            "encoded": 3387,
+            "decoded": 9107,
+            "transfer": 3687,
+            "type": "script"
+          }
+        ]
+      },
+      "media": {
+        "elapsed": 381.8000000715256,
+        "requests": 1,
+        "chunkRequests": 1,
+        "decoded": 3661,
+        "encoded": 1624,
+        "transfer": 1924,
+        "scriptMs": 8.345000000000018,
+        "taskMs": 23.263999999999953,
+        "longTasks": [],
+        "resources": [
+          {
+            "path": "/_next/static/chunks/01smtng25tlfq.js",
+            "encoded": 1624,
+            "decoded": 3661,
+            "transfer": 1924,
+            "type": "script"
+          }
+        ]
+      },
+      "richtext": {
+        "elapsed": 389.2000000476837,
+        "requests": 1,
+        "chunkRequests": 1,
+        "decoded": 26425,
+        "encoded": 10004,
+        "transfer": 10304,
+        "scriptMs": 17.016000000000002,
+        "taskMs": 40.544000000000025,
+        "longTasks": [],
+        "resources": [
+          {
+            "path": "/_next/static/chunks/018rui7o-3ybb.js",
+            "encoded": 10004,
+            "decoded": 26425,
+            "transfer": 10304,
+            "type": "script"
+          }
+        ]
+      },
+      "typing": {
+        "elapsed": 38.89999997615814,
+        "requests": 0,
+        "chunkRequests": 0,
+        "decoded": 0,
+        "encoded": 0,
+        "transfer": 0,
+        "scriptMs": 22.957000000000004,
+        "taskMs": 32.46800000000005,
+        "longTasks": [],
+        "resources": []
+      },
+      "save": {
+        "elapsed": 1865.8000000715256,
+        "requests": 4,
+        "chunkRequests": 0,
+        "decoded": 0,
+        "encoded": 0,
+        "transfer": 0,
+        "scriptMs": 23.76700000000001,
+        "taskMs": 46.66599999999998,
+        "longTasks": [],
+        "resources": [
+          {
+            "path": "/shop",
+            "encoded": 1793,
+            "decoded": 8873,
+            "transfer": 2093,
+            "type": "fetch"
+          },
+          {
+            "path": "/api/shops/1",
+            "encoded": 2475,
+            "decoded": 2475,
+            "transfer": 2775,
+            "type": "fetch"
+          },
+          {
+            "path": "/shop",
+            "encoded": 1793,
+            "decoded": 8851,
+            "transfer": 2093,
+            "type": "fetch"
+          },
+          {
+            "path": "/shop",
+            "encoded": 6982,
+            "decoded": 23112,
+            "transfer": 7282,
+            "type": "fetch"
+          }
+        ]
+      },
+      "panelReopen": {
+        "elapsed": 98.5,
+        "requests": 4,
+        "chunkRequests": 0,
+        "decoded": 0,
+        "encoded": 0,
+        "transfer": 0,
+        "scriptMs": 19.594,
+        "taskMs": 61.61600000000001,
+        "longTasks": [],
+        "resources": [
+          {
+            "path": "/api/media",
+            "encoded": 648,
+            "decoded": 648,
+            "transfer": 948,
+            "type": "fetch"
+          },
+          {
+            "path": "/api/products",
+            "encoded": 184,
+            "decoded": 184,
+            "transfer": 484,
+            "type": "fetch"
+          },
+          {
+            "path": "/api/media/file/arc-chair.png",
+            "encoded": 2205846,
+            "decoded": 2205846,
+            "transfer": 2206146,
+            "type": "img"
+          },
+          {
+            "path": "/api/media/file/arc-chair.png",
+            "encoded": 2205846,
+            "decoded": 2205846,
+            "transfer": 2206146,
+            "type": "img"
+          }
+        ]
+      }
+    },
+    "compile": {
+      "events": 23108,
+      "aggregateMs": 546.8799999998664,
+      "names": [
+        "V8.CompileCode",
+        "V8.ParseProgram",
+        "V8.Compile",
+        "V8.CompileIgnition",
+        "V8.CompileIgnitionFinalization",
+        "V8.CompileScript",
+        "V8.PreParse",
+        "V8.CompileEval",
+        "V8.ParseFunction",
+        "v8.parseOnBackground",
+        "v8.parseOnBackgroundParsing",
+        "BackgroundCompileTask::Run",
+        "V8.CompileCodeBackground",
+        "v8.parseOnBackgroundWaiting",
+        "v8.compile",
+        "V8.CompileStreamedScript"
+      ]
+    }
+  },
+  "limits": {
+    "activation": {
+      "decoded": 6958799,
+      "chunkRequests": 53,
+      "elapsed": 8000,
+      "scriptMs": 1000
+    },
+    "nativePanel": {
+      "decoded": 4096,
+      "chunkRequests": 2,
+      "elapsed": 5000,
+      "scriptMs": 1000
+    },
+    "catalogue": {
+      "decoded": 64888,
+      "chunkRequests": 5,
+      "elapsed": 5000,
+      "scriptMs": 1000
+    },
+    "review": {
+      "decoded": 9563,
+      "chunkRequests": 4,
+      "elapsed": 5000,
+      "scriptMs": 1000
+    },
+    "versions": {
+      "decoded": 15936,
+      "chunkRequests": 4,
+      "elapsed": 5000,
+      "scriptMs": 1000
+    },
+    "media": {
+      "decoded": 8856,
+      "chunkRequests": 4,
+      "elapsed": 5000,
+      "scriptMs": 1000
+    },
+    "richtext": {
+      "decoded": 38449,
+      "chunkRequests": 4,
+      "elapsed": 5000,
+      "scriptMs": 1000
+    },
+    "typing": {
+      "decoded": 4096,
+      "chunkRequests": 2,
+      "elapsed": 5000,
+      "scriptMs": 1000
+    },
+    "save": {
+      "decoded": 4096,
+      "chunkRequests": 2,
+      "elapsed": 5598,
+      "scriptMs": 1000
+    },
+    "panelReopen": {
+      "decoded": 4096,
+      "chunkRequests": 2,
+      "elapsed": 5000,
+      "scriptMs": 1000
+    }
+  }
+}

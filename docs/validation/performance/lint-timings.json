@@ -1,0 +1,47 @@
+{
+  "method": "Three serial runs on identical current packages/apps/scripts; baseline original ESLint recommended config with only moved-path/generated ignores adapted; new pipeline adds Oxlint a11y/hooks and retained typed promises. Process startup included. No claim of equivalent rule coverage or a speedup.",
+  "samples": [
+    {
+      "legacy": {
+        "ms": 1533,
+        "exit": 0
+      },
+      "oxlint": {
+        "ms": 778,
+        "exit": 0
+      },
+      "retained": {
+        "ms": 4450,
+        "exit": 0
+      }
+    },
+    {
+      "legacy": {
+        "ms": 1313,
+        "exit": 0
+      },
+      "oxlint": {
+        "ms": 717,
+        "exit": 0
+      },
+      "retained": {
+        "ms": 3749,
+        "exit": 0
+      }
+    },
+    {
+      "legacy": {
+        "ms": 1357,
+        "exit": 0
+      },
+      "oxlint": {
+        "ms": 704,
+        "exit": 0
+      },
+      "retained": {
+        "ms": 3866,
+        "exit": 0
+      }
+    }
+  ]
+}

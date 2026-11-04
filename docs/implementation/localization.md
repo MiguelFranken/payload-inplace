@@ -36,16 +36,11 @@ A host's native server action must reauthorize on every invocation and pass the 
 const serverFunction: ServerFunctionClient = async (args) => {
   "use server";
   const { req } = await authorizedEditor(identifier, true);
-  return handleServerFunctions({
-    ...args,
-    config,
-    importMap,
-    editorRequest: req,
-  });
+  return handleEditorServerFunctions({ ...args, config, importMap }, req);
 };
 ```
 
-The v3 bridge scopes native form/field/table preparation and consumer server-function overrides to that request. It preserves native persistence and ACLs. Standard admin callers continue using `handleServerFunctions`. Never forward a client-supplied request or use `verifyContext` alone as authorization: it verifies integrity, while `readEditContext` rechecks current user/session, locale and document capability. The demo's `authorized-editor.ts` shows the complete two-pass flow.
+Import `handleEditorServerFunctions` from `payload-inplace/native`. The v3 bridge scopes native form/field/table preparation and consumer server-function overrides to that request. It preserves native persistence and ACLs. Standard admin callers continue using `handleServerFunctions`. Never forward a client-supplied request or use `verifyContext` alone as authorization: it verifies integrity, while `readEditContext` rechecks current user/session, locale and document capability. The demo's `authorized-editor.ts` shows the complete two-pass flow.
 
 ## Shared structure
 

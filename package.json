@@ -36,7 +36,8 @@
     "test:coverage": "vitest run --project 'unit:*' --project components --coverage --reporter=default --reporter=json --outputFile=test-results/unit-domains.json",
     "test:domain": "vitest run --project",
     "docs:generate": "node scripts/generate-api-docs.mjs",
-    "docs:check": "node scripts/generate-api-docs.mjs --check"
+    "docs:check": "node scripts/generate-api-docs.mjs --check",
+    "test:feature-budgets": "node scripts/check-feature-budgets.mjs"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",

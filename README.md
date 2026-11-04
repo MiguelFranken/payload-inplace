@@ -28,7 +28,7 @@
 
 - **Edit on the actual page.** Keep the website URL, header, footer and scroll position when entering edit mode.
 - **Write directly in text.** Bind a headline or paragraph to its native field, including terminal fields inside array rows. Extra settings stay secondary.
-- **Use familiar CMS controls.** Media, relationships, rich text and compound objects open scoped native Payload fields in a resizable panel.
+- **Edit in context.** Plain text and compatible Lexical fields edit on the page. Media, relationships, custom fields and compound objects retain scoped native Payload controls in a resizable panel.
 - **Keep the controls close.** An icon dock, optional moving selection outline, section reordering and jump-to-section actions stay out of the content's way.
 - **See changes immediately.** Optimistic rendering and debounced draft saves share one native Form. Review only changed fields before publishing.
 - **Keep your existing app.** You own the schemas, renderers, authorization and business rules. Bindings identify content; Payload access rules still govern reads and writes.
@@ -146,7 +146,7 @@ Choose editable field profiles, enable individual tools, add native field panels
 | Node.js                                     | **24+**, CI on Node 24                                             |
 | Database                                    | Postgres with transactional revision guards; MongoDB demo coverage |
 
-The native handler bridge is version-pinned. Globals, localization, cross-origin frontends and inline authoring inside Lexical are outside the current contract. The normal npm release line starts at **0.0.1**; the [compatibility guide](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/compatibility.md) defines the tested scope.
+The native handler bridge is version-pinned. This local development branch adds explicit draft globals, finite page document scopes, content localization and compatible inline Lexical fields. Cross-origin frontends and editing embedded custom Lexical nodes remain outside the contract. These additions are not published yet. The normal npm release line starts at **0.0.1**; the [compatibility guide](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/compatibility.md) defines the tested scope.
 
 ## Documentation
 

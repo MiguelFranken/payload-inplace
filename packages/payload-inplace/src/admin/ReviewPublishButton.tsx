@@ -20,11 +20,24 @@ import {
   useLocale,
   useTranslation,
 } from "@payloadcms/ui";
-import { use, useEffect, useId, useMemo, useRef, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  use,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { ClientBlock, ClientField } from "payload";
 import { FileCheck2, LoaderCircle, X, Globe, History } from "lucide-react";
 import { useModalDismiss } from "./native-accessibility.js";
-import { DocumentReview } from "./DocumentReview.js";
+const DocumentReview = lazy(() =>
+  import("./DocumentReview.js").then((module) => ({
+    default: module.DocumentReview,
+  })),
+);
 import { ReviewBaselineContext } from "./review-baseline.js";
 import { documentChanges } from "../state/document-diff.js";
 import { Button as ChromeButton } from "../frontend/ui/button.js";
@@ -133,7 +146,7 @@ export function ReviewPublishButton({
         },
       );
       const result = await response.json();
-      if (!response.ok) throw Error(result.error || "Review unavailable");
+      if (!response.ok) throw Error(result.error || t("reviewUnavailable"));
       if (!controller.signal.aborted) {
         setReview(result);
         operation?.settle("succeeded");
@@ -274,7 +287,9 @@ export function ReviewPublishButton({
                 <ChromeButton
                   size="sm"
                   variant="outline"
-                  aria-label={`${t("published")}: ${t("changedFieldCount", { count: publishedChanges.length })}`}
+                  aria-description={t("changedFieldCount", {
+                    count: publishedChanges.length,
+                  })}
                   aria-pressed={comparison === "published"}
                   onClick={() => setComparison("published")}
                 >
@@ -283,7 +298,7 @@ export function ReviewPublishButton({
                     aria-hidden="true"
                     className="pve:max-sm:hidden"
                   />
-                  {t("published")}
+                  {t("published")}{" "}
                   <span className="pve:tabular-nums">
                     {number(publishedChanges.length)}
                   </span>
@@ -291,7 +306,9 @@ export function ReviewPublishButton({
                 <ChromeButton
                   size="sm"
                   variant="outline"
-                  aria-label={`${t("sinceOpening")}: ${t("changedFieldCount", { count: sessionChanges.length })}`}
+                  aria-description={t("changedFieldCount", {
+                    count: sessionChanges.length,
+                  })}
                   aria-pressed={comparison === "session"}
                   onClick={() => setComparison("session")}
                 >
@@ -300,7 +317,7 @@ export function ReviewPublishButton({
                     aria-hidden="true"
                     className="pve:max-sm:hidden"
                   />
-                  {t("sinceOpening")}
+                  {t("sinceOpening")}{" "}
                   <span className="pve:tabular-nums">
                     {number(sessionChanges.length)}
                   </span>
@@ -313,19 +330,25 @@ export function ReviewPublishButton({
               tabIndex={0}
               className="pve:min-h-0 pve:flex-1 pve:overflow-auto pve:overscroll-contain pve:p-4 pve:md:p-6 pve:outline-none pve:focus-visible:ring-2 pve:focus-visible:ring-inset pve:focus-visible:ring-[var(--pve-accent,#3451eb)]"
             >
-              <DocumentReview
-                before={
-                  comparison === "published" ? review.published : openedWith
-                }
-                after={review.draft}
-                fields={fields}
-                blocksMap={blocksMap}
-                de={de}
-                beforeLabel={
-                  comparison === "published" ? t("published") : t("whenOpened")
-                }
-                afterLabel={t("savedDraft")}
-              />
+              <Suspense
+                fallback={<p role="status">{t("loadingComparison")}</p>}
+              >
+                <DocumentReview
+                  before={
+                    comparison === "published" ? review.published : openedWith
+                  }
+                  after={review.draft}
+                  fields={fields}
+                  blocksMap={blocksMap}
+                  de={de}
+                  beforeLabel={
+                    comparison === "published"
+                      ? t("published")
+                      : t("whenOpened")
+                  }
+                  afterLabel={t("savedDraft")}
+                />
+              </Suspense>
             </div>
             <footer
               className={`pve:shrink-0 pve:border-0 pve:border-t pve:border-solid pve:p-4 ${chrome.border}`}

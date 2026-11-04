@@ -925,7 +925,7 @@ test("German 320px dock contains every visible action and minimizes through its 
     .addCookies([{ name: "payload-lng", value: "de", url: page.url() }]);
   await page.setViewportSize({ width: 320, height: 740 });
   await page.reload();
-  const dock = page.getByRole("navigation", { name: "Editing toolbar" });
+  const dock = page.getByRole("navigation", { name: "Bearbeitungswerkzeuge" });
   await expect(
     page.getByRole("button", { name: "Inhalte auswählen", exact: true }),
   ).toBeVisible();
@@ -2056,7 +2056,7 @@ test("review shows only changed fields, preserves the opening baseline and recov
     page.getByRole("status", { name: "Draft saved", exact: true }),
   ).toBeVisible();
   let fail = true;
-  await page.route("**/api/visual-editor/review", async (route) => {
+  await page.route("**/api/visual-editor/review*", async (route) => {
     if (fail) {
       fail = false;
       await route.fulfill({
@@ -2140,7 +2140,7 @@ test("confirmed custom actions can cancel, reopen and retry after failure", asyn
     await expect(dialog).toHaveCount(0);
   }
   let fail = true;
-  await page.route("**/api/visual-editor/action", async (route) => {
+  await page.route("**/api/visual-editor/action*", async (route) => {
     if (fail) {
       fail = false;
       await route.fulfill({

@@ -1,0 +1,18 @@
+# Payload v3 compatibility adapters
+
+Only the declared Payload 3.91 / Next 16.4.2 matrix is verified. Keep every installed Payload package at the same exact version. These narrow bridges preserve native field preparation and persistence; they are not stable upstream APIs.
+
+| Upstream behavior or dependency | Owner | Contract and verification |
+| --- | --- | --- |
+| Next's internal `utilities/handleServerFunctions.js` | `src/exports/next.ts`, `src/exports/native.ts` | App-relative Turbopack alias resolves the unchanged installed handler without the admin layout/CSS barrel. Preserve host aliases. Packed consumer builds exercise the actual handler. |
+| Exported internal `_internal_renderFieldHandler` and native form/table state handlers | `src/exports/native.ts`, `src/adapters/native-function-scope.ts` | A freshly authorized request is passed separately from client arguments. Native permissions, content locale, user and consumer overrides remain authoritative. |
+| Process-wide server/client schema caches | `src/server/frontend-config.ts` | Synchronize only a changed sanitized schema identity; preserve request-local maps. Hot-reload regression proves newly introduced fields cannot reach `fieldIsHiddenOrDisabled(undefined)`. |
+| Native Form command/state shapes and asynchronous row preparation | `src/adapters/payload-form.ts`, `src/frontend/controllers/native-structure.ts` | ADD_ROW and identity-aware history use native state. Selection waits for matching row/leaf metadata. No parallel persistence store. |
+| Native save envelopes | `src/adapters/native-response.ts` | Collection PATCH returns `doc`; global POST returns `result`. Validate document identity, dates and revision before reconciling fields. Malformed acknowledgement retains the working copy. |
+| Lexical field detection and `customComponents.Field` | `src/adapters/richtext-capabilities.ts`, `src/schema/editor-strategy.ts` | Native Lexical capabilities are projected server-side. Consumer Field overrides, ACL/conditions and unsupported nodes retain native settings. Structured JSON round-trips through the native queue. |
+| Payload CSS, viewport breakpoints and root-relative units | `scripts/native-shadow-styles.mjs`, `src/frontend/native-style-units.mjs`, `Floatable.tsx` | Isolate native CSS, make field breakpoints follow the panel and its gutter, retain native scale. Actual admin comparison and narrow/resized geometry tests cover this contract. |
+| React Select's bundled private Emotion cache | `src/frontend/native-runtime-styles.ts` | No private context import: copy only generated rules used inside the shadow root. Coalesce observations and remove listeners/styles on unmount. Native select/drawer browser checks verify behavior. |
+| UI 3.91's undeclared `clsx` import | `src/exports/next.ts` | Use our declared dependency only if resolution from native UI fails; never override an explicit host alias. Unit and clean consumer checks cover both cases. |
+| Global restore bypassing `beforeChange` in v3 | `src/server/globals.ts`, `src/server/versions.ts` | Reject raw global restore; resolve a version into a guarded new native draft update. Real transactional global tests cover races and publication authority. |
+
+Paths in the table are relative to `packages/payload-inplace` unless prefixed with `scripts/`. The server bridge, native dependency pins, schema identity handling and shadow style transforms must be reviewed together when upgrading Payload. Peer pins, TypeScript, API freshness, archive checks, real database races and the separate production installed app are complementary gates; a green mocked adapter test alone is insufficient.
