@@ -32,6 +32,7 @@ export function InsertionPoints({
   enabled,
   options,
   insert,
+  insertPattern,
   locale = "en",
   document,
 }: {
@@ -47,6 +48,10 @@ export function InsertionPoints({
   ) =>
     | { field: { type: "array" | "blocks" }; choices: ClientBlock[] }
     | undefined;
+  insertPattern?: (
+    target: InsertionTarget,
+    pattern: { blockType: string; content: Record<string, unknown> },
+  ) => Promise<void>;
   insert: (target: InsertionTarget, blockType?: string) => string | undefined;
 }) {
   const { t } = useEditorMessages(undefined, locale);
@@ -230,6 +235,11 @@ export function InsertionPoints({
                 catalogue={catalogue}
                 label={label}
                 locale={locale}
+                onChoosePattern={
+                  insertPattern
+                    ? (pattern) => insertPattern(target, pattern)
+                    : undefined
+                }
                 onChoose={(slug) => insert(target, slug)}
                 onPreview={
                   preview ? (slug) => preview(target, slug) : undefined

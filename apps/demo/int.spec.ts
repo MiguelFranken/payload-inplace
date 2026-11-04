@@ -15,6 +15,7 @@ beforeAll(async () => {
   } else if (!process.env.DATABASE_URL?.includes("visual_editor"))
     throw new Error("Provide an isolated visual_editor Postgres database");
   process.env.VE_SEED = "1";
+  process.env.VE_TEST_SCHEMA = "1";
   const config = (await import("./payload.config.js")).default;
   payload = await getPayload({ config });
 });
@@ -1089,3 +1090,100 @@ it.runIf(process.env.VE_DATABASE === "postgres")(
     await manageAdvisoryLock(b, proofB, options, "release", next.lease);
   },
 );
+
+it("keeps consumer-owned pattern storage behind native record ACL without changing the source draft", async () => {
+  const { patternOperation } = await import(
+    "../../packages/payload-inplace/src/server/patterns.js"
+  );
+  const { createContext, signContext } = await import(
+    "../../packages/payload-inplace/src/server/context.js"
+  );
+  const { patternAdapter } = await import("./lib/pattern-fixture.js");
+  const editorOptions = (await import("./payload.config.js")).editorOptions;
+  const options = { ...editorOptions, patterns: patternAdapter };
+  const users = (
+    await payload.find({ collection: "users", overrideAccess: true })
+  ).docs;
+  const request = (role: string) =>
+    createLocalReq(
+      {
+        user: Object.assign(
+          {
+            ...users.find((user) => user.role === role)!,
+            collection: "users" as const,
+          },
+          { _sid: `pattern-${role}` },
+        ),
+        locale: "en",
+        fallbackLocale: false,
+      },
+      payload,
+    );
+  const req = await request("editor");
+  const document: any = (
+    await payload.find({
+      collection: "pages",
+      limit: 1,
+      draft: true,
+      req,
+      overrideAccess: false,
+      depth: 0,
+    })
+  ).docs[0];
+  const target = { collection: "pages", id: document.id, root: "layout" };
+  const proof = signContext(createContext(req, target), payload.secret);
+  const section = document.layout.find((row: any) => row.blockType === "text");
+  const saved: any = await patternOperation(req, options, {
+    proof,
+    operation: "save",
+    label: "Synthetic section",
+    identity: { root: "layout", blockId: section.id },
+    expectedRevision: document._veRevision,
+  });
+  const list: any = await patternOperation(req, options, {
+    proof,
+    operation: "list",
+  });
+  expect(list.docs.some((row: any) => row.id === saved.id)).toBe(true);
+  const copy: any = await patternOperation(req, options, {
+    proof,
+    operation: "read",
+    id: saved.id,
+  });
+  expect(copy.content.heading).toBe(section.heading);
+  expect(copy.content.items[0].id).not.toBe(section.items[0].id);
+  expect(
+    (
+      (await payload.findByID({
+        collection: "pages",
+        id: document.id,
+        req,
+        overrideAccess: false,
+        draft: true,
+      })) as any
+    )._veRevision,
+  ).toBe(document._veRevision);
+  const other = await request("admin"),
+    otherProof = signContext(createContext(other, target), payload.secret);
+  const otherList: any = await patternOperation(other, options, {
+    proof: otherProof,
+    operation: "list",
+  });
+  expect(otherList.docs.some((row: any) => row.id === saved.id)).toBe(false);
+  await expect(
+    patternOperation(other, options, {
+      proof: otherProof,
+      operation: "read",
+      id: saved.id,
+    }),
+  ).rejects.toThrow();
+  const reader = await request("reader"),
+    readerProof = signContext(createContext(reader, target), payload.secret);
+  await expect(
+    patternOperation(reader, options, {
+      proof: readerProof,
+      operation: "read",
+      id: saved.id,
+    }),
+  ).rejects.toThrow();
+});

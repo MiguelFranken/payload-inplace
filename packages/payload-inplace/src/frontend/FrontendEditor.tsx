@@ -208,6 +208,27 @@ export async function FrontendEditor({
   return (
     <FrontendShell
       key={JSON.stringify([context.target, context.locale, context.nonce])}
+      patterns={
+        options.patterns && !options.disabled
+          ? {
+              canRead: await options.patterns.authorize({
+                req,
+                target: context.target,
+                document,
+                operation: "read",
+              }),
+              canSave:
+                Boolean(options.patterns.save) &&
+                (await options.patterns.authorize({
+                  req,
+                  target: context.target,
+                  document,
+                  operation: "save",
+                })),
+              allowedBlocks: options.patterns.allowedBlocks,
+            }
+          : undefined
+      }
       ui={options.ui}
       pageScopes={await availablePageScopes(
         req,

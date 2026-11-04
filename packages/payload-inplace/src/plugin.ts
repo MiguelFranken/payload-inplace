@@ -1,3 +1,4 @@
+import { patternEndpoint } from "./server/patterns.js";
 import { scopeEndpoint } from "./server/scopes.js";
 import { configureGlobals } from "./server/globals.js";
 import { readNativeDocument } from "./server/document.js";
@@ -322,6 +323,16 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
       },
       endpoints: [
         ...(config.endpoints ?? []),
+        ...(options.patterns && !options.disabled
+          ? [
+              {
+                path: "/visual-editor/patterns",
+                method: "post" as const,
+                handler: (req: import("payload").PayloadRequest) =>
+                  patternEndpoint(req, options, trustedOrigins),
+              },
+            ]
+          : []),
         ...(options.pageScopes && !options.disabled
           ? [
               {

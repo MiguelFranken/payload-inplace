@@ -1,3 +1,4 @@
+import { patternAdapter, patternCollection } from "./lib/pattern-fixture";
 import path from "node:path";
 import sharp from "sharp";
 import { fileURLToPath } from "node:url";
@@ -196,6 +197,7 @@ const content = (
   ],
 });
 export const editorOptions: VisualEditorOptions = {
+  patterns: process.env.VE_TEST_SCHEMA === "1" ? patternAdapter : undefined,
   globals:
     process.env.VE_DATABASE === "postgres"
       ? { siteHeader: { roots: ["layout"] } }
@@ -456,6 +458,7 @@ export default buildConfig({
     },
   ],
   collections: [
+    ...(process.env.VE_TEST_SCHEMA === "1" ? [patternCollection] : []),
     {
       slug: "users",
       auth: true,

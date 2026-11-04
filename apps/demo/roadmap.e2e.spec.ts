@@ -1278,3 +1278,98 @@ test("page product and global scopes keep one native owner and independent revie
     path: "test-results/roadmap-document-scopes-320.png",
   });
 });
+
+test("optional patterns copy saved sections through native preparation with fresh nested IDs", async ({
+  page,
+}) => {
+  const patternName = `Reusable nested proof ${Date.now()}`;
+  await page.goto("/shop");
+  expect(
+    (
+      await page.request.post("/api/users/login", {
+        data: {
+          email: "admin@example.test",
+          password: "synthetic-demo-password",
+        },
+      })
+    ).ok(),
+  ).toBeTruthy();
+  const response = await page.request.post("/api/pages", {
+    data: {
+      title: "Pattern proof",
+      slug: `patterns-${Date.now()}`,
+      layout: [
+        { blockType: "hero", heading: "Pattern page" },
+        {
+          blockType: "text",
+          heading: "Reusable section",
+          items: [{ label: "Nested copy", note: "Keep this note" }],
+        },
+      ],
+      _status: "draft",
+    },
+  });
+  expect(response.ok()).toBeTruthy();
+  const doc = (await response.json()).doc;
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto(`/visual-editor/start?collection=pages&id=${doc.id}`);
+  await page
+    .getByRole("button", { name: "Start editing", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Sections", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Settings for Text section", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Save as pattern", exact: true })
+    .click();
+  await page
+    .getByRole("textbox", { name: "Pattern name", exact: true })
+    .fill(patternName);
+  await page.getByRole("button", { name: "Save copy", exact: true }).click();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Pattern saved." }),
+  ).toBeVisible();
+  const revision = doc._veRevision;
+  expect(
+    (
+      await (
+        await page.request.get(`/api/pages/${doc.id}?draft=true&depth=0`)
+      ).json()
+    )._veRevision,
+  ).toBe(revision);
+  await page
+    .getByRole("button", { name: "Back to sections", exact: true })
+    .click();
+  await page
+    .getByRole("combobox", { name: "Add section", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Saved patterns", exact: true })
+    .click();
+  await expect(
+    page.getByRole("option", { name: patternName, exact: true }),
+  ).toBeVisible();
+  await page.screenshot({ path: "test-results/roadmap-pattern-library.png" });
+  await page.getByRole("option", { name: patternName, exact: true }).click();
+  await expect
+    .poll(
+      async () =>
+        (
+          await (
+            await page.request.get(`/api/pages/${doc.id}?draft=true&depth=0`)
+          ).json()
+        ).layout.length,
+    )
+    .toBe(3);
+  const saved = await (
+    await page.request.get(`/api/pages/${doc.id}?draft=true&depth=0`)
+  ).json();
+  expect(saved.layout[2].heading).toBe("Reusable section");
+  expect(saved.layout[2].items[0].label).toBe("Nested copy");
+  expect(saved.layout[2].items[0].note).toBe("Keep this note");
+  expect(saved.layout[2].id).not.toBe(saved.layout[1].id);
+  expect(saved.layout[2].items[0].id).not.toBe(saved.layout[1].items[0].id);
+  expect(errors).toEqual([]);
+});

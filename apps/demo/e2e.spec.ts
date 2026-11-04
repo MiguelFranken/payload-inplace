@@ -616,3 +616,68 @@ test("native field ownership survives a suspended custom field with its media dr
   expect(retained._veRevision).toBe(doc._veRevision);
   expect(retained.unrelated).toBe("Retain unmounted data");
 });
+
+test("native lazy field suspension cannot reset a dirty draft or its sole save owner", async ({
+  page,
+}) => {
+  await login(page);
+  const response = await page.request.post("/api/pages", {
+    data: {
+      title: "Dirty suspension proof",
+      slug: `dirty-suspense-${Date.now()}`,
+      layout: [
+        {
+          blockType: "hero",
+          heading: "Before suspension",
+          caption: "Keep this caption",
+        },
+      ],
+      unrelated: "Retain other fields",
+      _status: "draft",
+    },
+  });
+  expect(response.ok()).toBeTruthy();
+  const doc = (await response.json()).doc;
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await open(page, "pages", doc.id);
+  const editor = await inspect(page, "Before suspension");
+  const heading = editor.getByRole("textbox", { name: "Caption", exact: true });
+  await heading.fill("Dirty caption survives");
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(
+          () => reject(Error("Suspension fixture unavailable")),
+          3000,
+        );
+        window.addEventListener(
+          "pve-test-native-resumed",
+          () => {
+            clearTimeout(timeout);
+            resolve();
+          },
+          { once: true },
+        );
+        window.dispatchEvent(new Event("pve-test-native-suspend"));
+      }),
+  );
+  await expect(heading).toHaveValue("Dirty caption survives");
+  await expect
+    .poll(
+      async () =>
+        (
+          await (
+            await page.request.get(`/api/pages/${doc.id}?draft=true&depth=0`)
+          ).json()
+        ).layout[0].caption,
+    )
+    .toBe("Dirty caption survives");
+  const saved = await (
+    await page.request.get(`/api/pages/${doc.id}?draft=true&depth=0`)
+  ).json();
+  expect(saved.layout[0].heading).toBe("Before suspension");
+  expect(saved.unrelated).toBe("Retain other fields");
+  expect(saved._veRevision).toBe(doc._veRevision + 1);
+  expect(errors).toEqual([]);
+});

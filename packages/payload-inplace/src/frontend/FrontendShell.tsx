@@ -1,4 +1,8 @@
 "use client";
+import {
+  SectionPatterns,
+  type PatternCapabilities,
+} from "./section-patterns.js";
 import { nativeSavedDocument } from "../adapters/native-response.js";
 import {
   nativeDocumentArgs,
@@ -72,6 +76,7 @@ import { AdvisoryLockContext, useNativeAdvisoryLock } from "./advisory-lock.js";
 import { FrontendControls } from "./FrontendControls.js";
 
 type ShellProps = {
+  patterns?: PatternCapabilities;
   pageScopes?: ResolvedPageScope[];
   sharedStructure?: boolean;
   ui?: import("../i18n/messages.js").EditorUIOptions;
@@ -470,50 +475,52 @@ function NativeDocumentForm(
                 retry: () => void refreshSavedPreview(requested.current),
               }}
             >
-              <NativeDocumentScopes
-                context={props.context}
-                scopes={props.pageScopes}
-                onSwitching={setSwitchingDocument}
-              >
-                <EditorToolsProvider
+              <SectionPatterns capabilities={props.patterns}>
+                <NativeDocumentScopes
                   context={props.context}
-                  tools={props.tools}
-                  extensions={props.extensions}
+                  scopes={props.pageScopes}
+                  onSwitching={setSwitchingDocument}
                 >
-                  <FieldOwnershipProvider>
-                    <FieldStrategiesProvider>
-                      {props.strategyProviders}
-                      <TransientPreviewProvider
-                        capable={Boolean(props.preview)}
-                      >
-                        {props.preview && props.previewTarget && (
-                          <PreviewPortal
-                            target={props.previewTarget}
-                            ready={props.previewReady}
-                            onReady={props.onPreviewReady}
-                          >
-                            <PreviewBoundary fallback={props.children}>
-                              {props.preview}
-                            </PreviewBoundary>
-                          </PreviewPortal>
-                        )}
-                        <FrontendControls
-                          sharedStructure={props.sharedStructure}
-                          context={props.context}
-                          richTextCapabilities={props.richTextCapabilities}
-                          field={props.field}
-                          blockControls={props.blockControls}
-                          catalogue={props.catalogue}
-                          permissions={props.fieldPermissions}
-                          policy={props.policy}
-                          exitURL={props.exitURL}
-                          renderedRevision={props.renderedRevision}
-                        />
-                      </TransientPreviewProvider>
-                    </FieldStrategiesProvider>
-                  </FieldOwnershipProvider>
-                </EditorToolsProvider>
-              </NativeDocumentScopes>
+                  <EditorToolsProvider
+                    context={props.context}
+                    tools={props.tools}
+                    extensions={props.extensions}
+                  >
+                    <FieldOwnershipProvider>
+                      <FieldStrategiesProvider>
+                        {props.strategyProviders}
+                        <TransientPreviewProvider
+                          capable={Boolean(props.preview)}
+                        >
+                          {props.preview && props.previewTarget && (
+                            <PreviewPortal
+                              target={props.previewTarget}
+                              ready={props.previewReady}
+                              onReady={props.onPreviewReady}
+                            >
+                              <PreviewBoundary fallback={props.children}>
+                                {props.preview}
+                              </PreviewBoundary>
+                            </PreviewPortal>
+                          )}
+                          <FrontendControls
+                            sharedStructure={props.sharedStructure}
+                            context={props.context}
+                            richTextCapabilities={props.richTextCapabilities}
+                            field={props.field}
+                            blockControls={props.blockControls}
+                            catalogue={props.catalogue}
+                            permissions={props.fieldPermissions}
+                            policy={props.policy}
+                            exitURL={props.exitURL}
+                            renderedRevision={props.renderedRevision}
+                          />
+                        </TransientPreviewProvider>
+                      </FieldStrategiesProvider>
+                    </FieldOwnershipProvider>
+                  </EditorToolsProvider>
+                </NativeDocumentScopes>
+              </SectionPatterns>
             </PreviewStatusContext>
             <NativeAutosaveTrigger />
             <NativeSubmissionMonitor />

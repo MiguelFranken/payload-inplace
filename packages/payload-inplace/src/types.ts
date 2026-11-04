@@ -53,6 +53,8 @@ export interface VisualEditorOptions {
   concurrency?: ConcurrencyAdapter;
   /** Optional catalogue presentation. Examples are transient render-only data, never default persisted content. */
   catalogue?: Record<string, EditorCatalogueEntry>;
+  /** Optional independent section copies through consumer-owned, access-controlled storage. */
+  patterns?: SectionPatternAdapter;
   /** Server-owned business commands may update explicit operational paths in the complete live snapshot.
    * Native access, transaction locks and expected revision remain mandatory. Paths cannot overlap visual roots.
    * This callback is never serialized and must authorize an existing reviewed domain command, never client data.
@@ -195,4 +197,32 @@ export interface EditorCatalogueEntry {
   thumbnail?: { src: string; alt?: string };
   /** Presentation example only. Committing still uses native schema defaults and validation. */
   example?: Record<string, unknown>;
+}
+
+/** Consumer-owned pattern identity, scoped by the adapter's native read access. Copies are independent; asset references remain shared. */
+export interface SectionPatternSummary {
+  id: string;
+  label: string;
+  blockType: string;
+}
+/** Server-only optional storage contract. Every callback must retain tenant/native ACLs (Local API overrideAccess:false). No collection or migration is installed by the plugin. */
+export interface SectionPatternAdapter {
+  allowedBlocks: string[];
+  authorize: (
+    context: EditorCapabilityContext & { operation: "read" | "save" },
+  ) => boolean | Promise<boolean>;
+  list: (
+    context: EditorCapabilityContext & { page: number; limit: number },
+  ) => Promise<{ docs: SectionPatternSummary[]; hasNextPage: boolean }>;
+  read: (
+    context: EditorCapabilityContext & { id: string },
+  ) => Promise<{ blockType: string; content: Record<string, unknown> }>;
+  /** Omit to offer a read-only library. Content comes from the saved authorized document, never a client-supplied snapshot. */
+  save?: (
+    context: EditorCapabilityContext & {
+      label: string;
+      blockType: string;
+      content: Record<string, unknown>;
+    },
+  ) => Promise<SectionPatternSummary>;
 }

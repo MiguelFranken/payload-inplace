@@ -4,6 +4,8 @@ import {
   targetDocumentKey,
   targetSlug,
 } from "../state/document-target.js";
+import { useSectionPatterns } from "./section-patterns.js";
+import { SaveSectionPattern } from "./SaveSectionPattern.js";
 import { useDocumentScopes } from "./document-scope.js";
 import { useEditorMessages } from "./messages.js";
 import { useEditorPageTransition } from "../launcher/EditorPageTransition.js";
@@ -224,12 +226,14 @@ export function FrontendControls({
       form.disabled ||
       !info.hasSavePermission,
   );
+  const patterns = useSectionPatterns();
   const [historyEpoch, setHistoryEpoch] = useState(0);
   const {
     cancelInsertionIntent,
     sections,
     insertionOptions,
     insert,
+    insertPattern,
     previewInsertion,
     history,
     commandFor,
@@ -934,6 +938,7 @@ export function FrontendControls({
           enabled={expanded && !hasPanel && !selection?.field && !disabled}
           options={insertionOptions}
           insert={insert}
+          insertPattern={insertPattern}
           locale={i18n.language}
         />
         {expanded && (
@@ -1192,6 +1197,19 @@ export function FrontendControls({
                 ) : (
                   <p>{t("thisContentIsNoLongerAvailableAtThisLocation")}</p>
                 )}
+                {selected.parent === context.target.root &&
+                  patterns?.canSave &&
+                  patterns.allowedBlocks.includes(
+                    selected.block?.slug || "",
+                  ) && (
+                    <SaveSectionPattern
+                      key={selected.identity.blockId}
+                      identity={selected.identity}
+                      disabled={
+                        disabled || modified || processing || background
+                      }
+                    />
+                  )}
                 {selection?.field || selection?.fields ? (
                   <ChromeButton
                     variant="outline"
@@ -1325,6 +1343,19 @@ export function FrontendControls({
                     disabled ||
                     (field.maxRows !== undefined &&
                       rootRows.length >= field.maxRows)
+                  }
+                  onChoosePattern={
+                    patterns?.canRead
+                      ? (pattern) =>
+                          insertPattern(
+                            {
+                              kind: "list",
+                              root: context.target.root,
+                              field: "",
+                            },
+                            pattern,
+                          )
+                      : undefined
                   }
                   onChoose={(value) => {
                     const result = add(value);

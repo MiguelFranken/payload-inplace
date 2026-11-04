@@ -14,6 +14,8 @@ export type BlockCommand =
   | {
       type: "add";
       blockType: string;
+      /** Prepared by native form-state for an optional independent pattern copy. */
+      subFieldState?: FormState;
       at?: "start" | "end";
       adjacent?: { identity: BlockIdentity; side: "before" | "after" };
     }
@@ -123,6 +125,7 @@ export function applyCommand(
       schemaPath,
       blockType: command.blockType,
       rowIndex: insertIndex,
+      subFieldState: command.subFieldState,
     });
   else if (command.type === "add-array")
     form.addFieldRow({ path: container, schemaPath, rowIndex: insertIndex });

@@ -3,6 +3,7 @@ import { targetSlug } from "../state/document-target.js";
 import { useEditorMessages } from "./messages.js";
 
 import {
+  Suspense,
   createContext,
   use,
   useCallback,
@@ -106,7 +107,9 @@ export function NativeFieldsOwner({
   return (
     <div ref={element} tabIndex={-1}>
       {!ownedPaths.length || owner?.id === id ? (
-        children
+        <Suspense fallback={<p role="status">{t("loadingNativeFields")}</p>}>
+          {children}
+        </Suspense>
       ) : owner ? (
         <div className="pve:grid pve:gap-3">
           <p className="pve:m-0 pve:text-sm pve:leading-relaxed">

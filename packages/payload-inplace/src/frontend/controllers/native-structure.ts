@@ -13,9 +13,15 @@ import {
   useField,
   useForm,
   useFormFields,
+  useServerFunctions,
 } from "@payloadcms/ui";
 import type { BlocksFieldClientProps, ClientBlock, ClientField } from "payload";
 import type { InsertionTarget } from "../../../../core/src/insertion.js";
+import { authoredFieldKey } from "../../state/autosave.js";
+import {
+  nativeDocumentArgs,
+  targetFromNativeInfo,
+} from "../../state/document-target.js";
 import { preparedInsertedRow } from "../../../../core/src/row-preparation.js";
 import { previewExample } from "../../schema/example-preview.js";
 import { resolveBinding } from "../../schema/resolve-binding.js";
@@ -65,6 +71,12 @@ export function useNativeStructure({
   const form = useForm(),
     { config } = useConfig(),
     info = useDocumentInfo();
+  const { getFormState } = useServerFunctions();
+  const patternPreparation = useRef<AbortController | null>(null);
+  useEffect(() => () => patternPreparation.current?.abort(), [nonce]);
+  useEffect(() => {
+    if (disabled) patternPreparation.current?.abort();
+  }, [disabled]);
   const pending = useRef<
     | {
         target: InsertionTarget;
@@ -330,7 +342,73 @@ export function useNativeStructure({
       },
     };
   }
-  function insert(target: InsertionTarget, blockType?: string) {
+  async function insertPattern(
+    target: InsertionTarget,
+    pattern: { blockType: string; content: Record<string, unknown> },
+  ) {
+    patternPreparation.current?.abort();
+    const request = new AbortController();
+    patternPreparation.current = request;
+    const options = insertionOptions(target);
+    if (
+      !options ||
+      options.field.type !== "blocks" ||
+      !options.choices.some((block) => block.slug === pattern.blockType)
+    )
+      throw Error("Pattern insertion is no longer available");
+    const before = authoredFieldKey(form.getFields());
+    const data = { ...form.getData() };
+    const path = options.parent.split(".");
+    let cursor: Record<string, any> = data;
+    for (const segment of path.slice(0, -1)) {
+      cursor[segment] = Array.isArray(cursor[segment])
+        ? [...cursor[segment]]
+        : { ...cursor[segment] };
+      cursor = cursor[segment];
+    }
+    const values = form.getDataByPath(options.parent);
+    const rows = Array.isArray(values) ? [...values] : [];
+    // Preparation uses a temporary last row; the identity-based command resolves its actual insertion position again.
+    const index = rows.length;
+    rows.push({
+      ...pattern.content,
+      blockType: pattern.blockType,
+      id: crypto.randomUUID().replaceAll("-", "").slice(0, 24),
+    });
+    cursor[path.at(-1)!] = rows;
+    const result = await getFormState({
+      ...nativeDocumentArgs(targetFromNativeInfo(info)),
+      data,
+      docPermissions: info.docPermissions,
+      docPreferences: { fields: {} },
+      operation: "update",
+      schemaPath: collection,
+      renderAllFields: true,
+      returnLockStatus: false,
+      skipValidation: false,
+      signal: request.signal,
+    });
+    if (
+      request.signal.aborted ||
+      form.disabled ||
+      before !== authoredFieldKey(form.getFields())
+    )
+      throw Error("Pattern preparation changed; choose the pattern again");
+    const prefix = `${options.parent}.${index}.`;
+    const state = Object.fromEntries(
+      Object.entries(result.state || {})
+        .filter(([key]) => key.startsWith(prefix))
+        .map(([key, value]) => [key.slice(prefix.length), value]),
+    );
+    if (!state.id) throw Error("Native pattern preparation failed");
+    const issue = insert(target, pattern.blockType, state);
+    if (issue) throw Error(issue);
+  }
+  function insert(
+    target: InsertionTarget,
+    blockType?: string,
+    subFieldState?: import("payload").FormState,
+  ) {
     const options = insertionOptions(target);
     if (!options)
       return invalidate("This insertion point is no longer available.");
@@ -351,6 +429,7 @@ export function useNativeStructure({
         : {
             type: "add",
             blockType: blockType || "",
+            subFieldState,
             ...(target.kind === "adjacent"
               ? { adjacent: { identity: target.identity, side: target.side } }
               : {}),
@@ -376,6 +455,7 @@ export function useNativeStructure({
     cancelInsertionIntent,
     insertionOptions,
     previewInsertion,
+    insertPattern,
     insert,
     history,
     generation,

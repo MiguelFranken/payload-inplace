@@ -1,6 +1,21 @@
 import type { Message } from "../../../core/src/messages.js";
 /** Typed source copy. Consumers override messages by key; content and native field labels stay consumer-owned. */
 export const englishMessages = {
+  loadingNativeFields: "Loading fields…",
+  searchPatterns: "Search patterns",
+  noMatchingPatterns: "No matching patterns",
+  sectionsLibrary: "Sections",
+  patternsLibrary: "Saved patterns",
+  saveSectionPattern: "Save as pattern",
+  patternName: "Pattern name",
+  savePatternCopy: "Save copy",
+  patternFailed:
+    "Pattern unavailable. Check access, save your draft and try again.",
+  patternSaved: "Pattern saved. Inserted sections remain independent copies.",
+  patternLoading: "Loading patterns…",
+  loadMorePatterns: "More patterns",
+  patternCopyHint:
+    "Insert an independent copy. Shared assets keep their references.",
   documentSwitchFailed:
     "Could not switch documents. Your current working copy is retained. Check access and retry.",
   saveBeforeDocumentSwitch: "Saving the current document before switching…",
@@ -304,6 +319,22 @@ export type EditorStaticMessageKey = {
     : never;
 }[EditorMessageKey];
 export const germanMessages = {
+  loadingNativeFields: "Felder werden geladen…",
+  searchPatterns: "Vorlagen durchsuchen",
+  noMatchingPatterns: "Keine passenden Vorlagen",
+  sectionsLibrary: "Abschnitte",
+  patternsLibrary: "Gespeicherte Vorlagen",
+  saveSectionPattern: "Als Vorlage speichern",
+  patternName: "Name der Vorlage",
+  savePatternCopy: "Kopie speichern",
+  patternFailed:
+    "Vorlage nicht verfügbar. Prüfe deinen Zugriff, speichere den Entwurf und versuche es erneut.",
+  patternSaved:
+    "Vorlage gespeichert. Eingefügte Abschnitte bleiben eigenständige Kopien.",
+  patternLoading: "Vorlagen werden geladen…",
+  loadMorePatterns: "Weitere Vorlagen",
+  patternCopyHint:
+    "Eigenständige Kopie einfügen. Gemeinsame Medien behalten ihre Referenzen.",
   documentSwitchFailed:
     "Dokument konnte nicht gewechselt werden. Deine Arbeitskopie bleibt erhalten. Prüfe den Zugriff und versuche es erneut.",
   saveBeforeDocumentSwitch:
