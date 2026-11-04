@@ -51,13 +51,21 @@ export function CommercePageView({
       ) : null}
     </div>
   );
+  const list = (identity: Identity, name: string) =>
+    active
+      ? { ...getBlockAttributes(identity, true), "data-ve-list": name }
+      : {};
   const field = (
     identity: Identity,
     name: string,
     edit: "inline" | "panel" = "inline",
   ) => getFieldAttributes({ ...identity, field: name, edit }, active);
   return (
-    <main id="main-content" className="demo:pb-16">
+    <main
+      {...(active ? { "data-ve-root": root, "data-ve-list": "" } : {})}
+      id="main-content"
+      className="demo:pb-16"
+    >
       {blocks.map((block: any) => {
         const identity = { root, blockId: block.id };
         const attrs = getBlockAttributes(identity, active);
@@ -366,7 +374,10 @@ export function CommercePageView({
                   {block.collectionLabel}
                 </span>
               </div>
-              <div className="demo:grid demo:gap-7 demo:md:grid-cols-2">
+              <div
+                {...list(identity, "cards")}
+                className={`demo:grid demo:gap-7 demo:md:grid-cols-2 ${active && !block.cards?.length ? "demo:min-h-20" : ""}`}
+              >
                 {(block.cards || []).map((card: any) => {
                   const product = resolveProduct
                     ? resolveProduct(card.product)
@@ -517,7 +528,10 @@ export function CommercePageView({
               >
                 {block.heading}
               </h2>
-              <div className="demo:space-y-3">
+              <div
+                {...list(identity, "items")}
+                className={`demo:space-y-3 ${active && !block.items?.length ? "demo:min-h-20" : ""}`}
+              >
                 {(block.items || []).map((item: any) => (
                   <article
                     key={item.id}

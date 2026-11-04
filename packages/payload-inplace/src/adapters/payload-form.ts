@@ -11,7 +11,13 @@ import type { StructuralPolicy } from "../state/policy.js";
 import type { StructuralHistory } from "../state/history.js";
 type NativeForm = ReturnType<typeof useForm>;
 export type BlockCommand =
-  | { type: "add"; blockType: string; at?: "start" | "end" }
+  | {
+      type: "add";
+      blockType: string;
+      at?: "start" | "end";
+      adjacent?: { identity: BlockIdentity; side: "before" | "after" };
+    }
+  | { type: "add-array"; at?: "start" | "end" }
   | { type: "move"; identity: BlockIdentity; over: BlockIdentity }
   | { type: "up" | "down" | "remove" | "duplicate"; identity: BlockIdentity };
 /** Single structural command service for tree, canvas and keyboard; current identity is resolved at execution. */
@@ -36,11 +42,11 @@ export function applyCommand(
     containerValue = form.getDataByPath(container);
   const rootData = Array.isArray(rootValue) ? rootValue : [];
   const data = Array.isArray(containerValue) ? containerValue : [];
-  const hit =
-    command.type === "add"
-      ? undefined
-      : resolveIdentity(indexBlocks(rootData, root), command.identity);
-  if (command.type !== "add" && !hit)
+  const adding = command.type === "add" || command.type === "add-array";
+  const hit = adding
+    ? undefined
+    : resolveIdentity(indexBlocks(rootData, root), command.identity);
+  if (!adding && !hit)
     return "The selected section moved or is unavailable. Select it again.";
   if (hit?.parent !== undefined && hit.parent !== container)
     return "Use the native nested field controls for this section.";
@@ -59,14 +65,29 @@ export function applyCommand(
     command.type === "move"
       ? destination!.index
       : index + (command.type === "up" ? -1 : 1);
+  const anchor =
+    command.type === "add" && command.adjacent
+      ? resolveIdentity(indexBlocks(rootData, root), command.adjacent.identity)
+      : undefined;
+  if (
+    command.type === "add" &&
+    command.adjacent &&
+    (!anchor || anchor.parent !== container)
+  )
+    return "The insertion point moved or was removed. Choose its current section again.";
   const insertIndex =
-    command.type === "add" && command.at === "start" ? 0 : data.length;
+    anchor && command.type === "add"
+      ? anchor.index + (command.adjacent?.side === "after" ? 1 : 0)
+      : adding && command.at === "start"
+        ? 0
+        : data.length;
   const next = [...data];
   if (command.type === "add") {
     if (!options.allowed.includes(command.blockType))
       return "This block is not allowed.";
     next.splice(insertIndex, 0, { blockType: command.blockType });
-  } else if (command.type === "remove") next.splice(index, 1);
+  } else if (command.type === "add-array") next.splice(insertIndex, 0, {});
+  else if (command.type === "remove") next.splice(index, 1);
   else if (command.type === "duplicate") {
     if (!options.allowed.includes(data[index].blockType))
       return "This block cannot be duplicated with the current field options.";
@@ -88,9 +109,9 @@ export function applyCommand(
   if (error) return error;
   if (
     !options.history.checkpoint(form.getFields(), container, {
-      kind: command.type,
+      kind: command.type === "add-array" ? "add" : command.type,
       id:
-        command.type === "add" || command.type === "duplicate"
+        adding || command.type === "duplicate"
           ? undefined
           : command.identity.blockId,
     })
@@ -103,6 +124,8 @@ export function applyCommand(
       blockType: command.blockType,
       rowIndex: insertIndex,
     });
+  else if (command.type === "add-array")
+    form.addFieldRow({ path: container, schemaPath, rowIndex: insertIndex });
   else if (command.type === "remove")
     form.removeFieldRow({ path: container, rowIndex: index });
   else if (command.type === "duplicate") {

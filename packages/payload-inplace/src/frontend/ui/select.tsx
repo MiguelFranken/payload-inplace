@@ -26,7 +26,11 @@ export function SelectTrigger({
     </SelectPrimitive.Trigger>
   );
 }
-export function SelectContent({ children }: SelectPrimitive.Popup.Props) {
+export function SelectContent({
+  children,
+  className,
+  ...props
+}: SelectPrimitive.Popup.Props) {
   const container = useChromePortal();
   return (
     <SelectPrimitive.Portal container={container}>
@@ -44,6 +48,7 @@ export function SelectContent({ children }: SelectPrimitive.Popup.Props) {
         className="pve:pointer-events-auto pve:z-[100] pve:isolate"
       >
         <SelectPrimitive.Popup
+          {...props}
           render={(props, state) => (
             <div
               {...props}
@@ -53,7 +58,7 @@ export function SelectContent({ children }: SelectPrimitive.Popup.Props) {
           )}
           data-ve-ui=""
           data-ve-select-popup=""
-          className="pve:box-border pve:min-w-[var(--anchor-width)] pve:max-h-[var(--available-height)] pve:overflow-auto pve:rounded-xl pve:border pve:border-solid pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:bg-[var(--pve-surface,var(--theme-elevation-0,#fff))] pve:p-1 pve:text-[var(--pve-text,var(--theme-text,#202127))] pve:shadow-xl pve:outline-none pve:motion-safe:transition-[opacity,translate] pve:motion-safe:duration-150 pve:data-[starting-style]:translate-y-1 pve:data-[starting-style]:opacity-0 pve:data-[ending-style]:opacity-0"
+          className={`pve:box-border pve:min-w-[var(--anchor-width)] pve:max-h-[var(--available-height)] pve:overflow-auto pve:rounded-xl pve:border pve:border-solid pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:bg-[var(--pve-surface,var(--theme-elevation-0,#fff))] pve:p-1 pve:text-[var(--pve-text,var(--theme-text,#202127))] pve:shadow-xl pve:outline-none pve:motion-safe:transition-[opacity,translate] pve:motion-safe:duration-150 pve:data-[starting-style]:translate-y-1 pve:data-[starting-style]:opacity-0 pve:data-[ending-style]:opacity-0 ${className || ""}`}
         >
           <SelectPrimitive.ScrollUpArrow className="pve:flex pve:justify-center">
             <ChevronUp size={14} />

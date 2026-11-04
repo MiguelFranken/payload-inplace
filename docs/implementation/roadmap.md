@@ -37,3 +37,9 @@ Extracted structural/index/history and manual draft submission controllers; auto
 Local verification: 121 unit/component assertions passed including host-alias preservation; TypeScript passed. Focused real-browser source-text regression passed (7.1s), including the negative control where innerText is uppercase but the field's source is mixed case, persisted draft read-back, stable URL and header node identity. Seven Postgres and three applicable Mongo native integration cases passed; four PostgreSQL-specific cases are skipped on Mongo.
 
 Codex browser exposed an undeclared clsx import in the pinned Payload UI client build after removing incidental root hoisting. The v3 Next adapter now resolves that dependency from our own declared runtime only when missing upstream, preserving an explicit consumer alias. Activation, site chrome and sections render correctly in Codex browser. Full production/installed-archive acceptance remains pending.
+
+## Typed bindings and contextual insertion
+
+Added a document-bound, server-safe typed annotation factory for terminals, groups, stable array rows and empty lists. Existing helpers remain supported. Foreign document provenance fails closed. Canvas boundary/list insertion delegates to the same native ADD_ROW/history policy as outline actions, resolving the anchor again when committed. Picker cancellation does not modify the draft. See bindings-and-insertion.md.
+
+Focused browser checks passed for stable neighbor insertion/cancel and an empty nested array. TypeScript, build and both lint gates passed. Further catalogue previews, asynchronous row selection and full keyboard/touch acceptance remain pending; these tickets are not claimed complete yet.

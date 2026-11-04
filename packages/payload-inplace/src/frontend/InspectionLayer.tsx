@@ -1,11 +1,16 @@
 "use client";
 import { useEffect, useEffectEvent, useRef } from "react";
+import {
+  parseDocumentKey,
+  type DocumentReference,
+} from "../../../core/src/document-ref.js";
 import type { BlockIdentity } from "../types.js";
 import { elementRect } from "../preview/geometry.js";
 
 /** Client selection is only provenance. The schema resolver and native server access remain authoritative. */
 export interface InspectionTarget {
   point?: { x: number; y: number };
+  document?: DocumentReference;
   identity: BlockIdentity;
   field?: string;
   edit?: "auto" | "inline" | "panel";
@@ -36,7 +41,11 @@ function readTarget(element: Element | null): InspectionTarget | undefined {
         fields.some((field) => typeof field !== "string" || !field))
     )
       return;
+    const source = bound.getAttribute("data-ve-document");
+    const document = source ? parseDocumentKey(source) : undefined;
+    if (source && !document) return;
     return {
+      document,
       fields: fields || undefined,
       edit:
         bound.getAttribute("data-ve-edit") === "panel"

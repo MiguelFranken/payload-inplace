@@ -7,7 +7,10 @@ import {
   useForm,
   useFormFields,
 } from "@payloadcms/ui";
-import type { BlocksFieldClientProps, ClientBlock } from "payload";
+import type { BlocksFieldClientProps, ClientBlock, ClientField } from "payload";
+import type { InsertionTarget } from "../../../../core/src/insertion.js";
+import { resolveBinding } from "../../schema/resolve-binding.js";
+import { canUpdateInlineField } from "../../schema/inline-access.js";
 import { availableBlocks } from "../../schema/available-blocks.js";
 import { collectSections, type NativeSection } from "../../schema/tree.js";
 import {
@@ -165,8 +168,126 @@ export function useNativeStructure({
     },
     [disabled, form, history, root, invalidate],
   );
+  function insertionOptions(target: InsertionTarget) {
+    if (disabled) return;
+    // Resolve from the current native values, including operations since a picker opened.
+    const current = collectSections({
+      field,
+      data: form.getDataByPath(root),
+      root,
+      schemaPath: `${collection}.${root}`,
+      permissions,
+      blocksMap: config.blocksMap as Record<string, ClientBlock>,
+    });
+    const same = (identity: import("../../types.js").BlockIdentity) =>
+      current.find(
+        (s) =>
+          s.identity.blockId === identity.blockId &&
+          JSON.stringify(s.identity.ancestors || []) ===
+            JSON.stringify(identity.ancestors || []),
+      );
+    const section =
+      target.kind === "adjacent" || target.identity
+        ? same(target.identity!)
+        : undefined;
+    let nativeField: ClientField = { ...field, type: "blocks" },
+      parent = root,
+      schema = `${collection}.${root}`,
+      readonly = false;
+    if (target.kind === "adjacent") {
+      if (!section) return;
+      nativeField = { ...section.field, type: "blocks" };
+      parent = section.parent;
+      schema = section.containerSchemaPath;
+      readonly = section.readOnly;
+    } else if (target.identity) {
+      if (!section || !target.field) return;
+      const binding = resolveBinding({
+        fields: section.block?.fields || [],
+        value: form.getDataByPath(section.path),
+        binding: target.field,
+        permissions: section.permissions,
+      });
+      if (
+        !binding ||
+        binding.row ||
+        !canUpdateInlineField(section.permissions, binding.permissionPath)
+      )
+        return;
+      nativeField = binding.field;
+      parent = `${section.path}.${binding.path}`;
+      schema = `${section.schemaPath}.${binding.schemaPath}`;
+      readonly = section.readOnly || binding.readOnly;
+    } else if (target.root !== root || target.field) return;
+    if (
+      readonly ||
+      nativeField.admin?.readOnly ||
+      !["array", "blocks"].includes(nativeField.type) ||
+      form.getField(parent)?.passesCondition === false
+    )
+      return;
+    const f = nativeField as Extract<ClientField, { type: "blocks" | "array" }>;
+    const values = form.getDataByPath(parent),
+      rows = Array.isArray(values) ? values : [];
+    if (f.maxRows !== undefined && rows.length >= f.maxRows) return;
+    const choices =
+      f.type === "blocks"
+        ? availableBlocks(
+            f,
+            config.blocksMap as Record<string, ClientBlock>,
+            form.getField(parent)?.blocksFilterOptions,
+          ).filter((block) => {
+            const next = [...rows];
+            const index =
+              target.kind === "adjacent" && section
+                ? section.index + (target.side === "after" ? 1 : 0)
+                : next.length;
+            next.splice(index, 0, { blockType: block.slug });
+            return !structureTransitionError(
+              rows,
+              next,
+              parent === root ? policy : undefined,
+            );
+          })
+        : [];
+    if (f.type === "blocks" && !choices.length) return;
+    return { field: f, parent, schema, choices };
+  }
+  function insert(target: InsertionTarget, blockType?: string) {
+    const options = insertionOptions(target);
+    if (!options)
+      return invalidate("This insertion point is no longer available.");
+    const { field: f, parent, schema, choices } = options;
+    return invalidate(
+      applyCommand(
+        form,
+        root,
+        schema,
+        f.type === "array"
+          ? { type: "add-array" }
+          : {
+              type: "add",
+              blockType: blockType || "",
+              ...(target.kind === "adjacent"
+                ? { adjacent: { identity: target.identity, side: target.side } }
+                : {}),
+            },
+        {
+          container: parent,
+          disabled,
+          min: f.minRows ?? (f.required ? 1 : 0),
+          max: f.maxRows,
+          allowed: choices.map((b) => b.slug),
+          policy: parent === root ? policy : undefined,
+          history,
+        },
+      ),
+    );
+  }
   return {
     sections,
+    insertionOptions,
+    insert,
     history,
     generation,
     commandFor,

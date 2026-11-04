@@ -90,3 +90,74 @@ test("inline edits preserve mixed-case source under uppercase CSS and keep the h
   await expect(toolbar).toBeVisible();
   await page.screenshot({ path: "test-results/roadmap-source-text.png" });
 });
+
+test("canvas insertion chooses an exact stable boundary and cancelling writes nothing", async ({
+  page,
+}) => {
+  const { createShopEditor } = await import("./testing/editor-fixtures");
+  const { doc } = await createShopEditor(page);
+  const hero = page.locator("main > [data-ve-block]").first();
+  await hero.scrollIntoViewIfNeeded();
+  await hero.hover();
+  await page.mouse.wheel(0, 200);
+  const after = page.getByRole("combobox", {
+    name: "Add section after",
+    exact: true,
+  });
+  await expect(after).toBeVisible();
+  const before = (
+    await (
+      await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+    ).json()
+  )._veRevision;
+  await after.click();
+  await expect(page.getByRole("listbox")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("listbox")).toHaveCount(0);
+  expect(
+    (
+      await (
+        await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+      ).json()
+    )._veRevision,
+  ).toBe(before);
+  await after.click();
+  await page.getByRole("option", { name: "Studio story", exact: true }).click();
+  await expect
+    .poll(
+      async () =>
+        (
+          await (
+            await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+          ).json()
+        ).layout.length,
+    )
+    .toBe(doc.layout.length + 1);
+  const saved = await (
+    await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+  ).json();
+  expect(saved.layout[0].id).toBe(doc.layout[0].id);
+  expect(saved.layout[1].blockType).toBe("editorial");
+  expect(saved.layout[2].id).toBe(doc.layout[1].id);
+});
+
+test("an explicitly bound empty native array can add an item on the canvas", async ({
+  page,
+}) => {
+  const { createShopEditor } = await import("./testing/editor-fixtures");
+  const { doc } = await createShopEditor(page, { emptyCards: true });
+  const list = page.locator('[data-ve-list="cards"]');
+  await list.scrollIntoViewIfNeeded();
+  await list.hover();
+  await page.getByRole("button", { name: "Add item", exact: true }).click();
+  await expect
+    .poll(
+      async () =>
+        (
+          await (
+            await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+          ).json()
+        ).layout.find((b: any) => b.blockType === "productGrid").cards.length,
+    )
+    .toBe(1);
+});

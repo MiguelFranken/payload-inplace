@@ -56,6 +56,7 @@ import {
   excludeFields,
   fieldOwnershipPaths,
 } from "../schema/project-fields.js";
+import { InsertionPoints } from "./InsertionPoints.js";
 import { InlineText } from "./InlineText.js";
 import { usePreviewStatus } from "./preview-status.js";
 import { SelectionSettings } from "./SelectionSettings.js";
@@ -174,17 +175,26 @@ export function FrontendControls({
       form.disabled ||
       !info.hasSavePermission,
   );
-  const { sections, history, commandFor, add, undo, blockChoices, rootRows } =
-    useNativeStructure({
-      root: context.target.root,
-      collection: context.target.collection,
-      nonce: context.nonce,
-      field,
-      permissions,
-      policy,
-      disabled: baseDisabled,
-      onError: setError,
-    });
+  const {
+    sections,
+    insertionOptions,
+    insert,
+    history,
+    commandFor,
+    add,
+    undo,
+    blockChoices,
+    rootRows,
+  } = useNativeStructure({
+    root: context.target.root,
+    collection: context.target.collection,
+    nonce: context.nonce,
+    field,
+    permissions,
+    policy,
+    disabled: baseDisabled,
+    onError: setError,
+  });
   const selected = sections.find(
     (s) =>
       s.identity.blockId === selection?.identity.blockId &&
@@ -206,6 +216,20 @@ export function FrontendControls({
   }, []);
   const pick = useCallback(
     (target: InspectionTarget) => {
+      if (
+        target.document &&
+        (target.document.kind !== "collection" ||
+          target.document.collection !== context.target.collection ||
+          String(target.document.id) !== String(context.target.id))
+      ) {
+        setError(
+          t(
+            "This content belongs to another document. Enable that document scope to edit it.",
+            "Dieser Inhalt gehört zu einem anderen Dokument. Diesen Dokumentbereich zuerst für die Bearbeitung freigeben.",
+          ),
+        );
+        return;
+      }
       if (target.identity.root !== context.target.root) return;
       closeTools();
       setSelection(target);
@@ -802,6 +826,15 @@ export function FrontendControls({
         data-ve-ui=""
         className="pve:@container/pve-native pve:fixed pve:inset-0 pve:pointer-events-none pve:z-[var(--pve-z-index,2147483000)] pve:font-[family-name:var(--pve-font-family,system-ui)] pve:text-[var(--pve-text,var(--theme-text,#202127))] pve:[&_[class*='upload-relationship-details']_button]:min-h-11! pve:[&_[class*='upload-relationship-details']_button]:min-w-11! pve:[&_[class*='upload-relationship-details']_[class*='meta']]:text-[var(--theme-elevation-700)]! pve:[&_[class*='dragAndDropText']]:text-[var(--theme-elevation-700)]! pve:[&_[class*='orText']]:text-[var(--theme-elevation-700)]!"
       >
+        <InsertionPoints
+          sections={sections}
+          document={{ kind: "collection", collection: context.target.collection, id: context.target.id }}
+          root={context.target.root}
+          enabled={expanded && !hasPanel && !selection?.field && !disabled}
+          options={insertionOptions}
+          insert={insert}
+          locale={i18n.language}
+        />
         {expanded && (
           <InspectionLayer
             inspecting={inspecting && !recovery.failure}
