@@ -26,3 +26,7 @@ The active route independently checks the current user, native document permissi
 ## Measurement method
 
 CI uses a production build, an active-route graph positive control, an injected forbidden-module negative control and browser resources for anonymous, reader and inactive author identities. The independent legacy installed app compares enabled/disabled public resource sets byte for byte. The same-page demo separately bounds its inert deferred-client reference and proves no native field/style or authoring requests before activation. Timing samples are local diagnostic evidence, not a universal latency claim. The active 75-block typing probe records frame latency against a 100ms p95 budget. Geometry work is frame-coalesced; drag only commits the native mutation on drop. History is bounded and scoped to structural operations.
+
+## Early compatibility failure
+
+`withVisualEditorNext` resolves the public entries of Payload, UI, Payload Next and Next, reads the owning package identity, and rejects versions outside the exact supported native pins before private-handler aliasing. `server/runtime-compatibility.ts` owns this assertion; `exports/next.ts` owns resolution and the Turbopack bridge. Contract tests include each wrong-version combination and the supported control. This intentionally fails early instead of allowing a mismatched schema cache to surface later as an undefined `clientField` error. React remains constrained by the declared 19.2 peer patch range.

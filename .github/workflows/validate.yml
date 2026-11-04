@@ -24,6 +24,7 @@ jobs:
       - run: corepack pnpm docs:check
       - run: corepack pnpm lint
       - run: corepack pnpm test:coverage
+      - run: corepack pnpm test:workspace
       - run: corepack pnpm test:int
       - run: corepack pnpm exec playwright install --with-deps chromium
       - run: VE_PORT=3137 corepack pnpm exec node scripts/postgres-test.mjs e2e

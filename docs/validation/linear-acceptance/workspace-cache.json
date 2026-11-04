@@ -1,0 +1,126 @@
+{
+  "sourceSHA": "e6fb66cae05ff2d293cf9052cab0e5369b6fcea5",
+  "node": "v24.21.0",
+  "install": {
+    "frozen": true,
+    "ms": 7859
+  },
+  "runs": [
+    {
+      "name": "cold",
+      "ms": 6769,
+      "outputSHA256": "bbe2d6bf2da020ef160f18cde6ff74c6e990cc8607a22fb962f92eee6f58ab38",
+      "tasks": [
+        {
+          "task": "@payload-inplace/core#build",
+          "hash": "1d2fb16d1e9b6cbc",
+          "cache": "MISS"
+        },
+        {
+          "task": "@payload-inplace/lexical#build",
+          "hash": "9054bd95a78fa8aa",
+          "cache": "MISS"
+        },
+        {
+          "task": "payload-inplace#build",
+          "hash": "0bffff293435e167",
+          "cache": "MISS"
+        }
+      ],
+      "logSHA256": "cc162fbdd15bfc7298af2362f20217d016dc68eee4135ca61990102db087ea87"
+    },
+    {
+      "name": "warm",
+      "ms": 370,
+      "outputSHA256": "bbe2d6bf2da020ef160f18cde6ff74c6e990cc8607a22fb962f92eee6f58ab38",
+      "tasks": [
+        {
+          "task": "@payload-inplace/core#build",
+          "hash": "1d2fb16d1e9b6cbc",
+          "cache": "HIT"
+        },
+        {
+          "task": "@payload-inplace/lexical#build",
+          "hash": "9054bd95a78fa8aa",
+          "cache": "HIT"
+        },
+        {
+          "task": "payload-inplace#build",
+          "hash": "0bffff293435e167",
+          "cache": "HIT"
+        }
+      ],
+      "logSHA256": "90e35863d6402b733803dae30a27aef5347c4a16073efe68235f8125bb98f643"
+    },
+    {
+      "name": "restored",
+      "ms": 400,
+      "outputSHA256": "bbe2d6bf2da020ef160f18cde6ff74c6e990cc8607a22fb962f92eee6f58ab38",
+      "tasks": [
+        {
+          "task": "@payload-inplace/core#build",
+          "hash": "1d2fb16d1e9b6cbc",
+          "cache": "HIT"
+        },
+        {
+          "task": "@payload-inplace/lexical#build",
+          "hash": "9054bd95a78fa8aa",
+          "cache": "HIT"
+        },
+        {
+          "task": "payload-inplace#build",
+          "hash": "0bffff293435e167",
+          "cache": "HIT"
+        }
+      ],
+      "logSHA256": "e5e304a520a466c36f8d601476fb2712afaaa8fcb168b215b592c51ca3fc3c51"
+    },
+    {
+      "name": "source-changed",
+      "ms": 3503,
+      "outputSHA256": "ff4bddefe3134d89d13465eca36699a32f232cf94a9c64946fde17943928ac12",
+      "tasks": [
+        {
+          "task": "@payload-inplace/core#build",
+          "hash": "e153c86a7bda5365",
+          "cache": "MISS"
+        },
+        {
+          "task": "@payload-inplace/lexical#build",
+          "hash": "9054bd95a78fa8aa",
+          "cache": "HIT"
+        },
+        {
+          "task": "payload-inplace#build",
+          "hash": "3ccd8924cc9cd4af",
+          "cache": "MISS"
+        }
+      ],
+      "logSHA256": "6e04e685ea16faab57a632030ab514deef8766cfe2599672997edcf23c53b221"
+    },
+    {
+      "name": "environment-changed",
+      "ms": 3599,
+      "outputSHA256": "bbe2d6bf2da020ef160f18cde6ff74c6e990cc8607a22fb962f92eee6f58ab38",
+      "tasks": [
+        {
+          "task": "@payload-inplace/core#build",
+          "hash": "04d16590a27d9152",
+          "cache": "MISS"
+        },
+        {
+          "task": "@payload-inplace/lexical#build",
+          "hash": "87a1c71fc25b51ec",
+          "cache": "MISS"
+        },
+        {
+          "task": "payload-inplace#build",
+          "hash": "f4afa75cd357b310",
+          "cache": "MISS"
+        }
+      ],
+      "logSHA256": "742f23ed9389c667bf88769bbd2037bd0326c6ffa6512e087f85b9661f5f8bc8"
+    }
+  ],
+  "method": "Tracked clean checkout, frozen public pnpm install; cold/warm equivalence and deletion/restoration of generated dist; controlled source/env invalidation. Times include process startup. No speedup extrapolation."
+}

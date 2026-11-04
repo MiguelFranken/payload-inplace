@@ -1,6 +1,6 @@
 # 0008: Native-backed inline Lexical ownership
 
-Status: implemented first slice; broader rich-text acceptance remains tracked in COURSE-240.
+Status: implemented and locally validated; release remains held by the owner.
 
 Payload v3.91 represents its standard Lexical field as `customComponents.Field`. That flag alone cannot distinguish a native rich-text adapter from a consumer replacement. The server walks the actual sanitized fields with Payload's `getFieldPaths`, projecting only native Lexical capabilities without modifying server/client schema cache identity. An explicit consumer Field override retains the native panel.
 
@@ -11,3 +11,9 @@ A normal-flow twin receives the rendered element's tag/classes. React's original
 JSON is not converted to plaintext/HTML for persistence. Existing Payload link fields and IDs survive. Unknown custom/upload nodes are immutable islands retaining their complete JSON through unrelated edits; their own editing stays in native settings. Existing arbitrary HTML is never injected into an island. New pasted anchors permit explicit HTTP(S), mail, telephone, local paths and fragments; script/data/protocol-relative/control-character URLs are rejected. Formatting controls respect enabled native features and configured heading sizes. Internal relationship-link selection stays in the native editor for now.
 
 Headless state tests cover metadata/custom node preservation and initialization without writes. Actual browser tests cover focus, structured draft read-back, page chrome/URL retention and handoff to native settings. DOM selection/IME/paste/undo and installed-consumer acceptance need the real browser, not happy-dom emulation.
+
+## Native peer loading and acceptance boundary
+
+The plugin-owned InlineRichText component/runtime loads on the first compatible terminal selection. Payload v3's native form-state preparation renders all field schemas, including unmounted custom fields, to preserve conditions, permissions and their values. Its native Lexical peers and scoped native field CSS may therefore load during activation. The native theme also includes Payload's Lexical styles so a later settings handoff does not flash unstyled content. Do not interpret the private runtime's lazy boundary as zero native Lexical bytes before first use. Visitor graphs and requests still exclude all native peers/styles before activation. Feature budgets report own code and excluded peer closures separately. This is the explicit activation-time preparation policy for COURSE-240/249, not a second rich-text state store.
+
+The criteria audit adds real-browser formatting, safe/unsafe pasted links, internal Payload link/upload metadata preservation, slow acknowledgement, emulated composition and native handoff in `apps/demo/acceptance.e2e.spec.ts`. Disabled commands cannot mutate a read-only surface. A link command reports success only if the selected range was actually changed. The external packed app saves native and inline JSON, reloads the draft and reviews/publishes that same value. Unknown node labels are translated presentation only; their stored JSON is unchanged.
