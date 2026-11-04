@@ -2,7 +2,7 @@
 
 Experimental native-form visual composition for existing Payload CMS blocks. The public plugin owns editor behavior; applications keep their schemas, renderers, permissions and business rules.
 
-The current candidate is an **experimental prerelease**. Local Workshops acceptance and a separate installed app validate the pinned runtime; production deployment and npm account publication remain distinct delivery steps. A separate clean installed app now verifies the baseline independently of the source demo. Implemented safety behavior and its measured validation are tracked separately. See [validation](docs/validation.md).
+The normal release line starts at **0.0.1**, with version and changelog changes managed by Changesets. Releases publish the exact main-CI archive only after independent installed-app and clean Workshops acceptance. Preview and production deployment are separate delivery steps. See the [release process](docs/release.md) and [current release receipt](docs/validation/workshops-release.json) for verified package and deployment status.
 
 ## Development
 
