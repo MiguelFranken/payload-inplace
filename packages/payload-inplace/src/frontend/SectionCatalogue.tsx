@@ -1,4 +1,6 @@
 "use client";
+import { useEditorMessages } from "./messages.js";
+
 import { Combobox } from "@base-ui/react/combobox";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { Plus, Search, Layers } from "lucide-react";
@@ -15,7 +17,10 @@ const label = (
 ) =>
   typeof value === "string"
     ? value
-    : value?.[locale === "de" ? "de" : "en"] || fallback;
+    : value?.[locale] ||
+      value?.[locale.split("-")[0] || "en"] ||
+      value?.en ||
+      fallback;
 /** Searchable native-choice catalogue. Highlighting schedules only a disposable presentation delta; choosing commits once. */
 export function SectionCatalogue({
   choices,
@@ -40,6 +45,8 @@ export function SectionCatalogue({
   onPreview?: (slug?: string) => void;
   className?: string;
 }) {
+  const { t, locale: uiLocale } = useEditorMessages(undefined, locale);
+
   const container = useChromePortal();
   const [open, setOpen] = useState(defaultOpen),
     [highlight, setHighlight] = useState<string>();
@@ -91,7 +98,7 @@ export function SectionCatalogue({
       }}
       onItemHighlighted={(slug) => setHighlight(slug)}
       filter={(slug, query) =>
-        `${itemLabel(slug)} ${label(catalogue?.[slug]?.description, "", locale)} ${label(catalogue?.[slug]?.group, "", locale)}`
+        `${itemLabel(slug)} ${label(catalogue?.[slug]?.description, "", uiLocale)} ${label(catalogue?.[slug]?.group, "", uiLocale)}`
           .toLocaleLowerCase(locale)
           .includes(query.toLocaleLowerCase(locale))
       }
@@ -129,20 +136,14 @@ export function SectionCatalogue({
               <Search size={15} aria-hidden="true" />
               <Combobox.Input
                 ref={input}
-                aria-label={
-                  locale === "de" ? "Abschnitte suchen" : "Search sections"
-                }
-                placeholder={
-                  locale === "de" ? "Abschnitte suchen…" : "Search sections…"
-                }
+                aria-label={t("searchSections")}
+                placeholder={t("searchSections2")}
                 className="pve:h-11 pve:w-full pve:border-0 pve:bg-transparent pve:font-inherit pve:text-sm pve:text-inherit pve:outline-none"
               />
             </div>
             <Combobox.Empty>
               <p className="pve:m-0 pve:p-5 pve:text-sm pve:text-[var(--pve-muted,#646b78)]">
-                {locale === "de"
-                  ? "Keine passenden Abschnitte."
-                  : "No matching sections."}
+                {t("noMatchingSections")}
               </p>
             </Combobox.Empty>
             <Combobox.List className="pve:max-h-[min(55dvh,360px)] pve:overflow-auto pve:overscroll-contain pve:p-1.5">
@@ -177,12 +178,12 @@ export function SectionCatalogue({
                       </span>
                       {entry?.group && (
                         <span className="pve:text-[10px] pve:uppercase pve:tracking-wide pve:text-[var(--pve-muted,#646b78)]">
-                          {label(entry.group, "", locale)}
+                          {label(entry.group, "", uiLocale)}
                         </span>
                       )}
                       {entry?.description && (
                         <span className="pve:text-xs pve:leading-relaxed pve:text-[var(--pve-muted,#646b78)]">
-                          {label(entry.description, "", locale)}
+                          {label(entry.description, "", uiLocale)}
                         </span>
                       )}
                     </span>
@@ -194,9 +195,7 @@ export function SectionCatalogue({
               <p
                 className={`pve:m-0 pve:border-0 pve:border-t pve:border-solid pve:px-3 pve:py-2 pve:text-xs pve:text-[var(--pve-muted,#646b78)] ${chrome.border}`}
               >
-                {locale === "de"
-                  ? "Vorschau ohne Speichern · Einfügen mit Standardwerten"
-                  : "Preview without saving · Insert with schema defaults"}
+                {t("previewWithoutSavingInsertWithSchemaDefaults")}
               </p>
             )}
           </Combobox.Popup>

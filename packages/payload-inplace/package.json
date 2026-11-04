@@ -85,6 +85,11 @@
     "./routing": {
       "types": "./dist/exports/routing.d.ts",
       "import": "./dist/exports/routing.js"
+    },
+    "./messages": {
+      "types": "./dist/exports/messages.d.ts",
+      "import": "./dist/exports/messages.js",
+      "default": "./dist/exports/messages.js"
     }
   },
   "publishConfig": {

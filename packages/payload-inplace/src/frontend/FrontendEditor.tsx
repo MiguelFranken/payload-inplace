@@ -1,3 +1,4 @@
+import { createEditorMessages } from "../i18n/messages.js";
 import type { ImportMap, PayloadRequest, ServerFunctionClient } from "payload";
 import {
   createClientConfig,
@@ -5,14 +6,14 @@ import {
   getAccessResults,
 } from "payload";
 import { buildFormState } from "@payloadcms/ui/utilities/buildFormState";
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import type { VisualEditorOptions } from "../types.js";
 import {
   frontendConfig,
   withFrontendImportMap,
 } from "../server/frontend-config.js";
 import { readEditContext } from "../server/context.js";
-import { resolveRoot } from "../schema/resolve.js";
+import { resolveRoot, resolveRootScope } from "../schema/resolve.js";
 import { RenderServerComponent } from "@payloadcms/ui/elements/RenderServerComponent";
 import { editorLabel, resolveTools } from "../server/tools.js";
 import {
@@ -54,6 +55,7 @@ export async function FrontendEditor({
 }) {
   const { context, document } = await readEditContext(req, token, options);
   req = withFrontendImportMap(req, importMap);
+  const uiLanguage = createEditorMessages(options.ui, req.i18n.language).locale;
   const available = await resolveTools(options, {
     req,
     target: context.target,
@@ -65,7 +67,7 @@ export async function FrontendEditor({
     showInDock: extension.showInDock,
     requireSaved:
       extension.kind === "action" ? extension.requireSaved : undefined,
-    label: editorLabel(extension.label, req.i18n.language),
+    label: editorLabel(extension.label, uiLanguage),
     ...(extension.kind !== "action"
       ? {
           width: extension.width,
@@ -85,17 +87,14 @@ export async function FrontendEditor({
       : {
           confirmation: extension.confirmation
             ? {
-                title: editorLabel(
-                  extension.confirmation.title,
-                  req.i18n.language,
-                ),
+                title: editorLabel(extension.confirmation.title, uiLanguage),
                 description: editorLabel(
                   extension.confirmation.description,
-                  req.i18n.language,
+                  uiLanguage,
                 ),
                 confirmLabel: editorLabel(
                   extension.confirmation.confirmLabel,
-                  req.i18n.language,
+                  uiLanguage,
                 ),
                 destructive: extension.confirmation.destructive,
               }
@@ -108,7 +107,7 @@ export async function FrontendEditor({
       kind: "panel" as const,
       showInDock: panel.showInDock,
       requireSaved: undefined,
-      label: editorLabel(panel.label, req.i18n.language),
+      label: editorLabel(panel.label, uiLanguage),
       width: panel.width,
       content: (
         <ConfiguredFieldPanel
@@ -181,9 +180,16 @@ export async function FrontendEditor({
   state._veActivation = { value: token, initialValue: token, valid: true };
   return (
     <FrontendShell
-      key={context.nonce}
+      key={JSON.stringify([context.target, context.locale, context.nonce])}
+      ui={options.ui}
+      sharedStructure={Boolean(
+        req.payload.config.localization &&
+          !resolveRootScope(collection.config.fields, context.target.root)
+            .localized,
+      )}
       context={{
         target: context.target,
+        ...(context.locale ? { locale: context.locale } : {}),
         nonce: context.nonce,
         expires: context.expires,
         ...(context.pagePath ? { pagePath: context.pagePath } : {}),
@@ -196,14 +202,16 @@ export async function FrontendEditor({
       strategyProviders={[
         ...(options.strategyProviders || []),
         ...(options.providers || []),
-      ].map((provider) =>
-        RenderServerComponent({
-          Component: provider.Component,
-          importMap,
-          clientProps: {},
-          serverProps: { req, payload: req.payload, user: req.user },
-        }),
-      )}
+      ].map((provider) => (
+        <Fragment key={provider.id}>
+          {RenderServerComponent({
+            Component: provider.Component,
+            importMap,
+            clientProps: {},
+            serverProps: { req, payload: req.payload, user: req.user },
+          })}
+        </Fragment>
+      ))}
       catalogue={projectCatalogue(
         options.catalogue,
         field as import("payload").BlocksFieldClientProps["field"],
@@ -235,7 +243,7 @@ export async function FrontendEditor({
         .reduce((p: any, key) => p?.fields?.[key], docPermissions)}
       docPermissions={docPermissions}
       hasPublishPermission={Boolean(publication.update)}
-      statusURL={`${options.editorPath ?? "/visual-editor"}/status?context=${encodeURIComponent(context.nonce)}`}
+      statusURL={`${options.editorPath ?? "/visual-editor"}/status?context=${encodeURIComponent(context.nonce)}${context.locale ? `&locale=${encodeURIComponent(context.locale)}` : ""}`}
       exitURL={exitURL}
       policy={
         options.policies?.[context.target.collection]?.[context.target.root]

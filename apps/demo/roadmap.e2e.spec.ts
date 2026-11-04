@@ -857,3 +857,194 @@ test("native advisory locks pause another user and release when the original edi
     await other.close();
   }
 });
+
+test("localized inline editing prepares and saves German fields without copying English fallbacks", async ({
+  page,
+}) => {
+  await page.goto("/shop");
+  expect(
+    (
+      await page.request.post("/api/users/login", {
+        data: {
+          email: "admin@example.test",
+          password: "synthetic-demo-password",
+        },
+      })
+    ).ok(),
+  ).toBeTruthy();
+  const response = await page.request.post(
+    "/api/localizedPages?locale=en&fallback-locale=null",
+    {
+      data: {
+        title: "English page",
+        slug: `locale-browser-${Date.now()}`,
+        layout: [
+          {
+            blockType: "localeStory",
+            heading: "English headline",
+            caption: "English fallback",
+            items: [{ label: "English row", sharedCode: "shared" }],
+          },
+        ],
+        _status: "draft",
+      },
+    },
+  );
+  expect(response.ok()).toBeTruthy();
+  const created = (await response.json()).doc;
+  const missing = await (
+    await page.request.get(
+      `/api/localizedPages/${created.id}?draft=true&locale=de&fallback-locale=null`,
+    )
+  ).json();
+  expect(missing.layout[0].heading == null).toBe(true);
+  const updated = await page.request.patch(
+    `/api/localizedPages/${created.id}?draft=true&locale=de&fallback-locale=null`,
+    {
+      data: {
+        _veRevision: missing._veRevision,
+        _status: "draft",
+        title: "Deutsche Seite",
+        layout: [
+          {
+            ...missing.layout[0],
+            heading: "Deutsche Überschrift",
+            items: [{ ...missing.layout[0].items[0], label: "Deutsche Zeile" }],
+          },
+        ],
+      },
+    },
+  );
+  expect(updated.ok()).toBeTruthy();
+  await page.goto(
+    `/visual-editor/start?collection=localizedPages&id=${created.id}&locale=de`,
+  );
+  await page
+    .getByRole("button", { name: "Start editing", exact: true })
+    .click();
+  await expect(
+    page.getByRole("navigation", { name: "Editing toolbar" }),
+  ).toBeVisible();
+  const select = page.getByRole("button", {
+    name: "Select content",
+    exact: true,
+  });
+  if ((await select.getAttribute("aria-pressed")) !== "true")
+    await select.click();
+  const heading = page.locator('[data-ve-field="heading"]').first();
+  await expect(heading).toHaveText("Deutsche Überschrift");
+  await heading.click();
+  await expect(heading).toHaveAttribute("contenteditable", "plaintext-only");
+  const saved = page.waitForResponse(
+    (result) =>
+      result.request().method() === "PATCH" &&
+      result.url().includes(`/api/localizedPages/${created.id}`),
+  );
+  await heading.press("End");
+  await heading.pressSequentially("!");
+  const acknowledgement = await saved;
+  expect(acknowledgement.ok()).toBeTruthy();
+  expect(new URL(acknowledgement.url()).searchParams.get("locale")).toBe("de");
+  await expect(heading).toHaveText("Deutsche Überschrift!");
+  const english = await (
+    await page.request.get(
+      `/api/localizedPages/${created.id}?draft=true&locale=en&fallback-locale=null`,
+    )
+  ).json();
+  const german = await (
+    await page.request.get(
+      `/api/localizedPages/${created.id}?draft=true&locale=de&fallback-locale=null`,
+    )
+  ).json();
+  expect(english.layout[0].heading).toBe("English headline");
+  expect(german.layout[0].heading).toBe("Deutsche Überschrift!");
+  expect(german.layout[0].caption == null).toBe(true);
+  await heading.press("Escape");
+  await page.getByRole("button", { name: "Sections", exact: true }).click();
+  await expect(page.getByRole("note")).toContainText(
+    "Section changes affect all content languages",
+  );
+  await page
+    .getByRole("button", { name: "Settings for Localized story section" })
+    .click();
+  await expect(
+    page.getByRole("textbox", { name: "Heading — de", exact: true }),
+  ).toHaveValue("Deutsche Überschrift!");
+  const native = page.getByRole("textbox", {
+    name: "Heading — de",
+    exact: true,
+  });
+  await native.fill("Native deutsche Überschrift");
+  await expect
+    .poll(
+      async () =>
+        (
+          await (
+            await page.request.get(
+              `/api/localizedPages/${created.id}?draft=true&locale=de&fallback-locale=null`,
+            )
+          ).json()
+        ).layout[0].heading,
+    )
+    .toBe("Native deutsche Überschrift");
+  expect(
+    (
+      await (
+        await page.request.get(
+          `/api/localizedPages/${created.id}?draft=true&locale=en&fallback-locale=null`,
+        )
+      ).json()
+    ).layout[0].heading,
+  ).toBe("English headline");
+  await page.screenshot({ path: "test-results/roadmap-localized-fields.png" });
+});
+
+test("English German and RTL editor chrome stays scoped at desktop and narrow widths", async ({
+  page,
+  context,
+}) => {
+  const { createShopEditor } = await import("./testing/editor-fixtures");
+  const { doc } = await createShopEditor(page);
+  for (const [language, sections, close, file] of [
+    ["en", "Sections", "Close Sections panel", "english"],
+    ["de", "Abschnitte", "Abschnitte schließen", "german"],
+    ["ar", "الأقسام", "Close الأقسام panel", "rtl"],
+  ] as const) {
+    await context.addCookies([
+      { name: "demo-editor-ui", value: language, url: page.url() },
+    ]);
+    await page.reload();
+    const button = page.getByRole("button", { name: sections, exact: true });
+    await expect(button).toBeVisible();
+    await button.click();
+    const panel = page.getByRole("complementary", {
+      name: sections,
+      exact: true,
+    });
+    await expect(panel).toBeVisible();
+    for (const width of [1280, 320]) {
+      await page.setViewportSize({ width, height: 800 });
+      await expect(panel).toBeInViewport();
+      const bounds = await panel.boundingBox();
+      expect(bounds!.x).toBeGreaterThanOrEqual(0);
+      expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width + 1);
+      await page.screenshot({
+        path: `test-results/roadmap-ui-${file}-${width}.png`,
+      });
+    }
+    expect(
+      await panel.evaluate((element) => getComputedStyle(element).direction),
+    ).toBe(language === "ar" ? "rtl" : "ltr");
+    expect(await page.locator("html").getAttribute("dir")).not.toBe("rtl");
+    await page.getByRole("button", { name: close, exact: true }).click();
+    await expect(panel).not.toBeVisible();
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await button.click();
+    await expect(panel).toBeVisible();
+    await page.getByRole("button", { name: close, exact: true }).click();
+    const current = await page.request.get(
+      `/api/shops/${doc.id}?draft=true&depth=0`,
+    );
+    expect(current.ok()).toBeTruthy();
+  }
+});

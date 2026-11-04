@@ -1,4 +1,6 @@
 "use client";
+import { useEditorMessages } from "./messages.js";
+
 import { useEffect, useId, useState } from "react";
 import {
   Button,
@@ -22,6 +24,8 @@ export function ExtensionAction({
   extension: ResolvedEditorExtension;
   onResult: (message: string) => void;
 }) {
+  const { t } = useEditorMessages();
+
   const editor = useVisualEditor(),
     { closeModal } = useModal();
   const [confirm, setConfirm] = useState(false),
@@ -98,7 +102,7 @@ export function ExtensionAction({
                 }
                 onClick={() => void run()}
               >
-                {busy ? "Working…" : extension.confirmation.confirmLabel}
+                {busy ? t("working") : extension.confirmation.confirmLabel}
               </Button>
               <Button
                 type="button"
@@ -109,7 +113,7 @@ export function ExtensionAction({
                   closeModal(slug);
                 }}
               >
-                Cancel
+                {t("cancel")}
               </Button>
             </div>
           </div>

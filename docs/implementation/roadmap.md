@@ -109,3 +109,13 @@ Added native user-based lock awareness with serialized Postgres lease operations
 ## Visitor graph contract after workspace migration
 
 Updated module detection for the actual nested facade dist layout, retaining old-layout negative controls and explicitly allowing ordinary Next runtime dist files. The active positive control now resolves the real workspace DeferredEditor entry. Deliberate native/editor/core-event leaks are rejected in unit fixtures; the nonempty delivered production observation is still required by the full graph gate. This fixes the gate itself rather than inferring visitor safety from a source-only build.
+
+## Typed messages and content-locale isolation
+
+Introduced framework-free typed interpolation/plurals/Intl formatting, English/German catalogues, consumer overrides and editor-scoped direction. Static/dynamic chrome, recovery identities and native accessibility shims now use message keys. Asynchronous feedback translates at render time without rescheduling native work. Consumer/native labels and validation remain their owner's copy.
+
+Signed activations and review tokens now include the content locale; native draft, version, comparison and presence requests retain that scope. Frontend scope remounts isolate history/selection/acknowledgements. The native bridge accepts a freshly reauthorized server request for form/field/table preparation instead of inheriting the admin's last-used locale. Authoring reads explicitly disable native fallback; shared-root structure explains its cross-language effect.
+
+187 unit/component assertions in 59 files and nine real Postgres cases pass at this slice. Localized inline/native browser acceptance passes (7.5s), as do English/German/RTL desktop/320px and reduced-motion checks (10.9s; RTL spacing follow-up 5.9s). Codex browser inspection confirms the compact panel overlays the unchanged storefront. The full archive/production acceptance and remaining untranslated domain failure codes are still required before COURSE-247 is complete.
+
+See localization.md for the contract and its boundaries.

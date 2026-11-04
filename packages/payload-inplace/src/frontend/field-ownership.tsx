@@ -1,4 +1,6 @@
 "use client";
+import { useEditorMessages } from "./messages.js";
+
 import {
   createContext,
   use,
@@ -78,6 +80,8 @@ export function NativeFieldsOwner({
   activate?: () => void;
   children: ReactNode;
 }) {
+  const { t } = useEditorMessages();
+
   const registry = use(Context),
     id = useId(),
     element = useRef<HTMLDivElement>(null);
@@ -105,7 +109,7 @@ export function NativeFieldsOwner({
       ) : owner ? (
         <div className="pve:grid pve:gap-3">
           <p className="pve:m-0 pve:text-sm pve:leading-relaxed">
-            This field is already open in another panel.
+            {t("thisFieldIsAlreadyOpenInAnotherPanel")}
           </p>
           <Button
             type="button"
@@ -120,7 +124,7 @@ export function NativeFieldsOwner({
                   )?.focus()
             }
           >
-            Go to open field
+            {t("goToOpenField")}
           </Button>
         </div>
       ) : null}
@@ -139,13 +143,15 @@ export function NativeFieldSlot({
   scope?: "document" | "selection";
   blockTypes?: string[];
 }) {
+  const { t } = useEditorMessages();
+
   const info = useDocumentInfo(),
     { config } = useConfig(),
     form = useForm();
   const editor = useVisualEditor();
   if (scope === "selection") {
     if (!editor.selection)
-      return <p>Select a section on the page to edit these options.</p>;
+      return <p>{t("selectASectionOnThePageToEditThese")}</p>;
     const root = resolveRoot(info.docConfig?.fields as any, editor.target.root);
     const permissions = editor.target.root
       .split(".")
@@ -164,12 +170,12 @@ export function NativeFieldSlot({
           JSON.stringify(editor.selection?.ancestors || []),
     );
     if (!section)
-      return <p>The selected section is unavailable. Choose it again.</p>;
+      return <p>{t("theSelectedSectionIsUnavailableChooseItAgain")}</p>;
     if (blockTypes?.length && !blockTypes.includes(section.block?.slug || ""))
       return (
         <p>
-          These options are available for {blockTypes.join(", ")} sections.
-          Select a matching section on the page.
+          {t("theseOptionsAreAvailableFor")}
+          {blockTypes.join(", ")} {t("sectionsSelectAMatchingSectionOnThePage")}
         </p>
       );
     path = `${section.path}.${path}`;
@@ -288,7 +294,7 @@ export function NativeFieldSlot({
     info.docPermissions?.fields,
   );
   if (!hit || ("admin" in hit.field && hit.field.admin?.hidden))
-    return <p>This field is unavailable for your account.</p>;
+    return <p>{t("thisFieldIsUnavailableForYourAccount")}</p>;
   return (
     <NativeFieldsOwner path={path}>
       <RenderFields

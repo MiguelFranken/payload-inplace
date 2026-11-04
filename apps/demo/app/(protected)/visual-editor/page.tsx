@@ -1,7 +1,7 @@
 import { commercePath } from "../../../commerce/paths";
 import { cookies } from "next/headers";
 import { unstable_rethrow } from "next/navigation";
-import { handleServerFunctions } from "payload-inplace/native";
+import { handleEditorServerFunctions } from "payload-inplace/native";
 import type { ServerFunctionClient } from "payload";
 import config, { editorOptions } from "@payload-config";
 import { FrontendEditor } from "../../../../../packages/payload-inplace/dist/exports/rsc.js";
@@ -27,8 +27,8 @@ export async function DocumentEditor({ identifier }: { identifier: string }) {
   const { req, context, token } = await authorizedEditor(identifier);
   const serverFunction: ServerFunctionClient = async (args) => {
     "use server";
-    await authorizedEditor(identifier, true);
-    return handleServerFunctions({ ...args, config, importMap });
+    const { req } = await authorizedEditor(identifier, true);
+    return handleEditorServerFunctions({ ...args, config, importMap }, req);
   };
   const refreshPreview = async (): Promise<
     import("../../../../../packages/payload-inplace/dist/exports/types.js").EditorPreviewResponse
@@ -75,10 +75,33 @@ export async function DocumentEditor({ identifier }: { identifier: string }) {
     collection: context.target.collection as any,
     id: context.target.id,
     draft: true,
+    fallbackLocale: false,
     depth: ["shops", "products"].includes(context.target.collection) ? 3 : 1,
     req,
     overrideAccess: false,
   });
+  const demoUILocale =
+    process.env.VE_TEST_SCHEMA === "1"
+      ? (await cookies()).get("demo-editor-ui")?.value
+      : undefined;
+  const options = ["en", "de", "ar"].includes(demoUILocale || "")
+    ? {
+        ...editorOptions,
+        ui: {
+          locale: demoUILocale,
+          messages: {
+            ar: {
+              selectContent: "تحديد المحتوى",
+              sections: "الأقسام",
+              savedVersions: "الإصدارات المحفوظة",
+              reviewChanges: "مراجعة التغييرات",
+              minimizeEditor: "تصغير المحرر",
+              closePanel: "إغلاق اللوحة",
+            },
+          },
+        },
+      }
+    : editorOptions;
   return (
     <FrontendEditor
       theme={
@@ -88,7 +111,7 @@ export async function DocumentEditor({ identifier }: { identifier: string }) {
       }
       req={req}
       token={token}
-      options={editorOptions}
+      options={options}
       importMap={importMap}
       serverFunction={serverFunction}
       refreshPreview={refreshPreview}

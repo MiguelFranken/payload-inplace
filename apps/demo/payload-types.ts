@@ -13,53 +13,53 @@
  * via the `definition` "supportedTimezones".
  */
 export type SupportedTimezones =
-  | 'Pacific/Midway'
-  | 'Pacific/Niue'
-  | 'Pacific/Honolulu'
-  | 'Pacific/Rarotonga'
-  | 'America/Anchorage'
-  | 'Pacific/Gambier'
-  | 'America/Los_Angeles'
-  | 'America/Tijuana'
-  | 'America/Denver'
-  | 'America/Phoenix'
-  | 'America/Chicago'
-  | 'America/Guatemala'
-  | 'America/New_York'
-  | 'America/Bogota'
-  | 'America/Caracas'
-  | 'America/Santiago'
-  | 'America/Buenos_Aires'
-  | 'America/Sao_Paulo'
-  | 'Atlantic/South_Georgia'
-  | 'Atlantic/Azores'
-  | 'Atlantic/Cape_Verde'
-  | 'Europe/London'
-  | 'Europe/Berlin'
-  | 'Africa/Lagos'
-  | 'Europe/Athens'
-  | 'Africa/Cairo'
-  | 'Europe/Moscow'
-  | 'Asia/Riyadh'
-  | 'Asia/Dubai'
-  | 'Asia/Baku'
-  | 'Asia/Karachi'
-  | 'Asia/Tashkent'
-  | 'Asia/Calcutta'
-  | 'Asia/Dhaka'
-  | 'Asia/Almaty'
-  | 'Asia/Jakarta'
-  | 'Asia/Bangkok'
-  | 'Asia/Shanghai'
-  | 'Asia/Singapore'
-  | 'Asia/Tokyo'
-  | 'Asia/Seoul'
-  | 'Australia/Brisbane'
-  | 'Australia/Sydney'
-  | 'Pacific/Guam'
-  | 'Pacific/Noumea'
-  | 'Pacific/Auckland'
-  | 'Pacific/Fiji';
+  | "Pacific/Midway"
+  | "Pacific/Niue"
+  | "Pacific/Honolulu"
+  | "Pacific/Rarotonga"
+  | "America/Anchorage"
+  | "Pacific/Gambier"
+  | "America/Los_Angeles"
+  | "America/Tijuana"
+  | "America/Denver"
+  | "America/Phoenix"
+  | "America/Chicago"
+  | "America/Guatemala"
+  | "America/New_York"
+  | "America/Bogota"
+  | "America/Caracas"
+  | "America/Santiago"
+  | "America/Buenos_Aires"
+  | "America/Sao_Paulo"
+  | "Atlantic/South_Georgia"
+  | "Atlantic/Azores"
+  | "Atlantic/Cape_Verde"
+  | "Europe/London"
+  | "Europe/Berlin"
+  | "Africa/Lagos"
+  | "Europe/Athens"
+  | "Africa/Cairo"
+  | "Europe/Moscow"
+  | "Asia/Riyadh"
+  | "Asia/Dubai"
+  | "Asia/Baku"
+  | "Asia/Karachi"
+  | "Asia/Tashkent"
+  | "Asia/Calcutta"
+  | "Asia/Dhaka"
+  | "Asia/Almaty"
+  | "Asia/Jakarta"
+  | "Asia/Bangkok"
+  | "Asia/Shanghai"
+  | "Asia/Singapore"
+  | "Asia/Tokyo"
+  | "Asia/Seoul"
+  | "Australia/Brisbane"
+  | "Australia/Sydney"
+  | "Pacific/Guam"
+  | "Pacific/Noumea"
+  | "Pacific/Auckland"
+  | "Pacific/Fiji";
 
 export interface Config {
   auth: {
@@ -71,13 +71,14 @@ export interface Config {
     media: Media;
     shops: Shop;
     products: Product;
+    localizedPages: LocalizedPage;
     pages: Page;
     validatedPages: ValidatedPage;
     offers: Offer;
-    'payload-kv': PayloadKv;
-    'payload-locked-documents': PayloadLockedDocument;
-    'payload-preferences': PayloadPreference;
-    'payload-migrations': PayloadMigration;
+    "payload-kv": PayloadKv;
+    "payload-locked-documents": PayloadLockedDocument;
+    "payload-preferences": PayloadPreference;
+    "payload-migrations": PayloadMigration;
   };
   collectionsJoins: {};
   collectionsSelect: {
@@ -85,21 +86,33 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     shops: ShopsSelect<false> | ShopsSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
+    localizedPages: LocalizedPagesSelect<false> | LocalizedPagesSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     validatedPages: ValidatedPagesSelect<false> | ValidatedPagesSelect<true>;
     offers: OffersSelect<false> | OffersSelect<true>;
-    'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
-    'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
-    'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
-    'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
+    "payload-kv": PayloadKvSelect<false> | PayloadKvSelect<true>;
+    "payload-locked-documents":
+      | PayloadLockedDocumentsSelect<false>
+      | PayloadLockedDocumentsSelect<true>;
+    "payload-preferences":
+      | PayloadPreferencesSelect<false>
+      | PayloadPreferencesSelect<true>;
+    "payload-migrations":
+      | PayloadMigrationsSelect<false>
+      | PayloadMigrationsSelect<true>;
   };
   db: {
     defaultIDType: number;
   };
-  fallbackLocale: null;
+  fallbackLocale:
+    | ("false" | "none" | "null")
+    | false
+    | null
+    | ("en" | "de")
+    | ("en" | "de")[];
   globals: {};
   globalsSelect: {};
-  locale: null;
+  locale: "en" | "de";
   widgets: {
     collections: CollectionsWidget;
   };
@@ -133,7 +146,7 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
-  role: 'admin' | 'editor' | 'reader';
+  role: "admin" | "editor" | "reader";
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -152,7 +165,7 @@ export interface User {
       }[]
     | null;
   password?: string | null;
-  collection: 'users';
+  collection: "users";
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -203,16 +216,16 @@ export interface Shop {
               href?: string | null;
             };
             note?: string | null;
-            background?: ('canvas' | 'sage' | 'sand') | null;
+            background?: ("canvas" | "sage" | "sand") | null;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'collectionHero';
+            blockType: "collectionHero";
           }
         | {
             heading: string;
             description?: string | null;
             collectionLabel?: string | null;
-            background?: ('canvas' | 'sage' | 'sand') | null;
+            background?: ("canvas" | "sage" | "sand") | null;
             promo?: {
               eyebrow?: string | null;
               heading?: string | null;
@@ -220,7 +233,7 @@ export interface Shop {
                 label?: string | null;
                 href?: string | null;
               };
-              background?: ('canvas' | 'sage' | 'sand') | null;
+              background?: ("canvas" | "sage" | "sand") | null;
             };
             cards?:
               | {
@@ -239,11 +252,11 @@ export interface Shop {
             products?: (number | Product)[] | null;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'productGrid';
+            blockType: "productGrid";
           }
         | {
             eyebrow?: string | null;
-            background?: ('canvas' | 'sage' | 'sand') | null;
+            background?: ("canvas" | "sage" | "sand") | null;
             heading: string;
             description?: string | null;
             body?: {
@@ -254,8 +267,15 @@ export interface Shop {
                   version: number;
                   [k: string]: unknown;
                 }[];
-                direction: ('ltr' | 'rtl') | null;
-                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                direction: ("ltr" | "rtl") | null;
+                format:
+                  | "left"
+                  | "start"
+                  | "center"
+                  | "right"
+                  | "end"
+                  | "justify"
+                  | "";
                 indent: number;
                 version: number;
               };
@@ -264,11 +284,11 @@ export interface Shop {
             image?: (number | null) | Media;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'editorial';
+            blockType: "editorial";
           }
         | {
             heading: string;
-            background?: ('canvas' | 'sage' | 'sand') | null;
+            background?: ("canvas" | "sage" | "sand") | null;
             items?:
               | {
                   question: string;
@@ -278,15 +298,16 @@ export interface Shop {
               | null;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'faq';
+            blockType: "faq";
           }
       )[]
     | null;
   _veActivation?: string | null;
+  _veRestoreVersion?: string | null;
   _veRevision?: number | null;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
+  _status?: ("draft" | "published") | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -305,7 +326,7 @@ export interface Product {
               heading: string;
               description?: string | null;
               image?: (number | null) | Media;
-              background?: ('canvas' | 'sage' | 'sand') | null;
+              background?: ("canvas" | "sage" | "sand") | null;
               breadcrumb?: {
                 label?: string | null;
                 href?: string | null;
@@ -319,7 +340,7 @@ export interface Product {
               purchaseNote?: string | null;
               pricing: {
                 amount: number;
-                currency?: ('EUR' | 'USD') | null;
+                currency?: ("EUR" | "USD") | null;
               };
               variants?:
                 | {
@@ -352,11 +373,11 @@ export interface Product {
                 | null;
               id?: string | null;
               blockName?: string | null;
-              blockType: 'productDetails';
+              blockType: "productDetails";
             }
           | {
               eyebrow?: string | null;
-              background?: ('canvas' | 'sage' | 'sand') | null;
+              background?: ("canvas" | "sage" | "sand") | null;
               heading: string;
               description?: string | null;
               body?: {
@@ -367,8 +388,15 @@ export interface Product {
                     version: number;
                     [k: string]: unknown;
                   }[];
-                  direction: ('ltr' | 'rtl') | null;
-                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  direction: ("ltr" | "rtl") | null;
+                  format:
+                    | "left"
+                    | "start"
+                    | "center"
+                    | "right"
+                    | "end"
+                    | "justify"
+                    | "";
                   indent: number;
                   version: number;
                 };
@@ -377,11 +405,11 @@ export interface Product {
               image?: (number | null) | Media;
               id?: string | null;
               blockName?: string | null;
-              blockType: 'editorial';
+              blockType: "editorial";
             }
           | {
               heading: string;
-              background?: ('canvas' | 'sage' | 'sand') | null;
+              background?: ("canvas" | "sage" | "sand") | null;
               items?:
                 | {
                     question: string;
@@ -391,7 +419,7 @@ export interface Product {
                 | null;
               id?: string | null;
               blockName?: string | null;
-              blockType: 'faq';
+              blockType: "faq";
             }
         )[]
       | null;
@@ -401,10 +429,42 @@ export interface Product {
     description?: string | null;
   };
   _veActivation?: string | null;
+  _veRestoreVersion?: string | null;
   _veRevision?: number | null;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
+  _status?: ("draft" | "published") | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "localizedPages".
+ */
+export interface LocalizedPage {
+  id: number;
+  title?: string | null;
+  slug: string;
+  layout?:
+    | {
+        heading?: string | null;
+        caption?: string | null;
+        items?:
+          | {
+              label?: string | null;
+              sharedCode?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: "localeStory";
+      }[]
+    | null;
+  _veActivation?: string | null;
+  _veRestoreVersion?: string | null;
+  _veRevision?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ("draft" | "published") | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -421,13 +481,13 @@ export interface Page {
             caption?: string | null;
             image?: (number | null) | Media;
             appearance?: {
-              tone?: ('light' | 'dark') | null;
-              align?: ('start' | 'center') | null;
+              tone?: ("light" | "dark") | null;
+              align?: ("start" | "center") | null;
             };
             privateNote?: string | null;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'hero';
+            blockType: "hero";
           }
         | {
             heading?: string | null;
@@ -439,8 +499,15 @@ export interface Page {
                   version: number;
                   [k: string]: unknown;
                 }[];
-                direction: ('ltr' | 'rtl') | null;
-                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                direction: ("ltr" | "rtl") | null;
+                format:
+                  | "left"
+                  | "start"
+                  | "center"
+                  | "right"
+                  | "end"
+                  | "justify"
+                  | "";
                 indent: number;
                 version: number;
               };
@@ -456,13 +523,13 @@ export interface Page {
               | null;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'text';
+            blockType: "text";
           }
         | {
             heading?: string | null;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'serverData';
+            blockType: "serverData";
           }
       )[]
     | null;
@@ -478,10 +545,11 @@ export interface Page {
       | null;
   };
   _veActivation?: string | null;
+  _veRestoreVersion?: string | null;
   _veRevision?: number | null;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
+  _status?: ("draft" | "published") | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -498,13 +566,13 @@ export interface ValidatedPage {
             caption?: string | null;
             image?: (number | null) | Media;
             appearance?: {
-              tone?: ('light' | 'dark') | null;
-              align?: ('start' | 'center') | null;
+              tone?: ("light" | "dark") | null;
+              align?: ("start" | "center") | null;
             };
             privateNote?: string | null;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'hero';
+            blockType: "hero";
           }
         | {
             heading?: string | null;
@@ -516,8 +584,15 @@ export interface ValidatedPage {
                   version: number;
                   [k: string]: unknown;
                 }[];
-                direction: ('ltr' | 'rtl') | null;
-                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                direction: ("ltr" | "rtl") | null;
+                format:
+                  | "left"
+                  | "start"
+                  | "center"
+                  | "right"
+                  | "end"
+                  | "justify"
+                  | "";
                 indent: number;
                 version: number;
               };
@@ -533,13 +608,13 @@ export interface ValidatedPage {
               | null;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'text';
+            blockType: "text";
           }
         | {
             heading?: string | null;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'serverData';
+            blockType: "serverData";
           }
       )[]
     | null;
@@ -555,10 +630,11 @@ export interface ValidatedPage {
       | null;
   };
   _veActivation?: string | null;
+  _veRestoreVersion?: string | null;
   _veRevision?: number | null;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
+  _status?: ("draft" | "published") | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -576,13 +652,13 @@ export interface Offer {
               caption?: string | null;
               image?: (number | null) | Media;
               appearance?: {
-                tone?: ('light' | 'dark') | null;
-                align?: ('start' | 'center') | null;
+                tone?: ("light" | "dark") | null;
+                align?: ("start" | "center") | null;
               };
               privateNote?: string | null;
               id?: string | null;
               blockName?: string | null;
-              blockType: 'hero';
+              blockType: "hero";
             }
           | {
               heading?: string | null;
@@ -594,8 +670,15 @@ export interface Offer {
                     version: number;
                     [k: string]: unknown;
                   }[];
-                  direction: ('ltr' | 'rtl') | null;
-                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  direction: ("ltr" | "rtl") | null;
+                  format:
+                    | "left"
+                    | "start"
+                    | "center"
+                    | "right"
+                    | "end"
+                    | "justify"
+                    | "";
                   indent: number;
                   version: number;
                 };
@@ -611,13 +694,13 @@ export interface Offer {
                 | null;
               id?: string | null;
               blockName?: string | null;
-              blockType: 'text';
+              blockType: "text";
             }
           | {
               heading?: string | null;
               id?: string | null;
               blockName?: string | null;
-              blockType: 'serverData';
+              blockType: "serverData";
             }
         )[]
       | null;
@@ -634,10 +717,11 @@ export interface Offer {
       | null;
   };
   _veActivation?: string | null;
+  _veRestoreVersion?: string | null;
   _veRevision?: number | null;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
+  _status?: ("draft" | "published") | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -664,36 +748,40 @@ export interface PayloadLockedDocument {
   id: number;
   document?:
     | ({
-        relationTo: 'users';
+        relationTo: "users";
         value: number | User;
       } | null)
     | ({
-        relationTo: 'media';
+        relationTo: "media";
         value: number | Media;
       } | null)
     | ({
-        relationTo: 'shops';
+        relationTo: "shops";
         value: number | Shop;
       } | null)
     | ({
-        relationTo: 'products';
+        relationTo: "products";
         value: number | Product;
       } | null)
     | ({
-        relationTo: 'pages';
+        relationTo: "localizedPages";
+        value: number | LocalizedPage;
+      } | null)
+    | ({
+        relationTo: "pages";
         value: number | Page;
       } | null)
     | ({
-        relationTo: 'validatedPages';
+        relationTo: "validatedPages";
         value: number | ValidatedPage;
       } | null)
     | ({
-        relationTo: 'offers';
+        relationTo: "offers";
         value: number | Offer;
       } | null);
   globalSlug?: string | null;
   user: {
-    relationTo: 'users';
+    relationTo: "users";
     value: number | User;
   };
   updatedAt: string;
@@ -706,7 +794,7 @@ export interface PayloadLockedDocument {
 export interface PayloadPreference {
   id: number;
   user: {
-    relationTo: 'users';
+    relationTo: "users";
     value: number | User;
   };
   key?: string | null;
@@ -881,6 +969,7 @@ export interface ShopsSelect<T extends boolean = true> {
             };
       };
   _veActivation?: T;
+  _veRestoreVersion?: T;
   _veRevision?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -996,6 +1085,40 @@ export interface ProductsSelect<T extends boolean = true> {
         description?: T;
       };
   _veActivation?: T;
+  _veRestoreVersion?: T;
+  _veRevision?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "localizedPages_select".
+ */
+export interface LocalizedPagesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  layout?:
+    | T
+    | {
+        localeStory?:
+          | T
+          | {
+              heading?: T;
+              caption?: T;
+              items?:
+                | T
+                | {
+                    label?: T;
+                    sharedCode?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+      };
+  _veActivation?: T;
+  _veRestoreVersion?: T;
   _veRevision?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1065,6 +1188,7 @@ export interface PagesSelect<T extends boolean = true> {
             };
       };
   _veActivation?: T;
+  _veRestoreVersion?: T;
   _veRevision?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1134,6 +1258,7 @@ export interface ValidatedPagesSelect<T extends boolean = true> {
             };
       };
   _veActivation?: T;
+  _veRestoreVersion?: T;
   _veRevision?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1207,6 +1332,7 @@ export interface OffersSelect<T extends boolean = true> {
             };
       };
   _veActivation?: T;
+  _veRestoreVersion?: T;
   _veRevision?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1260,7 +1386,7 @@ export interface CollectionsWidget {
   data?: {
     [k: string]: unknown;
   };
-  width: 'full';
+  width: "full";
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1270,7 +1396,6 @@ export interface Auth {
   [k: string]: unknown;
 }
 
-
-declare module 'payload' {
+declare module "payload" {
   export interface GeneratedTypes extends Config {}
 }

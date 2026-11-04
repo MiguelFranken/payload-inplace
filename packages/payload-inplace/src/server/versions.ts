@@ -37,6 +37,7 @@ export async function readSavedVersions(
     page,
     sort: "-updatedAt",
     depth: 0,
+    fallbackLocale: false,
     req,
     overrideAccess: false,
   });

@@ -1,4 +1,6 @@
 "use client";
+import { useEditorMessages } from "../frontend/messages.js";
+
 import { Button, useConfig, useTranslation } from "@payloadcms/ui";
 import { useState } from "react";
 import { DocumentReview } from "./DocumentReview.js";
@@ -21,6 +23,8 @@ export function GuardedRestore({
 }) {
   const { config } = useConfig(),
     { i18n } = useTranslation();
+  const { t } = useEditorMessages(undefined, i18n.language);
+
   const de = i18n.language === "de";
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
@@ -36,11 +40,7 @@ export function GuardedRestore({
         },
       );
       if (!response.ok)
-        throw Error(
-          de
-            ? "Wiederherstellen fehlgeschlagen. Aktuellen Entwurf neu laden und prüfen."
-            : "Restore failed. Reload and review the latest draft.",
-        );
+        throw Error(t("restoreFailedReloadAndReviewTheLatestDraft"));
       window.location.assign(
         `${config.routes.admin}/collections/${collection}/${id}`,
       );
@@ -51,22 +51,18 @@ export function GuardedRestore({
   }
   return (
     <section className="pve:grid pve:gap-5 pve:p-[var(--gutter-h)]">
-      <h1>{de ? "Version wiederherstellen" : "Restore version"}</h1>
-      <p>
-        {de
-          ? "Die Version wird als Entwurf wiederhergestellt. Danach Änderungen prüfen und veröffentlichen."
-          : "Restore creates a draft. Review its changes before publishing."}
-      </p>
+      <h1>{t("restoreVersion")}</h1>
+      <p>{t("restoreCreatesADraftReviewItsChangesBeforePublishing")}</p>
       <DocumentReview
         before={current as any}
         after={historical as any}
         de={de}
-        beforeLabel={de ? "Aktueller Entwurf" : "Current draft"}
-        afterLabel={de ? "Gewählte Version" : "Selected version"}
+        beforeLabel={t("currentDraft")}
+        afterLabel={t("selectedVersion")}
       />
       {error && <p role="alert">{error}</p>}
       <Button type="button" disabled={busy} onClick={() => void restore()}>
-        {de ? "Als Entwurf wiederherstellen" : "Restore as draft"}
+        {t("restoreAsDraft")}
       </Button>
     </section>
   );

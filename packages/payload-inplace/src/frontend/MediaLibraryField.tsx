@@ -1,4 +1,7 @@
 "use client";
+import type { EditorStaticMessageKey } from "../i18n/catalogue.js";
+import { useEditorMessages } from "./messages.js";
+
 import { useEffect, useRef, useState } from "react";
 import { Button } from "./ui/button.js";
 import type { ContextualFieldProps } from "./field-strategies.js";
@@ -16,6 +19,8 @@ export function MediaLibraryField({
 }: ContextualFieldProps<"upload" | "relationship"> & {
   library: MediaLibraryAdapter;
 }) {
+  const { t } = useEditorMessages();
+
   const [query, setQuery] = useState(""),
     [items, setItems] = useState<MediaAsset[]>([]),
     [cursor, setCursor] = useState<string>(),
@@ -23,7 +28,7 @@ export function MediaLibraryField({
       retry: 0,
     }),
     [busy, setBusy] = useState(false),
-    [error, setError] = useState(""),
+    [error, setError] = useState<EditorStaticMessageKey | null>(null),
     [progress, setProgress] = useState<number>();
   const upload = useRef<AbortController | null>(null);
   const collections = mediaCollections(field),
@@ -38,7 +43,7 @@ export function MediaLibraryField({
   useEffect(() => {
     const controller = new AbortController();
     setBusy(true);
-    setError("");
+    setError(null);
     const timer = setTimeout(() => {
       void library
         .search({
@@ -72,10 +77,7 @@ export function MediaLibraryField({
           setCursor(page.nextCursor);
         })
         .catch(() => {
-          if (!controller.signal.aborted)
-            setError(
-              "Media could not be loaded. Try again or use the native editor.",
-            );
+          if (!controller.signal.aborted) setError("mediaSearchFailed");
         })
         .finally(() => {
           if (!controller.signal.aborted) setBusy(false);
@@ -92,7 +94,7 @@ export function MediaLibraryField({
     const controller = new AbortController();
     upload.current = controller;
     setProgress(0);
-    setError("");
+    setError(null);
     try {
       const asset = await library.upload({
         file,
@@ -105,10 +107,7 @@ export function MediaLibraryField({
       });
       if (!controller.signal.aborted) setValue(mediaReference(field, asset));
     } catch {
-      if (!controller.signal.aborted)
-        setError(
-          "Upload failed. Choose the file again to retry, or use the native editor.",
-        );
+      if (!controller.signal.aborted) setError("mediaUploadFailed");
     } finally {
       if (!controller.signal.aborted) setProgress(undefined);
     }
@@ -116,7 +115,7 @@ export function MediaLibraryField({
   return (
     <div className="pve:grid pve:gap-3">
       <label className="pve:grid pve:gap-2 pve:text-sm">
-        Search media
+        {t("searchMedia")}
         <input
           disabled={disabled}
           value={query}
@@ -132,7 +131,7 @@ export function MediaLibraryField({
       {fieldError && <p role="alert">{fieldError}</p>}
       {error && (
         <div role="alert">
-          <p>{error}</p>
+          <p>{t(error)}</p>
           <Button
             onClick={() =>
               setRequest((current) => ({
@@ -141,15 +140,15 @@ export function MediaLibraryField({
               }))
             }
           >
-            Retry search
+            {t("retrySearch")}
           </Button>
         </div>
       )}
       <div role="status" aria-live="polite">
         {busy
-          ? "Searching…"
+          ? t("searching")
           : items.length === 0 && !error
-            ? "No media found."
+            ? t("noMediaFound")
             : ""}
       </div>
       <div className="pve:grid pve:grid-cols-2 pve:gap-2">
@@ -169,7 +168,7 @@ export function MediaLibraryField({
               ) === String(asset.id)
             }
             disabled={disabled}
-            className="pve:h-auto pve:min-h-16 pve:flex-col pve:items-start pve:p-3 pve:text-left pve:whitespace-normal"
+            className="pve:h-auto pve:min-h-16 pve:flex-col pve:items-start pve:p-3 pve:text-start pve:whitespace-normal"
             onClick={() => setValue(mediaReference(field, asset))}
           >
             {asset.thumbnailURL &&
@@ -195,12 +194,12 @@ export function MediaLibraryField({
           disabled={busy || disabled}
           onClick={() => setRequest({ cursor, retry: 0 })}
         >
-          Load more
+          {t("loadMore")}
         </Button>
       )}
       {library.upload && (
         <label className="pve:grid pve:gap-2 pve:text-sm">
-          Upload media
+          {t("uploadMedia")}
           <input
             type="file"
             disabled={disabled || progress !== undefined}
@@ -213,14 +212,13 @@ export function MediaLibraryField({
         </label>
       )}
       {progress !== undefined && (
-        <progress aria-label="Upload progress" max={100} value={progress} />
+        <progress aria-label={t("uploadProgress")} max={100} value={progress} />
       )}
       <Button variant="outline" onClick={openNative}>
-        Open native media editor
+        {t("openNativeMediaEditor")}
       </Button>
       <p className="pve:m-0 pve:text-xs pve:opacity-60">
-        Replaces this field’s media reference. Shared asset metadata stays
-        unchanged.
+        {t("replacesThisFieldSMediaReferenceSharedAssetMetadata")}
       </p>
     </div>
   );

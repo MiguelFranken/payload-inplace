@@ -693,3 +693,134 @@ it.skipIf(process.env.VE_DATABASE !== "postgres")(
     }
   },
 );
+
+it("keeps localized native leaves separate while array structure stays shared and credentials remain locale-bound", async () => {
+  const { createContext, signContext } = await import(
+    "../../packages/payload-inplace/src/server/context.js"
+  );
+  const users = await payload.find({
+    collection: "users",
+    where: { role: { equals: "admin" } },
+    overrideAccess: true,
+  });
+  const user = {
+    ...users.docs[0],
+    collection: "users" as const,
+    _sid: "synthetic-localized-session",
+  };
+  const enReq = await createLocalReq(
+    { user, locale: "en", fallbackLocale: false },
+    payload,
+  );
+  const deReq = await createLocalReq(
+    { user, locale: "de", fallbackLocale: false },
+    payload,
+  );
+  const created: any = await payload.create({
+    collection: "localizedPages" as any,
+    data: {
+      title: "English page",
+      slug: `locale-${Date.now()}`,
+      layout: [
+        {
+          blockType: "localeStory",
+          heading: "English headline",
+          caption: "English fallback",
+          items: [{ label: "English row", sharedCode: "shared-1" }],
+        },
+      ],
+      _status: "draft",
+    } as any,
+    draft: true,
+    req: enReq,
+    overrideAccess: false,
+  });
+  const target = {
+    collection: "localizedPages",
+    id: created.id,
+    root: "layout",
+  };
+  const deProof = signContext(createContext(deReq, target), payload.secret);
+  const read = (req: typeof enReq, fallbackLocale: false | "en" = false) =>
+    payload.findByID({
+      collection: "localizedPages" as any,
+      id: created.id,
+      draft: true,
+      depth: 0,
+      fallbackLocale,
+      req,
+      overrideAccess: false,
+    }) as Promise<any>;
+  const missing = await read(deReq);
+  expect(missing.layout[0].heading == null).toBe(true);
+  expect((await read(deReq, "en")).layout[0].heading).toBe("English headline");
+  const german: any = await payload.update({
+    collection: "localizedPages" as any,
+    id: created.id,
+    draft: true,
+    req: deReq,
+    overrideAccess: false,
+    data: {
+      _veRevision: missing._veRevision,
+      _veActivation: deProof,
+      _status: "draft",
+      title: "Deutsche Seite",
+      layout: [
+        {
+          ...missing.layout[0],
+          heading: "Deutsche Überschrift",
+          items: [{ ...missing.layout[0].items[0], label: "Deutsche Zeile" }],
+        },
+      ],
+    } as any,
+  });
+  const english = await read(enReq);
+  expect(english.layout[0].heading).toBe("English headline");
+  expect(english.layout[0].items[0].label).toBe("English row");
+  expect(german.layout[0].heading).toBe("Deutsche Überschrift");
+  expect((await read(deReq)).layout[0].caption == null).toBe(true);
+  expect((await read(deReq, "en")).layout[0].caption).toBe("English fallback");
+  await payload.update({
+    collection: "localizedPages" as any,
+    id: created.id,
+    draft: true,
+    req: deReq,
+    overrideAccess: false,
+    data: {
+      _veRevision: german._veRevision,
+      _veActivation: deProof,
+      _status: "draft",
+      layout: [
+        {
+          ...german.layout[0],
+          items: [
+            ...german.layout[0].items,
+            { label: "Neue Zeile", sharedCode: "shared-2" },
+          ],
+        },
+      ],
+    } as any,
+  });
+  const structure = await read(enReq);
+  expect(structure.layout[0].items).toHaveLength(2);
+  expect(structure.layout[0].items[0].label).toBe("English row");
+  expect(structure.layout[0].items[1].sharedCode).toBe("shared-2");
+  expect(structure.layout[0].items[1].label == null).toBe(true);
+  expect(structure.layout[0].items[0].id).toBe(created.layout[0].items[0].id);
+  await expect(
+    payload.update({
+      collection: "localizedPages" as any,
+      id: created.id,
+      draft: true,
+      req: enReq,
+      overrideAccess: false,
+      data: {
+        _veRevision: structure._veRevision,
+        _veActivation: deProof,
+        _status: "draft",
+        title: "Wrong locale",
+      } as any,
+    }),
+  ).rejects.toThrow("expired");
+  expect((await read(enReq)).title).toBe("English page");
+});

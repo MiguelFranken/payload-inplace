@@ -1,4 +1,7 @@
 "use client";
+import type { EditorStaticMessageKey } from "../i18n/catalogue.js";
+import { useEditorMessages } from "./messages.js";
+
 import {
   useEffect,
   useEffectEvent,
@@ -57,11 +60,13 @@ export function InlineRichText({
   disabled: boolean;
   onSettings: () => void;
 }) {
+  const { t, locale: uiLocale, direction } = useEditorMessages();
+
   const field = useField<RichDocument>({ path }),
     guard = useInlinePreviewGuard();
   const runtime = useRef<ReturnType<typeof mountRichEditor> | null>(null),
     toolbar = useRef<HTMLDivElement>(null);
-  const [error, setError] = useState(""),
+  const [error, setError] = useState<EditorStaticMessageKey | null>(null),
     [linkURL, setLinkURL] = useState(""),
     [linkOpen, setLinkOpen] = useState(false);
   const portal = useChromePortal();
@@ -112,12 +117,12 @@ export function InlineRichText({
         element: surface,
         value: field.value,
         onChange: change,
-        onError: (error) => setError(error.message),
+        onError: () => setError("nativeRichTextRequired"),
         disabled: disabled || field.disabled,
         features,
       });
     } catch {
-      setError("This content requires the native editor.");
+      setError("nativeRichTextRequired");
     }
     let frame = 0;
     function draw() {
@@ -171,35 +176,45 @@ export function InlineRichText({
     label: string;
     Icon: typeof Bold;
   }[] = [
-    { format: "bold", feature: "bold", label: "Bold", Icon: Bold },
-    { format: "italic", feature: "italic", label: "Italic", Icon: Italic },
+    { format: "bold", feature: "bold", label: t("bold"), Icon: Bold },
+    { format: "italic", feature: "italic", label: t("italic"), Icon: Italic },
     {
       format: "underline",
       feature: "underline",
-      label: "Underline",
+      label: t("underline"),
       Icon: Underline,
     },
     {
       format: "paragraph",
       feature: "paragraph",
-      label: "Paragraph",
+      label: t("paragraph"),
       Icon: Pilcrow,
     },
-    { format: "h2", feature: "heading", label: "Heading 2", Icon: Heading2 },
-    { format: "h3", feature: "heading", label: "Heading 3", Icon: Heading3 },
+    {
+      format: "h2",
+      feature: "heading",
+      label: t("headingTwo"),
+      Icon: Heading2,
+    },
+    {
+      format: "h3",
+      feature: "heading",
+      label: t("headingThree"),
+      Icon: Heading3,
+    },
     {
       format: "bullet",
       feature: "unorderedList",
-      label: "Bullet list",
+      label: t("bulletList"),
       Icon: List,
     },
     {
       format: "number",
       feature: "orderedList",
-      label: "Numbered list",
+      label: t("numberedList"),
       Icon: ListOrdered,
     },
-    { format: "quote", feature: "blockquote", label: "Quote", Icon: Quote },
+    { format: "quote", feature: "blockquote", label: t("quote"), Icon: Quote },
   ];
   return (
     <>
@@ -209,9 +224,11 @@ export function InlineRichText({
       )}
       <div
         ref={toolbar}
+        lang={uiLocale}
+        dir={direction}
         data-ve-ui=""
         role="toolbar"
-        aria-label="Text formatting"
+        aria-label={t("textFormatting")}
         className={`pve:pointer-events-auto pve:fixed pve:left-[var(--pve-rich-x,8px)] pve:top-[var(--pve-rich-y,8px)] pve:z-70 pve:flex pve:max-w-[calc(100vw-16px)] pve:flex-wrap pve:gap-0.5 pve:rounded-xl pve:border pve:border-solid pve:p-1 pve:shadow-md ${chrome.surface} ${chrome.border}`}
         onPointerDown={(event) => event.preventDefault()}
       >
@@ -237,7 +254,10 @@ export function InlineRichText({
             ))}
         {!error && (
           <DropdownMenu>
-            <DropdownMenuTrigger className="pve:size-8" aria-label="Text style">
+            <DropdownMenuTrigger
+              className="pve:size-8"
+              aria-label={t("textStyle")}
+            >
               <Pilcrow size={15} />
             </DropdownMenuTrigger>
             <DropdownMenuContent>
@@ -268,8 +288,8 @@ export function InlineRichText({
                 <Button
                   size="icon"
                   className="pve:size-8"
-                  aria-label="Edit link"
-                  tooltip="Edit link"
+                  aria-label={t("editLink")}
+                  tooltip={t("editLink")}
                 />
               }
             >
@@ -282,16 +302,18 @@ export function InlineRichText({
                 className="pve:pointer-events-auto pve:z-[100]"
               >
                 <Popover.Popup
+                  lang={uiLocale}
+                  dir={direction}
                   data-ve-ui=""
-                  aria-label="Edit link"
+                  aria-label={t("editLink")}
                   className={`pve:grid pve:w-64 pve:gap-2 pve:rounded-xl pve:border pve:border-solid pve:p-3 pve:shadow-lg ${chrome.surface} ${chrome.border}`}
                 >
                   <label className="pve:grid pve:gap-1 pve:text-sm">
-                    Link address
+                    {t("linkAddress")}
                     <input
                       value={linkURL}
                       onChange={(event) => setLinkURL(event.target.value)}
-                      placeholder="https://example.com"
+                      placeholder={t("httpsExampleCom")}
                       className={`pve:box-border pve:w-full pve:rounded-md pve:border pve:border-solid pve:bg-transparent pve:p-2 pve:text-sm pve:font-inherit ${chrome.border}`}
                     />
                   </label>
@@ -300,13 +322,13 @@ export function InlineRichText({
                     variant="default"
                     onClick={() => {
                       if (runtime.current?.link(linkURL)) {
-                        setError("");
+                        setError(null);
                         setLinkOpen(false);
                         runtime.current.editor.focus();
-                      } else setError("Select text and enter a valid URL.");
+                      } else setError("invalidLink");
                     }}
                   >
-                    Apply link
+                    {t("applyLink")}
                   </Button>
                   <Button
                     size="sm"
@@ -315,10 +337,10 @@ export function InlineRichText({
                       setLinkOpen(false);
                     }}
                   >
-                    Remove link
+                    {t("removeLink")}
                   </Button>
                   <Button size="sm" onClick={onSettings}>
-                    Internal links and more options
+                    {t("internalLinksAndMoreOptions")}
                   </Button>
                 </Popover.Popup>
               </Popover.Positioner>
@@ -328,8 +350,8 @@ export function InlineRichText({
         <Button
           size="icon"
           className="pve:size-8"
-          tooltip={error || "More text options"}
-          aria-label="More text options"
+          tooltip={error ? t(error) : t("moreTextOptions")}
+          aria-label={t("moreTextOptions")}
           onClick={onSettings}
         >
           <Settings2 size={15} />

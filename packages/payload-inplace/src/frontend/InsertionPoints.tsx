@@ -1,4 +1,6 @@
 "use client";
+import { useEditorMessages } from "./messages.js";
+
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { Plus } from "lucide-react";
 import type { ClientBlock } from "payload";
@@ -47,10 +49,11 @@ export function InsertionPoints({
     | undefined;
   insert: (target: InsertionTarget, blockType?: string) => string | undefined;
 }) {
+  const { t } = useEditorMessages(undefined, locale);
+
   const [hover, setHover] = useState<Hover>();
   const held = useRef(false);
   const box = useRef<HTMLDivElement>(null);
-  const de = locale === "de";
   const choose = useEffectEvent((element: Element | null) => {
     if (
       held.current ||
@@ -200,16 +203,10 @@ export function InsertionPoints({
         if (!allowed) return null;
         const label =
           allowed.field.type === "array"
-            ? de
-              ? "Eintrag hinzufügen"
-              : "Add item"
+            ? t("addItem")
             : side === "before"
-              ? de
-                ? "Abschnitt davor hinzufügen"
-                : "Add section before"
-              : de
-                ? "Abschnitt danach hinzufügen"
-                : "Add section after";
+              ? t("addSectionBefore")
+              : t("addSectionAfter");
         const classes = `pve:pointer-events-auto pve:fixed pve:z-50 pve:left-[var(--pve-insert-x)] pve:-translate-x-1/2 pve:w-11 ${side === "before" ? "pve:top-[var(--pve-insert-before)] pve:group-data-[before-visible=false]/insert:hidden" : "pve:top-[var(--pve-insert-after)] pve:group-data-[after-visible=false]/insert:hidden"}`;
         return (
           <div className={classes} data-ve-insert-boundary={side} key={side}>

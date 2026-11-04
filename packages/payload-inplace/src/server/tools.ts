@@ -34,7 +34,5 @@ export async function resolveTools(
 export function editorLabel(label: EditorLabel, language: string) {
   return typeof label === "string"
     ? label
-    : language === "de"
-      ? label.de
-      : label.en;
+    : label[language] || label[language.split("-")[0] || "en"] || label.en;
 }

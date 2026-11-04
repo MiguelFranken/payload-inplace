@@ -1,4 +1,6 @@
 "use client";
+import { useEditorMessages } from "./messages.js";
+
 import {
   useEffect,
   useMemo,
@@ -294,6 +296,8 @@ function ReorderItem({
   lock?: string;
 }) {
   const { i18n } = useTranslation();
+  const { t, number } = useEditorMessages(undefined, i18n.language);
+
   const id = key(s),
     {
       attributes,
@@ -384,7 +388,7 @@ function ReorderItem({
       ref={setActivatorNodeRef}
       size="icon"
       disabled={disabled || Boolean(lock)}
-      aria-label={`Move ${label} section`}
+      aria-label={t("moveNamedSection", { label })}
       title={lock || "Drag to move · Space for keyboard"}
       className="pve:touch-none pve:cursor-grab pve:active:cursor-grabbing"
       {...attributes}
@@ -413,6 +417,7 @@ function ReorderItem({
             size="sm"
             onClick={onPick}
             title={label}
+            dir="auto"
             className="pve:min-w-0 pve:max-w-40"
           >
             <span className="pve:truncate">{label}</span>
@@ -448,36 +453,34 @@ function ReorderItem({
         type="button"
         onClick={onPick}
         title={heading || label}
-        className="pve:flex pve:min-h-10 pve:min-w-0 pve:flex-1 pve:items-center pve:gap-2.5 pve:rounded-lg pve:border-0 pve:bg-transparent pve:px-1 pve:text-left pve:font-inherit pve:text-inherit pve:cursor-pointer pve:outline-none pve:focus-visible:ring-2 pve:focus-visible:ring-[var(--pve-accent,#3451eb)]"
+        className="pve:flex pve:min-h-10 pve:min-w-0 pve:flex-1 pve:items-center pve:gap-2.5 pve:rounded-lg pve:border-0 pve:bg-transparent pve:px-1 pve:text-start pve:font-inherit pve:text-inherit pve:cursor-pointer pve:outline-none pve:focus-visible:ring-2 pve:focus-visible:ring-[var(--pve-accent,#3451eb)]"
       >
         <Layers
           size={15}
           className="pve:shrink-0 pve:text-[var(--pve-muted,var(--theme-elevation-700,#646773))]"
         />
         <span className="pve:min-w-0">
-          <span className="pve:block pve:truncate pve:text-sm pve:font-medium">
-            {s.index + 1}. {heading || label}
+          <span
+            dir="auto"
+            className="pve:block pve:truncate pve:text-sm pve:font-medium"
+          >
+            {number(s.index + 1)}. {heading || label}
           </span>
           <span
             className="pve:block pve:max-w-36 pve:truncate pve:text-xs pve:leading-5 pve:text-[var(--pve-muted,var(--theme-elevation-700,#646773))]"
             title={label}
+            dir="auto"
           >
             {label}
-            {lock ? " · Fixed first" : ""}
+            {lock ? t("fixedFirstSuffix") : ""}
           </span>
         </span>
       </button>
       {onLocate && (
         <Button
           size="icon"
-          aria-label={
-            i18n.language === "de"
-              ? `${label} auf der Seite zeigen`
-              : `Show ${label} on page`
-          }
-          title={
-            i18n.language === "de" ? "Auf der Seite zeigen" : "Show on page"
-          }
+          aria-label={t("showNamedSection", { label })}
+          title={t("showOnPage")}
           onClick={onLocate}
         >
           <LocateFixed size={16} />
@@ -486,8 +489,8 @@ function ReorderItem({
       {onSettings && (
         <Button
           size="icon"
-          aria-label={`Settings for ${label} section`}
-          title="Section settings"
+          aria-label={t("settingsForNamedSection", { label })}
+          title={t("sectionSettings")}
           onClick={onSettings}
         >
           <Settings2 size={16} />

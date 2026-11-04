@@ -1,12 +1,19 @@
 "use client";
+import type { EditorStaticMessageKey } from "../i18n/catalogue.js";
+import { EditorMessageError, editorErrorKey } from "../i18n/failure.js";
+import { useEditorMessages } from "./messages.js";
+
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import type { EditorUIOptions } from "../i18n/messages.js";
 import type { EditorTarget } from "../types.js";
 import "../admin/styles.css";
 
 /** Explicit frontend sign-in/activation; merely visiting a public page never mounts this component. */
 export function FrontendEntry({
   target,
+  ui,
+  contentLocale,
   api = "/api",
   authCollection = "users",
   editorPath = "/visual-editor",
@@ -14,21 +21,26 @@ export function FrontendEntry({
   children,
 }: {
   target: EditorTarget;
+  ui?: EditorUIOptions;
+  /** Native content locale for activation; unrelated to UI translation. */
+  contentLocale?: string;
   api?: string;
   authCollection?: string;
   editorPath?: string;
   signedIn: boolean;
   children?: React.ReactNode;
 }) {
+  const { t, locale, direction } = useEditorMessages(ui);
+
   const router = useRouter();
   const [email, setEmail] = useState(""),
     [password, setPassword] = useState(""),
     [busy, setBusy] = useState(false),
-    [error, setError] = useState("");
+    [error, setError] = useState<EditorStaticMessageKey | null>(null);
   async function activate(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
-    setError("");
+    setError(null);
     try {
       if (!signedIn) {
         const login = await fetch(`${api}/${authCollection}/login`, {
@@ -36,30 +48,27 @@ export function FrontendEntry({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
         });
-        if (!login.ok)
-          throw new Error(
-            "Sign-in failed. Check your email and password, then try again.",
-          );
+        if (!login.ok) throw new EditorMessageError("signInFailed");
       }
-      const response = await fetch(`${api}/visual-editor/activate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(target),
-      });
-      if (!response.ok)
-        throw new Error(
-          "Editing is unavailable for this account. Check your document permissions or sign in with another account.",
-        );
+      const response = await fetch(
+        `${api}/visual-editor/activate${contentLocale ? `?locale=${encodeURIComponent(contentLocale)}&fallback-locale=null` : ""}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(target),
+        },
+      );
+      if (!response.ok) throw new EditorMessageError("editingUnavailable");
       const { context } = await response.json();
       if (context.pagePath) {
         router.replace(context.pagePath);
         return;
       }
       window.location.assign(
-        `${editorPath}?context=${encodeURIComponent(context.nonce)}`,
+        `${editorPath}?context=${encodeURIComponent(context.nonce)}${context.locale ? `&locale=${encodeURIComponent(context.locale)}` : ""}`,
       );
     } catch (e) {
-      setError((e as Error).message);
+      setError(editorErrorKey(e, "editingUnavailable"));
       setBusy(false);
     }
   }
@@ -67,16 +76,17 @@ export function FrontendEntry({
     <>
       {children}
       <section
+        lang={locale}
+        dir={direction}
         className="pve:fixed pve:inset-x-4 pve:bottom-4 pve:z-50 pve:mx-auto pve:grid pve:max-w-md pve:gap-5 pve:rounded-2xl pve:border pve:border-solid pve:border-neutral-300 pve:bg-white pve:p-6 pve:font-sans pve:text-neutral-950 pve:shadow-xl"
-        aria-label="Website editing"
+        aria-label={t("websiteEditing")}
       >
         <div>
           <h1 className="pve:m-0 pve:text-xl pve:font-semibold">
-            Edit this page
+            {t("editThisPage")}
           </h1>
           <p className="pve:mb-0 pve:mt-2 pve:text-sm pve:leading-relaxed pve:text-neutral-600">
-            Sign in to edit content directly on the website. Changes stay in a
-            draft until you review and publish them.
+            {t("signInToEditContentDirectlyOnTheWebsite")}
           </p>
         </div>
         <form
@@ -86,7 +96,7 @@ export function FrontendEntry({
           {!signedIn && (
             <>
               <label className="pve:grid pve:gap-2 pve:text-sm">
-                Email
+                {t("email")}
                 <input
                   className="pve:box-border pve:min-h-11 pve:w-full pve:rounded-md pve:border pve:border-solid pve:border-neutral-400 pve:bg-white pve:p-3 pve:text-base pve:text-neutral-950"
                   type="email"
@@ -97,7 +107,7 @@ export function FrontendEntry({
                 />
               </label>
               <label className="pve:grid pve:gap-2 pve:text-sm">
-                Password
+                {t("password")}
                 <input
                   className="pve:box-border pve:min-h-11 pve:w-full pve:rounded-md pve:border pve:border-solid pve:border-neutral-400 pve:bg-white pve:p-3 pve:text-base pve:text-neutral-950"
                   type="password"
@@ -120,10 +130,10 @@ export function FrontendEntry({
             className="pve:min-h-11 pve:cursor-pointer pve:rounded-lg pve:border-0 pve:bg-neutral-950 pve:px-5 pve:py-3 pve:text-sm pve:font-semibold pve:text-white pve:disabled:opacity-60"
           >
             {busy
-              ? "Opening editor…"
+              ? t("openingEditor")
               : signedIn
-                ? "Start editing"
-                : "Sign in and start editing"}
+                ? t("startEditing")
+                : t("signInAndStartEditing")}
           </button>
         </form>
       </section>

@@ -30,3 +30,5 @@ export type {
   EditorOutcome,
   EditorFailureCategory,
 } from "../../../core/src/events.js";
+
+export { useEditorMessages } from "../frontend/messages.js";

@@ -22,7 +22,14 @@ export function DeferredFrontendShell(
 ) {
   return (
     <Suspense fallback={props.children}>
-      <Shell {...props} />
+      <Shell
+        key={JSON.stringify([
+          props.context.target,
+          props.context.locale,
+          props.context.nonce,
+        ])}
+        {...props}
+      />
     </Suspense>
   );
 }

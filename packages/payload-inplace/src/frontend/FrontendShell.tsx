@@ -1,4 +1,9 @@
 "use client";
+import type { EditorStaticMessageKey } from "../i18n/catalogue.js";
+import { useEditorMessages } from "./messages.js";
+import { EditorMessage } from "./messages.js";
+
+import { NativeEditorMessages } from "./native-messages.js";
 import { createPortal } from "react-dom";
 import {
   Component,
@@ -55,6 +60,8 @@ import { AdvisoryLockContext, useNativeAdvisoryLock } from "./advisory-lock.js";
 import { FrontendControls } from "./FrontendControls.js";
 
 type ShellProps = {
+  sharedStructure?: boolean;
+  ui?: import("../i18n/messages.js").EditorUIOptions;
   strategyProviders?: ReactNode;
   catalogue?: import("../types.js").VisualEditorOptions["catalogue"];
   richTextCapabilities?: import("../adapters/richtext-capabilities.js").RichTextCapabilities;
@@ -197,47 +204,53 @@ export function FrontendShell(props: ShellProps) {
               <style>{bootstrap.css}</style>
               <div className="pve-native-root pve:contents!">
                 <RootProvider {...bootstrap.rootProps}>
-                  <DocumentInfoProvider
-                    collectionSlug={bootstrap.context.target.collection as any}
-                    id={bootstrap.context.target.id}
-                    initialData={bootstrap.initialData}
-                    initialState={bootstrap.initialState}
-                    docPermissions={bootstrap.docPermissions}
-                    hasSavePermission={Boolean(bootstrap.docPermissions.update)}
-                    hasPublishPermission={bootstrap.hasPublishPermission}
-                    hasPublishedDoc={
-                      bootstrap.initialData._status === "published"
-                    }
-                    currentEditor={bootstrap.rootProps.user as any}
-                    isEditing
-                    isLocked={false}
-                    lastUpdateTime={new Date(
-                      bootstrap.initialData.updatedAt,
-                    ).getTime()}
-                    mostRecentVersionIsAutosaved={false}
-                    unpublishedVersionCount={0}
-                    versionCount={0}
-                  >
-                    <EditDepthProvider>
-                      <OperationProvider operation="update">
-                        <EditorLifecycleProvider
-                          target={bootstrap.context.target}
-                        >
-                          <NativeDocumentForm
-                            {...bootstrap}
-                            onSnapshot={acceptSnapshot}
-                            preview={visible.preview}
-                            previewTarget={previewTarget}
-                            previewReady={previewReady}
-                            onPreviewReady={() => setPreviewReady(true)}
-                            renderedRevision={visible.revision}
+                  <NativeEditorMessages options={bootstrap.ui}>
+                    <DocumentInfoProvider
+                      collectionSlug={
+                        bootstrap.context.target.collection as any
+                      }
+                      id={bootstrap.context.target.id}
+                      initialData={bootstrap.initialData}
+                      initialState={bootstrap.initialState}
+                      docPermissions={bootstrap.docPermissions}
+                      hasSavePermission={Boolean(
+                        bootstrap.docPermissions.update,
+                      )}
+                      hasPublishPermission={bootstrap.hasPublishPermission}
+                      hasPublishedDoc={
+                        bootstrap.initialData._status === "published"
+                      }
+                      currentEditor={bootstrap.rootProps.user as any}
+                      isEditing
+                      isLocked={false}
+                      lastUpdateTime={new Date(
+                        bootstrap.initialData.updatedAt,
+                      ).getTime()}
+                      mostRecentVersionIsAutosaved={false}
+                      unpublishedVersionCount={0}
+                      versionCount={0}
+                    >
+                      <EditDepthProvider>
+                        <OperationProvider operation="update">
+                          <EditorLifecycleProvider
+                            target={bootstrap.context.target}
                           >
-                            {visible.children}
-                          </NativeDocumentForm>
-                        </EditorLifecycleProvider>
-                      </OperationProvider>
-                    </EditDepthProvider>
-                  </DocumentInfoProvider>
+                            <NativeDocumentForm
+                              {...bootstrap}
+                              onSnapshot={acceptSnapshot}
+                              preview={visible.preview}
+                              previewTarget={previewTarget}
+                              previewReady={previewReady}
+                              onPreviewReady={() => setPreviewReady(true)}
+                              renderedRevision={visible.revision}
+                            >
+                              {visible.children}
+                            </NativeDocumentForm>
+                          </EditorLifecycleProvider>
+                        </OperationProvider>
+                      </EditDepthProvider>
+                    </DocumentInfoProvider>
+                  </NativeEditorMessages>
                 </RootProvider>
               </div>
             </>,
@@ -263,6 +276,7 @@ function NativeDocumentForm(
   const advisory = useNativeAdvisoryLock(
     config.routes.api,
     String(props.initialState._veActivation?.value || ""),
+    props.context.locale,
   );
   const events = useEditorLifecycle(),
     pendingOperation = useRef<EditorOperationHandle | null>(null),
@@ -277,9 +291,12 @@ function NativeDocumentForm(
     }
   }, [recovery.failure]);
   useEffect(() => () => pendingOperation.current?.settle("cancelled"), []);
+  const { t } = useEditorMessages();
   const nativeForm = useRef<ReturnType<typeof useForm> | null>(null);
   const [previewPending, setPreviewPending] = useState(false),
-    [previewError, setPreviewError] = useState("");
+    [previewError, setPreviewError] = useState<EditorStaticMessageKey | null>(
+      null,
+    );
   const previewRead = useRef(false),
     requested = useRef<string | number>(
       props.initialData._veRevision ?? props.initialData.updatedAt,
@@ -296,7 +313,7 @@ function NativeDocumentForm(
     if (previewRead.current || disposed.current) return;
     previewRead.current = true;
     setPreviewPending(true);
-    setPreviewError("");
+    setPreviewError(null);
     const observation = events.start("preview", lastSave.current);
     try {
       let again = false;
@@ -312,22 +329,16 @@ function NativeDocumentForm(
           if (result.error === "denied") {
             recovery.setFailure({
               kind: "session",
-              message:
-                "Editing access expired or was revoked. Your working copy is retained. Download it before signing in again.",
+              messageKey: "editingAccessExpiredWithWorkingCopy",
             });
             nativeForm.current?.setDisabled(true);
-          } else
-            setPreviewError(
-              "Your draft is saved. The server preview could not refresh.",
-            );
+          } else setPreviewError("savedPreviewUnavailable");
           break;
         }
         props.onSnapshot(result);
         if (result.revision < minimum) {
           observation.settle("failed", "preview");
-          setPreviewError(
-            "Your draft is saved. The server preview has not reached its saved revision yet.",
-          );
+          setPreviewError("savedPreviewBehind");
           break;
         }
         again = requested.current > result.revision;
@@ -335,10 +346,7 @@ function NativeDocumentForm(
       observation.settle(disposed.current ? "cancelled" : "succeeded");
     } catch {
       observation.settle("failed", "preview");
-      if (!disposed.current)
-        setPreviewError(
-          "Your draft is saved. The server preview could not refresh.",
-        );
+      if (!disposed.current) setPreviewError("savedPreviewUnavailable");
     } finally {
       observation.settle("cancelled");
       previewRead.current = false;
@@ -426,10 +434,7 @@ function NativeDocumentForm(
                 renderAllFields: false,
                 skipValidation: true,
               });
-              if (!result?.state)
-                throw new Error(
-                  "Saved; unable to refresh native field state. Reload the saved draft.",
-                );
+              if (!result?.state) throw new Error(t("savedFieldsUnavailable"));
               result.state._veActivation = props.initialState._veActivation;
               recovery.saved();
               info.setData(doc);
@@ -449,7 +454,7 @@ function NativeDocumentForm(
             <PreviewStatusContext
               value={{
                 pending: previewPending,
-                error: previewError,
+                error: previewError ? t(previewError) : "",
                 retry: () => void refreshSavedPreview(requested.current),
               }}
             >
@@ -474,6 +479,7 @@ function NativeDocumentForm(
                         </PreviewPortal>
                       )}
                       <FrontendControls
+                        sharedStructure={props.sharedStructure}
                         context={props.context}
                         richTextCapabilities={props.richTextCapabilities}
                         field={props.field}
@@ -544,8 +550,7 @@ class PreviewBoundary extends Component<
     return this.state.failed ? (
       <>
         <p role="alert">
-          The instant preview could not render. Your working copy is retained in
-          the editor. Reload after saving to restore the preview.
+          <EditorMessage id="theInstantPreviewCouldNotRenderYourWorkingCopy" />
         </p>
         {this.props.fallback}
       </>

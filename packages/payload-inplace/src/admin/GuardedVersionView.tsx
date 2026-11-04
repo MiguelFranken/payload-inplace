@@ -1,3 +1,4 @@
+import { useEditorMessages } from "../frontend/messages.js";
 import type { DocumentViewServerProps } from "payload";
 import { GuardedRestore } from "./NativeGuardedRestore.js";
 /** Keep the native restore endpoint while explicitly reviewing the current and historical revision. */
@@ -5,9 +6,11 @@ export async function GuardedVersionView({
   initPageResult,
   routeSegments,
 }: DocumentViewServerProps) {
+  const { t } = useEditorMessages();
+
   const { collectionConfig, docID, req } = initPageResult;
   if (!collectionConfig || docID === undefined)
-    return <p>Version unavailable.</p>;
+    return <p>{t("versionUnavailable")}</p>;
   const result = await req.payload.findVersions({
     collection: collectionConfig.slug as any,
     where: { id: { equals: routeSegments.at(-1) } },
@@ -22,7 +25,7 @@ export async function GuardedVersionView({
     !version ||
     String(typeof parent === "object" ? parent.id : parent) !== String(docID)
   )
-    return <p>Version unavailable.</p>;
+    return <p>{t("versionUnavailable")}</p>;
   const current: any = await req.payload.findByID({
     collection: collectionConfig.slug as any,
     id: docID,

@@ -84,7 +84,7 @@ export function EditorToolsProvider({
       if (!extensions.some((e) => e.id === id && e.kind === "action"))
         throw new Error("This action is unavailable.");
       const response = await fetch(
-        `${config.routes.api}/visual-editor/action`,
+        `${config.routes.api}/visual-editor/action${context.locale ? `?locale=${encodeURIComponent(context.locale)}` : ""}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

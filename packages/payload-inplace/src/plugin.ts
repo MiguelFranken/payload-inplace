@@ -505,6 +505,7 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
                   context: {
                     nonce: context.nonce,
                     target: context.target,
+                    ...(context.locale ? { locale: context.locale } : {}),
                     expires: context.expires,
                     ...(pagePath ? { pagePath } : {}),
                   },
@@ -597,6 +598,7 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
                   collection: input.target.collection,
                   id: input.target.id,
                   draft: false,
+                  fallbackLocale: false,
                   depth: 0,
                   overrideAccess: false,
                   req,

@@ -4,7 +4,10 @@ import { initI18n } from "@payloadcms/translations";
 import { createLocalReq, getPayload, getRequestLanguage } from "payload";
 import config, { editorOptions } from "@payload-config";
 import { importMap } from "../app/(payload)/admin/importMap.js";
-import { readEditContext } from "../../../packages/payload-inplace/dist/exports/server.js";
+import {
+  readEditContext,
+  verifyContext,
+} from "../../../packages/payload-inplace/dist/exports/server.js";
 /** Every frontend render and native server-function call checks the current session and activation again. */
 export async function authorizedEditor(
   identifier: string | undefined,
@@ -31,12 +34,19 @@ export async function authorizedEditor(
     language,
     context: "api",
   });
+  const token = (await cookies()).get(`payload-ve-${identifier}`)?.value || "";
+  const claimed = verifyContext(token, payload.secret);
+  if (!claimed) deny();
   const req = await createLocalReq(
-    { user, req: { i18n, headers: new Headers(requestHeaders) } },
+    {
+      user,
+      locale: claimed.locale,
+      fallbackLocale: false,
+      req: { i18n, headers: new Headers(requestHeaders) },
+    },
     payload,
   );
   req.headers = new Headers(requestHeaders);
-  const token = (await cookies()).get(`payload-ve-${identifier}`)?.value || "";
   let result;
   try {
     result = await readEditContext(req, token, editorOptions);

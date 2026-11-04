@@ -7,11 +7,16 @@ export const AdvisoryLockContext = createContext<
   status: "disabled",
 });
 /** Active-only bounded native lease heartbeat. Hidden/unmounted scopes release only their exact last stamp; lost cleanup expires natively. It owns no document content. */
-export function useNativeAdvisoryLock(api: string, proof: string) {
+export function useNativeAdvisoryLock(
+  api: string,
+  proof: string,
+  locale?: string,
+) {
   const [state, setState] = useState<AdvisoryLockState>({
       status: "unavailable",
     }),
     [retry, setRetry] = useState(0);
+  const url = `${api}/visual-editor/lock${locale ? `?locale=${encodeURIComponent(locale)}` : ""}`;
   const held = useRef<AdvisoryLockState["lease"]>(undefined);
   useEffect(() => {
     let disposed = false,
@@ -21,7 +26,7 @@ export function useNativeAdvisoryLock(api: string, proof: string) {
       const lease = held.current;
       held.current = undefined;
       if (lease)
-        void fetch(`${api}/visual-editor/lock`, {
+        void fetch(url, {
           method: "POST",
           keepalive: true,
           credentials: "same-origin",
@@ -35,7 +40,7 @@ export function useNativeAdvisoryLock(api: string, proof: string) {
       const controller = new AbortController();
       request = controller;
       try {
-        const response = await fetch(`${api}/visual-editor/lock`, {
+        const response = await fetch(url, {
           method: "POST",
           signal: controller.signal,
           credentials: "same-origin",
@@ -74,7 +79,7 @@ export function useNativeAdvisoryLock(api: string, proof: string) {
       window.removeEventListener("pagehide", release);
       release();
     };
-  }, [api, proof, retry]);
+  }, [url, proof, retry]);
   return { ...state, retry: () => setRetry((value) => value + 1) };
 }
 /** Paused foreign locks are visible without disclosing the other editor's identity. */

@@ -322,6 +322,7 @@ export const editorOptions: VisualEditorOptions = {
   concurrency:
     process.env.VE_DATABASE === "postgres" ? postgresConcurrency() : undefined,
   collections: {
+    localizedPages: { roots: ["layout"] },
     pages: { roots: ["layout"] },
     validatedPages: { roots: ["layout"] },
     offers: { roots: ["detailPage.layout"] },
@@ -347,6 +348,7 @@ export const editorOptions: VisualEditorOptions = {
 };
 export default buildConfig({
   sharp,
+  localization: { locales: ["en", "de"], defaultLocale: "en", fallback: true },
   i18n: { fallbackLanguage: "en", supportedLanguages: { en, de } },
   admin: {
     autoLogin: {
@@ -405,6 +407,38 @@ export default buildConfig({
       fields: [{ name: "alt", type: "text" }],
     },
     ...commerceCollections,
+    {
+      ...content("localizedPages"),
+      fields: [
+        { name: "title", type: "text", localized: true },
+        { name: "slug", type: "text", required: true },
+        {
+          name: "layout",
+          type: "blocks",
+          blocks: [
+            {
+              slug: "localeStory",
+              labels: {
+                singular: "Localized story",
+                plural: "Localized stories",
+              },
+              fields: [
+                { name: "heading", type: "text", localized: true },
+                { name: "caption", type: "text", localized: true },
+                {
+                  name: "items",
+                  type: "array",
+                  fields: [
+                    { name: "label", type: "text", localized: true },
+                    { name: "sharedCode", type: "text" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
     content("pages"),
     content("validatedPages", false, true),
     content("offers", true),

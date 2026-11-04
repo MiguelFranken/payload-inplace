@@ -1,4 +1,6 @@
 "use client";
+import { useEditorMessages } from "../frontend/messages.js";
+
 import {
   Button,
   Modal,
@@ -43,6 +45,12 @@ export function ReviewPublishButton({
     background = useFormBackgroundProcessing();
   const { i18n } = useTranslation(),
     de = i18n.language === "de";
+  const {
+    t,
+    locale: uiLocale,
+    number,
+  } = useEditorMessages(undefined, i18n.language);
+
   const [review, setReview] = useState<Review | null>(null),
     [error, setError] = useState(""),
     [loading, setLoading] = useState(false),
@@ -80,23 +88,17 @@ export function ReviewPublishButton({
             review.draft,
             fields,
             blocksMap,
-            i18n.language,
+            uiLocale,
           )
         : [],
-    [review, fields, blocksMap, i18n.language],
+    [review, fields, blocksMap, uiLocale],
   );
   const sessionChanges = useMemo(
     () =>
       review
-        ? documentChanges(
-            openedWith,
-            review.draft,
-            fields,
-            blocksMap,
-            i18n.language,
-          )
+        ? documentChanges(openedWith, review.draft, fields, blocksMap, uiLocale)
         : [],
-    [review, openedWith, fields, blocksMap, i18n.language],
+    [review, openedWith, fields, blocksMap, uiLocale],
   );
   const api = `${config.routes.api}/${info.collectionSlug}/${info.id}`;
   async function open() {
@@ -112,7 +114,7 @@ export function ReviewPublishButton({
         | string[]
         | undefined;
       const response = await fetch(
-        `${config.routes.api}/visual-editor/review`,
+        `${config.routes.api}/visual-editor/review${locale.code ? `?locale=${encodeURIComponent(locale.code)}&fallback-locale=null` : ""}`,
         {
           method: "POST",
           signal: controller.signal,
@@ -150,15 +152,11 @@ export function ReviewPublishButton({
     setPublishing(true);
     try {
       const result = await form.submit({
-        action: `${api}?depth=0&locale=${encodeURIComponent(locale.code)}`,
+        action: `${api}?depth=0&fallback-locale=null${locale.code ? `&locale=${encodeURIComponent(locale.code)}` : ""}`,
         overrides: { _status: "published", _veReviewToken: review.token },
       });
       if (!result?.res.ok)
-        throw Error(
-          de
-            ? "Veröffentlichen fehlgeschlagen. Entwurf erneut prüfen und versuchen."
-            : "Publication failed. Review the current draft and retry.",
-        );
+        throw Error(t("publicationFailedReviewTheCurrentDraftAndRetry"));
       closeModal(modalSlug);
       dismiss();
       info.setHasPublishedDoc(true);
@@ -176,7 +174,7 @@ export function ReviewPublishButton({
     background ||
     loading ||
     form.disabled;
-  const label = de ? "Änderungen prüfen" : "Review changes";
+  const label = t("reviewChanges");
   const close = () => {
     closeModal(modalSlug);
     dismiss();
@@ -211,7 +209,7 @@ export function ReviewPublishButton({
           disabled={blocked}
           onClick={() => void open()}
         >
-          {compact ? (de ? "Prüfen" : "Review") : label}
+          {compact ? t("review") : label}
         </Button>
       )}
       {error && !review && (
@@ -227,7 +225,7 @@ export function ReviewPublishButton({
           slug={modalSlug}
           openOnInit
           closeOnBlur={false}
-          aria-label={de ? "Änderungen am Dokument" : "Document changes"}
+          aria-label={t("documentChanges")}
           className="pve:fixed! pve:inset-0! pve:m-0! pve:flex! pve:h-dvh! pve:max-h-dvh! pve:w-screen! pve:max-w-none! pve:items-center! pve:justify-center! pve:overflow-hidden! pve:bg-black/30! pve:p-3! pve:md:p-8!"
         >
           <div
@@ -244,14 +242,12 @@ export function ReviewPublishButton({
                   <p
                     className={`pve:mb-0 pve:mt-2 pve:text-sm pve:leading-relaxed ${chrome.muted}`}
                   >
-                    {de
-                      ? "Nur geänderte Felder. Der gespeicherte Entwurf bleibt bis zur Veröffentlichung privat."
-                      : "Only changed fields. Your saved draft stays private until publication."}
+                    {t("onlyChangedFieldsYourSavedDraftStaysPrivateUntil")}
                   </p>
                 </div>
                 <ChromeButton
                   size="icon"
-                  aria-label={de ? "Prüfung schließen" : "Close review"}
+                  aria-label={t("closeReview")}
                   disabled={publishing}
                   onClick={close}
                 >
@@ -260,12 +256,13 @@ export function ReviewPublishButton({
               </div>
               <div
                 role="group"
-                aria-label={de ? "Vergleichsversion" : "Compare draft with"}
+                aria-label={t("compareDraftWith")}
                 className="pve:mt-4 pve:flex pve:flex-wrap pve:gap-2"
               >
                 <ChromeButton
                   size="sm"
                   variant="outline"
+                  aria-label={`${t("published")}: ${t("changedFieldCount", { count: publishedChanges.length })}`}
                   aria-pressed={comparison === "published"}
                   onClick={() => setComparison("published")}
                 >
@@ -274,14 +271,15 @@ export function ReviewPublishButton({
                     aria-hidden="true"
                     className="pve:max-sm:hidden"
                   />
-                  {de ? "Veröffentlicht" : "Published"}
+                  {t("published")}
                   <span className="pve:tabular-nums">
-                    {publishedChanges.length}
+                    {number(publishedChanges.length)}
                   </span>
                 </ChromeButton>
                 <ChromeButton
                   size="sm"
                   variant="outline"
+                  aria-label={`${t("sinceOpening")}: ${t("changedFieldCount", { count: sessionChanges.length })}`}
                   aria-pressed={comparison === "session"}
                   onClick={() => setComparison("session")}
                 >
@@ -290,16 +288,16 @@ export function ReviewPublishButton({
                     aria-hidden="true"
                     className="pve:max-sm:hidden"
                   />
-                  {de ? "Seit Öffnen" : "Since opening"}
+                  {t("sinceOpening")}
                   <span className="pve:tabular-nums">
-                    {sessionChanges.length}
+                    {number(sessionChanges.length)}
                   </span>
                 </ChromeButton>
               </div>
             </header>
             <div
               role="region"
-              aria-label={de ? "Geänderte Felder" : "Changed fields"}
+              aria-label={t("changedFields")}
               tabIndex={0}
               className="pve:min-h-0 pve:flex-1 pve:overflow-auto pve:overscroll-contain pve:p-4 pve:md:p-6 pve:outline-none pve:focus-visible:ring-2 pve:focus-visible:ring-inset pve:focus-visible:ring-[var(--pve-accent,#3451eb)]"
             >
@@ -312,15 +310,9 @@ export function ReviewPublishButton({
                 blocksMap={blocksMap}
                 de={de}
                 beforeLabel={
-                  comparison === "published"
-                    ? de
-                      ? "Veröffentlicht"
-                      : "Published"
-                    : de
-                      ? "Beim Öffnen"
-                      : "When opened"
+                  comparison === "published" ? t("published") : t("whenOpened")
                 }
-                afterLabel={de ? "Gespeicherter Entwurf" : "Saved draft"}
+                afterLabel={t("savedDraft")}
               />
             </div>
             <footer
@@ -335,9 +327,9 @@ export function ReviewPublishButton({
                 <p
                   className={`pve:m-0 pve:max-w-prose pve:flex-1 pve:basis-64 pve:text-xs pve:leading-relaxed ${chrome.muted}`}
                 >
-                  {de
-                    ? "Veröffentlicht den gesamten geprüften Entwurf, einschließlich Änderungen aus anderen Sitzungen."
-                    : "Publishes the complete reviewed draft, including changes from other sessions."}
+                  {t(
+                    "publishesTheCompleteReviewedDraftIncludingChangesFromOther",
+                  )}
                 </p>
                 <div className="pve:flex pve:flex-wrap pve:gap-2">
                   <ChromeButton
@@ -345,7 +337,7 @@ export function ReviewPublishButton({
                     disabled={publishing}
                     onClick={close}
                   >
-                    {de ? "Weiter bearbeiten" : "Keep editing"}
+                    {t("keepEditing")}
                   </ChromeButton>
                   <ChromeButton
                     variant="default"
@@ -365,9 +357,7 @@ export function ReviewPublishButton({
                         className="pve:motion-safe:animate-spin"
                       />
                     )}
-                    {de
-                      ? "Geprüften Entwurf veröffentlichen"
-                      : "Publish reviewed draft"}
+                    {t("publishReviewedDraft")}
                   </ChromeButton>
                 </div>
               </div>

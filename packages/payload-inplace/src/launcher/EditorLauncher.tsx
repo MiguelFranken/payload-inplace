@@ -1,3 +1,4 @@
+import { createEditorMessages } from "../i18n/messages.js";
 import type { PayloadRequest } from "payload";
 import type { EditorTarget, VisualEditorOptions } from "../types.js";
 import { authorizeTarget } from "../server/context.js";
@@ -17,6 +18,8 @@ export async function EditorLauncher({
   target: EditorTarget;
   options: VisualEditorOptions;
 }) {
+  const { t } = createEditorMessages(options.ui, req.i18n.language);
+
   if (!req.user || options.disabled) return null;
   let document;
   try {
@@ -25,8 +28,7 @@ export async function EditorLauncher({
     return null;
   }
 
-  const available = await resolveTools(options, { req, target, document }),
-    de = req.i18n.language === "de";
+  const available = await resolveTools(options, { req, target, document });
   if (
     !available.tools.length &&
     !available.fieldPanels.length &&
@@ -53,8 +55,8 @@ export async function EditorLauncher({
       {tool && <input type="hidden" name="tool" value={tool} />}
       <button
         type="submit"
-        aria-label={de ? "Seite bearbeiten" : "Edit page"}
-        title={de ? "Seite bearbeiten" : "Edit page"}
+        aria-label={t("editPage")}
+        title={t("editPage")}
         className="pvl:flex! pvl:size-11! pvl:cursor-pointer pvl:items-center! pvl:justify-center! pvl:box-border pvl:rounded-xl! pvl:border-0! pvl:bg-[var(--pve-accent,#3451eb)]! pvl:p-0! pvl:text-[var(--pve-accent-contrast,#fff)]! pvl:shadow-[0_4px_24px_#00000026] pvl:hover:brightness-90 pvl:focus-visible:outline-2 pvl:focus-visible:outline-offset-2 pvl:focus-visible:outline-[var(--pve-accent,#3451eb)] pvl:motion-safe:active:scale-[0.96] pvl:motion-safe:transition-[scale,filter] pvl:motion-safe:duration-100 pvl:disabled:cursor-wait pvl:disabled:opacity-60"
       >
         <svg
@@ -72,19 +74,16 @@ export async function EditorLauncher({
       </button>
     </>
   );
-  const action = `${req.payload.config.routes.api}/visual-editor/activate`;
+  const action = `${req.payload.config.routes.api}/visual-editor/activate${req.locale && req.locale !== "all" ? `?locale=${encodeURIComponent(req.locale)}&fallback-locale=null` : ""}`;
   const className =
     "pvl:fixed pvl:end-5 pvl:bottom-4 pvl:z-[var(--pve-z-index,2147483000)] pvl:m-0 pvl:font-[family-name:var(--pve-font-family,system-ui)]";
   return (
-    <aside
-      data-ve-launcher=""
-      aria-label={de ? "Seitenwerkzeuge" : "Page tools"}
-    >
+    <aside data-ve-launcher="" aria-label={t("pageTools")}>
       <style>{launcherStyles}</style>
       {options.resolvePagePath ? (
         <InPlaceLauncher
           action={action}
-          de={de}
+          errorMessage={t("couldNotOpenTheEditorPleaseTryAgain")}
           editorPath={options.editorPath || "/visual-editor"}
         >
           {fields}

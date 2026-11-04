@@ -9,12 +9,12 @@ import {
 export function InPlaceLauncher({
   action,
   children,
-  de,
+  errorMessage,
   editorPath,
 }: {
   action: string;
   children: ReactNode;
-  de: boolean;
+  errorMessage: string;
   editorPath: string;
 }) {
   const refresh = useEditorPageTransition();
@@ -49,11 +49,7 @@ export function InPlaceLauncher({
       }
       refresh();
     } catch {
-      setError(
-        de
-          ? "Editor konnte nicht geöffnet werden. Bitte erneut versuchen."
-          : "Could not open the editor. Please try again.",
-      );
+      setError(errorMessage);
       setBusy(false);
     }
   }

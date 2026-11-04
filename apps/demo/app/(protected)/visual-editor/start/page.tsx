@@ -13,6 +13,7 @@ export default async function Page({
     id?: string;
     slug?: string;
     root?: string;
+    locale?: string;
   }>;
 }) {
   const params = await searchParams,
@@ -26,7 +27,10 @@ export default async function Page({
     notFound();
   const payload = await getPayload({ config }),
     { user } = await payload.auth({ headers: await headers() });
-  const req = await createLocalReq({ user: user || undefined }, payload);
+  const req = await createLocalReq(
+    { user: user || undefined, locale: params.locale, fallbackLocale: false },
+    payload,
+  );
   const result = await payload.find({
     collection: collection as any,
     where: params.id
@@ -47,6 +51,7 @@ export default async function Page({
   return (
     <FrontendEntry
       target={{ collection, id: doc.id, root }}
+      contentLocale={req.locale === "all" ? undefined : req.locale || undefined}
       signedIn={Boolean(user)}
     >
       <RenderPage document={doc} root={root} />

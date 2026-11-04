@@ -1,4 +1,5 @@
 "use client";
+import type { EditorMessages } from "../i18n/messages.js";
 import { useModal } from "@payloadcms/ui";
 import { useEffect, useEffectEvent, useRef } from "react";
 
@@ -25,18 +26,12 @@ export function useModalDismiss(slug: string, onDismiss: () => void) {
  */
 export function installNativeUploadLabels(
   root: HTMLElement,
-  de: boolean,
+  t: EditorMessages["t"],
 ): () => void {
   function label() {
     for (const [selector, text] of [
-      [
-        ".upload-relationship-details__edit",
-        de ? "Medium bearbeiten" : "Edit media",
-      ],
-      [
-        ".upload-relationship-details__remove",
-        de ? "Medium entfernen" : "Remove media",
-      ],
+      [".upload-relationship-details__edit", t("editMedia")],
+      [".upload-relationship-details__remove", t("removeMedia")],
     ])
       for (const button of root.querySelectorAll<HTMLButtonElement>(selector)) {
         if (
@@ -61,8 +56,8 @@ export function installNativeUploadLabels(
         input.setAttribute("aria-labelledby", label.id);
       }
       for (const [selector, text] of [
-        [".clear-indicator", de ? "Auswahl löschen" : "Clear selection"],
-        [".dropdown-indicator", de ? "Optionen anzeigen" : "Show options"],
+        [".clear-indicator", t("clearSelection")],
+        [".dropdown-indicator", t("showOptions")],
       ]) {
         const button = field.querySelector<HTMLElement>(selector);
         if (button) {

@@ -14,3 +14,5 @@ export {
   readEditorCookie,
   validatePagePath,
 } from "../server/page-context.js";
+
+export { contentLocale } from "../server/content-locale.js";

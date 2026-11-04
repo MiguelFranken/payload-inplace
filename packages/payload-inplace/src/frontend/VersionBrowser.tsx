@@ -1,4 +1,8 @@
 "use client";
+import type { EditorStaticMessageKey } from "../i18n/catalogue.js";
+import { EditorMessageError, editorErrorKey } from "../i18n/failure.js";
+import { useEditorMessages } from "./messages.js";
+
 import { useEffect, useRef, useState } from "react";
 import {
   useConfig,
@@ -51,6 +55,12 @@ export function VersionBrowser({
     form = useForm(),
     locale = useLocale(),
     { i18n } = useTranslation();
+  const {
+    t,
+    date: formatDate,
+    number,
+  } = useEditorMessages(undefined, i18n.language);
+
   const modified = useFormModified(),
     processing = useFormProcessing(),
     background = useFormBackgroundProcessing();
@@ -60,7 +70,7 @@ export function VersionBrowser({
     [snapshot, setSnapshot] = useState<Record<string, unknown>>(),
     [loading, setLoading] = useState(false),
     [restoring, setRestoring] = useState(false),
-    [error, setError] = useState("");
+    [error, setError] = useState<EditorStaticMessageKey | null>(null);
   const request = useRef<AbortController | null>(null),
     generation = useRef(0),
     disposed = useRef(false);
@@ -71,7 +81,7 @@ export function VersionBrowser({
     request.current = controller;
     const expected = ++generation.current;
     setLoading(true);
-    setError("");
+    setError(null);
     try {
       const query = locale.code
         ? `?locale=${encodeURIComponent(locale.code)}`
@@ -89,20 +99,18 @@ export function VersionBrowser({
           }),
         },
       );
-      const result = (await response.json()) as Result & { error?: string };
+      const result = (await response.json()) as Result;
       if (!response.ok)
-        throw new Error(result.error || "Saved versions unavailable");
+        throw new EditorMessageError("savedVersionsUnavailable");
       if (expected !== generation.current || controller.signal.aborted) return;
       if (versionID) {
         if (!result.version)
-          throw new Error("This version is no longer available");
+          throw new EditorMessageError("versionNoLongerAvailable");
         setSnapshot(result.version);
       } else setTimeline(result);
     } catch (error) {
       if (!controller.signal.aborted)
-        setError(
-          error instanceof Error ? error.message : "Saved versions unavailable",
-        );
+        setError(editorErrorKey(error, "savedVersionsUnavailable"));
     } finally {
       if (!controller.signal.aborted && !disposed.current) setLoading(false);
     }
@@ -134,7 +142,7 @@ export function VersionBrowser({
     )
       return;
     setRestoring(true);
-    setError("");
+    setError(null);
     try {
       // The server re-reads this exact version and current target; this snapshot is never submitted as content.
       const result = await form.submit({
@@ -150,15 +158,12 @@ export function VersionBrowser({
         skipValidation: !hasDraftValidationEnabled(info.docConfig!),
       });
       if (!result?.res.ok)
-        throw new Error(
-          de
-            ? "Wiederherstellen fehlgeschlagen. Aktuellen Entwurf erneut prüfen."
-            : "Restore failed. Review the current draft before trying again.",
+        throw new EditorMessageError(
+          "restoreFailedReviewTheCurrentDraftBeforeTryingAgain",
         );
       onRestored();
     } catch (error) {
-      if (!disposed.current)
-        setError(error instanceof Error ? error.message : "Restore failed");
+      if (!disposed.current) setError(editorErrorKey(error, "restoreFailed"));
     } finally {
       if (!disposed.current) setRestoring(false);
     }
@@ -167,71 +172,58 @@ export function VersionBrowser({
   const date = (version: SavedVersion) => {
     const value = new Date(version.updatedAt || version.createdAt || "");
     return Number.isNaN(value.getTime())
-      ? de
-        ? "Gespeicherte Version"
-        : "Saved version"
-      : new Intl.DateTimeFormat(i18n.language, {
-          dateStyle: "medium",
-          timeStyle: "short",
-        }).format(value);
+      ? t("savedVersion")
+      : formatDate(value);
   };
   return (
     <div className="pve:grid pve:gap-4">
       <p className={`pve:m-0 pve:text-sm pve:leading-relaxed ${chrome.muted}`}>
-        {de
-          ? "Gespeicherte Versionen vergleichen. Wiederherstellen erzeugt einen Entwurf; Veröffentlichen bleibt ein eigener Schritt."
-          : "Compare saved versions. Restoring creates a draft; publication stays a separate reviewed step."}
+        {t("compareSavedVersionsRestoringCreatesADraftPublicationStays")}
       </p>
-      <div
-        className="pve:grid pve:gap-2"
-        aria-label={de ? "Gespeicherte Versionen" : "Saved versions"}
-      >
+      <div className="pve:grid pve:gap-2" aria-label={t("savedVersions")}>
         {timeline?.versions.map((version) => (
           <Button
             key={version.id}
             variant="outline"
             aria-pressed={selected === version.id}
-            className="pve:h-auto pve:min-h-11 pve:justify-start pve:py-2 pve:text-left"
-            aria-label={`${de ? "Version vergleichen" : "Compare version"} ${version.revision ?? version.id}`}
+            className="pve:h-auto pve:min-h-11 pve:justify-start pve:py-2 pve:text-start"
+            aria-label={t("compareVersion", {
+              version:
+                version.revision === undefined
+                  ? version.id
+                  : number(version.revision),
+            })}
             disabled={restoring || processing}
             onClick={() => choose(version.id)}
           >
             <History size={15} />
             <span>{date(version)}</span>
-            <span className={`pve:ml-auto pve:text-xs ${chrome.muted}`}>
-              {version.status === "published"
-                ? de
-                  ? "Veröffentlicht"
-                  : "Published"
-                : de
-                  ? "Entwurf"
-                  : "Draft"}
+            <span className={`pve:ms-auto pve:text-xs ${chrome.muted}`}>
+              {version.status === "published" ? t("published") : t("draft")}
             </span>
           </Button>
         ))}
-        {timeline?.versions.length === 0 && (
-          <p>{de ? "Keine gespeicherten Versionen." : "No saved versions."}</p>
-        )}
+        {timeline?.versions.length === 0 && <p>{t("noSavedVersions")}</p>}
       </div>
       <div className="pve:flex pve:items-center pve:justify-between">
         <Button
           size="icon"
-          aria-label={de ? "Neuere Versionen" : "Newer versions"}
+          aria-label={t("newerVersions")}
           disabled={page === 1 || busy}
           onClick={() => setPage((value) => value - 1)}
         >
-          <ChevronLeft size={17} />
+          <ChevronLeft size={17} className="pve:rtl:rotate-180" />
         </Button>
         <span className={`pve:text-xs ${chrome.muted}`}>
-          {de ? "Seite" : "Page"} {page}
+          {t("versionPage", { page })}
         </span>
         <Button
           size="icon"
-          aria-label={de ? "Ältere Versionen" : "Older versions"}
+          aria-label={t("olderVersions")}
           disabled={!timeline?.hasNextPage || busy}
           onClick={() => setPage((value) => value + 1)}
         >
-          <ChevronRight size={17} />
+          <ChevronRight size={17} className="pve:rtl:rotate-180" />
         </Button>
       </div>
       {loading && (
@@ -240,15 +232,13 @@ export function VersionBrowser({
           className="pve:flex pve:items-center pve:gap-2 pve:text-sm"
         >
           <LoaderCircle className="pve:motion-safe:animate-spin" size={16} />
-          {de ? "Version wird geladen…" : "Loading version…"}
+          {t("loadingVersion")}
         </p>
       )}
       {error && (
         <div role="alert">
-          <p>{error}</p>
-          <Button onClick={() => void read(selected)}>
-            {de ? "Erneut versuchen" : "Retry"}
-          </Button>
+          <p>{t(error)}</p>
+          <Button onClick={() => void read(selected)}>{t("retry")}</Button>
         </div>
       )}
       {snapshot && (
@@ -256,19 +246,15 @@ export function VersionBrowser({
           <DocumentReview
             before={info.data || form.getData()}
             after={snapshot}
-            beforeLabel={de ? "Aktueller Entwurf" : "Current draft"}
-            afterLabel={de ? "Gewählte Version" : "Selected version"}
+            beforeLabel={t("currentDraft")}
+            afterLabel={t("selectedVersion")}
             fields={info.docConfig?.fields || []}
             blocksMap={config.blocksMap as Record<string, ClientBlock>}
             de={de}
             onLocate={onLocate}
           />
           {modified && (
-            <p role="status">
-              {de
-                ? "Zuerst die aktuellen Änderungen speichern."
-                : "Save current changes before restoring."}
-            </p>
+            <p role="status">{t("saveCurrentChangesBeforeRestoring")}</p>
           )}
           <Button
             variant="default"
@@ -278,7 +264,7 @@ export function VersionBrowser({
             onClick={() => void restore()}
           >
             <RotateCcw size={16} />
-            {de ? "Als Entwurf wiederherstellen" : "Restore as draft"}
+            {t("restoreAsDraft")}
           </Button>
         </>
       )}

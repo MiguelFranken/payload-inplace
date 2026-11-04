@@ -1,4 +1,5 @@
 "use client";
+import { useEditorMessages } from "./messages.js";
 import { useEditorPageTransition } from "../launcher/EditorPageTransition.js";
 import {
   lazy,
@@ -114,6 +115,7 @@ const InlineRichText = lazy(() =>
 );
 /** Floating authoring controls share one native Form. Selecting a field changes its sole mounted owner instead of duplicating inputs. */
 export function FrontendControls({
+  sharedStructure,
   context,
   field,
   blockControls,
@@ -123,6 +125,7 @@ export function FrontendControls({
   policy,
   exitURL,
 }: {
+  sharedStructure?: boolean;
   context: Activation;
   field: BlocksFieldClientProps["field"];
   blockControls?: import("../types.js").VisualEditorOptions["blockControls"];
@@ -189,10 +192,7 @@ export function FrontendControls({
     info = useDocumentInfo(),
     { config } = useConfig(),
     { i18n } = useTranslation();
-  const t = useCallback(
-    (en: string, de: string) => (i18n.language === "de" ? de : en),
-    [i18n.language],
-  );
+  const { t } = useEditorMessages();
   const [inspecting, setInspecting] = useState(() =>
       editorTools.tools.includes("content"),
     ),
@@ -296,12 +296,7 @@ export function FrontendControls({
           target.document.collection !== context.target.collection ||
           String(target.document.id) !== String(context.target.id))
       ) {
-        setError(
-          t(
-            "This content belongs to another document. Enable that document scope to edit it.",
-            "Dieser Inhalt gehört zu einem anderen Dokument. Diesen Dokumentbereich zuerst für die Bearbeitung freigeben.",
-          ),
-        );
+        setError(t("thisContentBelongsToAnotherDocumentEnableThatDocument"));
         return;
       }
       if (target.identity.root !== context.target.root) return;
@@ -324,11 +319,8 @@ export function FrontendControls({
   );
   useEffect(() => {
     if (rootElement.current)
-      return installNativeUploadLabels(
-        rootElement.current,
-        i18n.language === "de",
-      );
-  }, [i18n.language]);
+      return installNativeUploadLabels(rootElement.current, t);
+  }, [t]);
   useEffect(() => {
     if (settingsOpen && selected && inspector.current)
       requestAnimationFrame(() =>
@@ -407,12 +399,7 @@ export function FrontendControls({
   }
   function locateSection(section: NativeSection) {
     if (!showSectionOnPage(section))
-      setError(
-        t(
-          "This section is not visible on the page.",
-          "Dieser Abschnitt ist auf der Seite nicht sichtbar.",
-        ),
-      );
+      setError(t("thisSectionIsNotVisibleOnThePage"));
   }
   function pickSection(section: NativeSection, settings = false) {
     const element = sectionElement(section);
@@ -483,12 +470,7 @@ export function FrontendControls({
   async function exit() {
     if (
       modified &&
-      !window.confirm(
-        t(
-          "Leave the editor? Changes that have not finished saving may be lost.",
-          "Editor verlassen? Noch nicht gespeicherte Änderungen können verloren gehen.",
-        ),
-      )
+      !window.confirm(t("leaveTheEditorChangesThatHaveNotFinishedSaving"))
     )
       return;
     const response = await fetch(
@@ -500,12 +482,7 @@ export function FrontendControls({
       },
     );
     if (!response.ok) {
-      setError(
-        t(
-          "Could not leave editing. Please try again.",
-          "Editor konnte nicht geschlossen werden. Bitte erneut versuchen.",
-        ),
-      );
+      setError(t("couldNotLeaveEditingPleaseTryAgain"));
       return;
     }
     if (context.pagePath && refreshPage) refreshPage();
@@ -514,12 +491,7 @@ export function FrontendControls({
   async function reopenEditor() {
     if (
       (modified || background) &&
-      !window.confirm(
-        t(
-          "Open the latest saved draft? Download your working copy first: unsaved changes will not carry over.",
-          "Letzten gespeicherten Entwurf öffnen? Zuerst die Arbeitskopie herunterladen: Ungespeicherte Änderungen werden nicht übernommen.",
-        ),
-      )
+      !window.confirm(t("openTheLatestSavedDraftDownloadYourWorkingCopy"))
     )
       return;
     setReopening(true);
@@ -543,12 +515,7 @@ export function FrontendControls({
       next.searchParams.set("context", fresh.nonce);
       window.location.assign(next.href);
     } catch {
-      setError(
-        t(
-          "Could not reopen the editor. Your working copy is still here. Sign in in a new tab, then try again. If access was removed, contact your administrator.",
-          "Editor konnte nicht erneut geöffnet werden. Deine Arbeitskopie bleibt erhalten. Melde dich in einem neuen Tab an und versuche es erneut. Bei entzogenem Zugriff wende dich an die Administration.",
-        ),
-      );
+      setError(t("couldNotReopenTheEditorYourWorkingCopyIs"));
       setReopening(false);
     }
   }
@@ -559,10 +526,8 @@ export function FrontendControls({
         setInspecting(false);
         recovery.setFailure({
           kind: "session",
-          message: t(
-            "Editing session expired. Download your working copy before reopening the editor.",
-            "Sitzung abgelaufen. Arbeitskopie vor dem erneuten Öffnen herunterladen.",
-          ),
+          messageKey:
+            "editingSessionExpiredDownloadYourWorkingCopyBeforeReopening",
         });
       },
       Math.max(0, context.expires - Date.now()),
@@ -590,10 +555,7 @@ export function FrontendControls({
       if (!response.ok) {
         recovery.setFailure({
           kind: "session",
-          message: t(
-            "Editing access expired or was revoked. Download your working copy before signing in again.",
-            "Bearbeitungszugriff abgelaufen oder entzogen. Arbeitskopie vor der erneuten Anmeldung herunterladen.",
-          ),
+          messageKey: "editingAccessExpiredOrWasRevokedDownloadYourWorking",
         });
         return;
       }
@@ -602,10 +564,7 @@ export function FrontendControls({
       if (status.revision !== expected) {
         recovery.setFailure({
           kind: "conflict",
-          message: t(
-            "The saved draft changed. Download your working copy, then reload the latest draft to reconcile your changes.",
-            "Der gespeicherte Entwurf wurde geändert. Arbeitskopie herunterladen und aktuellen Entwurf zum Abgleichen laden.",
-          ),
+          messageKey: "theSavedDraftChangedDownloadYourWorkingCopyThen",
         });
         return;
       }
@@ -654,12 +613,12 @@ export function FrontendControls({
       return typeof label === "string"
         ? label
         : label && typeof label === "object"
-          ? label[i18n.language] || label.en || t("Content", "Inhalt")
+          ? label[i18n.language] || label.en || t("content")
           : target.field
             ? target.field
                 .replace(/([a-z])([A-Z])/g, "$1 $2")
                 .replace(/^./, (c) => c.toUpperCase())
-            : t("Content section", "Inhaltsabschnitt");
+            : t("contentSection");
     },
     [sections, i18n.language],
   );
@@ -709,9 +668,7 @@ export function FrontendControls({
             })
           : undefined;
       const inline = decision?.kind === "text" || decision?.kind === "richText";
-      return inline
-        ? t("Edit text", "Text bearbeiten")
-        : t("Open settings", "Einstellungen öffnen");
+      return inline ? t("editText") : t("openSettings");
     },
     [sections, blockControls, i18n.language, richTextCapabilities, form],
   );
@@ -728,9 +685,7 @@ export function FrontendControls({
   );
   const label = selected?.block?.labels?.singular;
   const title =
-    typeof label === "string"
-      ? label
-      : selected?.block?.slug || t("Section", "Abschnitt");
+    typeof label === "string" ? label : selected?.block?.slug || t("section");
   const profile = blockControls?.[selected?.block?.slug || ""];
   const configuredFields = selected?.block
     ? projectFields(selected.block.fields, profile?.fields)
@@ -891,7 +846,7 @@ export function FrontendControls({
           : undefined;
     return (
       text ||
-      (relative.split(".").at(-1) || t("Field", "Feld"))
+      (relative.split(".").at(-1) || t("field"))
         .replace(/([a-z])([A-Z])/g, "$1 $2")
         .replace(/^./, (c) => c.toUpperCase())
     );
@@ -914,14 +869,14 @@ export function FrontendControls({
       : undefined,
   );
   const statusText = recovery.failure
-    ? t("Not saved", "Nicht gespeichert")
+    ? t("notSaved")
     : processing || background
-      ? t("Saving…", "Wird gespeichert…")
+      ? t("saving")
       : modified
-        ? t("Unsaved changes", "Ungespeicherte Änderungen")
+        ? t("unsavedChanges")
         : recovery.attempt > recovery.acknowledged.current
-          ? t("Confirming save…", "Speichern wird bestätigt…")
-          : t("Draft saved", "Entwurf gespeichert");
+          ? t("confirmingSave")
+          : t("draftSaved");
   return (
     <ChromePortalProvider container={portalContainer}>
       <LeaveWithoutSaving
@@ -932,7 +887,7 @@ export function FrontendControls({
       <div
         ref={rootElement}
         role="region"
-        aria-label="Website editor"
+        aria-label={t("websiteEditor")}
         data-ve-ui=""
         className="pve:@container/pve-native pve:fixed pve:inset-0 pve:pointer-events-none pve:z-[var(--pve-z-index,2147483000)] pve:font-[family-name:var(--pve-font-family,system-ui)] pve:text-[var(--pve-text,var(--theme-text,#202127))] pve:[&_[class*='upload-relationship-details']_button]:min-h-11! pve:[&_[class*='upload-relationship-details']_button]:min-w-11! pve:[&_[class*='upload-relationship-details']_[class*='meta']]:text-[var(--theme-elevation-700)]! pve:[&_[class*='dragAndDropText']]:text-[var(--theme-elevation-700)]! pve:[&_[class*='orText']]:text-[var(--theme-elevation-700)]!"
       >
@@ -1047,16 +1002,12 @@ export function FrontendControls({
         >
           {expanded && panel.kind === "conflict" && (
             <Floatable
-              title={t("Resolve draft conflict", "Entwürfe abgleichen")}
+              title={t("resolveDraftConflict")}
               width={680}
               onClose={() => closeView("conflict")}
             >
               <Suspense
-                fallback={
-                  <p role="status">
-                    {t("Loading comparison…", "Vergleich wird geladen…")}
-                  </p>
-                }
+                fallback={<p role="status">{t("loadingComparison")}</p>}
               >
                 <ConflictReview
                   onApplied={() => {
@@ -1070,18 +1021,12 @@ export function FrontendControls({
           )}
           {expanded && panel.kind === "versions" && (
             <Floatable
-              title={t("Saved versions", "Gespeicherte Versionen")}
+              title={t("savedVersions")}
               width={680}
               returnFocus={toolsButton}
               onClose={() => closeView("versions")}
             >
-              <Suspense
-                fallback={
-                  <p role="status">
-                    {t("Loading versions…", "Versionen werden geladen…")}
-                  </p>
-                }
-              >
+              <Suspense fallback={<p role="status">{t("loadingVersions")}</p>}>
                 <VersionBrowser
                   onRestored={() => {
                     setSelection(undefined);
@@ -1103,12 +1048,7 @@ export function FrontendControls({
                       )
                       .sort((a, b) => b.stable!.length - a.stable!.length)[0];
                     if (!match || !showSectionOnPage(match.section))
-                      setError(
-                        t(
-                          "This change is not visible on the current page.",
-                          "Diese Änderung ist auf der aktuellen Seite nicht sichtbar.",
-                        ),
-                      );
+                      setError(t("thisChangeIsNotVisibleOnTheCurrentPage"));
                   }}
                 />
               </Suspense>
@@ -1119,7 +1059,7 @@ export function FrontendControls({
             recovery.failure?.kind === "validation" && (
               <Floatable
                 key={validationPath}
-                title={t("Fix field", "Feld korrigieren")}
+                title={t("fixField")}
                 returnFocus={toolsButton}
                 onClose={() => setValidationPath(null)}
               >
@@ -1138,7 +1078,7 @@ export function FrontendControls({
                     variant="default"
                     onClick={() => void retry()}
                   >
-                    {t("Retry saving", "Erneut speichern")}
+                    {t("retrySaving")}
                   </ChromeButton>
                 </div>
               </Floatable>
@@ -1146,15 +1086,12 @@ export function FrontendControls({
           {expanded && selected && settingsOpen && !outline && (
             <Floatable
               title={selection?.field ? describe(selection) : title}
-              label="Edit content"
+              label={t("editContent")}
               actions={
                 <ChromeButton
                   size="icon"
-                  aria-label={t(
-                    "Show section on page",
-                    "Abschnitt auf der Seite zeigen",
-                  )}
-                  title={t("Show on page", "Auf der Seite zeigen")}
+                  aria-label={t("showSectionOnPage")}
+                  title={t("showOnPage")}
                   onClick={() => locateSection(selected)}
                 >
                   <LocateFixed size={16} />
@@ -1214,10 +1151,7 @@ export function FrontendControls({
                     )}
                   </NativeFieldsOwner>
                 ) : (
-                  <p>
-                    This content is no longer available at this location. Select
-                    it again to continue.
-                  </p>
+                  <p>{t("thisContentIsNoLongerAvailableAtThisLocation")}</p>
                 )}
                 {selection?.field || selection?.fields ? (
                   <ChromeButton
@@ -1228,19 +1162,16 @@ export function FrontendControls({
                       )
                     }
                   >
-                    {t(
-                      "Edit all section fields",
-                      "Alle Abschnittsfelder bearbeiten",
-                    )}
+                    {t("editAllSectionFields")}
                   </ChromeButton>
                 ) : (
                   <nav
-                    aria-label="Section actions"
+                    aria-label={t("sectionActions")}
                     className="pve:mt-4 pve:flex pve:gap-1"
                   >
                     <ChromeButton
                       size="icon"
-                      aria-label="Move section up"
+                      aria-label={t("moveSectionUp")}
                       disabled={disabled || selected.index === 0}
                       onClick={() => action("up")}
                     >
@@ -1248,7 +1179,7 @@ export function FrontendControls({
                     </ChromeButton>
                     <ChromeButton
                       size="icon"
-                      aria-label="Move section down"
+                      aria-label={t("moveSectionDown")}
                       disabled={disabled || fixedSelected}
                       onClick={() => action("down")}
                     >
@@ -1256,7 +1187,7 @@ export function FrontendControls({
                     </ChromeButton>
                     <ChromeButton
                       size="icon"
-                      aria-label="Duplicate section"
+                      aria-label={t("duplicateSection")}
                       disabled={disabled || uniqueSelected}
                       onClick={() => action("duplicate")}
                     >
@@ -1265,7 +1196,7 @@ export function FrontendControls({
                     <ChromeButton
                       size="icon"
                       variant="destructive"
-                      aria-label="Remove section"
+                      aria-label={t("removeSection")}
                       disabled={disabled || fixedSelected || uniqueSelected}
                       onClick={() => action("remove")}
                     >
@@ -1278,16 +1209,16 @@ export function FrontendControls({
           )}
           {expanded && outline && (
             <Floatable
-              title={t("Sections", "Abschnitte")}
-              label="Sections"
+              title={t("sections")}
+              label={t("sections")}
               returnFocus={sectionsButton}
               actions={
                 editorTools.tools.includes("history") ? (
                   <>
                     <ChromeButton
                       size="icon"
-                      aria-label="Undo section change"
-                      title="Undo last section change"
+                      aria-label={t("undoSectionChange")}
+                      title={t("undoLastSectionChange")}
                       disabled={disabled || !history.canUndo}
                       onClick={() => undo()}
                     >
@@ -1295,8 +1226,8 @@ export function FrontendControls({
                     </ChromeButton>
                     <ChromeButton
                       size="icon"
-                      aria-label="Redo section change"
-                      title="Redo section change"
+                      aria-label={t("redoSectionChange")}
+                      title={t("redoSectionChange")}
                       disabled={disabled || !history.canRedo}
                       onClick={() => undo(true)}
                     >
@@ -1307,10 +1238,15 @@ export function FrontendControls({
               }
               onClose={() => setOutline(false)}
             >
-              <p className="pve:mb-3 pve:mt-0 pve:text-xs pve:leading-5 pve:text-[var(--pve-muted,var(--theme-elevation-700,#646773))]">
-                {t(
-                  "Drag to reorder here or on the page.",
-                  "Hier oder auf der Seite zum Sortieren ziehen.",
+              <p
+                dir="auto"
+                className="pve:mb-3 pve:mt-0 pve:text-xs pve:leading-5 pve:text-[var(--pve-muted,var(--theme-elevation-700,#646773))]"
+              >
+                {t("dragToReorderHereOrOnThePage")}
+                {sharedStructure && context.locale && (
+                  <span dir="auto" role="note" className="pve:mt-2 pve:block">
+                    {t("sharedSectionStructure", { locale: context.locale })}
+                  </span>
                 )}
               </p>
               <div className="pve:grid pve:gap-2">
@@ -1343,7 +1279,7 @@ export function FrontendControls({
                 <SectionCatalogue
                   choices={blockChoices}
                   catalogue={catalogue}
-                  label={t("Add section", "Abschnitt hinzufügen")}
+                  label={t("addSection")}
                   locale={i18n.language}
                   disabled={
                     disabled ||
@@ -1412,7 +1348,7 @@ export function FrontendControls({
                   <p role="alert" className="pve:m-0">
                     {error}
                     <ChromeButton size="sm" onClick={() => setError("")}>
-                      Dismiss
+                      {t("dismiss")}
                     </ChromeButton>
                   </p>
                 )}
@@ -1420,7 +1356,7 @@ export function FrontendControls({
                   <p role="status" className="pve:m-0">
                     {actionResult}
                     <ChromeButton size="sm" onClick={() => setActionResult("")}>
-                      Dismiss
+                      {t("dismiss")}
                     </ChromeButton>
                   </p>
                 )}
@@ -1430,31 +1366,25 @@ export function FrontendControls({
                       {serverPreview.error}
                     </p>
                     <ChromeButton size="sm" onClick={serverPreview.retry}>
-                      {t(
-                        "Refresh saved preview",
-                        "Gespeicherte Vorschau aktualisieren",
-                      )}
+                      {t("refreshSavedPreview")}
                     </ChromeButton>
                   </>
                 )}
                 {advisory.status === "other" && (
                   <p role="status" className="pve:m-0">
-                    {t(
-                      "Another editor is working on this document. Editing resumes when their lock is released.",
-                      "Eine andere Person bearbeitet dieses Dokument. Nach Freigabe wird die Bearbeitung fortgesetzt.",
-                    )}
+                    {t("anotherEditorIsWorkingOnThisDocumentEditingResumes")}
                     <ChromeButton
                       size="sm"
                       variant="outline"
                       onClick={advisory.retry}
                     >
-                      {t("Check again", "Erneut prüfen")}
+                      {t("checkAgain")}
                     </ChromeButton>
                   </p>
                 )}
                 {recovery.failure && !validationPath && (
                   <div role="alert">
-                    <p className="pve:mt-0">{recovery.failure.message}</p>
+                    <p className="pve:mt-0">{t(recovery.failure.messageKey)}</p>
                     <div className="pve:flex pve:flex-wrap pve:gap-2">
                       {recovery.failure.kind === "validation" &&
                         recovery.failure.paths?.map((path) => (
@@ -1464,7 +1394,7 @@ export function FrontendControls({
                             variant="outline"
                             onClick={() => correctField(path)}
                           >
-                            {t("Edit", "Bearbeiten:")} {validationLabel(path)}
+                            {t("edit")} {validationLabel(path)}
                           </ChromeButton>
                         ))}
                       {recovery.failure.kind === "conflict" && (
@@ -1473,10 +1403,7 @@ export function FrontendControls({
                           variant="default"
                           onClick={() => openView({ kind: "conflict" })}
                         >
-                          {t(
-                            "Compare and recover",
-                            "Vergleichen und fortsetzen",
-                          )}
+                          {t("compareAndRecover")}
                         </ChromeButton>
                       )}
                       <ChromeButton
@@ -1484,10 +1411,7 @@ export function FrontendControls({
                         variant="outline"
                         onClick={downloadWorkingCopy}
                       >
-                        {t(
-                          "Download working copy",
-                          "Arbeitskopie herunterladen",
-                        )}
+                        {t("downloadWorkingCopy")}
                       </ChromeButton>
                       {["network", "validation"].includes(
                         recovery.failure.kind,
@@ -1497,7 +1421,7 @@ export function FrontendControls({
                           variant="outline"
                           onClick={() => void retry()}
                         >
-                          {t("Retry saving", "Erneut speichern")}
+                          {t("retrySaving")}
                         </ChromeButton>
                       ) : recovery.failure.kind === "session" ? (
                         <>
@@ -1507,9 +1431,7 @@ export function FrontendControls({
                             disabled={reopening}
                             onClick={() => void reopenEditor()}
                           >
-                            {reopening
-                              ? t("Reopening…", "Wird geöffnet…")
-                              : t("Reopen editor", "Editor erneut öffnen")}
+                            {reopening ? t("reopening") : t("reopenEditor")}
                           </ChromeButton>
                           <a
                             href={`${config.routes.admin.replace(/\/$/, "")}/login?redirect=${encodeURIComponent(exitURL)}`}
@@ -1517,7 +1439,7 @@ export function FrontendControls({
                             rel="noopener noreferrer"
                             className="pve:inline-flex pve:min-h-9 pve:items-center pve:px-2 pve:text-inherit pve:underline pve:underline-offset-4 pve:focus-visible:outline-2 pve:focus-visible:outline-offset-2"
                           >
-                            {t("Sign in (new tab)", "Anmelden (neuer Tab)")}
+                            {t("signInNewTab")}
                           </a>
                         </>
                       ) : (
@@ -1528,15 +1450,14 @@ export function FrontendControls({
                             if (
                               window.confirm(
                                 t(
-                                  "Reload the latest draft? Unsaved changes will be discarded.",
-                                  "Aktuellen Entwurf laden? Ungespeicherte Änderungen werden verworfen.",
+                                  "reloadTheLatestDraftUnsavedChangesWillBeDiscarded",
                                 ),
                               )
                             )
                               window.location.reload();
                           }}
                         >
-                          {t("Reload latest draft", "Aktuellen Entwurf laden")}
+                          {t("reloadLatestDraft")}
                         </ChromeButton>
                       )}
                     </div>
@@ -1546,7 +1467,7 @@ export function FrontendControls({
             )}
           <nav
             ref={dock}
-            aria-label="Editing toolbar"
+            aria-label={t("editingToolbar")}
             className={`pve:pointer-events-auto pve:flex pve:max-w-full pve:items-center pve:gap-1 pve:box-border pve:rounded-2xl pve:border pve:border-solid pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:bg-[var(--pve-surface,var(--theme-elevation-0,#fff))] pve:p-1 pve:shadow-[0_4px_24px_#0000001a] pve:[interpolate-size:allow-keywords] pve:motion-safe:transition-[width] pve:motion-safe:duration-200 pve:motion-safe:ease-[cubic-bezier(0.2,0,0,1)] pve:max-sm:gap-0 ${expanded ? "pve:w-max" : "pve:w-auto"}`}
           >
             {!expanded ? (
@@ -1554,8 +1475,8 @@ export function FrontendControls({
                 ref={launcherButton}
                 size="icon"
                 variant="default"
-                aria-label={t("Edit page", "Seite bearbeiten")}
-                title={t("Edit page", "Seite bearbeiten")}
+                aria-label={t("editPage")}
+                title={t("editPage")}
                 aria-expanded={false}
                 onClick={() => {
                   setExpanded(true);
@@ -1578,9 +1499,9 @@ export function FrontendControls({
                     ref={inspectButton}
                     disabled={advisory.status === "other"}
                     size="icon"
-                    aria-label={t("Select content", "Inhalte auswählen")}
+                    aria-label={t("selectContent")}
                     aria-pressed={highlighting && !outline && !hasPanel}
-                    tooltip={t("Select content", "Inhalte auswählen")}
+                    tooltip={t("selectContent")}
                     onClick={() => {
                       closeTools();
                       setOutline(false);
@@ -1599,9 +1520,9 @@ export function FrontendControls({
                   <ChromeButton
                     size="icon"
                     ref={sectionsButton}
-                    aria-label={t("Sections", "Abschnitte")}
+                    aria-label={t("sections")}
                     aria-pressed={outline}
-                    tooltip={t("Sections", "Abschnitte")}
+                    tooltip={t("sections")}
                     onClick={() => {
                       closeTools();
                       setSettingsOpen(false);
@@ -1614,8 +1535,8 @@ export function FrontendControls({
                 <DropdownMenu>
                   <DropdownMenuTrigger
                     ref={toolsButton}
-                    aria-label={t("More tools", "Weitere Werkzeuge")}
-                    title={t("More tools", "Weitere Werkzeuge")}
+                    aria-label={t("moreTools")}
+                    title={t("moreTools")}
                   >
                     <MoreHorizontal size={18} />
                   </DropdownMenuTrigger>
@@ -1654,21 +1575,21 @@ export function FrontendControls({
                           }}
                         >
                           <History size={16} />
-                          {t("Saved versions", "Gespeicherte Versionen")}
+                          {t("savedVersions")}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           disabled={disabled || !history.canUndo}
                           onClick={() => undo()}
                         >
                           <Undo2 size={16} />
-                          Undo section change
+                          {t("undoSectionChange")}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           disabled={disabled || !history.canRedo}
                           onClick={() => undo(true)}
                         >
                           <Redo2 size={16} />
-                          Redo section change
+                          {t("redoSectionChange")}
                         </DropdownMenuItem>
                       </>
                     )}
@@ -1677,7 +1598,7 @@ export function FrontendControls({
                       onClick={() => void saveDraft()}
                     >
                       <Check size={16} />
-                      Save draft now
+                      {t("saveDraftNow")}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
@@ -1685,11 +1606,11 @@ export function FrontendControls({
                       onClick={minimize}
                     >
                       <Minus size={16} />
-                      {t("Minimize editor", "Editor minimieren")}
+                      {t("minimizeEditor")}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => void exit()}>
                       <LogOut size={16} />
-                      {t("Exit editing", "Bearbeiten beenden")}
+                      {t("exitEditing")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -1730,8 +1651,8 @@ export function FrontendControls({
                   ))}
                 <ChromeButton
                   size="icon"
-                  aria-label={t("Minimize editor", "Editor minimieren")}
-                  tooltip={t("Minimize editor", "Editor minimieren")}
+                  aria-label={t("minimizeEditor")}
+                  tooltip={t("minimizeEditor")}
                   onClick={minimize}
                 >
                   <Minus size={16} />
@@ -1741,18 +1662,12 @@ export function FrontendControls({
           </nav>
           {inspecting && expanded && (
             <p className="pve:sr-only" role="status">
-              {t(
-                "Edit text on the page, or choose a section from Sections.",
-                "Inhalt auf der Seite zum Bearbeiten wählen. Escape beendet die Auswahl.",
-              )}
+              {t("editTextOnThePageOrChooseASection")}
             </p>
           )}
           {serverPreview.pending && (
             <span role="status" className="pve:sr-only">
-              {t(
-                "Updating server preview…",
-                "Server-Vorschau wird aktualisiert…",
-              )}
+              {t("updatingServerPreview")}
             </span>
           )}
         </div>

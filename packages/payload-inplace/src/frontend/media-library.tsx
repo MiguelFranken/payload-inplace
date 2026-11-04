@@ -1,4 +1,6 @@
 "use client";
+import { EditorMessage } from "./messages.js";
+
 import { lazy, Suspense } from "react";
 import type {
   ContextualFieldProps,
@@ -49,7 +51,13 @@ export function defineMediaFieldStrategy(
           !library.collections || library.collections.includes(collection),
       ),
     Component: (props: ContextualFieldProps<"upload" | "relationship">) => (
-      <Suspense fallback={<p role="status">Loading media library…</p>}>
+      <Suspense
+        fallback={
+          <p role="status">
+            <EditorMessage id="loadingMediaLibrary" />
+          </p>
+        }
+      >
         <Library {...props} library={library} />
       </Suspense>
     ),

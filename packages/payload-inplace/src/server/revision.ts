@@ -63,6 +63,7 @@ export function revisionGuard(
       collection: collection as any,
       id,
       draft: true,
+      fallbackLocale: false,
       depth: 0,
       req,
       overrideAccess: system,

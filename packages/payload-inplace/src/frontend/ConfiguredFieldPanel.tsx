@@ -1,4 +1,6 @@
 "use client";
+import { useEditorMessages } from "./messages.js";
+
 import { NativeFieldSlot } from "./field-ownership.js";
 import { useVisualEditor } from "./tools-context.js";
 /** Declarative field panels reuse native controls; consumers only list existing field paths. */
@@ -11,9 +13,11 @@ export function ConfiguredFieldPanel({
   scope?: "document" | "selection";
   blockTypes?: string[];
 }) {
+  const { t } = useEditorMessages();
+
   const editor = useVisualEditor();
   if (scope === "selection" && !editor.selection)
-    return <p>Select a section on the page to see its options.</p>;
+    return <p>{t("selectASectionOnThePageToSeeIts")}</p>;
   return (
     <div className="pve:grid pve:gap-4">
       {fields.map((path) => (

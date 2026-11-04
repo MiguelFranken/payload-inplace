@@ -1,4 +1,5 @@
 "use client";
+import type { EditorStaticMessageKey } from "../i18n/catalogue.js";
 import { createContext, use, useEffect, useRef, useState } from "react";
 import {
   useDocumentInfo,
@@ -11,7 +12,7 @@ import {
 /** Recovery describes UI state only. Native Payload still owns fields, validation, requests and merges. */
 export type EditorFailure = {
   kind: "network" | "session" | "conflict" | "validation";
-  message: string;
+  messageKey: EditorStaticMessageKey;
   paths?: string[];
   fieldErrors?: Record<string, string>;
 };
@@ -116,8 +117,7 @@ export function NativeSubmissionMonitor() {
       if (status.revision !== expected) {
         recovery.setFailure({
           kind: "conflict",
-          message:
-            "This document changed in another session. Download your working copy, then reload the latest draft to reconcile the changes.",
+          messageKey: "draftChangedInAnotherSession",
         });
         form.setModified(true);
         form.setDisabled(true);
@@ -135,15 +135,13 @@ export function NativeSubmissionMonitor() {
           paths.length
             ? {
                 kind: "validation",
-                message:
-                  "Some fields need attention. Open a field below to correct it, then retry saving.",
+                messageKey: "fieldsNeedAttention",
                 paths,
                 fieldErrors: Object.fromEntries(errors),
               }
             : {
                 kind: "network",
-                message:
-                  "Saving did not finish. Your changes are still in this form. Check the connection, then retry.",
+                messageKey: "saveDidNotFinish",
               },
         );
         form.setModified(true);
@@ -154,9 +152,7 @@ export function NativeSubmissionMonitor() {
       const session = (error as Error).message === "session";
       recovery.setFailure({
         kind: session ? "session" : "network",
-        message: session
-          ? "Editing access expired or was revoked. Download your working copy before signing in again."
-          : "Connection lost. Your changes remain in this form. Check your connection, then retry.",
+        messageKey: session ? "editingAccessExpired" : "connectionLost",
       });
       current.current.form.setModified(true);
       current.current.form.setDisabled(true);

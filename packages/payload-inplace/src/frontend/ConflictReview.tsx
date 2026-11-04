@@ -1,4 +1,8 @@
 "use client";
+import type { EditorStaticMessageKey } from "../i18n/catalogue.js";
+import { EditorMessageError, editorErrorKey } from "../i18n/failure.js";
+import { useEditorMessages } from "./messages.js";
+
 import { Radio } from "@base-ui/react/radio";
 import { RadioGroup } from "@base-ui/react/radio-group";
 import { useEffect, useId, useRef, useState } from "react";
@@ -22,6 +26,8 @@ import { Button } from "./ui/button.js";
 import { useEditorRecovery } from "./recovery.js";
 /** This panel owns comparison snapshots only. Cancellation changes no native values; explicit acceptance rehydrates the sole Form and its existing save queue. */
 export function ConflictReview({ onApplied }: { onApplied: () => void }) {
+  const { t } = useEditorMessages();
+
   const choiceId = useId();
   const { config } = useConfig(),
     info = useDocumentInfo(),
@@ -39,7 +45,7 @@ export function ConflictReview({ onApplied }: { onApplied: () => void }) {
     [choices, setChoices] = useState<Record<string, "local" | "latest">>({}),
     [loading, setLoading] = useState(true),
     [applying, setApplying] = useState(false),
-    [error, setError] = useState(""),
+    [error, setError] = useState<EditorStaticMessageKey | null>(null),
     [tab, setTab] = useState<"local" | "latest">("local");
   const request = useRef<AbortController | null>(null),
     generation = useRef(0);
@@ -63,17 +69,13 @@ export function ConflictReview({ onApplied }: { onApplied: () => void }) {
     )
       .then(async (response) => {
         if (!response.ok)
-          throw Error(
-            "The current draft is unavailable. Check your editing access.",
-          );
+          throw new EditorMessageError("latestDraftUnavailable");
         return response.json();
       })
       .then(({ document: latest }) => {
         if (controller.signal.aborted || generation.current !== current) return;
         if (key !== authoredFieldKey(form.getFields()))
-          throw Error(
-            "Your working copy changed. Close and reopen the comparison.",
-          );
+          throw new EditorMessageError("workingCopyChanged");
         setSnapshot({
           base,
           local,
@@ -84,9 +86,7 @@ export function ConflictReview({ onApplied }: { onApplied: () => void }) {
       })
       .catch((error) => {
         if (!controller.signal.aborted)
-          setError(
-            error instanceof Error ? error.message : "Comparison unavailable",
-          );
+          setError(editorErrorKey(error, "comparisonUnavailable"));
       })
       .finally(() => {
         if (!controller.signal.aborted) setLoading(false);
@@ -100,13 +100,11 @@ export function ConflictReview({ onApplied }: { onApplied: () => void }) {
   async function apply() {
     if (!snapshot || applying) return;
     setApplying(true);
-    setError("");
+    setError(null);
     const current = generation.current;
     try {
       if (snapshot.key !== authoredFieldKey(form.getFields()))
-        throw Error(
-          "Your working copy changed. Close and reopen the comparison.",
-        );
+        throw new EditorMessageError("workingCopyChanged");
       const data = resolveReconciliation(snapshot.result, choices);
       data._veActivation = form.getData()._veActivation;
       data._status = "draft";
@@ -125,9 +123,7 @@ export function ConflictReview({ onApplied }: { onApplied: () => void }) {
       if (current !== generation.current || request.current?.signal.aborted)
         return;
       if (!result?.state)
-        throw Error(
-          "Native fields could not be prepared. Your working copy is unchanged.",
-        );
+        throw new EditorMessageError("nativeFieldsUnavailable");
       result.state._veActivation = {
         ...form.getFields()._veActivation,
         value: data._veActivation,
@@ -141,28 +137,24 @@ export function ConflictReview({ onApplied }: { onApplied: () => void }) {
       onApplied();
     } catch (error) {
       if (current === generation.current)
-        setError(
-          error instanceof Error
-            ? error.message
-            : "Recovery could not be applied",
-        );
+        setError(editorErrorKey(error, "recoveryUnavailable"));
     } finally {
       if (current === generation.current) setApplying(false);
     }
   }
-  if (loading) return <p role="status">Loading the latest authorized draft…</p>;
+  if (loading)
+    return <p role="status">{t("loadingTheLatestAuthorizedDraft")}</p>;
   return (
     <div className="pve:grid pve:gap-4">
       <p className="pve:m-0 pve:text-sm">
-        Compare both copies. Separate field changes are combined; overlapping
-        changes need your choice. Nothing is saved until you accept.
+        {t("compareBothCopiesSeparateFieldChangesAreCombinedOverlapping")}
       </p>
-      {error && <p role="alert">{error}</p>}
+      {error && <p role="alert">{t(error)}</p>}
       {snapshot && (
         <>
           <div
             role="group"
-            aria-label="Compare changes"
+            aria-label={t("compareChanges")}
             className="pve:flex pve:gap-2"
           >
             <Button
@@ -170,22 +162,22 @@ export function ConflictReview({ onApplied }: { onApplied: () => void }) {
               aria-pressed={tab === "local"}
               onClick={() => setTab("local")}
             >
-              Your changes
+              {t("yourChanges")}
             </Button>
             <Button
               variant="outline"
               aria-pressed={tab === "latest"}
               onClick={() => setTab("latest")}
             >
-              Other saved changes
+              {t("otherSavedChanges")}
             </Button>
           </div>
           <DocumentReview
             before={snapshot.base}
             after={snapshot[tab]}
-            beforeLabel="Last saved copy"
+            beforeLabel={t("lastSavedCopy")}
             afterLabel={
-              tab === "local" ? "Your working copy" : "Latest saved draft"
+              tab === "local" ? t("yourWorkingCopy") : t("latestSavedDraft")
             }
             fields={fields}
             blocksMap={blocks}
@@ -200,8 +192,7 @@ export function ConflictReview({ onApplied }: { onApplied: () => void }) {
               </legend>
               {conflict.structural && (
                 <p className="pve:text-sm">
-                  This choice replaces the whole list, including its content.
-                  Compare both copies before choosing.
+                  {t("thisChoiceReplacesTheWholeListIncludingItsContent")}
                 </p>
               )}
               <RadioGroup
@@ -213,7 +204,9 @@ export function ConflictReview({ onApplied }: { onApplied: () => void }) {
                       [conflict.path]: choice,
                     }));
                 }}
-                aria-label={`Choose copy for ${conflict.labels.join(" / ")}`}
+                aria-label={t("chooseConflictCopy", {
+                  label: conflict.labels.join(" / "),
+                })}
                 className="pve:grid pve:gap-2"
               >
                 {(["local", "latest"] as const).map((choice) => (
@@ -222,8 +215,8 @@ export function ConflictReview({ onApplied }: { onApplied: () => void }) {
                     htmlFor={`${choiceId}:${conflict.path}:${choice}`}
                     aria-label={
                       choice === "local"
-                        ? "Keep your copy"
-                        : "Use latest saved copy"
+                        ? t("keepYourCopy")
+                        : t("useLatestSavedCopy")
                     }
                     className="pve:flex pve:items-start pve:gap-2 pve:rounded-lg pve:p-2 pve:text-sm"
                   >
@@ -232,8 +225,8 @@ export function ConflictReview({ onApplied }: { onApplied: () => void }) {
                       value={choice}
                       aria-label={
                         choice === "local"
-                          ? "Keep your copy"
-                          : "Use latest saved copy"
+                          ? t("keepYourCopy")
+                          : t("useLatestSavedCopy")
                       }
                       className="pve:mt-0.5 pve:flex pve:size-4 pve:shrink-0 pve:items-center pve:justify-center pve:rounded-full pve:border pve:border-solid pve:border-[var(--pve-border,#e3e4e8)] pve:bg-transparent pve:data-checked:border-[var(--pve-accent,#3451eb)] pve:focus-visible:outline-2 pve:focus-visible:outline-offset-2 pve:focus-visible:outline-[var(--pve-accent,#3451eb)]"
                     >
@@ -242,11 +235,11 @@ export function ConflictReview({ onApplied }: { onApplied: () => void }) {
                     <span className="pve:min-w-0 pve:break-words">
                       <strong>
                         {choice === "local"
-                          ? "Keep your copy"
-                          : "Use latest saved copy"}
+                          ? t("keepYourCopy")
+                          : t("useLatestSavedCopy")}
                       </strong>
                       <span className="pve:mt-1 pve:block pve:max-h-28 pve:overflow-auto pve:whitespace-pre-wrap pve:opacity-70">
-                        {reviewText(conflict[choice]) || "Empty"}
+                        {reviewText(conflict[choice]) || t("empty")}
                       </span>
                     </span>
                   </label>
@@ -256,7 +249,7 @@ export function ConflictReview({ onApplied }: { onApplied: () => void }) {
           ))}
           {!snapshot.result.conflicts.length && (
             <p role="status">
-              These changes affect separate fields and can be combined safely.
+              {t("theseChangesAffectSeparateFieldsAndCanBeCombined")}
             </p>
           )}
           <Button
@@ -270,12 +263,11 @@ export function ConflictReview({ onApplied }: { onApplied: () => void }) {
             onClick={() => void apply()}
           >
             {applying
-              ? "Preparing native fields…"
-              : "Use combined copy and save"}
+              ? t("preparingNativeFields")
+              : t("useCombinedCopyAndSave")}
           </Button>
           <p className="pve:m-0 pve:text-xs pve:opacity-70">
-            The save checks the latest revision again. If someone saves
-            meanwhile, your working copy stays available for another comparison.
+            {t("theSaveChecksTheLatestRevisionAgainIfSomeone")}
           </p>
         </>
       )}

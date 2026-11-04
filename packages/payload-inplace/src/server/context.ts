@@ -1,3 +1,4 @@
+import { contentLocale } from "./content-locale.js";
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import type {
   EditContext,
@@ -40,6 +41,11 @@ export function verifyContext(
       typeof c.target.collection !== "string" ||
       !["string", "number"].includes(typeof c.target.id) ||
       typeof c.target.root !== "string" ||
+      (c.locale !== undefined &&
+        (typeof c.locale !== "string" ||
+          !c.locale ||
+          c.locale === "all" ||
+          c.locale.length > 128)) ||
       typeof c.user !== "string" ||
       typeof c.session !== "string" ||
       typeof c.nonce !== "string" ||
@@ -83,6 +89,7 @@ export async function authorizeTarget(
     id: target.id,
     draft: true,
     depth: 0,
+    fallbackLocale: false,
     req,
     overrideAccess: false,
   });
@@ -117,6 +124,7 @@ export async function authorizeTarget(
 export function currentSession(req: PayloadRequest): string {
   return String((req.user as any)?._sid ?? "");
 }
+/** Capture a freshly authorized document and one content locale in a short-lived session credential. Integrity alone never replaces readEditContext reauthorization. */
 export function createContext(
   req: PayloadRequest,
   target: EditorTarget,
@@ -125,8 +133,10 @@ export function createContext(
 ): EditContext {
   if (!req.user || !currentSession(req))
     throw new Error("Session-backed authentication required");
+  const locale = contentLocale(req);
   return {
     target,
+    ...(locale ? { locale } : {}),
     ...(pagePath ? { pagePath } : {}),
     user: `${req.user.collection}:${req.user.id}`,
     session: currentSession(req),
@@ -146,7 +156,8 @@ export async function readEditContext(
     !context ||
     !req.user ||
     context.user !== `${req.user.collection}:${req.user.id}` ||
-    context.session !== currentSession(req)
+    context.session !== currentSession(req) ||
+    context.locale !== contentLocale(req)
   )
     throw new Error("Editor session expired");
   const document = await authorizeTarget(req, context.target, options);

@@ -12,6 +12,8 @@ export type { BlockIdentity } from "../../core/src/types.js";
 export interface VisualEditorOptions {
   collections: Record<string, { roots: string[] }>;
   previewOrigin: string;
+  /** Typed UI messages/formatting, independent of native Payload content localization. */
+  ui?: import("./i18n/messages.js").EditorUIOptions;
   /** Exact additional trusted browser origins serving this same editor (for example a deployment's branch alias).
    * Configure these on the server; wildcards and request-derived host trust are deliberately unsupported.
    */
@@ -57,6 +59,8 @@ export interface VisualEditorOptions {
 }
 /** Authenticated activation is short lived and bound to the current Payload session and exact target. */
 export interface EditContext {
+  /** Exact native content locale authorized at activation, independent of UI language. */
+  locale?: string;
   target: EditorTarget;
   user: string;
   session: string;
@@ -81,12 +85,12 @@ export interface OperationalWritePolicy {
 /** Browser-visible activation never includes the signed cookie or underlying authentication session ID. */
 export type Activation = Pick<
   EditContext,
-  "target" | "nonce" | "expires" | "pagePath"
+  "target" | "nonce" | "expires" | "pagePath" | "locale"
 >;
 
 /** Built-in tools are independently configurable; draft persistence still uses the single native Form. */
 export type EditorTool = "content" | "sections" | "history" | "publish";
-export type EditorLabel = string | { en: string; de: string };
+export type EditorLabel = string | ({ en: string } & Record<string, string>);
 /** Server-only capability inputs always come from the authenticated, freshly authorized target. */
 export interface EditorCapabilityContext {
   req: PayloadRequest;

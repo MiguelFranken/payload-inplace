@@ -11,30 +11,43 @@ export function pathSegments(path: string): string[] {
     throw new Error("Invalid editor root path");
   return parts;
 }
-/** Resolve named groups/tabs separately from transparent rows/collapsibles/unnamed tabs. */
-export function resolveRoot(fields: Field[], path: string): BlocksField {
+/** Resolve a native blocks root and inherited localization through named groups/tabs. Shared root structure affects every content locale even when its leaves are translated. */
+export function resolveRootScope(
+  fields: Field[],
+  path: string,
+): { field: BlocksField; localized: boolean } {
   const parts = pathSegments(path);
-  function find(list: Field[], remaining: string[]): BlocksField | undefined {
+  function find(
+    list: Field[],
+    remaining: string[],
+    inherited = false,
+  ): { field: BlocksField; localized: boolean } | undefined {
     for (const field of list) {
+      const localized =
+        inherited || ("localized" in field && field.localized === true);
       if (field.type === "tabs") {
         for (const tab of field.tabs) {
           const named = "name" in tab && tab.name;
           const hit = named
             ? named === remaining[0]
-              ? find(tab.fields, remaining.slice(1))
+              ? find(
+                  tab.fields,
+                  remaining.slice(1),
+                  localized || ("localized" in tab && tab.localized === true),
+                )
               : undefined
-            : find(tab.fields, remaining);
+            : find(tab.fields, remaining, localized);
           if (hit) return hit;
         }
       } else if ("name" in field && field.name === remaining[0]) {
         if (remaining.length === 1)
-          return field.type === "blocks" ? field : undefined;
+          return field.type === "blocks" ? { field, localized } : undefined;
         if (field.type === "group") {
-          const hit = find(field.fields, remaining.slice(1));
+          const hit = find(field.fields, remaining.slice(1), localized);
           if (hit) return hit;
         }
       } else if (!("name" in field) && "fields" in field) {
-        const hit = find(field.fields, remaining);
+        const hit = find(field.fields, remaining, localized);
         if (hit) return hit;
       }
     }
@@ -43,4 +56,9 @@ export function resolveRoot(fields: Field[], path: string): BlocksField {
   if (!result)
     throw new Error(`Editor root ${path} is not an existing blocks field`);
   return result;
+}
+
+/** Resolve existing native blocks fields without changing their schemas. @see resolveRootScope also reports inherited localization. */
+export function resolveRoot(fields: Field[], path: string): BlocksField {
+  return resolveRootScope(fields, path).field;
 }

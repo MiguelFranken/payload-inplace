@@ -1,4 +1,5 @@
 "use client";
+import { useEditorMessages } from "./messages.js";
 import { useEffect, useRef } from "react";
 import { Button } from "./ui/button.js";
 import { Settings2 } from "lucide-react";
@@ -14,6 +15,7 @@ export function SelectionSettings({
   label: string;
   onOpen: () => void;
 }) {
+  const { t, locale: uiLocale, direction } = useEditorMessages();
   const anchor = useRef<HTMLDivElement>(null);
   useEffect(() => {
     let frame = 0;
@@ -53,13 +55,15 @@ export function SelectionSettings({
   }, [element]);
   return (
     <div
+      lang={uiLocale}
+      dir={direction}
       ref={anchor}
       className={`pve:pointer-events-auto pve:fixed pve:z-70 pve:left-[var(--pve-settings-x)] pve:top-[var(--pve-settings-y)] pve:rounded-lg pve:border pve:border-solid pve:shadow-md ${chrome.surface} ${chrome.border}`}
     >
       <Button
         size="icon"
-        aria-label={`Options for ${label}`}
-        title={`Options for ${label}`}
+        aria-label={t("optionsForNamedField", { label })}
+        title={t("optionsForNamedField", { label })}
         onClick={onOpen}
       >
         <Settings2 size={17} aria-hidden="true" />

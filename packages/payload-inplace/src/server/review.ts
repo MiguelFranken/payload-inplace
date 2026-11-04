@@ -1,3 +1,4 @@
+import { contentLocale } from "./content-locale.js";
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import type { PayloadRequest } from "payload";
 import { isDocumentMetadataField } from "../../../core/src/document-metadata.js";
@@ -99,6 +100,7 @@ export function signReview(
   const value = Buffer.from(
     JSON.stringify({
       collection,
+      locale: contentLocale(req),
       id: String(id),
       revision,
       hash: contentHash(candidate),
@@ -132,6 +134,7 @@ export function validateReview(
     return (
       review.expires > Date.now() &&
       review.collection === collection &&
+      review.locale === contentLocale(req) &&
       review.id === String(id) &&
       review.revision === revision &&
       review.hash === contentHash(candidate) &&

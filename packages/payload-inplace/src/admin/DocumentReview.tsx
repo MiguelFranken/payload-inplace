@@ -1,4 +1,6 @@
 "use client";
+import { useEditorMessages } from "../frontend/messages.js";
+
 import type { ClientBlock, ClientField } from "payload";
 import {
   ArrowDown,
@@ -37,27 +39,21 @@ export function DocumentReview({
   fields?: ClientField[];
   blocksMap?: Record<string, ClientBlock>;
 }) {
-  const changes = documentChanges(
-    before,
-    after,
-    fields,
-    blocksMap,
-    de ? "de" : "en",
-  );
-  const empty = de ? "Leer" : "Empty";
+  const { t, locale } = useEditorMessages(undefined, de ? "de" : "en");
+
+  const changes = documentChanges(before, after, fields, blocksMap, locale);
+  const empty = t("empty");
   if (!changes.length)
     return (
       <div className="pve:grid pve:justify-items-center pve:gap-3 pve:py-16 pve:text-center">
         <Check size={24} aria-hidden="true" />
         <h3 className="pve:m-0 pve:text-base pve:font-semibold">
-          {de ? "Keine Änderungen" : "No changes"}
+          {t("noChanges")}
         </h3>
         <p
           className={`pve:m-0 pve:max-w-prose pve:text-sm pve:leading-relaxed ${chrome.muted}`}
         >
-          {de
-            ? "Dieser Stand stimmt mit der gewählten Vergleichsversion überein."
-            : "This draft matches the selected comparison."}
+          {t("thisDraftMatchesTheSelectedComparison")}
         </p>
       </div>
     );
@@ -69,20 +65,12 @@ export function DocumentReview({
           text = changedText(a, b);
         const status =
           change.kind === "added"
-            ? de
-              ? "Hinzugefügt"
-              : "Added"
+            ? t("added")
             : change.kind === "removed"
-              ? de
-                ? "Entfernt"
-                : "Removed"
+              ? t("removed")
               : change.kind === "moved"
-                ? de
-                  ? "Verschoben"
-                  : "Moved"
-                : de
-                  ? "Geändert"
-                  : "Changed";
+                ? t("moved")
+                : t("changed");
         return (
           <section
             key={change.path}
@@ -110,9 +98,9 @@ export function DocumentReview({
               {onLocate && (
                 <Button
                   size="icon"
-                  className="pve:size-8 pve:ml-auto"
-                  aria-label={`${de ? "Auf der Seite zeigen" : "Show on page"}: ${change.labels.join(" / ")}`}
-                  tooltip={de ? "Auf der Seite zeigen" : "Show on page"}
+                  className="pve:size-8 pve:ms-auto"
+                  aria-label={`${t("showOnPage")}: ${change.labels.join(" / ")}`}
+                  tooltip={t("showOnPage")}
                   onClick={() => onLocate(change.path)}
                 >
                   <LocateFixed size={15} />
@@ -135,8 +123,8 @@ export function DocumentReview({
               <p className="pve:m-0 pve:flex pve:items-center pve:gap-3 pve:p-4 pve:text-sm">
                 <ArrowUp size={16} aria-hidden="true" />
                 {de
-                  ? `Position ${change.from} → ${change.to}`
-                  : `Position ${change.from} → ${change.to}`}
+                  ? t("positionChange", { from: change.from!, to: change.to! })
+                  : t("positionChange", { from: change.from!, to: change.to! })}
               </p>
             ) : (
               <div className="pve:grid pve:min-w-0 pve:md:grid-cols-2">
@@ -191,9 +179,7 @@ export function DocumentReview({
                     <p
                       className={`pve:mb-0 pve:mt-3 pve:text-xs pve:leading-relaxed ${chrome.muted}`}
                     >
-                      {de
-                        ? "Formatierung oder eingebettete Inhalte geändert."
-                        : "Formatting or embedded content changed."}
+                      {t("formattingOrEmbeddedContentChanged")}
                     </p>
                   )}
                 </div>

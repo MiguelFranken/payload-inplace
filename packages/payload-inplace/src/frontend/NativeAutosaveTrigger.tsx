@@ -71,7 +71,7 @@ export function NativeAutosaveTrigger() {
     onError: () =>
       recovery.setFailure({
         kind: "network",
-        message: "Saving could not finish. Keep your working copy and retry.",
+        messageKey: "saveCouldNotFinish",
       }),
     onIdle: async () => {
       const submittedKey = authoredFieldKey(form.getFields());

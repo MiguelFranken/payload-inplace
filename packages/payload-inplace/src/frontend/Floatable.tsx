@@ -1,4 +1,6 @@
 "use client";
+import { useEditorMessages } from "./messages.js";
+
 import { useEffect, useRef, type ReactNode, type RefObject } from "react";
 import { X, ArrowLeft } from "lucide-react";
 import { useTranslation } from "@payloadcms/ui";
@@ -29,7 +31,8 @@ export function Floatable({
     origin = useRef<HTMLElement | null>(null);
   const resize = usePanelResize(panel, width);
   const { i18n } = useTranslation();
-  const de = i18n.language === "de";
+  const { t } = useEditorMessages(undefined, i18n.language);
+
   useEffect(() => {
     const root = panel.current?.getRootNode();
     origin.current = (
@@ -61,10 +64,7 @@ export function Floatable({
       className="pve:group/panel pve:relative pve:flex pve:flex-col pve:h-[var(--pve-context-height,auto)] pve:max-h-[calc(100dvh-var(--pve-dock-height,56px)-48px)] pve:pointer-events-auto pve:box-border pve:w-[min(var(--pve-context-width),calc(100vw-24px))] pve:overflow-hidden pve:rounded-2xl pve:border pve:border-solid pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:bg-[var(--pve-surface,var(--theme-elevation-0,#fff))] pve:text-[var(--pve-text,var(--theme-text,#202127))] pve:shadow-[0_8px_40px_#00000018] pve:motion-safe:transition-[translate] pve:motion-safe:duration-150 pve:motion-safe:ease-[cubic-bezier(0.2,0,0,1)] pve:motion-safe:starting:translate-y-1"
     >
       <div
-        {...resize.edge(
-          "height",
-          de ? "Höhe des Bedienfelds ändern" : "Resize panel height",
-        )}
+        {...resize.edge("height", t("resizePanelHeight"))}
         className="pve:group/resize pve:absolute pve:inset-x-6 pve:top-0 pve:z-10 pve:h-3 pve:touch-none pve:cursor-ns-resize pve:rounded-t-md pve:outline-none pve:focus-visible:bg-[var(--pve-accent-soft,#edf0ff)] pve:focus-visible:ring-2 pve:focus-visible:ring-inset pve:focus-visible:ring-[var(--pve-accent,#3451eb)]"
       >
         <span
@@ -73,10 +73,7 @@ export function Floatable({
         />
       </div>
       <div
-        {...resize.edge(
-          "width",
-          de ? "Breite des Bedienfelds ändern" : "Resize panel width",
-        )}
+        {...resize.edge("width", t("resizePanelWidth"))}
         className="pve:group/resize pve:absolute pve:inset-y-6 pve:left-0 pve:z-10 pve:w-3 pve:touch-none pve:cursor-ew-resize pve:rounded-l-md pve:outline-none pve:focus-visible:bg-[var(--pve-accent-soft,#edf0ff)] pve:focus-visible:ring-2 pve:focus-visible:ring-inset pve:focus-visible:ring-[var(--pve-accent,#3451eb)]"
       >
         <span
@@ -85,12 +82,7 @@ export function Floatable({
         />
       </div>
       <div
-        {...resize.edge(
-          "both",
-          de
-            ? "Breite und Höhe des Bedienfelds ändern"
-            : "Resize panel width and height",
-        )}
+        {...resize.edge("both", t("resizePanelWidthAndHeight"))}
         className="pve:group/corner pve:absolute pve:left-0 pve:top-0 pve:z-20 pve:size-6 pve:touch-none pve:cursor-nwse-resize pve:rounded-tl-2xl pve:outline-none pve:focus-visible:ring-2 pve:focus-visible:ring-inset pve:focus-visible:ring-[var(--pve-accent,#3451eb)]"
       >
         <span
@@ -102,21 +94,24 @@ export function Floatable({
         {onBack && (
           <Button
             size="icon"
-            aria-label="Back to sections"
-            title="Back to sections"
+            aria-label={t("backToSections")}
+            title={t("backToSections")}
             onClick={onBack}
           >
-            <ArrowLeft size={16} />
+            <ArrowLeft size={16} className="pve:rtl:rotate-180" />
           </Button>
         )}
-        <h2 className="pve:m-0 pve:mr-auto pve:text-sm pve:font-semibold pve:leading-snug">
+        <h2
+          dir="auto"
+          className="pve:m-0 pve:me-auto pve:text-sm pve:font-semibold pve:leading-snug"
+        >
           {title}
         </h2>
         {actions}
         <Button
           size="icon"
-          aria-label={`Close ${title} panel`}
-          title="Close panel"
+          aria-label={t("closeNamedPanel", { title })}
+          title={t("closePanel")}
           onClick={close}
         >
           <X size={16} />
