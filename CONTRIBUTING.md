@@ -1,3 +1,43 @@
 # Contributing
 
-Use Node 24+ and `corepack pnpm install`. Run typecheck, lint, unit/integration, browser, build and packed-consumer checks. Use Conventional Commits. Keep generic regressions reproducible with synthetic demo data.
+Generic editor behavior, schema adapters, preview contracts and synthetic regressions belong in this repository. Applications keep their renderers, authorization policies and business rules. Read [AGENTS.md](AGENTS.md) before changing those boundaries.
+
+## Run the demo
+
+Node 24+; pnpm 10.28.0 through Corepack. No private services or credentials are required.
+
+```sh
+corepack pnpm install --frozen-lockfile
+corepack pnpm build
+corepack pnpm dev:generate-importmap
+corepack pnpm dev
+```
+
+Open `http://127.0.0.1:3127/visual-editor/start?collection=pages&slug=demo` to sign in and edit the actual website. The native CMS remains at `/admin`. Synthetic accounts are `admin@example.test`, `editor@example.test`, and `reader@example.test`, each with password `synthetic-demo-password`. These accounts exist only in the disposable local demo. Public routes: `/pages/demo` and `/offers/demo`.
+
+The launcher creates a temporary Mongo replica set, initializes fixtures once, starts explicit Turbopack, and removes the database after shutdown. Production browser runs use a separate `.next-prod` output. Stop the launcher normally to complete cleanup; never reuse a human's running server.
+
+## Validate changes
+
+```sh
+corepack pnpm typecheck
+corepack pnpm lint
+corepack pnpm test:unit
+corepack pnpm test:int
+VE_PORT=3137 corepack pnpm exec node scripts/postgres-test.mjs e2e
+corepack pnpm pack:check
+corepack pnpm test:consumer
+corepack pnpm test:installed-consumer
+corepack pnpm exec node scripts/postgres-test.mjs
+corepack pnpm release:check
+```
+
+Postgres integration and installed-consumer commands need local Docker and use disposable containers with random localhost database ports. The installed consumer uses an empty temporary app directory, anonymous public-npm peers and the exact checked tarball; commit source before `pack:check` so its receipt has immutable provenance. It cleans up in `finally`.
+
+## Change and release workflow
+
+Use [Conventional Commits](https://www.conventionalcommits.org/), for example `fix(editor): preserve inline selection while saving`. Include a `.changeset/*.md` entry for consumer-visible changes; `corepack pnpm changeset` creates one. Describe the user-facing outcome and choose the appropriate version bump.
+
+The Changesets workflow opens a version PR and generates the changelog. It does not publish. Publication uses the exact main-CI archive after independent installed-consumer and Workshops acceptance, through the separate OIDC release workflow. See [the release guide](docs/release.md).
+
+Keep fixtures synthetic and never commit secrets or private consumer data. Preserve native Payload field access, one Form and one persistence queue. Public routes must remain free of the active editor runtime. For editor interface changes, use the repository's `better-interface` guidance and validate desktop, 320px, keyboard and reduced-motion behavior. Record meaningful validation evidence in `docs/validation`.

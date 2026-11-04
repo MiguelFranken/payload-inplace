@@ -1,54 +1,72 @@
-# Payload Visual Editor
+<p align="center">
+  <img src="https://raw.githubusercontent.com/MiguelFranken/payload-visual-editor/main/assets/icon.png" width="96" height="96" alt="">
+</p>
 
-Experimental native-form visual composition for existing Payload CMS blocks. The public plugin owns editor behavior; applications keep their schemas, renderers, permissions and business rules.
+<h1 align="center">Payload Visual Editor</h1>
 
-The normal release line starts at **0.0.1**, with version and changelog changes managed by Changesets. Releases publish the exact main-CI archive only after independent installed-app and clean Workshops acceptance. Preview and production deployment are separate delivery steps. See the [release process](docs/release.md) and [current release receipt](docs/validation/workshops-release.json) for verified package and deployment status.
+<p align="center">
+  Edit the website, right where the content lives.<br>
+  Inline text, native Payload fields and reviewed drafts on your existing frontend.
+</p>
 
-## Development
+<p align="center">
+  <a href="https://www.npmjs.com/package/@miguel.franken/payload-visual-editor"><img src="https://img.shields.io/npm/v/@miguel.franken/payload-visual-editor/latest?color=3847f4&label=npm" alt="Latest npm version"></a>
+  <a href="https://github.com/MiguelFranken/payload-visual-editor/actions/workflows/validate.yml"><img src="https://github.com/MiguelFranken/payload-visual-editor/actions/workflows/validate.yml/badge.svg?branch=main" alt="Main validation status"></a>
+  <a href="https://github.com/MiguelFranken/payload-visual-editor/blob/main/docs/compatibility.md"><img src="https://img.shields.io/badge/Payload-3.91-3847f4" alt="Payload 3.91 compatibility"></a>
+  <a href="https://github.com/MiguelFranken/payload-visual-editor/blob/main/LICENSE"><img src="https://img.shields.io/github/license/MiguelFranken/payload-visual-editor?color=3847f4" alt="MIT license"></a>
+</p>
 
-Node 24+; pnpm 10.28.0 through Corepack. No private services or credentials are required.
+<p align="center">
+  <a href="#what-you-get">What you get</a> ·
+  <a href="#quick-start">Quick start</a> ·
+  <a href="#compatibility">Compatibility</a> ·
+  <a href="#documentation">Documentation</a> ·
+  <a href="https://github.com/MiguelFranken/payload-visual-editor/blob/main/CONTRIBUTING.md">Contributing</a>
+</p>
+
+## What you get
+
+- **Edit on the actual page.** Keep the website URL, header, footer and scroll position when entering edit mode.
+- **Write directly in text.** Bind a headline or paragraph to its native field, including terminal fields inside array rows. Extra settings stay secondary.
+- **Use familiar CMS controls.** Media, relationships, rich text and compound objects open scoped native Payload fields in a resizable panel.
+- **Keep the controls close.** An icon dock, optional moving selection outline, section reordering and jump-to-section actions stay out of the content's way.
+- **See changes immediately.** Optimistic rendering and debounced draft saves share one native Form. Review only changed fields before publishing.
+- **Keep your existing app.** You own the schemas, renderers, authorization and business rules. Bindings identify content; Payload access rules still govern reads and writes.
+
+<img src="https://raw.githubusercontent.com/MiguelFranken/payload-visual-editor/main/docs/images/inline-editing.png" width="1280" alt="Bundled demo with a headline selected for inline editing and a compact icon toolbar in the bottom-right corner.">
+
+_Actual bundled demo. The plugin adds editing controls around your frontend; your application defines the page design._
+
+<details>
+<summary>See section controls and the add-section picker</summary>
+
+<img src="https://raw.githubusercontent.com/MiguelFranken/payload-visual-editor/main/docs/images/sections.png" width="1280" alt="Sections panel with reorder handles, jump and settings actions, and an icon-only add-section picker.">
+
+</details>
+
+## Quick start
+
+The current release targets **Payload 3 + Next.js App Router with Turbopack**. This is a host integration: configure the plugin, bind your renderer, then connect an authorized website entry. Installing the package alone does not activate editing.
+
+### 1. Install and configure
 
 ```sh
-corepack pnpm install --frozen-lockfile
-corepack pnpm build
-corepack pnpm dev:generate-importmap
-corepack pnpm dev
+pnpm add @miguel.franken/payload-visual-editor
 ```
 
-Open `http://127.0.0.1:3127/visual-editor/start?collection=pages&slug=demo` to sign in and edit the actual website. The native CMS remains at `/admin`. Synthetic accounts are `admin@example.test`, `editor@example.test`, and `reader@example.test`, each with password `synthetic-demo-password`. These accounts exist only in the disposable local demo. Public routes: `/pages/demo` and `/offers/demo`.
-
-The launcher creates a temporary Mongo replica set, initializes fixtures once, starts explicit Turbopack, and removes the database after shutdown. Production browser runs use a separate `.next-prod` output. Stop the launcher normally to complete cleanup; never reuse a human's running server.
-
-```sh
-corepack pnpm typecheck
-corepack pnpm lint
-corepack pnpm test:unit
-corepack pnpm test:int
-VE_PORT=3137 corepack pnpm exec node scripts/postgres-test.mjs e2e
-corepack pnpm pack:check
-corepack pnpm test:consumer
-corepack pnpm test:installed-consumer
-corepack pnpm exec node scripts/postgres-test.mjs
-corepack pnpm release:check
-```
-
-Postgres integration and installed-consumer commands need local Docker and use disposable containers with random localhost database ports. The installed consumer uses an empty temporary app directory, anonymous public-npm peers and the exact checked tarball; commit source before `pack:check` so its receipt has immutable provenance. It cleans up in `finally`.
-
-## Integration contract
-
-Build the package before generating an import map. The server plugin is the package root; `/rsc` supplies `FrontendEditor`; `/entry` supplies the lightweight activation entry; `/frontend` supplies `useEditorPreviewData`, `useVisualEditor` and `NativeFieldSlot`. `/bindings` contains dependency-free renderer attributes. `/server` supplies authorization helpers, `/postgres` the transaction concurrency adapter. `/client` remains native admin integration. `/preview` is the optional bridge for consumers that explicitly need a separate preview surface.
+Add the plugin to your existing Payload configuration. This example assumes a `pages` collection with an existing `layout` blocks field and a `hero` block with `heading`, `caption` and `image` fields:
 
 ```ts
-visualEditor({
-  collections: {
-    pages: { roots: ["layout"] },
-    offers: { roots: ["detailPage.layout"] },
-  },
-  previewOrigin: "https://your-site.example",
-  // Optional exact aliases owned by this deployment; never populate from request headers.
-  additionalPreviewOrigins: ["https://branch.your-site.example"],
-  editorPath: "/visual-editor",
-  canEdit: ({ req, document }) => yourDocumentCapability(req.user, document),
+import { visualEditor } from "@miguel.franken/payload-visual-editor";
+import { postgresConcurrency } from "@miguel.franken/payload-visual-editor/postgres";
+import { canEditWebsite } from "./access/canEditWebsite"; // Your application's policy.
+
+const editor = visualEditor({
+  collections: { pages: { roots: ["layout"] } },
+  previewOrigin: process.env.SITE_ORIGIN!, // Your configured website origin.
+  resolvePagePath: ({ document }) =>
+    document.slug === "home" ? "/" : `/${document.slug}`,
+  canEdit: ({ req, document }) => canEditWebsite(req.user, document),
   concurrency: postgresConcurrency(),
   blockControls: {
     hero: {
@@ -56,67 +74,86 @@ visualEditor({
       inlineEdit: ["heading", "caption"],
     },
   },
-  fieldPanels: [
-    {
-      id: "search",
-      label: "Search appearance",
-      fields: ["meta.title", "meta.description"],
-    },
-    {
-      id: "appearance",
-      label: "Appearance",
-      scope: "selection",
-      blockTypes: ["hero"],
-      fields: ["appearance.tone"],
-    },
-  ],
 });
+
+// Include editor in your existing buildConfig({ plugins: [...] }).
 ```
 
-The root must already be a blocks field. Existing custom root Fields are preserved. Existing hooks, native controls, hidden/unmounted values and unrelated fields retain their owners. Field profiles control presentation; native field access is still the write authority.
+`canEditWebsite` is your own server-side authorization function. Install the plugin's additive revision fields through your normal Payload migration workflow before enabling the Postgres concurrency guard. See [installation and upgrades](https://github.com/MiguelFranken/payload-visual-editor/blob/main/docs/release.md#install-enable-and-upgrade).
 
-Generate a dedicated frontend component map with `frontendConfig` from `/server` and Payload's native `generateImportMap`, using its own `admin.importMap.importMapFile`. Regenerate it before dev/build and use it for the protected route and native server functions. Importing the whole admin application map can pull navigation/plugin CSS onto the website. See [frontend component isolation and field bindings](docs/frontend-component-map.md).
+### 2. Bind your rendered content
 
-The host owns a protected website entry which authenticates the current Payload session, validates the nonce-scoped activation cookie through `readEditContext`, and uses `overrideAccess:false` for user-driven reads. It supplies `FrontendEditor` with its actual server-rendered page and an authorization-checked native server-function action. The editor portals its one native Form/provider graph into an isolated UI island, while content stays in the real page DOM. See [the protected demo route](<dev/app/(protected)/visual-editor/page.tsx>) and [authorization helper](dev/lib/authorized-editor.ts).
+Use the dependency-free helpers on the elements that correspond to CMS content. Stable block and row IDs keep targets correct after reordering.
 
-### Stay on the actual website
+```tsx
+import {
+  getBlockAttributes,
+  getFieldAttributes,
+} from "@miguel.franken/payload-visual-editor/bindings";
 
-Set `resolvePagePath` to the document's published website pathname (for example `/workshops/silver`), using the current access-checked document identity. Keep query parameters and fragments in the browser; return only the pathname. Undefined retains the dedicated-route integration.
+// active comes from the authorized editor entry.
+function Hero({
+  block,
+  active,
+}: {
+  block: { id: string; heading: string };
+  active: boolean;
+}) {
+  const identity = { root: "layout", blockId: block.id };
 
-Place `EditorPageTransition` from `/launcher` in the existing shared website layout, only for freshly authorized CMS editors. Render the normal header, footer and providers there. Public entries render published content plus an authorized `EditorLauncher`; they never import the editor, native component map or server-function handler.
+  return (
+    <section {...getBlockAttributes(identity, active)}>
+      <h2
+        {...getFieldAttributes(
+          { ...identity, field: "heading", edit: "inline" },
+          active,
+        )}
+      >
+        {block.heading}
+      </h2>
+    </section>
+  );
+}
+```
 
-For Next internal rewrites, set `skipProxyUrlNormalize: true` and construct the destination with `new URL(request.url)` before changing only its pathname. Keep pathname matching on `request.nextUrl.pathname`. Next otherwise normalizes loopback IPs to `localhost`, which can turn an HTTPS reverse-proxy request (for example Portless) into an external TLS request to its plain HTTP backend. Preserving the original authority works with dynamic ports and IPv4/IPv6, without hardcoded hosts.
+Use `getArrayItemPath('chapters', row.id, 'text')` for a nested terminal field. Bind an entire row or several related fields to open just their native settings. [Nested bindings and terminal fields →](https://github.com/MiguelFranken/payload-visual-editor/blob/main/docs/nested-bindings.md)
 
-The launcher activates a signed, exact-page session, then calls `router.refresh()` through that shared provider. A host proxy can use `hasPageEditorSession` from `/routing` to rewrite the same URL internally to a separate active entry. **This helper only reads an untrusted routing hint.** The active entry must freshly authenticate and call `readPageEditContext(req, pathname, options)` before any draft read, then use the same website renderer and shared layout around `FrontendEditor`. Mark these responses private/no-store. Preserve the original search parameters on the rewrite. Stale sessions render the ordinary published page.
+### 3. Connect the website entry
 
-This keeps the browser document, URL, header/footer instances and viewport while loading the current shared Payload draft. It does not enable global Next Draft Mode or put draft data into published caches. Exit clears that session and refreshes the same URL. The launcher waits for hydration, so a cold start cannot fall back to a hard POST navigation. Pending edits reuse Payload's native leave-without-saving guard.
+The host authenticates the current Payload user, validates the document-scoped editor session and mounts `FrontendEditor` around the same page renderer. Keep the normal website layout, generate a separate frontend component map and connect the authorized refresh/server-function bridge. The launcher uses a soft refresh to enter and leave editing on the current URL.
 
-For native server functions on this separate entry, wrap the Next configuration with `withVisualEditorNext(config, { projectDir })` from `/next` and import `handleServerFunctions` from `/native`. Pass the actual Next app directory, especially in a monorepo. The helper resolves the unchanged, version-pinned Payload handler without importing its admin RootLayout/global CSS barrel; it currently supports the pinned Turbopack runtime only. Normal admin routes retain their ordinary Payload layout imports.
+Follow the [complete integration guide](https://github.com/MiguelFranken/payload-visual-editor/blob/main/docs/integration.md), including the [same-page architecture](https://github.com/MiguelFranken/payload-visual-editor/blob/main/docs/adr/0006-same-page-editing.md) and [component-map isolation](https://github.com/MiguelFranken/payload-visual-editor/blob/main/docs/frontend-component-map.md). The [bundled demo](https://github.com/MiguelFranken/payload-visual-editor/tree/main/dev) is an executable reference. [Run it locally →](https://github.com/MiguelFranken/payload-visual-editor/blob/main/CONTRIBUTING.md#run-the-demo)
 
-See [same-page architecture](docs/adr/0006-same-page-editing.md), the [demo shared layout](<dev/app/(public)/layout.tsx>), [internal entry](<dev/app/(public)/pve/[collection]/[slug]/page.tsx>) and [proxy](dev/proxy.ts). The proxy is host-owned so application routing and authentication stay explicit.
+## Make it fit your application
 
-For immediate layout/media/structure preview, pass an optional consumer client renderer as `preview`. It derives display data with `useEditorPreviewData` from the same native Form; it never submits a second document model. Bound plain text is editable directly on the page. The inline adapter adopts the rendered text and writes the native field only on real input; an empty optional CMS value never clears a visible inherited heading merely on focus. Rich text, media, links, custom fields and repeated rows automatically open their scoped native controls; `getFieldGroupAttributes` binds one visual object to several fields. A small secondary options button reveals extra options for inline text. Select content toggles one moving hover outline, off by default; intentional field clicks work independently and hover pauses while panels are open. Browser caret, composition and text undo remain native. Server-only data stays in server-component slots. The required `refreshPreview` server function reauthorizes each read and returns fresh `{ revision, content, preview }` slots after an acknowledged save, or a typed denied/unavailable result. It updates the preview without replacing the native Form or refreshing the entire route. See [optimistic rendering](docs/adr/0003-native-optimistic-preview.md) and [the demo renderer](dev/components/OptimisticPage.tsx).
+Choose editable field profiles, enable individual tools, add native field panels or register custom controls and access-checked actions. Custom panels use the same Form and native fields. Theme the editor with `--pve-*` CSS variables; its prefixed Tailwind styles omit Preflight and isolate native field styling from your website.
 
-Public routes must not import `/frontend`, `/client`, `/preview` or editor CSS. A server-only `/launcher` integration may conditionally render the small bottom-right launcher for a freshly authorized CMS editor, as explicitly requested by the project owner. Visitors/customer accounts get neither the launcher nor the native editor runtime. Next registers a small inert deferred-client reference in the public graph; production checks bound it to 4KB and exclude launcher execution, native modules, editor styles and authoring requests. The measured demo increase is about 1KB decoded JavaScript, rather than a zero-byte claim. Heavy authoring dependencies load only on explicit activation. The demo performs public published reads first and authorizes the launcher separately; no draft content is serialized through it.
+[Controls and theming →](https://github.com/MiguelFranken/payload-visual-editor/blob/main/docs/integration.md#consumer-controls-and-theme)
 
-A shared preview secret, Draft Mode, a query parameter and the presence of a cookie are not authorization. Activation is an origin-checked POST with a current session, native document capability and host capability. Context is short lived and document scoped. The protected route must use private/no-store HTML/RSC responses. Cross-origin frontends, globals, localization and Lexical-embedded block authoring are not supported by this candidate.
+## Compatibility
 
-The standard CMS remains the fallback. All edits use the single native Form and persistence path. Native configured autosave, manual draft save and reviewed publication share that Form. Optimistic feedback never means a write has already succeeded; errors retain the working copy and offer explicit recovery. Drafts are shared Payload drafts, not private per-editor branches. Asset uploads remain separate writes.
+| Runtime                                     | Current tested versions                                            |
+| ------------------------------------------- | ------------------------------------------------------------------ |
+| Payload, `@payloadcms/ui`, Postgres adapter | **3.91.0**                                                         |
+| Next.js                                     | **16.4.2**, App Router, Turbopack                                  |
+| React / React DOM                           | **19.2.6**                                                         |
+| Node.js                                     | **24+**, CI on Node 24                                             |
+| Database                                    | Postgres with transactional revision guards; MongoDB demo coverage |
 
-## Consumer controls and theme
+The native handler bridge is version-pinned. Globals, localization, cross-origin frontends and inline authoring inside Lexical are outside the current contract. The normal npm release line starts at **0.0.1**; the [compatibility guide](https://github.com/MiguelFranken/payload-visual-editor/blob/main/docs/compatibility.md) defines the tested scope.
 
-Built-in `tools` can be disabled or server capability-gated. `fieldPanels` declare existing document/selection field paths and optional block-type applicability. Custom `extensions` register panel/control components through Payload's import map, or explicit server actions with optional saved-revision and confirmation requirements. The compact horizontal dock opens one contextual panel at a time; secondary extensions live in More tools. Sections show readable native content names across consumer field names and support list/on-page dragging, keyboard moves and native structural undo. Page controls avoid rendered field text; dense layouts retain the section-list alternative. See [dock and reordering](docs/adr/0005-compact-editor-and-reordering.md).
+## Documentation
 
-Custom panels use `NativeFieldSlot` to claim existing fields without duplicate mounts; controls use `useVisualEditor` to open panels or invoke registered actions. Action inputs never grant authority, and consumer writes remain in their existing access-checked domain services. [Workshops analysis](docs/adr/0004-workshops-extension-boundaries.md) explains the balance with real application examples.
+| Guide                                                                                                                     | What it covers                                                                       |
+| ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| [Integration](https://github.com/MiguelFranken/payload-visual-editor/blob/main/docs/integration.md)                       | Configuration, same-page routing, authorization, preview and public-route boundaries |
+| [Nested bindings](https://github.com/MiguelFranken/payload-visual-editor/blob/main/docs/nested-bindings.md)               | Terminal text, dotted paths, stable array rows and compound selections               |
+| [Frontend component map](https://github.com/MiguelFranken/payload-visual-editor/blob/main/docs/frontend-component-map.md) | Native controls and custom components without loading the whole admin application    |
+| [Compatibility](https://github.com/MiguelFranken/payload-visual-editor/blob/main/docs/compatibility.md)                   | Exact runtime versions, supported capabilities and validation limits                 |
+| [Releases and rollback](https://github.com/MiguelFranken/payload-visual-editor/blob/main/docs/release.md)                 | Changesets, immutable CI artifacts, npm provenance and safe upgrades                 |
+| [Changelog](https://github.com/MiguelFranken/payload-visual-editor/blob/main/CHANGELOG.md)                                | Published package changes                                                            |
+| [Contributing](https://github.com/MiguelFranken/payload-visual-editor/blob/main/CONTRIBUTING.md)                          | Local demo, synthetic accounts and validation commands                               |
 
-Plugin presentation uses Tailwind 4 CLI, prefixed utilities and no Preflight. CSS inputs contain directives/theme configuration; compiled styles are generated, not hand edited. Owned frontend controls adapt shadcn Base UI registry components; native Payload complex fields retain native styling. Consumers can override `--pve-surface`, `--pve-text`, `--pve-muted`, `--pve-border`, `--pve-accent`, panel dimensions and the other tokens in `src/admin/tailwind.css`. No global reset is applied to the website. Reduced-motion preferences disable selection and disclosure transitions.
+## License
 
-## Distribution
-
-See the tested [compatibility contract](docs/compatibility.md), [release and rollback procedure](docs/release.md), and [candidate changes](CHANGELOG.md).
-
-Source is intended for `MiguelFranken/payload-visual-editor` under MIT. The selected package registry is public npm (`registry.npmjs.org`) with anonymous installs, independently of GitHub source visibility. No stable registry publication is claimed. Local immutable tarballs are produced by `pack:check`, with their checksum in `test-results/package.json`.
-
-Existing reviewed domain commands can opt into `operationalWrites[collection]` with a server-only `authorize(req)` callback and explicit named `paths` outside configured visual roots. This is intended for operational data such as capacity. It does not grant access, skip revision checks, or permit publication of a sparse patch: pass the complete live document snapshot plus the latest revision, changing only allowed paths. Preserve any separate editorial draft using the returned revision. Never base authorization on request-body flags; use the existing domain command's server-owned request context. See the real transaction test in `dev/int.spec.ts` and `src/server/operational-write.ts`.
-
-For terminal text, dotted nested fields and stable array item targets, see [nested bindings](docs/nested-bindings.md). Consumers place the targets; Payload retains field access, conditions and saving.
+[MIT](https://github.com/MiguelFranken/payload-visual-editor/blob/main/LICENSE). Built as an independent plugin for Payload CMS. Upstream licenses are listed in [NOTICE](https://github.com/MiguelFranken/payload-visual-editor/blob/main/NOTICE).

@@ -1,6 +1,6 @@
 # Changesets releases and non-destructive rollback
 
-Public source: [MiguelFranken/payload-visual-editor](https://github.com/MiguelFranken/payload-visual-editor). Distribution policy: public npm, package `@miguel.franken/payload-visual-editor`, anonymous installation. No stable npm publication or application production deployment is represented by this candidate preparation.
+Public source: [MiguelFranken/payload-visual-editor](https://github.com/MiguelFranken/payload-visual-editor). Distribution policy: public npm, package `@miguel.franken/payload-visual-editor`, anonymous installation. Version **0.0.1** is published on npm with provenance. The [delivery receipt](validation/workshops-release.json) records the validated archive and verified Workshops preview. Package publication and application production deployment remain separate steps.
 
 ## Versioning with Changesets
 
@@ -31,7 +31,7 @@ corepack pnpm test:installed-consumer
 
 `test-results/package.json` records source cleanliness, SHA and archive checksum. `test-results/installed-consumer.json` records the exact installed archive, peer versions, independent template/lock hashes, active flows and disabled public comparisons. The public validation workflow uploads these with the archive. Install the downloaded archive into Workshops; do not repack it or use a source alias.
 
-Until a registry version exists, install the exact downloaded `.tgz` with `corepack pnpm add /absolute/path/to/candidate.tgz`. Verify its SHA256 against the validation artifact before installation. Public peer dependencies install anonymously from npm; the temporary clean consumer proves that path without private credentials. The source README and demo are executable integration references.
+For acceptance before publication, install the exact downloaded `.tgz` with `corepack pnpm add /absolute/path/to/candidate.tgz`. Verify its SHA256 against the validation artifact before installation. Public peer dependencies install anonymously from npm; the temporary clean consumer proves that path without private credentials. For a published version, install from npm instead. The [integration guide](integration.md) and bundled demo describe the host integration.
 
 ## Manual trusted publication
 

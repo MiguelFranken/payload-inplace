@@ -1,7 +1,7 @@
 {
   "name": "@miguel.franken/payload-visual-editor",
   "version": "0.0.1",
-  "description": "Native-form visual composition for existing Payload CMS block schemas.",
+  "description": "Live editing for Payload CMS websites with inline text, native fields, block reordering and reviewed drafts.",
   "type": "module",
   "license": "MIT",
   "author": "Miguel Franken",
@@ -15,7 +15,8 @@
   "packageManager": "pnpm@10.28.0",
   "files": [
     "dist",
-    "NOTICE"
+    "NOTICE",
+    "assets/icon.png"
   ],
   "sideEffects": [
     "**/*.css"
@@ -169,5 +170,23 @@
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "lucide-react": "1.66.0"
-  }
+  },
+  "homepage": "https://github.com/MiguelFranken/payload-visual-editor#readme",
+  "bugs": {
+    "url": "https://github.com/MiguelFranken/payload-visual-editor/issues"
+  },
+  "keywords": [
+    "payload",
+    "payloadcms",
+    "payload-plugin",
+    "visual-editor",
+    "inline-editing",
+    "live-editing",
+    "headless-cms",
+    "nextjs",
+    "react",
+    "typescript",
+    "content-editing",
+    "blocks"
+  ]
 }
