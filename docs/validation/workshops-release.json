@@ -72,5 +72,48 @@
     "publicationRun": "https://github.com/MiguelFranken/payload-visual-editor/actions/runs/41752104024",
     "registryArchiveDownload": "passed; anonymous SHA256 matches canonical CI archive",
     "next": "0.1.0-alpha.15"
+  },
+  "httpsPortlessAcceptance": {
+    "appSHA": "dce04539f62c5526b6eed084b070709f5d072a25",
+    "dirty": false,
+    "report": "https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/516",
+    "result": "passed",
+    "scope": "public npm alpha.15 on real HTTPS Portless; same-page activation, inline/nested native editing, media, private drafts, review and publication; no page/console errors"
+  },
+  "deployedPreview": {
+    "appSHA": "dce04539f62c5526b6eed084b070709f5d072a25",
+    "deploymentID": "dpl_2tPqZuHPsnaUxVSiyzuGjPfjMuDr",
+    "url": "https://fluid-bodies-workshops-83z9mzdbk-fluid-bodies.vercel.app",
+    "alias": "https://feature-payload-visual-editor.workshops.dev.fluid-bodies.com",
+    "state": "READY",
+    "consumerCI": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/41753377839",
+    "deploymentWorkflow": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/41753378025",
+    "customAliasAcceptance": {
+      "report": "https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/517",
+      "result": "passed",
+      "passed": 3,
+      "failed": 0,
+      "dirty": false,
+      "artifactsUploaded": 27,
+      "reviewCaptures": 8,
+      "scope": "same-page activation, inline and nested native editing, private drafts, media, reviewed publication, repeated pointer and exact keyboard block ordering, locate action; no page/console errors; eight desktop/mobile captures inspected and three videos sampled"
+    },
+    "generatedHostnameAcceptance": {
+      "report": "https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/518",
+      "result": "passed",
+      "passed": 1,
+      "failed": 0,
+      "scope": "authenticated normal-homepage launcher activation retains same URL"
+    },
+    "codexBrowser": {
+      "url": "https://feature-payload-visual-editor.workshops.dev.fluid-bodies.com/",
+      "result": "public homepage rendered; no observed console errors"
+    },
+    "scope": "isolated preview only; application PR397 remains open; no production rollout"
+  },
+  "rootCauses": {
+    "previewAlias": "Primary generated deployment origin rejected configured custom branch alias with HTTP 403. Added finite server-configured preview origins to activation/actions/deactivation/review and shared consumer origin resolution. No incoming Host/forwarded header trust or wildcard allowance.",
+    "streamedSave": "Urgent saved-RSC updates and render-time accepted-tree mutation could expose suspended server children and tear down the native editor. Keep accepted snapshots at commit boundaries and transition server-tree acceptance/ownership release.",
+    "newBlockInline": "Payload native ADD_ROW prepares leaf metadata asynchronously; preserve explicit inline intent while metadata is pending instead of opening a competing panel."
   }
 }
