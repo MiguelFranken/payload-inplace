@@ -110,7 +110,7 @@ export function CommercePageView({
                   {block.note}
                 </p>
               </div>
-              <div {...field(identity, "image", "panel")}>
+              <div {...field(identity, "image")}>
                 {photo(block.image, "demo:aspect-[5/4] demo:rounded-t-[7rem]")}
               </div>
             </section>
@@ -130,7 +130,7 @@ export function CommercePageView({
                 {block.breadcrumb?.label}
               </a>
               <div className="demo:grid demo:gap-9 demo:md:grid-cols-[1.1fr_0.9fr] demo:md:gap-16">
-                <div {...field(identity, "image", "panel")}>
+                <div {...field(identity, "image")}>
                   {photo(block.image, "demo:aspect-[4/5] demo:rounded-sm")}
                 </div>
                 <div className="demo:min-w-0 demo:space-y-6 demo:md:py-8">
@@ -396,7 +396,7 @@ export function CommercePageView({
                       )}
                       className="demo:min-w-0"
                     >
-                      <div {...field(identity, cardPath("image"), "panel")}>
+                      <div {...field(identity, cardPath("image"))}>
                         {photo(
                           card.image || details?.image,
                           "demo:aspect-[5/4] demo:rounded-sm demo:[&_img]:object-[center_58%]",
@@ -484,7 +484,7 @@ export function CommercePageView({
               <div
                 className={`${sectionClass} demo:grid demo:items-center demo:gap-9 demo:py-12 demo:md:grid-cols-2 demo:md:gap-20 demo:md:py-16 ${tone(block.background)}`}
               >
-                <div {...field(identity, "image", "panel")}>
+                <div {...field(identity, "image")}>
                   {photo(block.image, "demo:aspect-square demo:rounded-sm")}
                 </div>
                 <div className="demo:space-y-6">
@@ -504,10 +504,7 @@ export function CommercePageView({
                     {block.description}
                   </p>
                   {block.body?.root && (
-                    <div
-                      {...field(identity, "body")}
-                      className={copyClass}
-                    >
+                    <div {...field(identity, "body")} className={copyClass}>
                       <RichText data={block.body} />
                     </div>
                   )}

@@ -3,6 +3,8 @@ import { Button } from "@payloadcms/ui";
 import {
   EditorFieldStrategy,
   defineFieldStrategy,
+  defineMediaFieldStrategy,
+  createPayloadMediaLibrary,
 } from "payload-inplace/frontend";
 const background = defineFieldStrategy({
   id: "commerce-background",
@@ -37,7 +39,15 @@ const background = defineFieldStrategy({
     </div>
   ),
 });
+const media = defineMediaFieldStrategy(
+  createPayloadMediaLibrary({ collection: "media" }),
+);
 /** Registration is active-only and document-local. Options and persistence remain native. */
 export function CommerceStrategies() {
-  return <EditorFieldStrategy definition={background} />;
+  return (
+    <>
+      <EditorFieldStrategy definition={background} />
+      <EditorFieldStrategy definition={media} />
+    </>
+  );
 }

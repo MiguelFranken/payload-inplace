@@ -472,3 +472,61 @@ test("saved versions reopen, compare changed content and restore a guarded draft
     page.getByRole("heading", { name: "Saved versions", exact: true }),
   ).toBeVisible();
 });
+
+test("contextual native media replacement saves only the document reference and keeps native fallback", async ({
+  page,
+}) => {
+  const { createShopEditor } = await import("./testing/editor-fixtures");
+  const { doc } = await createShopEditor(page);
+  const media = (await (await page.request.get("/api/media?depth=0")).json())
+    .docs;
+  const originalID = doc.layout[0].image?.id ?? doc.layout[0].image;
+  const original = media.find(
+    (asset: any) => String(asset.id) === String(originalID),
+  );
+  const replacement = media.find(
+    (asset: any) => String(asset.id) !== String(originalID),
+  );
+  expect(original).toBeTruthy();
+  expect(replacement).toBeTruthy();
+  const select = page.getByRole("button", {
+    name: "Select content",
+    exact: true,
+  });
+  if ((await select.getAttribute("aria-pressed")) !== "true")
+    await select.click();
+  const image = page
+    .locator("main > [data-ve-block]")
+    .first()
+    .locator('[data-ve-field="image"]');
+  await image.scrollIntoViewIfNeeded();
+  await image.click();
+  await expect(page.getByLabel("Search media", { exact: true })).toBeVisible();
+  await page
+    .getByRole("button", { name: replacement.filename, exact: false })
+    .click();
+  await expect
+    .poll(async () =>
+      String(
+        (
+          await (
+            await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+          ).json()
+        ).layout[0].image,
+      ),
+    )
+    .toBe(String(replacement.id));
+  const unchanged = await (
+    await page.request.get(`/api/media/${original.id}?depth=0`)
+  ).json();
+  expect(unchanged.updatedAt).toBe(original.updatedAt);
+  expect(unchanged.alt).toBe(original.alt);
+  await page
+    .getByRole("button", { name: "Open native media editor", exact: true })
+    .click();
+  await expect(page.getByLabel("Search media", { exact: true })).toHaveCount(0);
+  await expect(
+    page.getByRole("navigation", { name: "Editing toolbar" }),
+  ).toBeVisible();
+  await page.screenshot({ path: "test-results/roadmap-media.png" });
+});
