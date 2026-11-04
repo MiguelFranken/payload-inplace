@@ -40,6 +40,8 @@ export interface VisualEditorOptions {
     context: EditorCapabilityContext & { pagePath: string },
   ) => EditorPageScope[] | Promise<EditorPageScope[]>;
   disabled?: boolean;
+  /** Opt-in metadata-only mapping diagnostics while actively editing in development. Ignored in production. */
+  diagnostics?: boolean;
   canEdit: (args: {
     req: PayloadRequest;
     target: EditorTarget;

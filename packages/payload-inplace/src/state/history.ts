@@ -1,3 +1,4 @@
+import { commandIssueText, type CommandIssue } from "./command-issue.js";
 import type { FormState } from "payload";
 function cloneValue<T>(value: T): T {
   if (Array.isArray(value)) return value.map(cloneValue) as T;
@@ -102,27 +103,26 @@ export function materializeStructuralRestore(
   current: FormState,
   snapshot: FormState,
   root: string,
+  renderIssue: (issue: CommandIssue) => string = commandIssueText,
 ): { path: string; fields: FormState } | string {
   const scope = scopes.get(snapshot) || {
     path: root,
     tokens: tokensFor(snapshot, root),
   };
   const path = resolveScope(current, scope.tokens);
-  if (!path)
-    return "The section containing this change was removed. Your current working copy is unchanged.";
+  if (!path) return renderIssue({ code: "removed-container" });
   const previousRows = snapshot[scope.path]?.rows || [],
     currentRows = current[path]?.rows || [];
   const mutation = scope.mutation;
   let rows = [...previousRows];
   if (mutation) {
     const id = mutation.id;
-    if (!id)
-      return "This section change is still being prepared. Try again in a moment.";
+    if (!id) return renderIssue({ code: "preparing" });
     const existing = currentRows.find((row) => String(row.id) === id),
       desired = previousRows.find((row) => String(row.id) === id);
     rows = currentRows.filter((row) => String(row.id) !== id);
     if (["move", "up", "down"].includes(mutation.kind) && !existing)
-      return "The moved section was removed. Your current working copy is unchanged.";
+      return renderIssue({ code: "removed-moved-section" });
     if (desired) {
       if (existing && ["add", "duplicate", "remove"].includes(mutation.kind))
         rows = [...currentRows];

@@ -137,3 +137,11 @@ Local checks pass: 207 unit/component assertions, TypeScript, lint and 12 real P
 Added optional `/testing` synthetic schema/binding fixtures, deterministic abortable outcomes, a control-only strategy harness and a read-only probe for a real native Form. The test kit contains no save backend and is fenced out of production source/active graphs. The clean external archive fixture now includes unit tests for the same custom number control registered in its native app, plus public-path typechecked annotation/message examples. Its next frozen-archive run will validate those additions; source unit tests are not presented as installed/native proof.
 
 Added generated public API tables with declaration links and CI freshness checks, plus task-oriented testing/extension recipes. Local kit/boundary tests, TypeScript and lint pass. Complete production and installed-archive acceptance remain pending.
+
+## Selection diagnostics, command failures and saved presentation ownership
+
+Added opt-in active-development mapping diagnostics for path/row intent, native overrides, access/condition state, unsafe markup and repeated occurrences. Output contains bounded reason/path metadata, never values. Structural command/history failures now have typed codes and English/German UI formatting while preserving core compatibility wrappers.
+
+Extracted saved-preview single-flight/coalescing and revision-floor handling from the shell. Late unmounted responses cannot update the next document owner; stale presentation reads are rejected before acceptance. Local provider/preview Suspense boundaries preserve the native Form while optional content loads. Three component tests cover coalescing/current callbacks, stale response/explicit retry, access denial and unmount. The streamed structural acknowledgement browser regression remains green.
+
+Local validation at this slice: 216 assertions in 73 unit/component files; coverage 80.58% statements, 76.09% branches, 84.15% functions and 82.77% lines for the documented domain denominator. TypeScript, lint and generated API contracts pass. Full production/browser/archive acceptance remains required.

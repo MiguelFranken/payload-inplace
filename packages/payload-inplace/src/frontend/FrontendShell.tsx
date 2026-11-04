@@ -15,7 +15,7 @@ import {
   NativeDocumentScopes,
   type ResolvedPageScope,
 } from "./document-scope.js";
-import type { EditorStaticMessageKey } from "../i18n/catalogue.js";
+import { useSavedPreview } from "./controllers/saved-preview.js";
 import { useEditorMessages } from "./messages.js";
 import { EditorMessage } from "./messages.js";
 
@@ -23,6 +23,7 @@ import { NativeEditorMessages } from "./native-messages.js";
 import { createPortal } from "react-dom";
 import {
   Component,
+  Suspense,
   startTransition,
   useCallback,
   useLayoutEffect,
@@ -76,6 +77,7 @@ import { AdvisoryLockContext, useNativeAdvisoryLock } from "./advisory-lock.js";
 import { FrontendControls } from "./FrontendControls.js";
 
 type ShellProps = {
+  diagnostics?: boolean;
   patterns?: PatternCapabilities;
   pageScopes?: ResolvedPageScope[];
   sharedStructure?: boolean;
@@ -310,66 +312,26 @@ function NativeDocumentForm(
   const { t } = useEditorMessages();
   const [switchingDocument, setSwitchingDocument] = useState(false);
   const nativeForm = useRef<ReturnType<typeof useForm> | null>(null);
-  const [previewPending, setPreviewPending] = useState(false),
-    [previewError, setPreviewError] = useState<EditorStaticMessageKey | null>(
-      null,
-    );
-  const previewRead = useRef(false),
-    requested = useRef<string | number>(
-      props.initialData._veRevision ?? props.initialData.updatedAt,
-    ),
-    disposed = useRef(false);
+  const active = useRef(true);
   useEffect(() => {
-    disposed.current = false;
+    active.current = true;
     return () => {
-      disposed.current = true;
+      active.current = false;
     };
   }, []);
-  async function refreshSavedPreview(revision: string | number) {
-    if (revision > requested.current) requested.current = revision;
-    if (previewRead.current || disposed.current) return;
-    previewRead.current = true;
-    setPreviewPending(true);
-    setPreviewError(null);
-    const observation = events.start("preview", lastSave.current);
-    try {
-      let again = false;
-      do {
-        const minimum = requested.current;
-        const result = await props.refreshPreview();
-        if (disposed.current) return;
-        if ("error" in result) {
-          observation.settle(
-            "failed",
-            result.error === "denied" ? "session" : "preview",
-          );
-          if (result.error === "denied") {
-            recovery.setFailure({
-              kind: "session",
-              messageKey: "editingAccessExpiredWithWorkingCopy",
-            });
-            nativeForm.current?.setDisabled(true);
-          } else setPreviewError("savedPreviewUnavailable");
-          break;
-        }
-        props.onSnapshot(result);
-        if (result.revision < minimum) {
-          observation.settle("failed", "preview");
-          setPreviewError("savedPreviewBehind");
-          break;
-        }
-        again = requested.current > result.revision;
-      } while (again);
-      observation.settle(disposed.current ? "cancelled" : "succeeded");
-    } catch {
-      observation.settle("failed", "preview");
-      if (!disposed.current) setPreviewError("savedPreviewUnavailable");
-    } finally {
-      observation.settle("cancelled");
-      previewRead.current = false;
-      if (!disposed.current) setPreviewPending(false);
-    }
-  }
+  const savedPreview = useSavedPreview({
+    initialRevision:
+      props.initialData._veRevision ?? props.initialData.updatedAt,
+    refresh: props.refreshPreview,
+    accept: props.onSnapshot,
+    denied: () => {
+      recovery.setFailure({
+        kind: "session",
+        messageKey: "editingAccessExpiredWithWorkingCopy",
+      });
+      nativeForm.current?.setDisabled(true);
+    },
+  });
   const inFlightChange = useRef<AbortController | null>(null),
     generation = useRef(0);
   useEffect(() => () => inFlightChange.current?.abort(), []);
@@ -438,6 +400,7 @@ function NativeDocumentForm(
               },
             ]}
             onSuccess={async (json: any, ctx) => {
+              if (!active.current) return;
               const doc = nativeSavedDocument(json, props.context.target);
               if (!doc) throw Error(t("savedFieldsUnavailable"));
               const result = await getFormState({
@@ -451,6 +414,7 @@ function NativeDocumentForm(
                 renderAllFields: false,
                 skipValidation: true,
               });
+              if (!active.current) return;
               if (!result?.state) throw new Error(t("savedFieldsUnavailable"));
               result.state._veActivation = props.initialState._veActivation;
               recovery.saved();
@@ -459,7 +423,10 @@ function NativeDocumentForm(
               lastSave.current = pendingOperation.current?.id;
               pendingOperation.current?.settle("succeeded");
               pendingOperation.current = null;
-              void refreshSavedPreview(doc._veRevision ?? doc.updatedAt);
+              void savedPreview.request(
+                doc._veRevision ?? doc.updatedAt,
+                lastSave.current,
+              );
               return protectNativeAcknowledgement(
                 result.state,
                 ctx?.formState || {},
@@ -470,9 +437,9 @@ function NativeDocumentForm(
             <CaptureNativeForm formRef={nativeForm} />
             <PreviewStatusContext
               value={{
-                pending: previewPending,
-                error: previewError ? t(previewError) : "",
-                retry: () => void refreshSavedPreview(requested.current),
+                pending: savedPreview.pending,
+                error: savedPreview.error ? t(savedPreview.error) : "",
+                retry: savedPreview.retry,
               }}
             >
               <SectionPatterns capabilities={props.patterns}>
@@ -488,7 +455,9 @@ function NativeDocumentForm(
                   >
                     <FieldOwnershipProvider>
                       <FieldStrategiesProvider>
-                        {props.strategyProviders}
+                        <Suspense fallback={null}>
+                          {props.strategyProviders}
+                        </Suspense>
                         <TransientPreviewProvider
                           capable={Boolean(props.preview)}
                         >
@@ -498,12 +467,15 @@ function NativeDocumentForm(
                               ready={props.previewReady}
                               onReady={props.onPreviewReady}
                             >
-                              <PreviewBoundary fallback={props.children}>
-                                {props.preview}
-                              </PreviewBoundary>
+                              <Suspense fallback={props.children}>
+                                <PreviewBoundary fallback={props.children}>
+                                  {props.preview}
+                                </PreviewBoundary>
+                              </Suspense>
                             </PreviewPortal>
                           )}
                           <FrontendControls
+                            diagnostics={props.diagnostics}
                             sharedStructure={props.sharedStructure}
                             context={props.context}
                             richTextCapabilities={props.richTextCapabilities}

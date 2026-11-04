@@ -17,6 +17,9 @@ import {
 } from "@payloadcms/ui";
 import type { BlocksFieldClientProps, ClientBlock, ClientField } from "payload";
 import type { InsertionTarget } from "../../../../core/src/insertion.js";
+import { useEditorMessages } from "../messages.js";
+import { formatCommandIssue } from "../../i18n/command-issue.js";
+import type { CommandIssue } from "../../state/command-issue.js";
 import { authoredFieldKey } from "../../state/autosave.js";
 import {
   nativeDocumentArgs,
@@ -72,6 +75,11 @@ export function useNativeStructure({
     { config } = useConfig(),
     info = useDocumentInfo();
   const { getFormState } = useServerFunctions();
+  const messages = useEditorMessages();
+  const renderIssue = useCallback(
+    (issue: CommandIssue) => formatCommandIssue(messages, issue),
+    [messages],
+  );
   const patternPreparation = useRef<AbortController | null>(null);
   useEffect(() => () => patternPreparation.current?.abort(), [nonce]);
   useEffect(() => {
@@ -174,6 +182,7 @@ export function useNativeStructure({
     (section: NativeSection, command: BlockCommand) =>
       invalidate(
         applyCommand(form, root, section.containerSchemaPath, command, {
+          renderIssue,
           disabled: disabled || section.readOnly,
           min: section.field.minRows ?? (section.field.required ? 1 : 0),
           max: section.field.maxRows,
@@ -187,7 +196,16 @@ export function useNativeStructure({
           container: section.parent,
         }),
       ),
-    [form, root, disabled, config.blocksMap, policy, history, invalidate],
+    [
+      form,
+      root,
+      disabled,
+      config.blocksMap,
+      policy,
+      history,
+      invalidate,
+      renderIssue,
+    ],
   );
   const rows = form.getDataByPath(root);
   const rootRows = Array.isArray(rows) ? rows : [];
@@ -215,6 +233,7 @@ export function useNativeStructure({
         `${collection}.${root}`,
         { type: "add", blockType, at: atStart(blockType) ? "start" : "end" },
         {
+          renderIssue,
           disabled,
           min: field.minRows ?? (field.required ? 1 : 0),
           max: field.maxRows,
@@ -230,9 +249,9 @@ export function useNativeStructure({
       const snapshot = redo
         ? history.redo(form.getFields())
         : history.undo(form.getFields());
-      if (snapshot) invalidate(restoreRoot(form, root, snapshot));
+      if (snapshot) invalidate(restoreRoot(form, root, snapshot, renderIssue));
     },
-    [disabled, form, history, root, invalidate],
+    [disabled, form, history, root, invalidate, renderIssue],
   );
   function insertionOptions(target: InsertionTarget) {
     if (disabled) return;
@@ -411,7 +430,7 @@ export function useNativeStructure({
   ) {
     const options = insertionOptions(target);
     if (!options)
-      return invalidate("This insertion point is no longer available.");
+      return invalidate(renderIssue({ code: "insertion-unavailable" }));
     const { field: f, parent, schema, choices } = options;
     pending.current = {
       target,
@@ -436,6 +455,7 @@ export function useNativeStructure({
           },
       {
         container: parent,
+        renderIssue,
         disabled,
         min: f.minRows ?? (f.required ? 1 : 0),
         max: f.maxRows,

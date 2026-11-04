@@ -4,6 +4,7 @@ import {
   targetDocumentKey,
   targetSlug,
 } from "../state/document-target.js";
+import { useBindingDiagnostics } from "./controllers/binding-diagnostics.js";
 import { useSectionPatterns } from "./section-patterns.js";
 import { SaveSectionPattern } from "./SaveSectionPattern.js";
 import { useDocumentScopes } from "./document-scope.js";
@@ -123,6 +124,7 @@ const InlineRichText = lazy(() =>
 );
 /** Floating authoring controls share one native Form. Selecting a field changes its sole mounted owner instead of duplicating inputs. */
 export function FrontendControls({
+  diagnostics = false,
   sharedStructure,
   context,
   field,
@@ -133,6 +135,7 @@ export function FrontendControls({
   policy,
   exitURL,
 }: {
+  diagnostics?: boolean;
   sharedStructure?: boolean;
   context: Activation;
   field: BlocksFieldClientProps["field"];
@@ -282,6 +285,7 @@ export function FrontendControls({
       return true;
     },
   });
+  const diagnose = useBindingDiagnostics(diagnostics, form, sections);
   const selected = sections.find(
     (s) =>
       s.identity.blockId === selection?.identity.blockId &&
@@ -312,6 +316,7 @@ export function FrontendControls({
         return;
       }
       if (target.identity.root !== context.target.root) return;
+      diagnose(target);
       cancelInsertionIntent();
       closeView();
       closeTools();

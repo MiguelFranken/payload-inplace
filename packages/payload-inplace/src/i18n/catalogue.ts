@@ -1,6 +1,31 @@
 import type { Message } from "../../../core/src/messages.js";
 /** Typed source copy. Consumers override messages by key; content and native field labels stay consumer-owned. */
 export const englishMessages = {
+  commandFirstSection: "The first section must be {type}.",
+  commandSingleton: "Exactly one {type} section is required.",
+  commandMinimum: "At least {count} sections are required.",
+  commandMaximum: "At most {count} sections are allowed.",
+  commandReadOnly: "This document is read-only or saving.",
+  commandMissingSection:
+    "The selected section moved or is unavailable. Select it again.",
+  commandNestedControls:
+    "Use the native nested field controls for this section.",
+  commandDifferentContainer:
+    "Sections can only be reordered within the same block field.",
+  commandMissingAnchor:
+    "The insertion point moved or was removed. Choose its current section again.",
+  commandBlockDisallowed: "This block is not allowed.",
+  commandDuplicateDisallowed:
+    "This block cannot be duplicated with the current field options.",
+  commandBoundary: "The section is already at the boundary.",
+  commandPreparing:
+    "The previous section change is still being prepared. Try again in a moment.",
+  commandRemovedContainer:
+    "The section containing this change was removed. Your current working copy is unchanged.",
+  commandRemovedMovedSection:
+    "The moved section was removed. Your current working copy is unchanged.",
+  commandInsertionUnavailable: "This insertion point is no longer available.",
+
   loadingNativeFields: "Loading fields…",
   searchPatterns: "Search patterns",
   noMatchingPatterns: "No matching patterns",
@@ -319,6 +344,32 @@ export type EditorStaticMessageKey = {
     : never;
 }[EditorMessageKey];
 export const germanMessages = {
+  commandFirstSection: "Der erste Abschnitt muss {type} sein.",
+  commandSingleton: "Genau ein Abschnitt vom Typ {type} ist erforderlich.",
+  commandMinimum: "Mindestens {count} Abschnitte sind erforderlich.",
+  commandMaximum: "Höchstens {count} Abschnitte sind erlaubt.",
+  commandReadOnly:
+    "Dieses Dokument ist schreibgeschützt oder wird gespeichert.",
+  commandMissingSection:
+    "Der ausgewählte Abschnitt wurde verschoben oder ist nicht verfügbar. Wähle ihn erneut aus.",
+  commandNestedControls:
+    "Verwende die nativen Steuerelemente für die verschachtelten Felder.",
+  commandDifferentContainer:
+    "Abschnitte können nur innerhalb desselben Blockfelds verschoben werden.",
+  commandMissingAnchor:
+    "Die Einfügestelle wurde verschoben oder entfernt. Wähle den aktuellen Abschnitt erneut aus.",
+  commandBlockDisallowed: "Dieser Block ist nicht erlaubt.",
+  commandDuplicateDisallowed:
+    "Dieser Block kann mit den aktuellen Feldoptionen nicht dupliziert werden.",
+  commandBoundary: "Der Abschnitt befindet sich bereits am Rand.",
+  commandPreparing:
+    "Die vorherige Änderung wird noch vorbereitet. Versuche es gleich erneut.",
+  commandRemovedContainer:
+    "Der übergeordnete Abschnitt wurde entfernt. Deine Arbeitskopie bleibt erhalten.",
+  commandRemovedMovedSection:
+    "Der verschobene Abschnitt wurde entfernt. Deine Arbeitskopie bleibt erhalten.",
+  commandInsertionUnavailable: "Diese Einfügestelle ist nicht mehr verfügbar.",
+
   loadingNativeFields: "Felder werden geladen…",
   searchPatterns: "Vorlagen durchsuchen",
   noMatchingPatterns: "Keine passenden Vorlagen",

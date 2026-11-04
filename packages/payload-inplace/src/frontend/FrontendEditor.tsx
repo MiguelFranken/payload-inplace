@@ -208,6 +208,9 @@ export async function FrontendEditor({
   return (
     <FrontendShell
       key={JSON.stringify([context.target, context.locale, context.nonce])}
+      diagnostics={Boolean(
+        options.diagnostics && process.env.NODE_ENV !== "production",
+      )}
       patterns={
         options.patterns && !options.disabled
           ? {
