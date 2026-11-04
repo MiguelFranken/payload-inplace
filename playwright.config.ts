@@ -24,7 +24,7 @@ export default defineConfig({
       : {
           stdout: "ignore",
           stderr: "pipe",
-          command: "node dev/start-server.mjs",
+          command: "node apps/demo/start-server.mjs",
           url: `${origin}/admin/login`,
           reuseExistingServer: false,
           timeout: 240000,

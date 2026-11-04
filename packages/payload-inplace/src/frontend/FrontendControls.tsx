@@ -1,6 +1,13 @@
 "use client";
 import { useEditorPageTransition } from "../launcher/EditorPageTransition.js";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   RenderFields,
   LeaveWithoutSaving,
@@ -57,6 +64,7 @@ import {
   fieldOwnershipPaths,
 } from "../schema/project-fields.js";
 import { InsertionPoints } from "./InsertionPoints.js";
+import { resolveEditorStrategy } from "../schema/editor-strategy.js";
 import { InlineText } from "./InlineText.js";
 import { usePreviewStatus } from "./preview-status.js";
 import { SelectionSettings } from "./SelectionSettings.js";
@@ -88,11 +96,17 @@ import {
   showSectionOnPage,
 } from "./BlockReorder.js";
 import type { NativeSection } from "../schema/tree.js";
+const InlineRichText = lazy(() =>
+  import("./InlineRichText.js").then((module) => ({
+    default: module.InlineRichText,
+  })),
+);
 /** Floating authoring controls share one native Form. Selecting a field changes its sole mounted owner instead of duplicating inputs. */
 export function FrontendControls({
   context,
   field,
   blockControls,
+  richTextCapabilities,
   permissions,
   policy,
   exitURL,
@@ -100,6 +114,7 @@ export function FrontendControls({
   context: Activation;
   field: BlocksFieldClientProps["field"];
   blockControls?: import("../types.js").VisualEditorOptions["blockControls"];
+  richTextCapabilities?: import("../adapters/richtext-capabilities.js").RichTextCapabilities;
   permissions: any;
   policy?: StructuralPolicy;
   exitURL: string;
@@ -368,7 +383,7 @@ export function FrontendControls({
           node.getAttribute("data-ve-edit") !== "panel" &&
           canUpdateInlineField(section.permissions, resolved.permissionPath) &&
           candidate &&
-          ["text", "textarea"].includes(candidate.type) &&
+          ["text", "textarea", "richText"].includes(candidate.type) &&
           !(candidate.admin as any)?.components?.Field &&
           candidate.admin?.readOnly !== true &&
           !("hasMany" in candidate && candidate.hasMany) &&
@@ -376,7 +391,7 @@ export function FrontendControls({
           (!Array.isArray(profile?.inlineEdit) ||
             profile.inlineEdit.includes(resolved.permissionPath)) &&
           state?.passesCondition !== false &&
-          node.childElementCount === 0 &&
+          (candidate.type === "richText" || node.childElementCount === 0) &&
           !node.closest("a,button,input,textarea,select")
         );
       });
@@ -595,26 +610,38 @@ export function FrontendControls({
             })
           : undefined;
       const field = resolved?.field;
-      const inline =
-        field &&
-        resolved &&
-        !resolved.row &&
-        !resolved.readOnly &&
-        target.edit !== "panel" &&
-        ["text", "textarea"].includes(field.type) &&
-        profile?.inlineEdit !== false &&
-        (!Array.isArray(profile?.inlineEdit) ||
-          profile.inlineEdit.includes(resolved.permissionPath)) &&
-        field.admin?.readOnly !== true &&
-        !(field.admin as any)?.components?.Field &&
-        canUpdateInlineField(section?.permissions, resolved.permissionPath) &&
-        target.element.childElementCount === 0 &&
-        !target.element.closest("a,button,input,textarea,select");
+      const decision =
+        field && resolved && section
+          ? resolveEditorStrategy({
+              field,
+              state: form.getField(`${section.path}.${resolved.path}`),
+              row: Boolean(resolved.row),
+              permitted: canUpdateInlineField(
+                section.permissions,
+                resolved.permissionPath,
+              ),
+              readOnly: resolved.readOnly,
+              edit: target.edit,
+              inline:
+                profile?.inlineEdit !== false &&
+                (!Array.isArray(profile?.inlineEdit) ||
+                  profile.inlineEdit.includes(resolved.permissionPath)),
+              lexicalFeatures:
+                richTextCapabilities?.[
+                  `${section.schemaPath}.${resolved.schemaPath}`
+                ],
+              markupSafe:
+                (field.type === "richText" ||
+                  target.element.childElementCount === 0) &&
+                !target.element.closest("a,button,input,textarea,select"),
+            })
+          : undefined;
+      const inline = decision?.kind === "text" || decision?.kind === "richText";
       return inline
         ? t("Edit text", "Text bearbeiten")
         : t("Open settings", "Einstellungen öffnen");
     },
-    [sections, blockControls, i18n.language],
+    [sections, blockControls, i18n.language, richTextCapabilities, form],
   );
   const fixedSelected = Boolean(
     selected &&
@@ -648,47 +675,40 @@ export function FrontendControls({
   const candidate = binding?.field;
   const inlinePath =
     binding && selected ? `${selected.path}.${binding.path}` : undefined;
-  const quickField =
-    candidate &&
-    binding &&
-    !binding.row &&
-    !binding.readOnly &&
-    selection?.edit !== "panel" &&
-    ["text", "textarea"].includes(candidate.type) &&
-    profile?.inlineEdit !== false &&
-    (!Array.isArray(profile?.inlineEdit) ||
-      profile.inlineEdit.includes(binding.permissionPath))
-      ? candidate
-      : undefined;
-  const inlineEligible = useMemo(
-    () =>
-      Boolean(
-        quickField &&
-          selection?.element instanceof HTMLElement &&
-          selection.element.childElementCount === 0 &&
-          !selection.element.closest("a,button,input,textarea,select") &&
-          !(quickField.admin as any)?.components?.Field,
-      ),
-    [quickField, selection?.element],
-  );
   const inlineState = useFormFields(([fields]) =>
     inlinePath ? fields[inlinePath] : undefined,
   );
-  const canInline =
-    inlineEligible &&
-    Boolean(inlineState) &&
-    inlineState?.passesCondition !== false &&
-    !inlineState?.customComponents?.Field &&
-    !(quickField && "hasMany" in quickField && quickField.hasMany) &&
-    canUpdateInlineField(
-      selected?.permissions,
-      binding?.permissionPath || "",
-    ) &&
-    quickField?.admin?.readOnly !== true;
-  // Payload ADD_ROW first exposes the new row, then asynchronously prepares its
-  // leaf field state. Preserve inline intent across that gap instead of opening
-  // settings, which would claim the field before the inline owner can mount.
-  const inlinePending = inlineEligible && !inlineState;
+  const lexicalFeatures =
+    binding && selected
+      ? richTextCapabilities?.[`${selected.schemaPath}.${binding.schemaPath}`]
+      : undefined;
+  const strategy =
+    candidate && binding && selection
+      ? resolveEditorStrategy({
+          field: candidate,
+          state: inlineState,
+          row: Boolean(binding.row),
+          permitted: canUpdateInlineField(
+            selected?.permissions,
+            binding.permissionPath,
+          ),
+          readOnly: binding.readOnly,
+          edit: selection.edit,
+          inline:
+            profile?.inlineEdit !== false &&
+            (!Array.isArray(profile?.inlineEdit) ||
+              profile.inlineEdit.includes(binding.permissionPath)),
+          lexicalFeatures,
+          markupSafe:
+            selection.element instanceof HTMLElement &&
+            (candidate.type === "richText" ||
+              selection.element.childElementCount === 0) &&
+            !selection.element.closest("a,button,input,textarea,select"),
+        })
+      : { kind: "native" as const };
+  const quickField = candidate;
+  const canInline = strategy.kind === "text" || strategy.kind === "richText";
+  const inlinePending = strategy.kind === "pending";
   useEffect(() => {
     if (selection && !canInline && !inlinePending && !disabled)
       setSettingsOpen(true);
@@ -828,7 +848,11 @@ export function FrontendControls({
       >
         <InsertionPoints
           sections={sections}
-          document={{ kind: "collection", collection: context.target.collection, id: context.target.id }}
+          document={{
+            kind: "collection",
+            collection: context.target.collection,
+            id: context.target.id,
+          }}
           root={context.target.root}
           enabled={expanded && !hasPanel && !selection?.field && !disabled}
           options={insertionOptions}
@@ -851,18 +875,31 @@ export function FrontendControls({
             path={inlinePath!}
             activate={() => (selection.element as HTMLElement).focus()}
           >
-            <InlineText
-              key={inlinePath}
-              element={selection.element as HTMLElement}
-              path={inlinePath!}
-              label={describe(selection)}
-              multiline={quickField?.type === "textarea"}
-              point={selection.point}
-              disabled={disabled}
-            />
+            {strategy.kind === "richText" ? (
+              <Suspense fallback={null}>
+                <InlineRichText
+                  element={selection.element as HTMLElement}
+                  path={inlinePath!}
+                  label={describe(selection)}
+                  features={lexicalFeatures || []}
+                  disabled={disabled}
+                  onSettings={() => setSettingsOpen(true)}
+                />
+              </Suspense>
+            ) : (
+              <InlineText
+                key={inlinePath}
+                element={selection.element as HTMLElement}
+                path={inlinePath!}
+                label={describe(selection)}
+                multiline={quickField?.type === "textarea"}
+                point={selection.point}
+                disabled={disabled}
+              />
+            )}
           </NativeFieldsOwner>
         )}
-        {expanded && selected && selection && !hasPanel && (
+        {expanded && selected && selection && !hasPanel && strategy.kind !== "richText" && (
           <SelectionSettings
             element={selection.element}
             label={describe(selection)}

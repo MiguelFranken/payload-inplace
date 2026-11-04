@@ -161,3 +161,78 @@ test("an explicitly bound empty native array can add an item on the canvas", asy
     )
     .toBe(1);
 });
+
+test("inline Lexical edits structured text through the native queue without replacing page chrome", async ({
+  page,
+}) => {
+  const { createShopEditor } = await import("./testing/editor-fixtures");
+  const { doc } = await createShopEditor(page);
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  const selectContent = page.getByRole("button", {
+    name: "Select content",
+    exact: true,
+  });
+  if ((await selectContent.getAttribute("aria-pressed")) !== "true")
+    await selectContent.click();
+  const body = page.locator('[data-ve-field="body"]').first();
+  await body.scrollIntoViewIfNeeded();
+  const before = doc.layout.find(
+    (block: any) => block.blockType === "editorial",
+  ).body;
+  const url = page.url();
+  await page.evaluate(() => {
+    (window as any).__richHeader = document.querySelector(
+      "[data-test-site-header]",
+    );
+  });
+  await body.click();
+  const surface = page.locator('[data-ve-inline-active][data-ve-field="body"]');
+  await expect(surface).toHaveAttribute("contenteditable", "true");
+  await expect(
+    page.getByRole("toolbar", { name: "Text formatting" }),
+  ).toBeVisible();
+  // A rendered rich-text tree is not rewritten until the first actual edit.
+  await expect
+    .poll(
+      async () =>
+        (
+          await (
+            await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+          ).json()
+        )._veRevision,
+    )
+    .toBe(doc._veRevision);
+  await surface.press("ControlOrMeta+End");
+  await surface.pressSequentially(" Added inline.");
+  await expect
+    .poll(async () =>
+      JSON.stringify(
+        (
+          await (
+            await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+          ).json()
+        ).layout.find((block: any) => block.blockType === "editorial").body,
+      ),
+    )
+    .toContain("Added inline.");
+  expect(page.url()).toBe(url);
+  expect(
+    await page.evaluate(
+      () =>
+        (window as any).__richHeader ===
+        document.querySelector("[data-test-site-header]"),
+    ),
+  ).toBe(true);
+  await expect(surface).toBeFocused();
+  expect(before.root.children.length).toBeGreaterThan(0);
+  await page.screenshot({ path: "test-results/roadmap-inline-richtext.png" });
+  await page
+    .getByRole("button", { name: "More text options", exact: true })
+    .click();
+  await expect(surface).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Close Body panel" }),
+  ).toBeVisible();
+  expect(errors).toEqual([]);
+});

@@ -50,6 +50,7 @@ import type { EditorPreviewSnapshot, EditorPreviewResponse } from "../types.js";
 import { FrontendControls } from "./FrontendControls.js";
 
 type ShellProps = {
+  richTextCapabilities?: import("../adapters/richtext-capabilities.js").RichTextCapabilities;
   blockControls?: import("../types.js").VisualEditorOptions["blockControls"];
   tools: EditorTool[];
   extensions: ResolvedEditorExtension[];
@@ -220,7 +221,9 @@ export function FrontendShell(props: ShellProps) {
                           previewReady={previewReady}
                           onPreviewReady={() => setPreviewReady(true)}
                           renderedRevision={visible.revision}
-                        >{visible.children}</NativeDocumentForm>
+                        >
+                          {visible.children}
+                        </NativeDocumentForm>
                       </OperationProvider>
                     </EditDepthProvider>
                   </DocumentInfoProvider>
@@ -414,6 +417,7 @@ function NativeDocumentForm(
                 )}
                 <FrontendControls
                   context={props.context}
+                  richTextCapabilities={props.richTextCapabilities}
                   field={props.field}
                   blockControls={props.blockControls}
                   permissions={props.fieldPermissions}

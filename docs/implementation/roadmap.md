@@ -43,3 +43,9 @@ Codex browser exposed an undeclared clsx import in the pinned Payload UI client 
 Added a document-bound, server-safe typed annotation factory for terminals, groups, stable array rows and empty lists. Existing helpers remain supported. Foreign document provenance fails closed. Canvas boundary/list insertion delegates to the same native ADD_ROW/history policy as outline actions, resolving the anchor again when committed. Picker cancellation does not modify the draft. See bindings-and-insertion.md.
 
 Focused browser checks passed for stable neighbor insertion/cancel and an empty nested array. TypeScript, build and both lint gates passed. Further catalogue previews, asynchronous row selection and full keyboard/touch acceptance remain pending; these tickets are not claimed complete yet.
+
+## Inline structured rich text
+
+Added the private Lexical runtime boundary, server-projected native capabilities, one strategy classifier and a lazy inline surface bound to native useField. Payload link metadata and unknown/custom/upload islands round-trip through unrelated edits. Native Field overrides stay native. The temporary DOM twin leaves React's original subtree mounted; geometry and the existing preview guard retain selection continuity. Common marks are compact; block styles are secondary; complex/internal links retain native settings. ADR 0008 records tradeoffs and remaining acceptance.
+
+All four focused roadmap browser cases passed (18.9s), including structured text save/focus and native settings handoff. Further paste/IME/link/undo/latency and installed-consumer acceptance remain pending. No ticket is marked Done based only on this first rich-text slice.

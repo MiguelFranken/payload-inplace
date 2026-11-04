@@ -17,6 +17,21 @@ importers:
       '@changesets/cli':
         specifier: 3.0.3
         version: 3.0.3
+      '@lexical/history':
+        specifier: 0.50.0
+        version: 0.50.0(typescript@5.9.3)
+      '@lexical/list':
+        specifier: 0.50.0
+        version: 0.50.0(typescript@5.9.3)
+      '@lexical/rich-text':
+        specifier: 0.50.0
+        version: 0.50.0(typescript@5.9.3)
+      '@lexical/selection':
+        specifier: 0.50.0
+        version: 0.50.0(typescript@5.9.3)
+      '@lexical/utils':
+        specifier: 0.50.0
+        version: 0.50.0(typescript@5.9.3)
       '@payloadcms/db-mongodb':
         specifier: 3.91.0
         version: 3.91.0(payload@3.91.0(graphql@16.14.2)(typescript@5.9.3))
@@ -74,6 +89,9 @@ importers:
       happy-dom:
         specifier: 21.0.4
         version: 21.0.4
+      lexical:
+        specifier: 0.50.0
+        version: 0.50.0(typescript@5.9.3)
       mongodb-memory-server:
         specifier: 10.1.4
         version: 10.1.4
@@ -143,6 +161,27 @@ importers:
 
   packages/core: {}
 
+  packages/lexical:
+    dependencies:
+      '@lexical/history':
+        specifier: 0.50.0
+        version: 0.50.0(typescript@5.9.3)
+      '@lexical/list':
+        specifier: 0.50.0
+        version: 0.50.0(typescript@5.9.3)
+      '@lexical/rich-text':
+        specifier: 0.50.0
+        version: 0.50.0(typescript@5.9.3)
+      '@lexical/selection':
+        specifier: 0.50.0
+        version: 0.50.0(typescript@5.9.3)
+      '@lexical/utils':
+        specifier: 0.50.0
+        version: 0.50.0(typescript@5.9.3)
+      lexical:
+        specifier: 0.50.0
+        version: 0.50.0(typescript@5.9.3)
+
   packages/payload-inplace:
     dependencies:
       '@base-ui/react':
@@ -157,6 +196,21 @@ importers:
       '@dnd-kit/utilities':
         specifier: 3.2.2
         version: 3.2.2(react@19.2.6)
+      '@lexical/history':
+        specifier: 0.50.0
+        version: 0.50.0(typescript@5.9.3)
+      '@lexical/list':
+        specifier: 0.50.0
+        version: 0.50.0(typescript@5.9.3)
+      '@lexical/rich-text':
+        specifier: 0.50.0
+        version: 0.50.0(typescript@5.9.3)
+      '@lexical/selection':
+        specifier: 0.50.0
+        version: 0.50.0(typescript@5.9.3)
+      '@lexical/utils':
+        specifier: 0.50.0
+        version: 0.50.0(typescript@5.9.3)
       '@payloadcms/db-postgres':
         specifier: 3.91.0
         version: 3.91.0(payload@3.91.0(graphql@16.14.2)(typescript@5.9.3))
@@ -169,6 +223,9 @@ importers:
       clsx:
         specifier: 2.1.1
         version: 2.1.1
+      lexical:
+        specifier: 0.50.0
+        version: 0.50.0(typescript@5.9.3)
       lucide-react:
         specifier: 1.66.0
         version: 1.66.0(@types/react@19.2.14)(react@19.2.6)
@@ -188,6 +245,9 @@ importers:
       '@payload-inplace/core':
         specifier: workspace:*
         version: link:../core
+      '@payload-inplace/lexical':
+        specifier: workspace:*
+        version: link:../lexical
 
 packages:
 

@@ -17,3 +17,5 @@ it("scopes manual and automatic native submissions to the selected content local
     expect(url.searchParams.has("autosave")).toBe(autosave);
   }
 });
+
+it('omits locale for collections without localization', () => { expect(nativeDraftAction('/api',{collection:'pages',id:'1'},undefined)).not.toContain('locale=undefined'); });

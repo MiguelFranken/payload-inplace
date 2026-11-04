@@ -3,11 +3,11 @@ import type { EditorTarget } from "../types.js";
 export function nativeDraftAction(
   api: string,
   target: Pick<EditorTarget, "collection" | "id">,
-  locale: string,
+  locale: string | undefined,
   autosave = false,
 ): string {
   const query = new URLSearchParams({
-    locale,
+    ...(locale ? { locale } : {}),
     depth: "0",
     "fallback-locale": "null",
     draft: "true",

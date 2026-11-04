@@ -1,5 +1,22 @@
+const inlineSurfaces = new WeakMap<Element, Element>();
+/** Resolve the temporary inline surface while keeping original React ownership intact. */
+export function inlineSurface(element: Element): Element {
+  return inlineSurfaces.get(element) || element;
+}
+/** Register geometry ownership only for the lifetime of a focused editor. */
+export function registerInlineSurface(
+  original: Element,
+  surface: Element,
+): () => void {
+  inlineSurfaces.set(original, surface);
+  return () => {
+    if (inlineSurfaces.get(original) === surface)
+      inlineSurfaces.delete(original);
+  };
+}
 /** Fragment/display:contents roots use the union of rendered child boxes, never a zero wrapper box. */
 export function elementRect(element: Element): DOMRect | null {
+  element = inlineSurface(element);
   const boxes = [...element.getClientRects()].filter(
     (r) => r.width && r.height,
   );

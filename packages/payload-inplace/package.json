@@ -117,7 +117,13 @@
     "@dnd-kit/utilities": "3.2.2",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
-    "lucide-react": "1.66.0"
+    "lucide-react": "1.66.0",
+    "lexical": "0.50.0",
+    "@lexical/rich-text": "0.50.0",
+    "@lexical/list": "0.50.0",
+    "@lexical/history": "0.50.0",
+    "@lexical/utils": "0.50.0",
+    "@lexical/selection": "0.50.0"
   },
   "homepage": "https://github.com/MiguelFranken/payload-inplace#readme",
   "bugs": {
@@ -138,6 +144,7 @@
     "blocks"
   ],
   "devDependencies": {
-    "@payload-inplace/core": "workspace:*"
+    "@payload-inplace/core": "workspace:*",
+    "@payload-inplace/lexical": "workspace:*"
   }
 }

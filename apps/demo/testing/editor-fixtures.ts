@@ -31,6 +31,8 @@ export async function createShopEditor(
           )
         : value;
   const layout = clone(source.layout);
+  const story = layout.find((block: {blockType:string}) => block.blockType === 'editorial');
+  story.body ??= {root:{type:'root',version:1,format:'',indent:0,direction:null,children:[{type:'paragraph',version:1,format:'',indent:0,direction:null,children:[{type:'text',version:1,text:'Made with care. Built to last.',format:0,style:'',detail:0,mode:'normal'}]}]}};
   if (emptyCards)
     layout.find((block: any) => block.blockType === "productGrid").cards =
       [];

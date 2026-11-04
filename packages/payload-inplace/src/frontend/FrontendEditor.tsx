@@ -19,6 +19,7 @@ import {
   DeferredConfiguredFieldPanel as ConfiguredFieldPanel,
   DeferredFrontendShell as FrontendShell,
 } from "./DeferredEditor.js";
+import { richTextCapabilities } from "../adapters/richtext-capabilities.js";
 import { frontendStyles } from "./theme.generated.js";
 
 /** Prepare one native Payload Form for an explicitly activated frontend document.
@@ -186,6 +187,11 @@ export async function FrontendEditor({
         expires: context.expires,
         ...(context.pagePath ? { pagePath: context.pagePath } : {}),
       }}
+      richTextCapabilities={richTextCapabilities(
+        collection.config.fields,
+        context.target.collection,
+        req.payload.config,
+      )}
       blockControls={options.blockControls}
       tools={available.tools}
       extensions={extensions}

@@ -505,7 +505,7 @@ export function CommercePageView({
                   </p>
                   {block.body?.root && (
                     <div
-                      {...field(identity, "body", "panel")}
+                      {...field(identity, "body")}
                       className={copyClass}
                     >
                       <RichText data={block.body} />

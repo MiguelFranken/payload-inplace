@@ -2,6 +2,7 @@
 import { useEffect, useRef } from "react";
 import { Button } from "./ui/button.js";
 import { Settings2 } from "lucide-react";
+import { inlineSurface } from "../preview/geometry.js";
 import { chrome } from "../admin/chrome.js";
 /** Secondary options stay beside the selected content without covering its text or mounting another field owner. */
 export function SelectionSettings({
@@ -20,7 +21,7 @@ export function SelectionSettings({
       frame = 0;
       if (!element.isConnected) return;
       const range = document.createRange();
-      range.selectNodeContents(element);
+      range.selectNodeContents(inlineSurface(element));
       const rects = range.getClientRects();
       const rect = rects[rects.length - 1] || element.getBoundingClientRect();
       const x = Math.max(8, Math.min(rect.right + 8, innerWidth - 52)),
