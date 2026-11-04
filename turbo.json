@@ -11,12 +11,19 @@
     "README.md",
     "LICENSE",
     "NOTICE",
-    "assets/**"
+    "assets/**",
+    "package.json",
+    "pnpm-workspace.yaml"
   ],
-  "globalEnv": ["NODE_ENV"],
+  "globalEnv": [
+    "NODE_ENV",
+    "INPLACE_NODE_RUNTIME"
+  ],
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
       "inputs": [
         "$TURBO_DEFAULT$",
         "../../scripts/**",
@@ -31,14 +38,20 @@
         "NOTICE",
         "assets/**"
       ],
-      "env": ["NODE_ENV"]
+      "env": [
+        "NODE_ENV"
+      ]
     },
     "typecheck": {
-      "dependsOn": ["build"],
+      "dependsOn": [
+        "build"
+      ],
       "outputs": []
     },
     "test:unit": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
       "outputs": []
     },
     "lint": {

@@ -94,7 +94,7 @@
   "scripts": {
     "build": "pnpm --dir ../.. build:package",
     "typecheck": "tsc --noEmit -p ../../tsconfig.json",
-    "test:unit": "vitest run --config ../../vitest.config.ts --project unit",
+    "test:unit": "vitest run --config ../../vitest.config.ts --project 'unit:plugin:*'",
     "lint": "pnpm --dir ../.. lint:source"
   },
   "peerDependencies": {

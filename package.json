@@ -7,10 +7,10 @@
     "node": ">=24"
   },
   "scripts": {
-    "build": "turbo run build --filter=payload-inplace",
-    "typecheck": "turbo run typecheck",
-    "lint": "pnpm lint:oxlint && pnpm lint:source && node scripts/check-boundaries.mjs",
-    "test:unit": "turbo run test:unit",
+    "build": "node scripts/run-turbo.mjs run build --filter=payload-inplace",
+    "typecheck": "node scripts/run-turbo.mjs run typecheck",
+    "lint": "pnpm lint:oxlint && pnpm lint:source && node scripts/check-boundaries.mjs && node scripts/check-lint-contracts.mjs",
+    "test:unit": "node scripts/run-turbo.mjs run test:unit",
     "test:int": "vitest run --project native-integration",
     "test:int:postgres": "VE_DATABASE=postgres vitest run --project native-integration",
     "test:e2e": "playwright test",
@@ -33,7 +33,8 @@
     "build:demo:css": "tailwindcss -i apps/demo/tailwind.css -o apps/demo/styles.css --minify && tailwindcss -i apps/demo/protected.tailwind.css -o apps/demo/protected.styles.css --minify",
     "test:package": "publint packages/payload-inplace && pnpm pack:check && pnpm test:consumer",
     "test:components": "vitest run --project components",
-    "test:coverage": "vitest run --project unit --project components --coverage"
+    "test:coverage": "vitest run --project 'unit:*' --project components --coverage --reporter=default --reporter=json --outputFile=test-results/unit-domains.json",
+    "test:domain": "vitest run --project"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",

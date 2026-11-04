@@ -1,25 +1,28 @@
 import fs from "node:fs";
 import path from "node:path";
-const root = path.resolve("packages/core/src");
+import {
+  checkSourceBoundary,
+  checkBindingsGraph,
+} from "./import-boundaries.mjs";
+const root = process.cwd();
+let count = 0;
 function check(directory) {
-  for (const name of fs.readdirSync(directory)) {
-    const file = path.join(directory, name);
-    if (fs.statSync(file).isDirectory()) {
-      check(file);
-      continue;
-    }
-    const source = fs.readFileSync(file, "utf8");
-    for (const match of source.matchAll(
-      /(?:from|import)\s*["']([^"']+)["']/g,
-    )) {
-      const spec = match[1];
-      if (
-        !spec.startsWith(".") ||
-        !path.resolve(path.dirname(file), spec).startsWith(root + path.sep)
-      )
-        throw new Error(`Core import crosses its boundary: ${file}: ${spec}`);
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const file = path.join(directory, entry.name);
+    if (entry.isDirectory()) check(file);
+    else if (/\.(ts|tsx)$/.test(file) && !file.endsWith(".generated.ts")) {
+      checkSourceBoundary(file, fs.readFileSync(file, "utf8"), root);
+      count++;
     }
   }
 }
-check(root);
-console.log("Framework-free core import boundary passed");
+for (const domain of ["core", "lexical", "payload-inplace"])
+  check(path.join(root, "packages", domain, "src"));
+const nodes = checkBindingsGraph(
+  path.join(root, "packages/payload-inplace/src/exports/bindings.ts"),
+  (file) => (fs.existsSync(file) ? fs.readFileSync(file, "utf8") : undefined),
+  root,
+);
+console.log(
+  `Source boundaries passed: ${count} modules; ${nodes} inert binding modules`,
+);

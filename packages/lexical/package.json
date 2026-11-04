@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test:unit": "vitest run --config ../../vitest.config.ts --project unit:lexical"
   },
   "dependencies": {
     "lexical": "0.50.0",

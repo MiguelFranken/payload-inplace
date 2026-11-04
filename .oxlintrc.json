@@ -11,7 +11,8 @@
     "react/immutability": "off",
     "react/preserve-manual-memoization": "off",
     "react-hooks/exhaustive-deps": "warn",
-    "jsx-a11y/prefer-tag-over-role": "off"
+    "jsx-a11y/prefer-tag-over-role": "off",
+    "jsx-a11y/control-has-associated-label": "error"
   },
   "ignorePatterns": [
     "**/dist/**",

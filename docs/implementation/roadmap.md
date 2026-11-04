@@ -81,3 +81,7 @@ Extracted an idle-trigger controller with no document/persistence store. Callbac
 Centralized private transport/root-metadata classification across authored hashes, review candidates, diffs, autosave fingerprints, version copies, presentation and working-copy downloads. Nested row IDs remain content identity. Added direct revision-guard characterization for lock-before-read order, stale/bulk writes, exact reviewed publication, explicit system scope, guarded native restores and authoritative revision assignment. These unit fixtures complement the real database race tests; they do not claim concurrency proof.
 
 151 unit/component assertions, TypeScript and lint passed.
+
+## Domain testing and lint contracts
+
+Relocated all existing suites into named domains and added AST import-boundary negative controls, stable-path contracts and measured domain coverage floors. Native integration remains serial; independent units/components run in parallel. Turbo task hashes now include the exact Node runtime and root script/workspace inputs. See quality-gates.md for measured coverage scope, remaining gaps and rule responsibilities. No speedup is claimed from runs with different inputs.
