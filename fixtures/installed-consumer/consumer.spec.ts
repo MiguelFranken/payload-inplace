@@ -402,6 +402,9 @@ test("installed media adapter uploads, retries and replaces image/video referenc
   const search = mediaPanel.getByLabel("Search media", { exact: true });
   await expect(search).toBeVisible();
   await expect(
+    page.getByRole("img", { name: "Keep shared metadata", exact: true }),
+  ).toBeVisible();
+  await expect(
     page.getByRole("button", { name: /native-image.png/ }),
   ).toHaveAttribute("aria-pressed", "true");
   const before = (await read())._veRevision;
@@ -434,6 +437,9 @@ test("installed media adapter uploads, retries and replaces image/video referenc
     .poll(async () => (await read()).article.sections[0].image)
     .toBe(videoAsset.id);
   expect(videoAsset.id).not.toBe(uploaded);
+  await expect(page.locator("main")).toContainText(
+    "Video reference: native-video.mp4",
+  );
   // A denied list never clears the currently selected document reference.
   await page.route("**/api/assets?*", (route) =>
     route.fulfill({
@@ -467,7 +473,7 @@ test("installed media adapter uploads, retries and replaces image/video referenc
   await expect(
     page
       .getByRole("complementary", { name: "Edit content", exact: true })
-      .getByText("Image", { exact: true }),
+      .getByRole("link", { name: "native-video.mp4", exact: true }),
   ).toBeVisible();
   const unchanged = await page.request.get(`/api/assets/${asset.id}`, {
     headers,

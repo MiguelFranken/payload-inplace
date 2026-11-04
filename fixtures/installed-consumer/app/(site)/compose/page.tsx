@@ -8,13 +8,29 @@ import { authorizedEditor } from "../../../lib/authorized-editor";
 import { importMap } from "../../(payload)/admin/importMap.js";
 import { StoryView } from "../../../components/StoryView";
 import { LiveStory } from "../../../components/LiveStory";
+/** Renderers own their populated relationships; the plugin's native document
+ * protocol intentionally retains raw IDs. Every read keeps the authorized user
+ * and native access rather than silently bypassing permissions for a preview.
+ */
+async function previewDocument(identifier: string | undefined) {
+  const result = await authorizedEditor(identifier);
+  const document = await result.req.payload.findByID({
+    collection: "stories",
+    id: result.document.id,
+    req: result.req,
+    overrideAccess: false,
+    draft: true,
+    depth: 1,
+  });
+  return { ...result, document };
+}
 export default async function Page({
   searchParams,
 }: {
   searchParams: Promise<{ context?: string }>;
 }) {
   const { context: identifier } = await searchParams;
-  const { req, token, context, document } = await authorizedEditor(identifier);
+  const { req, token, context, document } = await previewDocument(identifier);
   const serverFunction: ServerFunctionClient = async (args) => {
     "use server";
     const { req } = await authorizedEditor(identifier, true);
@@ -23,7 +39,7 @@ export default async function Page({
   const refreshPreview = async (): Promise<EditorPreviewResponse> => {
     "use server";
     try {
-      const { document } = await authorizedEditor(identifier, true);
+      const { document } = await previewDocument(identifier);
       return {
         revision: document._veRevision ?? document.updatedAt,
         content: <StoryView document={document} active />,
