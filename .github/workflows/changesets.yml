@@ -23,12 +23,13 @@ jobs:
           package-manager-cache: false
       - run: corepack enable
       - run: corepack pnpm install --frozen-lockfile
-      - uses: changesets/action@615034bb14e5d240e559f941ce9769beb5e14fb0
+      - uses: changesets/action@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2, bundled Node 24 action
         with:
-          version: corepack pnpm version:packages
-          title: "chore(release): version packages"
-          commit: "chore(release): version packages"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          version-script: corepack pnpm version:packages
+          pr-title: "chore(release): version packages"
+          commit-message: "chore(release): version packages"
+          github-token: ${{ github.token }}
+          create-github-releases: false
+          push-git-tags: false
 # No publish command here: release.yml alone publishes the exact CI artifact
 # after independent installed-consumer and Workshops acceptance receipts.
