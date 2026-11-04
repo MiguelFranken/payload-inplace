@@ -1,6 +1,6 @@
 "use client";
 import { useEditorRecovery } from "./recovery.js";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   useAllFormFields,
   useConfig,
@@ -10,6 +10,7 @@ import {
   useFormModified,
   useFormProcessing,
 } from "@payloadcms/ui";
+import { autosaveDelay, authoredFieldKey } from "../state/autosave.js";
 import {
   getAutosaveInterval,
   hasAutosaveEnabled,
@@ -28,8 +29,21 @@ export function NativeAutosaveTrigger() {
     modified = useFormModified(),
     processing = useFormProcessing(),
     background = useFormBackgroundProcessing();
+  const valueKey = useMemo(() => authoredFieldKey(fields), [fields]);
+  const [composing, setComposing] = useState(false);
+  useEffect(() => {
+    const start = () => setComposing(true);
+    const end = () => setComposing(false);
+    window.addEventListener("compositionstart", start, true);
+    window.addEventListener("compositionend", end, true);
+    return () => {
+      window.removeEventListener("compositionstart", start, true);
+      window.removeEventListener("compositionend", end, true);
+    };
+  }, []);
   useEffect(() => {
     if (
+      composing ||
       recovery.failure ||
       !info.docConfig ||
       !hasAutosaveEnabled(info.docConfig) ||
@@ -39,25 +53,38 @@ export function NativeAutosaveTrigger() {
       form.disabled
     )
       return;
-    const timer = setTimeout(async () => {
-      form.setBackgroundProcessing(true);
-      try {
-        await form.submit({
-          action: `${config.routes.api}/${info.collectionSlug}/${info.id}?draft=true&autosave=true&depth=0`,
-          method: "PATCH",
-          overrides: { _status: "draft" },
-          acceptValues: true, // onSuccess admits server values only when the submitted snapshot still matches; see protectNativeAcknowledgement.
-          disableFormWhileProcessing: false,
-          disableSuccessStatus: true,
-          skipValidation: !hasDraftValidationEnabled(info.docConfig!),
-        });
-      } finally {
-        form.setBackgroundProcessing(false);
-      }
-    }, getAutosaveInterval(info.docConfig));
+    const timer = setTimeout(
+      async () => {
+        const beforeFields = form.getFields();
+        const submittedKey = authoredFieldKey(beforeFields);
+        let saved = false;
+        form.setBackgroundProcessing(true);
+        try {
+          const result = await form.submit({
+            action: `${config.routes.api}/${info.collectionSlug}/${info.id}?draft=true&autosave=true&depth=0`,
+            method: "PATCH",
+            overrides: { _status: "draft" },
+            acceptValues: true, // onSuccess admits server values only when the submitted snapshot still matches; see protectNativeAcknowledgement.
+            disableFormWhileProcessing: false,
+            disableSuccessStatus: true,
+            skipValidation: !hasDraftValidationEnabled(info.docConfig!),
+          });
+          saved = Boolean(result?.res.ok);
+        } finally {
+          form.setBackgroundProcessing(false);
+          // Payload 3.91 marks its own setModified(false) as a background edit,
+          // leaking that flag into the next submission. Clear only a successful
+          // unchanged authored snapshot, after leaving background processing.
+          if (saved && submittedKey === authoredFieldKey(form.getFields()))
+            form.setModified(false);
+        }
+      },
+      autosaveDelay(getAutosaveInterval(info.docConfig)),
+    );
     return () => clearTimeout(timer);
   }, [
-    fields,
+    valueKey,
+    composing,
     modified,
     processing,
     background,

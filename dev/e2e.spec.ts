@@ -73,7 +73,9 @@ for (const collection of ["pages", "offers"])
     await expect(page.locator("[data-ve-selection-outline]")).toBeVisible();
     await inline.fill(replacement);
     await inline.press("Tab");
-    await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Draft saved", exact: true }),
+    ).toBeVisible();
     await expect(
       page
         .locator('[data-ve-field="heading"]')
@@ -93,11 +95,13 @@ for (const collection of ["pages", "offers"])
       .getByRole("button", { name: "Review changes", exact: true })
       .click();
     await expect(
-      page.getByRole("heading", { name: "Publish the complete draft" }),
+      page.getByRole("heading", { name: "Review changes", exact: true }),
     ).toBeVisible();
-    await page.getByText("View complete saved draft", { exact: true }).click();
     await expect(
       page.getByText("Keep this value", { exact: true }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole("dialog").getByText(replacement, { exact: false }).first(),
     ).toBeVisible();
     await page
       .getByRole("button", { name: "Publish reviewed draft", exact: true })
@@ -176,7 +180,9 @@ test("frontend field selection preserves native media, rich text and structural 
   await page.getByRole("menuitem", { name: "Undo section change" }).click();
   await page.getByRole("button", { name: "More tools", exact: true }).click();
   await page.getByRole("menuitem", { name: "Redo section change" }).click();
-  await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("status", { name: "Draft saved", exact: true }),
+  ).toBeVisible();
   await expect
     .poll(
       async () =>
@@ -487,7 +493,9 @@ test("array leaves edit inline and an item opens only its own native fields", as
   ).toHaveCount(0);
   await leaf.fill("Nested inline draft");
   await leaf.press("Tab");
-  await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("status", { name: "Draft saved", exact: true }),
+  ).toBeVisible();
   await page
     .getByRole("button", { name: "Options for Label", exact: true })
     .click();
@@ -507,7 +515,9 @@ test("array leaves edit inline and an item opens only its own native fields", as
   await panel
     .getByRole("textbox", { name: "Label", exact: true })
     .fill("Scoped row draft");
-  await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("status", { name: "Draft saved", exact: true }),
+  ).toBeVisible();
   await expect(leaf).toHaveText("Scoped row draft");
   await page.reload();
   await expect(

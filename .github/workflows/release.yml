@@ -13,8 +13,8 @@ on:
       dist_tag:
         description: Explicit distribution channel
         type: choice
-        options: [next, latest]
-        default: next
+        options: [latest]
+        default: latest
       publish:
         description: Publish the verified artifact to public npm
         type: boolean

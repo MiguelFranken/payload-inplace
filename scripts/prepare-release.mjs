@@ -3,7 +3,7 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { assertReleasePolicy } from "./release-policy.mjs";
-const [runID, expectedSHA256, tag = "next"] = process.argv.slice(2);
+const [runID, expectedSHA256, tag = "latest"] = process.argv.slice(2);
 if (!/^[1-9][0-9]*$/.test(runID || ""))
   throw new Error("Numeric validation run ID required");
 const repository = "MiguelFranken/payload-visual-editor";

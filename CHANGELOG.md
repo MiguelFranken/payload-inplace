@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.1
+
+### Patch Changes
+
+- Start the normal 0.0.x release line. Compact the website toolbar into accessible icon controls with delayed tooltips and an icon save indicator. Batch typing with an idle debounce while preserving immediate inline feedback and newer edits during saves. Fix repeated review and confirmation openings, add a focused changed-field review with published/session comparisons, and support accented diagonal panel resizing.
+
 ## 0.1.0-alpha.15
 
 - Adopt streamed server previews in React transitions without hiding the website or reconnecting its controls.

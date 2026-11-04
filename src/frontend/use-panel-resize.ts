@@ -9,6 +9,7 @@ import {
   type RefObject,
 } from "react";
 type Axis = "width" | "height";
+type Handle = Axis | "both";
 type Size = { width: number; height?: number };
 /** Resize only editor geometry. Native fields stay mounted and the right/bottom dock anchors never move. */
 export function usePanelResize(
@@ -18,7 +19,9 @@ export function usePanelResize(
   const id = useId();
   const [size, setSize] = useState<Size>({ width: initialWidth });
   const drag = useRef<{
-    axis: Axis;
+    axis: Handle;
+    target: HTMLElement;
+    pointerId: number;
     x: number;
     y: number;
     width: number;
@@ -59,28 +62,40 @@ export function usePanelResize(
     paint(value);
     setSize(value);
     drag.current = null;
+    panel.current?.removeAttribute("data-resizing");
     if (event.currentTarget.hasPointerCapture(event.pointerId))
       event.currentTarget.releasePointerCapture(event.pointerId);
   }
-  function edge(axis: Axis, label: string) {
+  function edge(axis: Handle, label: string) {
     return {
-      role: "separator" as const,
+      role: axis === "both" ? ("button" as const) : ("separator" as const),
       tabIndex: 0,
       "aria-label": label,
       "aria-controls": id,
       "aria-orientation":
-        axis === "width" ? ("vertical" as const) : ("horizontal" as const),
-      "aria-valuenow": Math.round(size[axis] || 0),
-      "aria-valuetext": size[axis]
-        ? `${Math.round(size[axis]!)} px`
-        : "Automatic",
+        axis === "both"
+          ? undefined
+          : axis === "width"
+            ? ("vertical" as const)
+            : ("horizontal" as const),
+      "aria-valuenow":
+        axis === "both" ? undefined : Math.round(size[axis] || 0),
+      "aria-valuetext":
+        axis === "both"
+          ? undefined
+          : size[axis]
+            ? `${Math.round(size[axis]!)} px`
+            : "Automatic",
       onPointerDown(event: PointerEvent<HTMLElement>) {
         if (event.button !== 0 || !event.isPrimary || !panel.current) return;
         event.preventDefault();
         event.currentTarget.focus({ preventScroll: true });
         event.currentTarget.setPointerCapture(event.pointerId);
         const rect = panel.current.getBoundingClientRect();
+        panel.current.setAttribute("data-resizing", axis);
         drag.current = {
+          target: event.currentTarget,
+          pointerId: event.pointerId,
           axis,
           x: event.clientX,
           y: event.clientY,
@@ -95,13 +110,22 @@ export function usePanelResize(
         if (!current || current.axis !== axis) return;
         current.value = {
           ...current.value,
-          [axis]: clamp(
-            axis,
-            current[axis] +
-              (axis === "width"
-                ? current.x - event.clientX
-                : current.y - event.clientY),
-          ),
+          ...(axis !== "height"
+            ? {
+                width: clamp(
+                  "width",
+                  current.width + current.x - event.clientX,
+                ),
+              }
+            : {}),
+          ...(axis !== "width"
+            ? {
+                height: clamp(
+                  "height",
+                  current.height + current.y - event.clientY,
+                ),
+              }
+            : {}),
         };
         paint(current.value);
       },
@@ -114,18 +138,31 @@ export function usePanelResize(
       onKeyDown(event: KeyboardEvent<HTMLElement>) {
         if (event.key === "Escape" && drag.current) {
           event.preventDefault();
-          paint(drag.current.before);
+          event.stopPropagation();
+          const previous = drag.current;
+          paint(previous.before);
           drag.current = null;
+          panel.current?.removeAttribute("data-resizing");
+          if (previous.target.hasPointerCapture(previous.pointerId))
+            previous.target.releasePointerCapture(previous.pointerId);
           return;
         }
-        const increasing = axis === "width" ? "ArrowLeft" : "ArrowUp";
-        const decreasing = axis === "width" ? "ArrowRight" : "ArrowDown";
+        const dimension: Axis =
+          axis === "both"
+            ? ["ArrowLeft", "ArrowRight"].includes(event.key)
+              ? "width"
+              : "height"
+            : axis;
+        const increasing = dimension === "width" ? "ArrowLeft" : "ArrowUp";
+        const decreasing = dimension === "width" ? "ArrowRight" : "ArrowDown";
         if (![increasing, decreasing, "Home", "End"].includes(event.key))
           return;
         event.preventDefault();
         const current =
-          panel.current?.getBoundingClientRect()[axis] || size[axis] || 0;
-        const { min, max } = limits(axis);
+          panel.current?.getBoundingClientRect()[dimension] ||
+          size[dimension] ||
+          0;
+        const { min, max } = limits(dimension);
         const value =
           event.key === "Home"
             ? min
@@ -134,7 +171,7 @@ export function usePanelResize(
               : current +
                 (event.key === increasing ? 1 : -1) *
                   (event.shiftKey ? 48 : 16);
-        const next = { ...size, [axis]: clamp(axis, value) };
+        const next = { ...size, [dimension]: clamp(dimension, value) };
         paint(next);
         setSize(next);
       },

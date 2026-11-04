@@ -27,6 +27,7 @@ jobs:
       - run: VE_PORT=3137 corepack pnpm exec node scripts/postgres-test.mjs e2e
       - run: corepack pnpm test:graph
       - run: corepack pnpm exec node scripts/postgres-test.mjs
+      - run: corepack pnpm release:check
       - run: corepack pnpm pack:check
       - run: corepack pnpm test:consumer
       - run: corepack pnpm test:installed-consumer

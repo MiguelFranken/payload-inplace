@@ -1,0 +1,34 @@
+name: changesets
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+concurrency:
+  group: changesets-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  version:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - run: corepack enable
+      - run: corepack pnpm install --frozen-lockfile
+      - uses: changesets/action@615034bb14e5d240e559f941ce9769beb5e14fb0
+        with:
+          version: corepack pnpm version:packages
+          title: "chore(release): version packages"
+          commit: "chore(release): version packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+# No publish command here: release.yml alone publishes the exact CI artifact
+# after independent installed-consumer and Workshops acceptance receipts.
