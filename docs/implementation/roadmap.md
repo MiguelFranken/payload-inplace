@@ -1,5 +1,7 @@
 # Local implementation ledger
 
+Current final acceptance: [21-ticket evidence matrix](../validation/linear-acceptance/README.md), 5 November 2026. All entries below are chronological checkpoints; earlier “pending” statements describe that checkpoint and are superseded by the final matrix. Final counts: 227 unit/component tests, 68 production browser cases, 12 PG and 5 applicable Mongo checks, plus clean installed-archive/cache gates. Local only; release remains held.
+
 Branch: `feature/onpage-roadmap`. Owner instruction: commit completed slices locally; **no push, release or deployment until the owner gives the signal**.
 
 Baseline: `fa1f80f`, 108 unit tests passed before edits. Full roadmap: Linear COURSE-233, children COURSE-234–254. Checked entries mean implemented and locally validated on the declared runtime matrix, not released or deployed. The final evidence and explicit boundaries are recorded below. Work is accepted per domain, not by file movement alone.
@@ -172,3 +174,7 @@ Final domain coverage is 218 assertions in 74 files, 81% statements / 76.64% bra
 See [machine-readable acceptance](../validation/2026-11-04-roadmap/acceptance.json), [production cases](../validation/2026-11-04-roadmap/browser-summary.json), [installed archive receipt](../validation/2026-11-04-roadmap/installed-consumer.json), [native gutter comparison](../validation/2026-11-04-native-panel-gutters.md) and [native adapter inventory](../native-v3-adapters.md). Hardware touch, Firefox/WebKit and full speech-assistive-technology behavior remain unverified; unsupported cross-origin/custom-node authoring and native-peer loading boundaries remain explicit in compatibility/performance docs. Existing hook-dependency migration warnings are retained visibly.
 
 No commits have been pushed. No package version has been published and no deployment has been started during this local implementation. The owner retains the push/release signal.
+
+## Final individual-criteria audit — 5 November 2026
+
+All 21 ticket criteria were rechecked against implementation and actual package/native/browser behavior. The final audit corrected selection ownership, multiline editing, upload retries, polymorphic media identity, native date accessibility and cache-harness provenance. See the [final matrix](../validation/linear-acceptance/README.md) for exact archive/source identities, runtime split, explicit native-peer loading and Mongo concurrency refinements, screenshots and machine-readable receipts. No push, release or deployment occurred.

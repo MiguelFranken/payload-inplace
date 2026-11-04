@@ -1,0 +1,29 @@
+{
+  "registeredModules": 10,
+  "deliveredModules": [
+    "[project]/node_modules/.pnpm/next@16.4.2_@playwright+test@1.58.2_@types+node@24.19.2_react-dom@19.2.6_react@19.2.6__react@19.2.6_sass@1.77.4/node_modules/next/dist/esm/client/components/layout-router.js",
+    "[project]/node_modules/.pnpm/next@16.4.2_@playwright+test@1.58.2_@types+node@24.19.2_react-dom@19.2.6_react@19.2.6__react@19.2.6_sass@1.77.4/node_modules/next/dist/esm/client/components/render-from-template-context.js",
+    "[project]/node_modules/.pnpm/next@16.4.2_@playwright+test@1.58.2_@types+node@24.19.2_react-dom@19.2.6_react@19.2.6__react@19.2.6_sass@1.77.4/node_modules/next/dist/esm/client/components/client-page.js",
+    "[project]/node_modules/.pnpm/next@16.4.2_@playwright+test@1.58.2_@types+node@24.19.2_react-dom@19.2.6_react@19.2.6__react@19.2.6_sass@1.77.4/node_modules/next/dist/esm/client/components/client-segment.js",
+    "[project]/node_modules/.pnpm/next@16.4.2_@playwright+test@1.58.2_@types+node@24.19.2_react-dom@19.2.6_react@19.2.6__react@19.2.6_sass@1.77.4/node_modules/next/dist/esm/client/components/http-access-fallback/error-boundary.js",
+    "[project]/node_modules/.pnpm/next@16.4.2_@playwright+test@1.58.2_@types+node@24.19.2_react-dom@19.2.6_react@19.2.6__react@19.2.6_sass@1.77.4/node_modules/next/dist/esm/lib/framework/boundary-components.js",
+    "[project]/node_modules/.pnpm/next@16.4.2_@playwright+test@1.58.2_@types+node@24.19.2_react-dom@19.2.6_react@19.2.6__react@19.2.6_sass@1.77.4/node_modules/next/dist/esm/lib/metadata/generate/icon-mark.js",
+    "[project]/packages/payload-inplace/dist/payload-inplace/src/launcher/DeferredLauncher.js",
+    "[project]/node_modules/.pnpm/lucide-react@1.66.0_@types+react@19.2.14_react@19.2.6/node_modules/lucide-react/dist/esm/Icon.mjs"
+  ],
+  "chunks": [
+    "/_next/static/chunks/2er7wnfsqzm6l.css",
+    "/_next/static/chunks/20wen1g5_o_lo.js",
+    "/_next/static/chunks/124yikkp5in-g.js",
+    "/_next/static/chunks/1xrxvcfpdz4mq.js",
+    "/_next/static/chunks/turbopack-2c3mg3r-05n1w.js",
+    "/_next/static/chunks/3bieweqjq9y4j.js",
+    "/_next/static/chunks/0xg6fs89o7rbm.js",
+    "/_next/static/chunks/24c90_jw-bs5o.js"
+  ],
+  "decodedDeliveredBytes": 476588,
+  "heavyEditorModules": 0,
+  "deferredRegistrationBytes": 1493,
+  "activeControl": true,
+  "negativeControl": true
+}

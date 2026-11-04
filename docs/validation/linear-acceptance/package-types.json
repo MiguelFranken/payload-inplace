@@ -1,0 +1,8 @@
+{
+  "sourceSHA": "d05a804f9c19865f20cc364306d51d38dc077714",
+  "sha256": "7c08c8465206cafd853f957906ab7b508c9582a90ff1139263e3358a3bf84916",
+  "profile": "esm-only",
+  "excludedAsset": "styles.css",
+  "allJavaScriptEntrypoints": true,
+  "passed": true
+}
