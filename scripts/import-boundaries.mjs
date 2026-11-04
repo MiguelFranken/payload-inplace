@@ -79,6 +79,18 @@ export function checkSourceBoundary(file, source, root = process.cwd()) {
   }
   for (const edge of importEdges(file, source)) {
     if (
+      name.startsWith("packages/payload-inplace/src/") &&
+      !name.includes("/src/testing/") &&
+      !name.endsWith("/src/exports/testing.ts") &&
+      (edge.spec === "payload-inplace/testing" ||
+        /\/src\/testing\//.test(
+          normalized(path.resolve(path.dirname(file), edge.spec)),
+        ))
+    )
+      throw Error(
+        `Production source imports a testing helper: ${name}: ${edge.spec}`,
+      );
+    if (
       name.startsWith("packages/core/src/") &&
       (!edge.spec.startsWith(".") ||
         !path

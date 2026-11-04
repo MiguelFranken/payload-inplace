@@ -33,6 +33,7 @@ export default defineConfig({
     "exports/server": "packages/payload-inplace/src/exports/server.ts",
     "exports/postgres": "packages/payload-inplace/src/exports/postgres.ts",
     "exports/messages": "packages/payload-inplace/src/exports/messages.ts",
+    "exports/testing": "packages/payload-inplace/src/exports/testing.ts",
     "exports/types": "packages/payload-inplace/src/exports/types.ts",
   },
   outDir: "packages/payload-inplace/dist",

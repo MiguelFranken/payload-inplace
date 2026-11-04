@@ -139,6 +139,33 @@ test("installed nested-root native fields, optimistic draft and reviewed publish
     expect(doc.article.sections).toHaveLength(2);
     await page.getByRole("button", { name: /^Close .+ panel$/ }).click();
     await page
+      .getByRole("button", { name: "Select content", exact: true })
+      .click();
+    await page.locator('[data-ve-field="readingTime"]').click();
+    await page
+      .getByRole("button", { name: "Increase 12", exact: true })
+      .click();
+    await expect
+      .poll(
+        async () =>
+          (
+            await (
+              await page.request.get(
+                `/api/stories/${doc.id}?draft=true&depth=0`,
+              )
+            ).json()
+          ).article.sections[0].readingTime,
+      )
+      .toBe(13);
+    await page
+      .getByRole("button", { name: "Native options", exact: true })
+      .click();
+    await expect(
+      page.getByRole("spinbutton", { name: "Reading Time", exact: true }),
+    ).toHaveValue("13");
+    await page.getByRole("button", { name: /^Close .+ panel$/ }).click();
+
+    await page
       .getByRole("button", { name: "Review changes", exact: true })
       .click();
     await page

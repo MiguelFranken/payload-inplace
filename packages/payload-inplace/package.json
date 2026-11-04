@@ -90,6 +90,11 @@
       "types": "./dist/exports/messages.d.ts",
       "import": "./dist/exports/messages.js",
       "default": "./dist/exports/messages.js"
+    },
+    "./testing": {
+      "types": "./dist/exports/testing.d.ts",
+      "import": "./dist/exports/testing.js",
+      "default": "./dist/exports/testing.js"
     }
   },
   "publishConfig": {

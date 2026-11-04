@@ -17,6 +17,12 @@ export const editorOptions: VisualEditorOptions = {
     callout: { inlineEdit: ["headline", "summary"] },
     quotation: { inlineEdit: ["headline", "attribution"] },
   },
+  strategyProviders: [
+    {
+      id: "synthetic-control",
+      Component: "./components/StrategyRegistration#StrategyRegistration",
+    },
+  ],
   fieldPanels: [{ id: "document", label: "Story details", fields: ["name"] }],
 };
 async function seed(payload: Payload) {
@@ -128,6 +134,12 @@ export default buildConfig({
                   fields: [
                     { name: "headline", type: "text", required: true },
                     { name: "summary", type: "textarea" },
+                    {
+                      name: "readingTime",
+                      type: "number",
+                      defaultValue: 12,
+                      min: 1,
+                    },
                     {
                       name: "tone",
                       type: "select",

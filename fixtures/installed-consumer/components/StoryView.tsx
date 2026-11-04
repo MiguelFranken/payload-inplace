@@ -51,6 +51,16 @@ export function StoryView({
                 {section.attribution}
               </p>
             )}
+            {section.blockType === "callout" && (
+              <p
+                {...getFieldAttributes(
+                  { ...identity, field: "readingTime" },
+                  active,
+                )}
+              >
+                {section.readingTime} minutes
+              </p>
+            )}
             {section.body?.root && (
               <div
                 {...getFieldAttributes({ ...identity, field: "body" }, active)}

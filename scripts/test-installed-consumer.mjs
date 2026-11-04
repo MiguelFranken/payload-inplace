@@ -312,6 +312,7 @@ try {
     { encoding: "utf8" },
   ).trim();
   await run(["typecheck"]);
+  await run(["test:unit"]);
   const installed = await check(false),
     disabled = await check(true);
   for (const sample of installed.resources) {

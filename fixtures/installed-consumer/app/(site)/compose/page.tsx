@@ -1,5 +1,5 @@
 import { unstable_rethrow } from "next/navigation";
-import { handleServerFunctions } from "@payloadcms/next/layouts";
+import { handleEditorServerFunctions } from "payload-inplace/native";
 import type { ServerFunctionClient } from "payload";
 import config, { editorOptions } from "@payload-config";
 import { FrontendEditor } from "payload-inplace/rsc";
@@ -17,8 +17,8 @@ export default async function Page({
   const { req, token, context, document } = await authorizedEditor(identifier);
   const serverFunction: ServerFunctionClient = async (args) => {
     "use server";
-    await authorizedEditor(identifier, true);
-    return handleServerFunctions({ ...args, config, importMap });
+    const { req } = await authorizedEditor(identifier, true);
+    return handleEditorServerFunctions({ ...args, config, importMap }, req);
   };
   const refreshPreview = async (): Promise<EditorPreviewResponse> => {
     "use server";

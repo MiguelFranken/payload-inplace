@@ -18,6 +18,12 @@ export function assertPublicGraph(modules) {
 }
 /** The registered active route must contain the real native shell; an empty public graph is not sufficient proof. */
 export function assertActiveGraph(modules) {
+  for (const source of Object.keys(modules))
+    if (
+      plugin.test(source) &&
+      /\/(?:exports\/testing\.js|testing\/)/.test(source)
+    )
+      throw Error(`Testing helper leaked into active application: ${source}`);
   if (
     !Object.keys(modules).some(
       (source) =>

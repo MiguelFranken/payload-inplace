@@ -76,3 +76,23 @@ it("finds transitive editor leakage in the public inert bindings graph", () => {
     checkBindingsGraph(entry, (file: string) => modules.get(file), root),
   ).toThrow("editor/server");
 });
+it("keeps test fixtures out of production source even through relative imports", () => {
+  const file = path.join(
+    root,
+    "packages/payload-inplace/src/frontend/case.tsx",
+  );
+  for (const source of [
+    'import { createEditorFixture } from "payload-inplace/testing";',
+    'export * from "../testing/fixtures.js";',
+  ])
+    expect(() => checkSourceBoundary(file, source, root)).toThrow(
+      "testing helper",
+    );
+  expect(() =>
+    checkSourceBoundary(
+      path.join(root, "packages/payload-inplace/src/exports/testing.ts"),
+      'export * from "../testing/fixtures.js";',
+      root,
+    ),
+  ).not.toThrow();
+});
