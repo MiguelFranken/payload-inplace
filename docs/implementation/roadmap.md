@@ -145,3 +145,9 @@ Added opt-in active-development mapping diagnostics for path/row intent, native 
 Extracted saved-preview single-flight/coalescing and revision-floor handling from the shell. Late unmounted responses cannot update the next document owner; stale presentation reads are rejected before acceptance. Local provider/preview Suspense boundaries preserve the native Form while optional content loads. Three component tests cover coalescing/current callbacks, stale response/explicit retry, access denial and unmount. The streamed structural acknowledgement browser regression remains green.
 
 Local validation at this slice: 216 assertions in 73 unit/component files; coverage 80.58% statements, 76.09% branches, 84.15% functions and 82.77% lines for the documented domain denominator. TypeScript, lint and generated API contracts pass. Full production/browser/archive acceptance remains required.
+
+## Undo precedence and draft activation
+
+A real-browser flow now creates a structural move, performs plaintext and Lexical text undo, saves a later headline edit, and undoes the structure. Text history never changes block order; structural undo retains the newer headline and revision/draft status (10.5s). The Lexical unit test now actually dispatches undo and redo and checks serialized state, rather than only checking initialization/formatting.
+
+Activation permission checks now pass draft intent to native update access while retaining the original source document for host capability checks. A published source therefore does not incorrectly require publish authority merely to enter draft editing. Two regression controls cover collection/global intent, unchanged source status and host denial. Native publication/review guards are unchanged. Focused unit, browser, TypeScript, lint and API checks pass.

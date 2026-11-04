@@ -1460,3 +1460,85 @@ test("native nested field gutters match admin without horizontal overflow at res
   }
   expect(errors).toEqual([]);
 });
+
+test("plaintext and rich-text undo stay local while structural undo preserves newer field edits", async ({
+  page,
+}) => {
+  const { createShopEditor } = await import("./testing/editor-fixtures");
+  const { doc } = await createShopEditor(page);
+  const read = async () =>
+    await (
+      await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+    ).json();
+  const order = (document: typeof doc) =>
+    document.layout.map((row: { id: string }) => row.id);
+  const originalOrder = order(doc);
+  await page.getByRole("button", { name: "Sections", exact: true }).click();
+  await page
+    .getByRole("button", {
+      name: "Settings for Product collection section",
+      exact: true,
+    })
+    .click();
+  await page
+    .getByRole("button", { name: "Move section down", exact: true })
+    .click();
+  const moved = [
+    originalOrder[0],
+    originalOrder[2],
+    originalOrder[1],
+    originalOrder[3],
+  ];
+  await expect.poll(async () => order(await read())).toEqual(moved);
+  await page
+    .getByRole("button", {
+      name: "Close Product collection panel",
+      exact: true,
+    })
+    .click();
+  const select = page.getByRole("button", {
+    name: "Select content",
+    exact: true,
+  });
+  if ((await select.getAttribute("aria-pressed")) !== "true")
+    await select.click();
+  const heading = page.locator('[data-ve-field="heading"]').first();
+  const originalHeading = await heading.textContent();
+  await heading.click();
+  await heading.press("ControlOrMeta+End");
+  await heading.pressSequentially(" local undo");
+  await heading.press("ControlOrMeta+z");
+  await expect(heading).toHaveText(originalHeading!);
+  // Browser undo restores its caret according to the host OS. Retain the user's
+  // resulting text without assuming a platform-specific end-of-document chord.
+  await heading.pressSequentially(" retained later");
+  const retainedHeading = await heading.textContent();
+  expect(retainedHeading).toContain("retained later");
+  await heading.press("Escape");
+  await expect
+    .poll(async () => (await read()).layout[0].heading)
+    .toBe(retainedHeading);
+  const body = page.locator('[data-ve-field="body"]').first();
+  await body.scrollIntoViewIfNeeded();
+  await body.click();
+  const rich = page.locator('[data-ve-inline-active][data-ve-field="body"]');
+  const originalRich = await rich.textContent();
+  await rich.press("ControlOrMeta+End");
+  await rich.pressSequentially(" rich undo");
+  await rich.press("ControlOrMeta+z");
+  await expect(rich).toHaveText(originalRich!);
+  expect(order(await read())).toEqual(moved);
+  await rich.press("Escape");
+  await page.getByRole("button", { name: "Sections", exact: true }).click();
+  const undo = page.getByRole("button", {
+    name: "Undo section change",
+    exact: true,
+  });
+  await expect(undo).toBeEnabled();
+  await undo.click();
+  await expect.poll(async () => order(await read())).toEqual(originalOrder);
+  const saved = await read();
+  expect(saved.layout[0].heading).toBe(retainedHeading);
+  expect(saved._status).toBe("draft");
+  expect(saved._veRevision).toBeGreaterThan(doc._veRevision);
+});

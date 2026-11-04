@@ -3,6 +3,9 @@ import {
   $getRoot,
   $isTextNode,
   FORMAT_TEXT_COMMAND,
+  UNDO_COMMAND,
+  REDO_COMMAND,
+  HISTORY_PUSH_TAG,
   SKIP_DOM_SELECTION_TAG,
 } from "lexical";
 import { mountRichEditor } from "../src/editor.js";
@@ -117,6 +120,22 @@ it("has local text undo and avoids emitting a write merely from initialization o
   );
   await new Promise((resolve) => setTimeout(resolve, 0));
   expect(changes.length).toBeGreaterThan(0);
+  const before = runtime.editor.getEditorState().toJSON();
+  runtime.editor.update(
+    () => {
+      const first = $getRoot().getFirstDescendant();
+      if ($isTextNode(first)) first.setTextContent("Text undo stays local");
+    },
+    { discrete: true, tag: [HISTORY_PUSH_TAG, SKIP_DOM_SELECTION_TAG] },
+  );
+  const changed = runtime.editor.getEditorState().toJSON();
+  expect(changed).not.toEqual(before);
+  runtime.editor.dispatchCommand(UNDO_COMMAND, undefined);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  expect(runtime.editor.getEditorState().toJSON()).toEqual(before);
+  runtime.editor.dispatchCommand(REDO_COMMAND, undefined);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  expect(runtime.editor.getEditorState().toJSON()).toEqual(changed);
 });
 it("allows only intentional link protocols for imported/pasted anchors", () => {
   for (const url of [

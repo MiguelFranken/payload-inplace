@@ -81,7 +81,10 @@ export function verifyContext(
     return null;
   }
 }
-/** Authorize through the host capability and ordinary read/update/admin access, including update Where. */
+/** Authorize draft editing through host capability and native read/update/admin access,
+ * including update Where. Published source data remains visible to host capability;
+ * the native update permission receives draft intent, never publish authority.
+ */
 export async function authorizeTarget(
   req: PayloadRequest,
   target: EditorTarget,
@@ -112,7 +115,7 @@ export async function authorizeTarget(
     const permission = await docAccessOperationGlobal({
       req,
       globalConfig: global,
-      data: document,
+      data: { ...document, _status: "draft" },
     });
     if (
       permission.update !== true ||
@@ -144,7 +147,7 @@ export async function authorizeTarget(
     ? await collection.access.update({
         req,
         id: target.id as never,
-        data: document,
+        data: { ...document, _status: "draft" },
       })
     : Boolean(req.user);
   if (!update) throw new APIError("Editor access denied", 403);
