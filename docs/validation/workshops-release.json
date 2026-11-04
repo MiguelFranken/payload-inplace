@@ -123,8 +123,59 @@
     "oidcReleaseVerified": true
   },
   "deployment": {
-    "status": "pending",
-    "target": "Workshops feature preview only"
+    "status": "READY",
+    "target": "Workshops feature preview only",
+    "deploymentID": "dpl_AS7MufN43DQ1htx8Zn4egqpkQvXr",
+    "appSHA": "caeafee11cf3bd2f8fc8c677fdc69dbada970527",
+    "url": "https://feature-payload-visual-editor.workshops.dev.fluid-bodies.com/",
+    "generatedHostname": "fluid-bodies-workshops-2ke669qnv-fluid-bodies.vercel.app",
+    "publicPackage": "payload-inplace@0.0.2",
+    "appCI": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/41844284404",
+    "appCIResult": "passed",
+    "deploymentWorkflow": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/41844284586",
+    "deploymentWorkflowResult": "passed",
+    "acceptance": {
+      "runId": "payload-inplace-v002-deployed-1793801751024",
+      "appSHA": "caeafee11cf3bd2f8fc8c677fdc69dbada970527",
+      "dirty": false,
+      "result": "passed",
+      "totals": {
+        "failed": 0,
+        "passed": 3,
+        "skipped": 0,
+        "total": 3
+      },
+      "tests": [
+        {
+          "title": "chromium > visual-editor.spec.ts > website editing uses the installed native Form and keeps drafts private",
+          "status": "passed",
+          "durationMs": 41710
+        },
+        {
+          "title": "chromium > visual-editor.spec.ts > homepage-shaped blocks reorder by pointer without a render loop",
+          "status": "passed",
+          "durationMs": 32891
+        },
+        {
+          "title": "chromium > visual-editor.spec.ts > the configured preview alias activates the editor on the same homepage",
+          "status": "passed",
+          "durationMs": 8802
+        }
+      ],
+      "captures": 8,
+      "inspected": [
+        "scoped native array fields at desktop",
+        "changed-only review at mobile"
+      ]
+    },
+    "codexBrowser": {
+      "publicHomepageRendered": true,
+      "observedConsoleErrors": 0,
+      "headerFooterPreserved": true
+    },
+    "otherChecks": {
+      "schmuckwerkstatt": "Separate automatic deployment status remains failed; its referenced deployment and build-log endpoints return 404. No all-PR-green claim."
+    }
   },
   "previousReceipt": "2026-11-04-unscoped-0.0.1-release.json"
 }
