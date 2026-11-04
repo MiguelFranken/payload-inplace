@@ -1436,14 +1436,9 @@ export function FrontendControls({
                 <DropdownMenu>
                   <DropdownMenuTrigger
                     ref={toolsButton}
-                    render={
-                      <ChromeButton
-                        size="icon"
-                        className="pve:max-sm:size-9"
-                        aria-label={t("More tools", "Weitere Werkzeuge")}
-                        title={t("More tools", "Weitere Werkzeuge")}
-                      />
-                    }
+                    className="pve:max-sm:size-9"
+                    aria-label={t("More tools", "Weitere Werkzeuge")}
+                    title={t("More tools", "Weitere Werkzeuge")}
                   >
                     <MoreHorizontal size={18} />
                   </DropdownMenuTrigger>
