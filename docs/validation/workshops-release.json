@@ -107,11 +107,20 @@
     "independentDisabledSkipped": 1
   },
   "publication": {
-    "status": "pending",
+    "status": "publicly available",
     "method": "GitHub Actions trusted publisher OIDC",
     "repository": "MiguelFranken/payload-inplace",
     "workflow": "release.yml",
-    "environment": "npm"
+    "environment": "npm",
+    "version": "0.0.2",
+    "distTag": "latest",
+    "workflowRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/41842900822",
+    "publicationCommit": "fa5b14d8c6e1183fb25f2c2c1589cd724c29a21f",
+    "anonymousArchiveSHA256": "2e5ac872d309c82852ce00dfd220fafc55a552abdcfd8374d27abc77f36f7c81",
+    "integrity": "sha512-2CvYYJf6F+Swta9Xz3C5u5PavEUQBelUydhFqH4nfJUe5lrA3WIqwyOTb/r1Pk7mf8ZY2m/TMkW6ANtE7dPQ3g==",
+    "provenance": "https://registry.npmjs.org/-/npm/v1/attestations/payload-inplace@0.0.2",
+    "provenanceSubjectMatchesArchive": true,
+    "oidcReleaseVerified": true
   },
   "deployment": {
     "status": "pending",
