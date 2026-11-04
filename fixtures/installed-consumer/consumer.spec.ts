@@ -182,12 +182,12 @@ test("installed nested-root native fields, optimistic draft and reviewed publish
     await expect(panel.getByLabel("Release At", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: /^Close .+ panel$/ }).click();
     // Native validation is independently enforced on the very same strategy field.
-    const invalid = await page.request.post("/api/stories", {
+    const invalid = await page.request.post("/api/stories?draft=true", {
       headers: { Origin: process.env.CONSUMER_ORIGIN! },
       data: {
         name: "Invalid native strategy",
         slug: `invalid-${Date.now()}`,
-        _status: "published",
+        _status: "draft",
         article: {
           sections: [
             { blockType: "callout", headline: "Invalid", readingTime: 0 },
@@ -355,12 +355,12 @@ test("installed media adapter uploads, retries and replaces image/video referenc
   const videoAsset = (await video.json()).doc;
   expect(videoAsset.mimeType).toBe("video/mp4");
   const slug = `media-proof-${Date.now()}`;
-  const created = await page.request.post("/api/stories", {
+  const created = await page.request.post("/api/stories?draft=true", {
     headers,
     data: {
       name: "Media proof",
       slug,
-      _status: "published",
+      _status: "draft",
       article: {
         sections: [
           {
@@ -384,8 +384,13 @@ test("installed media adapter uploads, retries and replaces image/video referenc
     expect(res.ok()).toBe(true);
     return res.json();
   };
-  await page.goto(`/stories/${slug}`);
-  await page.getByRole("button", { name: "Edit page", exact: true }).click();
+  const activation = await page.request.post("/api/visual-editor/activate", {
+    headers,
+    data: { collection: "stories", id: doc.id, root: "article.sections" },
+  });
+  expect(activation.ok()).toBe(true);
+  const { context: activated } = await activation.json();
+  await page.goto(`/compose?context=${encodeURIComponent(activated.nonce)}`);
   await expect(
     page.getByRole("navigation", { name: "Editing toolbar" }),
   ).toBeVisible();
