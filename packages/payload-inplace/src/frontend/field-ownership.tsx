@@ -302,6 +302,7 @@ export function NativeFieldSlot({
   return (
     <NativeFieldsOwner path={path}>
       <RenderFields
+        margins="small"
         fields={[hit.field]}
         parentPath={hit.parent}
         parentSchemaPath={hit.schemaParent}

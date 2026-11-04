@@ -1172,6 +1172,7 @@ export function FrontendControls({
                         disabled={disabled}
                         fallback={
                           <RenderFields
+                            margins="small"
                             fields={fields}
                             parentPath={panelPath}
                             parentSchemaPath={panelSchemaPath}
@@ -1184,6 +1185,7 @@ export function FrontendControls({
                       />
                     ) : (
                       <RenderFields
+                        margins="small"
                         fields={fields}
                         parentPath={panelPath}
                         parentSchemaPath={panelSchemaPath}

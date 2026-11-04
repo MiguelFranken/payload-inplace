@@ -1373,3 +1373,90 @@ test("optional patterns copy saved sections through native preparation with fres
   expect(saved.layout[2].items[0].id).not.toBe(saved.layout[1].items[0].id);
   expect(errors).toEqual([]);
 });
+
+test("native nested field gutters match admin without horizontal overflow at resized widths", async ({
+  page,
+  context,
+}) => {
+  const { createShopEditor } = await import("./testing/editor-fixtures");
+  const { doc } = await createShopEditor(page);
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.getByRole("button", { name: "Sections", exact: true }).click();
+  await page
+    .getByRole("button", {
+      name: "Settings for Product collection section",
+      exact: true,
+    })
+    .click();
+  const panel = page.getByRole("complementary", {
+    name: "Edit content",
+    exact: true,
+  });
+  const body = panel.locator("[data-ve-panel-body]");
+  const cards = panel.locator("#field-layout__1__cards");
+  await cards.getByRole("button", { name: "Show All", exact: true }).click();
+  const field = cards.getByRole("textbox", { name: "Heading", exact: true });
+  await expect(field).toHaveValue("Arc lounge chair");
+  const fieldNode = await field.elementHandle();
+  const metrics = () =>
+    body.evaluate((el) => {
+      const row = el.querySelector(".array-field .collapsible__content")!;
+      return {
+        width: el.clientWidth,
+        scroll: el.scrollWidth,
+        padding: getComputedStyle(row).padding,
+      };
+    });
+  const initial = await metrics();
+  expect(initial.padding).toBe("20px");
+  expect(initial.scroll).toBe(initial.width);
+  const admin = await context.newPage();
+  try {
+    await admin.setViewportSize({ width: 1440, height: 1000 });
+    await admin.goto(`/admin/collections/shops/${doc.id}`);
+    const nativeCards = admin.locator("#field-layout__1__cards");
+    await nativeCards
+      .getByRole("button", { name: "Show All", exact: true })
+      .click();
+    expect(
+      await nativeCards
+        .locator(".collapsible__content")
+        .first()
+        .evaluate((el) => getComputedStyle(el).padding),
+    ).toBe(initial.padding);
+  } finally {
+    await admin.close();
+  }
+  const width = panel.getByRole("separator", {
+    name: "Resize panel width",
+    exact: true,
+  });
+  // Both the small-container and desktop field layouts must fit. Overflow must
+  // be repaired through the gutter contract, not hidden by overflow-x: hidden.
+  await width.focus();
+  for (let i = 0; i < 10; i++) await width.press("Shift+ArrowLeft");
+  expect((await panel.boundingBox())!.width).toBeGreaterThan(800);
+  for (const viewport of [
+    { width: 1440, height: 1000 },
+    { width: 320, height: 740 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await expect
+      .poll(async () => {
+        const m = await metrics();
+        return m.scroll - m.width;
+      })
+      .toBe(0);
+    expect(
+      await field.evaluate((el, original) => el === original, fieldNode),
+    ).toBe(true);
+    await expect(field).toHaveValue("Arc lounge chair");
+    await field.focus();
+    await page.screenshot({
+      path: `test-results/native-nested-gutters-${viewport.width}.png`,
+    });
+  }
+  expect(errors).toEqual([]);
+});

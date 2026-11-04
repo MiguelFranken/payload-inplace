@@ -6,7 +6,12 @@ import { X, ArrowLeft } from "lucide-react";
 import { useTranslation } from "@payloadcms/ui";
 import { usePanelResize } from "./use-panel-resize.js";
 import { Button } from "./ui/button.js";
-/** One contextual surface is docked above the toolbar. Consumers still supply native fields or complete custom content. */
+/**
+ * One contextual surface is docked above the toolbar. Native field breakpoints
+ * follow this container, so their gutter must follow its padding as well instead
+ * of inheriting the admin page's viewport-sized gutter. Consumers may adjust both
+ * through `--pve-panel-padding` without breaking top-level group negative margins.
+ */
 export function Floatable({
   title,
   label = title,
@@ -119,7 +124,8 @@ export function Floatable({
       </header>
       <div
         ref={body}
-        className="pve:@container/pve-native pve:min-h-0 pve:flex-auto pve:max-h-[var(--pve-body-limit,60dvh)] pve:overflow-auto pve:overscroll-contain pve:p-4"
+        data-ve-panel-body=""
+        className="pve:@container/pve-native pve:min-h-0 pve:min-w-0 pve:flex-auto pve:max-h-[var(--pve-body-limit,60dvh)] pve:overflow-auto pve:overscroll-contain pve:[--gutter-h:var(--pve-panel-padding,var(--base,20px))] pve:p-[var(--pve-panel-padding,var(--base,20px))]"
       >
         {children}
       </div>
