@@ -24,7 +24,14 @@ import {
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { GripVertical, Layers, Settings2, LockKeyhole } from "lucide-react";
+import {
+  GripVertical,
+  Layers,
+  Settings2,
+  LockKeyhole,
+  LocateFixed,
+} from "lucide-react";
+import { useTranslation } from "@payloadcms/ui";
 import type { NativeSection } from "../schema/tree.js";
 import {
   elementRect,
@@ -65,6 +72,39 @@ export function sectionElement(s: NativeSection) {
         JSON.stringify(s.identity.ancestors || []),
   );
 }
+/** Locate a renderer-owned block, including fragment roots, without selecting fields or mutating the native Form. */
+export function showSectionOnPage(section: NativeSection): boolean {
+  const element = sectionElement(section);
+  const rect = element && elementRect(element);
+  if (!rect) return false;
+  const headers = [...document.querySelectorAll("header")].filter((header) => {
+    const position = getComputedStyle(header).position;
+    const box = header.getBoundingClientRect();
+    return (
+      (position === "fixed" || position === "sticky") &&
+      box.top <= 1 &&
+      box.bottom > 0 &&
+      box.height < innerHeight / 2
+    );
+  });
+  const clearance = Math.max(
+    24,
+    ...headers.map((header) => header.getBoundingClientRect().bottom + 16),
+    (parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) ||
+      0) + 16,
+  );
+  const top = Math.max(
+    clearance,
+    (innerHeight - Math.min(rect.height, innerHeight - clearance - 96)) / 2,
+  );
+  window.scrollBy({
+    top: rect.top - top,
+    behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? "instant"
+      : "smooth",
+  });
+  return true;
+}
 /** Both surfaces dispatch exactly one native identity-based move on drop. Drag state never changes document data. */
 export function BlockReorder({
   sections,
@@ -73,6 +113,7 @@ export function BlockReorder({
   onMove,
   onPick,
   onSettings,
+  onLocate,
   lockedReason,
   getHeading,
 }: {
@@ -83,6 +124,7 @@ export function BlockReorder({
   onMove: (from: NativeSection, to: NativeSection) => string | undefined;
   onPick: (s: NativeSection) => void;
   onSettings?: (s: NativeSection) => void;
+  onLocate?: (s: NativeSection) => void;
   lockedReason?: (s: NativeSection) => string | undefined;
 }) {
   const [active, setActive] = useState<string | null>(null),
@@ -208,6 +250,7 @@ export function BlockReorder({
             after={Boolean(activeSection && activeSection.index < s.index)}
             onPick={() => onPick(s)}
             onSettings={onSettings ? () => onSettings(s) : undefined}
+            onLocate={onLocate ? () => onLocate(s) : undefined}
           />
         ))}
       </SortableContext>
@@ -234,6 +277,7 @@ function ReorderItem({
   after,
   onPick,
   onSettings,
+  onLocate,
   lock,
   heading,
 }: {
@@ -246,8 +290,10 @@ function ReorderItem({
   after: boolean;
   onPick: () => void;
   onSettings?: () => void;
+  onLocate?: () => void;
   lock?: string;
 }) {
+  const { i18n } = useTranslation();
   const id = key(s),
     {
       attributes,
@@ -421,6 +467,22 @@ function ReorderItem({
           </span>
         </span>
       </button>
+      {onLocate && (
+        <Button
+          size="icon"
+          aria-label={
+            i18n.language === "de"
+              ? `${label} auf der Seite zeigen`
+              : `Show ${label} on page`
+          }
+          title={
+            i18n.language === "de" ? "Auf der Seite zeigen" : "Show on page"
+          }
+          onClick={onLocate}
+        >
+          <LocateFixed size={16} />
+        </Button>
+      )}
       {onSettings && (
         <Button
           size="icon"

@@ -1715,3 +1715,81 @@ test("streamed saved previews keep the native editor mounted throughout structur
     });
   }
 });
+
+test("show on page locates fragment blocks without selecting or changing native fields", async ({
+  page,
+}) => {
+  const doc = await createEditor(page);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page
+    .locator("main section")
+    .first()
+    .evaluate((element: HTMLElement) => {
+      element.style.minHeight = "1500px";
+    });
+  const fragment = page
+    .locator(`main [data-ve-block="${doc.layout[2].id}"]`)
+    .first();
+  await fragment.evaluate((element: HTMLElement) => {
+    element.style.display = "contents";
+  });
+  expect(
+    await fragment.evaluate(
+      (element) => element.getBoundingClientRect().height,
+    ),
+  ).toBe(0);
+  let writes = 0;
+  page.on("request", (request) => {
+    if (request.method() === "PATCH") writes++;
+  });
+  await page.getByRole("button", { name: "Sections", exact: true }).click();
+  const sections = page.getByRole("complementary", {
+    name: "Sections",
+    exact: true,
+  });
+  await sections
+    .getByRole("button", { name: "Show Server data on page", exact: true })
+    .click();
+  await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(1000);
+  await expect(
+    page.getByRole("heading", { name: "Server-only fragment", exact: true }),
+  ).toBeInViewport();
+  await expect(sections).toBeVisible();
+  await expect(page.locator("main [contenteditable]")).toHaveCount(0);
+  expect(writes).toBe(0);
+  await sections
+    .getByRole("button", {
+      name: "Settings for Server data section",
+      exact: true,
+    })
+    .click();
+  const settings = page.getByRole("complementary", {
+    name: "Edit content",
+    exact: true,
+  });
+  const input = settings.getByRole("textbox", { name: "Heading", exact: true });
+  await expect(input).toHaveValue("Server-only fragment");
+  await input.evaluate((element) => {
+    (window as any).__locateField = element;
+  });
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+  await settings
+    .getByRole("button", { name: "Show section on page", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Server-only fragment", exact: true }),
+  ).toBeInViewport();
+  expect(
+    await input.evaluate(
+      (element) => element === (window as any).__locateField,
+    ),
+  ).toBe(true);
+  await expect(input).toHaveValue("Server-only fragment");
+  expect(writes).toBe(0);
+  await page.screenshot({ path: "test-results/locate-section.png" });
+  await page.setViewportSize({ width: 320, height: 720 });
+  await expect(
+    settings.getByRole("button", { name: "Show section on page", exact: true }),
+  ).toBeInViewport();
+  await page.screenshot({ path: "test-results/locate-section-320.png" });
+});
