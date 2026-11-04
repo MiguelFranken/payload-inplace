@@ -2,16 +2,13 @@ import path from "node:path";
 import { buildConfig, type PayloadRequest, type Payload } from "payload";
 import { postgresAdapter } from "@payloadcms/db-postgres";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
-import {
-  visualEditor,
-  type VisualEditorOptions,
-} from "payload-inplace";
+import { visualEditor, type VisualEditorOptions } from "payload-inplace";
 import { postgresConcurrency } from "payload-inplace/postgres";
 const write = ({ req }: { req: PayloadRequest }): boolean =>
   req.user?.role === "author";
 export const editorOptions: VisualEditorOptions = {
   collections: { stories: { roots: ["article.sections"] } },
-  previewOrigin: "http://127.0.0.1:3147",
+  previewOrigin: process.env.CONSUMER_ORIGIN!,
   editorPath: "/compose",
   disabled: process.env.CONSUMER_DISABLED === "1",
   canEdit: ({ req }) => req.user?.role === "author",
@@ -65,7 +62,7 @@ async function seed(payload: Payload) {
   });
 }
 export default buildConfig({
-  serverURL: "http://127.0.0.1:3147",
+  serverURL: process.env.CONSUMER_ORIGIN!,
   secret: process.env.PAYLOAD_SECRET!,
   admin: { user: "users", importMap: { baseDir: path.resolve(".") } },
   typescript: { autoGenerate: false },

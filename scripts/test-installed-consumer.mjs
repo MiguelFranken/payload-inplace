@@ -4,6 +4,17 @@ import path from "node:path";
 import { createHash, randomBytes } from "node:crypto";
 import { execFileSync, spawn, spawnSync } from "node:child_process";
 import vm from "node:vm";
+import { createServer } from "node:net";
+// Ask the OS for an unused loopback port; never compete with an interactive demo.
+const port = await new Promise((resolve, reject) => {
+  const probe = createServer();
+  probe.once("error", reject);
+  probe.listen(0, "127.0.0.1", () => {
+    const address = probe.address();
+    probe.close((error) => (error ? reject(error) : resolve(address.port)));
+  });
+});
+const origin = `http://127.0.0.1:${port}`;
 const repo = process.cwd();
 const receipt = JSON.parse(
   fs.readFileSync("test-results/package.json", "utf8"),
@@ -43,6 +54,8 @@ fs.writeFileSync(
   "registry=https://registry.npmjs.org\n",
 );
 Object.assign(env, {
+  PORT: String(port),
+  CONSUMER_ORIGIN: origin,
   NPM_CONFIG_USERCONFIG: path.join(directory, ".npmrc"),
   NEXT_TELEMETRY_DISABLED: "1",
   PAYLOAD_CONFIG_PATH: path.join(directory, "payload.config.ts"),
@@ -184,7 +197,7 @@ async function check(disabled) {
     if (server.exitCode !== null)
       throw Error("Installed consumer server exited before readiness");
     try {
-      const res = await fetch("http://127.0.0.1:3147/stories/packed-proof");
+      const res = await fetch(`${origin}/stories/packed-proof`);
       if (res.ok) {
         ready = true;
         break;

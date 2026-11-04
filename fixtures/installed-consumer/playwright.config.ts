@@ -5,7 +5,7 @@ export default defineConfig({
   timeout: 60000,
   expect: { timeout: 15000 },
   use: {
-    baseURL: "http://127.0.0.1:3147",
+    baseURL: process.env.CONSUMER_ORIGIN!,
     actionTimeout: 15000,
     screenshot: "only-on-failure",
     trace: "retain-on-failure",

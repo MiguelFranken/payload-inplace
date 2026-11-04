@@ -46,7 +46,9 @@ function fill(value: any, fallback: any): any {
  * Legacy relationship lists project into stable native card rows. An explicit empty cards array remains empty.
  * This compatibility hook is demo-only; it never changes related product documents or the plugin's Form state.
  */
-export function completeCommerceDocument(doc: Record<string, any>) {
+export function completeCommerceDocument(
+  doc: Record<string, any>,
+): Record<string, any> {
   const complete = (blocks: any[]) =>
     blocks?.map((original) => {
       const block = fill(original, defaults[original.blockType] || {});

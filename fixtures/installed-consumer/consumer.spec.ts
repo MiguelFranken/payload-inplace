@@ -84,7 +84,7 @@ test("installed nested-root native fields, optimistic draft and reviewed publish
       page.getByRole("navigation", { name: "Editing toolbar" }),
     ).toBeVisible();
     const protectedResponse = await page.request.get(page.url(), {
-      headers: { Origin: "http://127.0.0.1:3147" },
+      headers: { Origin: process.env.CONSUMER_ORIGIN! },
     });
     expect(protectedResponse.status()).toBe(200);
     expect(protectedResponse.headers()["cache-control"]).toContain("no-store");
@@ -129,7 +129,7 @@ test("installed nested-root native fields, optimistic draft and reviewed publish
     ).toBeVisible();
     const documents = await (
       await page.request.get("/api/stories?draft=true&depth=0", {
-        headers: { Origin: "http://127.0.0.1:3147" },
+        headers: { Origin: process.env.CONSUMER_ORIGIN! },
       })
     ).json();
     const doc = documents.docs[0];
