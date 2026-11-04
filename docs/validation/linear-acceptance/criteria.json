@@ -1,0 +1,111 @@
+{
+  "audit": "criteria-level re-audit after local implementation",
+  "source": "4a05642",
+  "tickets": [
+    {
+      "issue": "COURSE-254",
+      "title": "Preserve source text when inline editing transformed or multiline content",
+      "criteria": "- [ ] Browser fixtures cover uppercase/capitalize styling, mixed-case source, nonbreaking spaces, multiline breaks, empty/fallback text and unchanged blur; saved values match the specified contract.\n- [ ] Typing one character, paste, IME, cancel/finish and native undo retain intentional source text and caret across a slow save.\n- [ ] Any overlay prototype is compared against DOM adoption for typography, wrapping, scrolling, focus, accessibility and reduced motion; record the chosen architecture and limitations.\n- [ ] Unsupported transformations get a clear native-panel fallback and no write; no new save queue or lost native field ownership."
+    },
+    {
+      "issue": "COURSE-239",
+      "title": "Isolate Payload v3 compatibility bridges and verify public package entrypoints",
+      "criteria": "- [ ] A documented map lists every upstream/private dependency and the adapter that owns it.\n- [ ] Contract tests catch the previously reported undefined clientField/hidden failure, custom Field overrides, nested conditions, unmounted field retention and scoped native CSS.\n- [ ] No native styles affect storefront elements; upload/relationship drawers and native rich text still work inside the active editor.\n- [ ] Packed ESM/types/use-client boundaries pass both static package checks and production installed-consumer tests on the declared v3 pins; unsupported combinations fail clearly."
+    },
+    {
+      "issue": "COURSE-253",
+      "title": "Publish a small consumer test kit and task-oriented integration/API documentation",
+      "criteria": "- [ ] A clean external fixture imports the testing subpath and tests a custom panel/strategy without source aliases or a full demo boot.\n- [ ] Separate native integration tests prove the same fixture's access/conditions/validation on supported Payload v3; no mock is presented as concurrency proof.\n- [ ] CI checks public examples/types and generated API freshness; documentation links match actual facade exports after monorepo migration.\n- [ ] Recipes cover nested stable IDs, empty lists, rich-text fallback, errors/retry, locale and single-form ownership; the testing entrypoint is absent from production/public bundles."
+    },
+    {
+      "issue": "COURSE-252",
+      "title": "Unify editor undo semantics without breaking native text and structural history",
+      "criteria": "- [ ] Tests prove text undo in active plaintext/RTE does not unexpectedly reorder blocks, and structural undo preserves later unrelated leaf edits.\n- [ ] Duplicate/add/delete/reorder each produce one identity-safe history entry; preview/cancel and server metadata acknowledgements produce none.\n- [ ] Undo/redo after saves preserves latest revision/security metadata and cannot silently publish or resurrect inaccessible/deleted remote content.\n- [ ] Keyboard shortcuts, toolbar states and close/reopen behavior are covered by focused component and real browser tests."
+    },
+    {
+      "issue": "COURSE-251",
+      "title": "Add opt-in reusable section patterns with safe copy semantics",
+      "criteria": "- [ ] Feature-disabled configuration creates no collections, migrations, menu entries or network requests.\n- [ ] Tests cover access-denied save/read, tenant/consumer scoping, obsolete/unknown block types, media references, nested arrays and row-ID regeneration.\n- [ ] An inserted pattern passes the same policies, validation, review and native persistence path as a normal new block.\n- [ ] Documentation distinguishes content copying, shared media references, schema evolution and live synchronization; consumer integration uses a synthetic pattern."
+    },
+    {
+      "issue": "COURSE-250",
+      "title": "Browse saved versions and locate changed content from the frontend review",
+      "criteria": "- [ ] Timeline respects readVersions/update access, locale, pagination and stale current revision; inaccessible versions never enter the client.\n- [ ] Comparison shows only actual changed leaves/structure with native labels and stable row identity, including moved/deleted sections and rich text.\n- [ ] Canvas highlighting/show-on-page preserves layout and is optional; hidden/off-page targets get an explanation rather than selecting the wrong row.\n- [ ] Restore creates a draft and invalidates stale review state; pending edits are saved or explicitly retained/discarded, and repeated close/reopen/restore failures do not strand the UI."
+    },
+    {
+      "issue": "COURSE-249",
+      "title": "Budget active-editor chunks and interaction latency as well as visitor isolation",
+      "criteria": "- [ ] Document a repeatable baseline with source/artifact identity, compression, peer treatment and browser measurement method.\n- [ ] CI fails on visitor import leakage and material feature-chunk regressions; positive controls prove the detector sees active-editor resources.\n- [ ] Lexical/media/catalogue/version UI is fetched only when required or by an explicit measured prefetch policy.\n- [ ] Browser evidence records activation, first field interaction, typing during a slow save and panel open/reopen without page refresh, caret loss or long blocking work; new thresholds derive from measured baselines."
+    },
+    {
+      "issue": "COURSE-248",
+      "title": "Expose redacted typed editor lifecycle events for consumer observability",
+      "criteria": "- [ ] Type tests exhaustively cover the public event union; callback errors cannot abort saving or strand panels.\n- [ ] Slow-save/conflict/retry tests prove event order and one logical completion per operation, with stable correlation across preview reconciliation.\n- [ ] Tests inspect payloads for secret/content leakage; public and inactive pages emit no editor events or telemetry requests.\n- [ ] Provide an example consumer Sentry/log adapter and document event stability, optionality and failure semantics."
+    },
+    {
+      "issue": "COURSE-247",
+      "title": "Add a typed UI message catalogue and prove localized editing semantics",
+      "criteria": "- [ ] All plugin strings, tooltips, errors and accessible labels route through typed keys with consumer overrides.\n- [ ] A localized collection fixture proves selected-locale leaf saves, fallback handling and shared array structure semantics without overwriting other locales.\n- [ ] Changing locale cannot apply a stale acknowledgement, selection path or review token to another locale.\n- [ ] English/German and one RTL layout are inspected at representative widths; dates/plurals/focus order and native fields remain correct."
+    },
+    {
+      "issue": "COURSE-246",
+      "title": "Show document lock awareness and reconcile conflicts without overwriting nested edits",
+      "criteria": "- [ ] Two independent clients demonstrate lock acquisition, expiry/heartbeat, navigation cleanup and save-time revision rejection.\n- [ ] Real Postgres and supported Mongo concurrency tests retain the one-winner stale-write behavior, including CMS writes/restores.\n- [ ] Tests cover disjoint leaves, same leaf, nested row reorder, deleted/duplicated rows, locale and access changes between conflict and retry.\n- [ ] Merged recovery is reviewed against the current revision and uses the native queue once; cancellation preserves the local copy and writes nothing."
+    },
+    {
+      "issue": "COURSE-245",
+      "title": "Support explicitly scoped globals and multiple editable documents on one page",
+      "criteria": "- [ ] A page with a page collection, product document and draft-enabled header global can select/save each scope without changing another.\n- [ ] Server tests cover denied document/global access, forged cross-scope annotations, locale and revision checks; no drafts means a clear unsupported/read-only result.\n- [ ] Review/publication identifies exact document scope and handles one failure without republishing successful documents or leaking draft values.\n- [ ] One form/queue owns each document, navigation cleans up listeners/locks, and public graphs remain unchanged."
+    },
+    {
+      "issue": "COURSE-244",
+      "title": "Offer contextual media replacement through an optional media-library adapter",
+      "criteria": "- [ ] Search ignores late/aborted responses and paginates without losing selection; failed upload/search offers retry and native fallback.\n- [ ] Native access/readOnly/localization and polymorphic relationship shapes remain correct; arbitrary external URLs cannot become trusted upload IDs.\n- [ ] Tests distinguish replacing one document's media reference from editing shared asset metadata, and cover custom library plus native adapter.\n- [ ] No media-library code loads before use; installed-consumer tests cover image/video, missing asset, permissions and upload failure."
+    },
+    {
+      "issue": "COURSE-235",
+      "title": "Separate editor orchestration into native-form-backed domain controllers",
+      "criteria": "- [ ] Characterize panel close/reopen, selection changes, typing during a slow save, stale acknowledgements, composition, reorder and recovery before extraction.\n- [ ] Each extracted controller has an explicit input/output and lifecycle contract with no cross-domain state mutation.\n- [ ] No behavior or visitor import-graph regressions; production browser checks retain caret, tint/label, scroll and header/footer through save acknowledgements.\n- [ ] Document ownership and dependency direction in an ADR; keep exported domain contracts documented and replace newly touched any casts with narrowing or adapter-local assertions."
+    },
+    {
+      "issue": "COURSE-243",
+      "title": "Introduce typed contextual field editor strategies with native fallback",
+      "criteria": "- [ ] Type fixtures reject incompatible editor/field combinations; consumers can register, override and disable a strategy without forking.\n- [ ] One field never has simultaneous inline, contextual and native owners; opening/closing controls does not lose edits or get stuck.\n- [ ] Native validation, conditions, locale, readOnly and async field-state initialization remain authoritative.\n- [ ] Tests demonstrate text, number/select/date, a custom native Field fallback and a consumer-defined strategy using the packed public API."
+    },
+    {
+      "issue": "COURSE-236",
+      "title": "Organize Vitest by domain and add focused native editor component tests",
+      "criteria": "- [ ] Named project commands run independently and all existing tests are accounted for after moves.\n- [ ] Fake-timer tests prove typing bursts, metadata acknowledgements, an in-flight edit and explicit retry do not cause duplicate saves or lose edits.\n- [ ] Component tests reproduce review close/reopen, selection-to-panel handoff, condition changes and field ownership; browser-only behaviors remain real-browser tests.\n- [ ] CI publishes domain coverage and timings; no blanket timeout increases, blanket ignores or skipped critical regressions to make the migration green."
+    },
+    {
+      "issue": "COURSE-242",
+      "title": "Make the section picker visual and preview choices without saving them",
+      "criteria": "- [ ] Search, groups, thumbnails and empty/no-result states are keyboard/screen-reader accessible; labels do not depend on an image alone.\n- [ ] Hover/focus preview is delayed and cancellable; sweeping cards, Escape, close or target removal leaves no save, dirty flag or undo entry.\n- [ ] Chosen insertion uses the current stable insertion anchor, native defaults unless explicitly opted into examples, and fresh nested identities.\n- [ ] Tests cover client-renderable and server-only sections, native required fields, missing media, permissions and a real packed consumer."
+    },
+    {
+      "issue": "COURSE-241",
+      "title": "Add sections and array items at contextual insertion points on the page",
+      "criteria": "- [ ] Before/after/empty-list insertion works for root and nested blocks plus supported native array rows, with correct selection after native asynchronous row initialization.\n- [ ] The target remains correct if another local operation reorders/deletes a neighboring row while the picker is open; stale targets fail safely.\n- [ ] Fixed-first, exactly-one, min/max, filterOptions, field access and readOnly rules are identical across canvas, panel and server.\n- [ ] Each insertion is one undoable structural command; cancelling the picker performs no save; pointer/keyboard/touch tests confirm no layout or scroll disruption."
+    },
+    {
+      "issue": "COURSE-240",
+      "title": "Edit Payload Lexical rich text directly on the page without losing custom nodes",
+      "criteria": "- [ ] Round-trip fixtures preserve unknown/custom node payloads, Payload link IDs/fields, formats, empty content, uploads and nested nodes through an unrelated text edit.\n- [ ] Browser tests exercise selection formatting, internal/external links, paste sanitization, keyboard navigation, composition, fast typing during slow/stale saves and settings handoff without deletion or jumps.\n- [ ] ACL/conditions/readOnly/custom-field overrides still determine availability; unsupported configurations get an explicit native-editor fallback.\n- [ ] Lexical and its CSS are absent before activation and before first rich-text use; production installed-consumer tests save/reload/review the same structured value with no extra persistence path."
+    },
+    {
+      "issue": "COURSE-238",
+      "title": "Provide a document-bound annotation API with typed paths and mapping diagnostics",
+      "criteria": "- [ ] Examples cover groups, named tabs, nested blocks/arrays, repeated field occurrences, empty lists, row IDs containing dots/reserved characters and reordered rows.\n- [ ] Type fixtures reject invalid intent/path combinations where statically knowable; runtime validation rejects prototype-pollution paths and unresolved IDs.\n- [ ] Diagnostics exist only in the active/development editor and expose no secret values; read-only/conditioned/custom fields cannot gain inline access.\n- [ ] Old helper imports keep working; safe inert bindings remain small and server-compatible with no React, Payload UI or editor dependency."
+    },
+    {
+      "issue": "COURSE-237",
+      "title": "Adopt Oxlint with verified rule parity and enforced package import boundaries",
+      "criteria": "- [ ] Oxlint runs locally and in CI, with ignores that cover generated files but keep real source/demo/scripts under checks.\n- [ ] Deliberate fixture violations prove core cannot import React/Payload/Next, UI cannot import server/native adapters except approved contracts, and public bindings cannot pull in editor code.\n- [ ] Rule parity and scoped exceptions are documented; hooks/a11y and no-floating-promises equivalents are demonstrably enforced where enabled.\n- [ ] Record before/after lint timing on identical inputs; no claims based solely on upstream benchmarks; current TS/native package compatibility gates pass."
+    },
+    {
+      "issue": "COURSE-234",
+      "title": "Restructure payload-inplace as a pnpm/Turborepo monorepo with one public package",
+      "criteria": "- [ ] A clean clone installs with a frozen pnpm lockfile; documented Turbo filters run each domain and demo.\n- [ ] A cold build and a warm cached build produce equivalent outputs; changed source/env invalidates affected tasks, and restoring caches restores dist files.\n- [ ] The packed public facade installs outside the monorepo with no source aliases or unresolved private workspaces; all existing entrypoints and use client boundaries survive.\n- [ ] Existing unit, real database, production browser, public graph, installed-consumer and exact-archive release gates still execute at their appropriate boundaries. Record cold/warm task timings without claiming unmeasured speedups."
+    }
+  ]
+}
