@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import fs from "node:fs/promises";
 for (const role of ["anonymous", "reader", "author"])
   test(`installed public isolation: ${role}`, async ({ page }, testInfo) => {
     if (role !== "anonymous")
@@ -335,7 +336,8 @@ test("installed media adapter uploads, retries and replaces image/video referenc
   });
   expect(original.ok()).toBe(true);
   const asset = (await original.json()).doc;
-  // A format-signature fixture proves upload/reference handling only, not media decoding or playback.
+  // A tiny synthetic black clip generated once with ffmpeg; tests prove native
+  // upload/reference handling, rather than asserting browser playback support.
   const video = await page.request.post("/api/assets", {
     headers,
     multipart: {
@@ -343,9 +345,8 @@ test("installed media adapter uploads, retries and replaces image/video referenc
       file: {
         name: "native-video.mp4",
         mimeType: "video/mp4",
-        buffer: Buffer.from(
-          "00000018667479706d703432000000006d70343269736f6d",
-          "hex",
+        buffer: await fs.readFile(
+          new URL("./assets/synthetic-video.mp4", import.meta.url),
         ),
       },
     },

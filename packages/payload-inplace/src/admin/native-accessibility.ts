@@ -20,7 +20,7 @@ export function useModalDismiss(slug: string, onDismiss: () => void) {
   }, [open]);
 }
 
-/** Payload 3.91's selected-upload and select controls omit some accessible names.
+/** Payload 3.91's selected-upload, select and date controls omit some accessible names.
  * Supply missing names only within this mounted inspector; never replace native controls or overwrite host labels.
  * The exact peer version and browser axe checks bound this compatibility shim. Cleanup releases the scoped observer.
  */
@@ -32,6 +32,7 @@ export function installNativeUploadLabels(
     for (const [selector, text] of [
       [".upload-relationship-details__edit", t("editMedia")],
       [".upload-relationship-details__remove", t("removeMedia")],
+      [".date-time-picker__clear-button", t("clearSelection")],
     ])
       for (const button of root.querySelectorAll<HTMLButtonElement>(selector)) {
         if (
@@ -42,9 +43,13 @@ export function installNativeUploadLabels(
           button.setAttribute("aria-label", text);
       }
     for (const field of root.querySelectorAll<HTMLElement>(
-      ".field-type.select",
+      ".field-type.select, .field-type.date-time-field",
     )) {
-      const input = field.querySelector<HTMLElement>('[role="combobox"]'),
+      const input = field.querySelector<HTMLElement>(
+          field.classList.contains("date-time-field")
+            ? ".date-time-picker input"
+            : '[role="combobox"]',
+        ),
         label = field.querySelector<HTMLElement>(".field-label");
       if (
         input &&
@@ -52,7 +57,8 @@ export function installNativeUploadLabels(
         !input.getAttribute("aria-label") &&
         !input.getAttribute("aria-labelledby")
       ) {
-        if (!label.id) label.id = `${input.id || field.id}-label`;
+        if (!label.id)
+          label.id = `${input.id || label.getAttribute("for") || field.id}-label`;
         input.setAttribute("aria-labelledby", label.id);
       }
       for (const [selector, text] of [

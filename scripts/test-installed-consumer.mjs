@@ -236,6 +236,7 @@ try {
     .sort();
   for (const name of entries)
     if (
+      /\.(?:[cm]?js|jsx|tsx?|json|md|css|yaml)$/.test(name) &&
       /\.\.?\/.*dist\//.test(
         fs.readFileSync(path.join(directory, name), "utf8"),
       )
@@ -245,7 +246,7 @@ try {
     entries
       .map(
         (name) =>
-          name + "\n" + fs.readFileSync(path.join(directory, name), "utf8"),
+          name + "\n" + hash(fs.readFileSync(path.join(directory, name))),
       )
       .join("\n"),
   );
