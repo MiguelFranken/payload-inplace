@@ -49,7 +49,9 @@ export interface VisualEditorOptions {
   /** Native field panels need no custom React component. Native field ACL remains the write authority. */
   fieldPanels?: EditorFieldPanel[];
   /** Import-map components that register typed contextual field strategies inside the native Form. */
-  strategyProviders?: {id:string;Component:PayloadComponent}[];
+  strategyProviders?: { id: string; Component: PayloadComponent }[];
+  /** Active-only import-map providers for observers and other client integrations. They receive no document data by default. */
+  providers?: { id: string; Component: PayloadComponent }[];
   /** Presentation policy for selected native block fields; it never widens Payload access. */
   blockControls?: Record<string, EditorBlockControls>;
 }
@@ -161,10 +163,10 @@ export type EditorPreviewResponse =
 
 /** Describes an allowed block in the active editor; it cannot widen native block/field access. */
 export interface EditorCatalogueEntry {
- label?: EditorLabel;
- description?: EditorLabel;
- group?: EditorLabel;
- thumbnail?: {src:string;alt?:string};
- /** Presentation example only. Committing still uses native schema defaults and validation. */
- example?: Record<string,unknown>;
+  label?: EditorLabel;
+  description?: EditorLabel;
+  group?: EditorLabel;
+  thumbnail?: { src: string; alt?: string };
+  /** Presentation example only. Committing still uses native schema defaults and validation. */
+  example?: Record<string, unknown>;
 }

@@ -29,6 +29,7 @@ import { NativeSuspensionProbe as NativeSuspensionProbe_64fc9eb714592c0c597bb8eb
 import { NativeSearchTitle as NativeSearchTitle_d92f48d00ffa582f1cd2bddd5ca2344f } from '../../../components/NativeSearchTitle'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 import { CommerceStrategies as CommerceStrategies_6236c7bd3885bb380d5b7578cb1b2ff5 } from '../../../components/CommerceStrategies'
+import { DemoLifecycleObserver as DemoLifecycleObserver_a65925545fde51a55a8320d4dfe36896 } from '../../../components/DemoLifecycleObserver'
 import { DemoPageDetails as DemoPageDetails_743174ed3366105df44127ddc7c174a9 } from '../../../components/DemoPageTools'
 import { DemoPageTools as DemoPageTools_743174ed3366105df44127ddc7c174a9 } from '../../../components/DemoPageTools'
 
@@ -65,6 +66,7 @@ export const importMap = {
   "./components/NativeSearchTitle#NativeSearchTitle": NativeSearchTitle_d92f48d00ffa582f1cd2bddd5ca2344f,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1,
   "./components/CommerceStrategies#CommerceStrategies": CommerceStrategies_6236c7bd3885bb380d5b7578cb1b2ff5,
+  "./components/DemoLifecycleObserver#DemoLifecycleObserver": DemoLifecycleObserver_a65925545fde51a55a8320d4dfe36896,
   "./components/DemoPageTools#DemoPageDetails": DemoPageDetails_743174ed3366105df44127ddc7c174a9,
   "./components/DemoPageTools#DemoPageTools": DemoPageTools_743174ed3366105df44127ddc7c174a9
 }

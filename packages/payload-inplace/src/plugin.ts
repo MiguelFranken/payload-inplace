@@ -30,6 +30,7 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
     ...(options.extensions || []),
     ...(options.fieldPanels || []),
     ...(options.strategyProviders || []),
+    ...(options.providers || []),
   ]) {
     if (!/^[a-z][a-z0-9-]{0,63}$/.test(extension.id) || ids.has(extension.id))
       throw new Error("Editor extensions need unique lowercase IDs");
@@ -271,7 +272,10 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
         dependencies: {
           ...config.admin?.dependencies,
           ...Object.fromEntries(
-            (options.strategyProviders || []).map((provider) => {
+            [
+              ...(options.strategyProviders || []),
+              ...(options.providers || []),
+            ].map((provider) => {
               const component = provider.Component;
               if (!component)
                 throw new Error("A strategy provider needs a component");

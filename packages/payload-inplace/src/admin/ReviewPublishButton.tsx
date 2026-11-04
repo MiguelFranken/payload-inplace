@@ -20,6 +20,7 @@ import { DocumentReview } from "./DocumentReview.js";
 import { ReviewBaselineContext } from "./review-baseline.js";
 import { documentChanges } from "../state/document-diff.js";
 import { Button as ChromeButton } from "../frontend/ui/button.js";
+import { useOptionalEditorLifecycle } from "../frontend/lifecycle.js";
 import { chrome } from "./chrome.js";
 
 type Review = {
@@ -32,6 +33,7 @@ export function ReviewPublishButton({
   compact = false,
   frontend = false,
 }: { compact?: boolean; frontend?: boolean } = {}) {
+  const events = useOptionalEditorLifecycle();
   const { config } = useConfig(),
     info = useDocumentInfo(),
     form = useForm(),
@@ -104,6 +106,7 @@ export function ReviewPublishButton({
     setLoading(true);
     setError("");
     setComparison("published");
+    const operation = events?.start("review");
     try {
       const roots = info.docConfig?.admin?.custom?.visualEditorRoots as
         | string[]
@@ -126,10 +129,18 @@ export function ReviewPublishButton({
       );
       const result = await response.json();
       if (!response.ok) throw Error(result.error || "Review unavailable");
-      if (!controller.signal.aborted) setReview(result);
+      if (!controller.signal.aborted) {
+        setReview(result);
+        operation?.settle("succeeded");
+      }
     } catch (e) {
+      operation?.settle(
+        controller.signal.aborted ? "cancelled" : "failed",
+        "unknown",
+      );
       if (!controller.signal.aborted) setError((e as Error).message);
     } finally {
+      operation?.settle("cancelled");
       if (!controller.signal.aborted) setLoading(false);
     }
   }

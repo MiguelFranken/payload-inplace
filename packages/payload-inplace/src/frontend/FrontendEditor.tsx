@@ -193,7 +193,10 @@ export async function FrontendEditor({
         context.target.collection,
         req.payload.config,
       )}
-      strategyProviders={(options.strategyProviders || []).map((provider) =>
+      strategyProviders={[
+        ...(options.strategyProviders || []),
+        ...(options.providers || []),
+      ].map((provider) =>
         RenderServerComponent({
           Component: provider.Component,
           importMap,

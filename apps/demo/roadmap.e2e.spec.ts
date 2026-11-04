@@ -530,3 +530,143 @@ test("contextual native media replacement saves only the document reference and 
   ).toBeVisible();
   await page.screenshot({ path: "test-results/roadmap-media.png" });
 });
+
+test("lifecycle observers correlate failed and retried saves without leaking content or breaking review", async ({
+  page,
+}) => {
+  const { createShopEditor } = await import("./testing/editor-fixtures");
+  const { doc } = await createShopEditor(page);
+  await page.evaluate(() => {
+    const target = window as Window & {
+      __demoRejectObserver?: boolean;
+      __observed?: unknown[];
+    };
+    target.__demoRejectObserver = true;
+    target.__observed = [];
+    window.addEventListener("payload-inplace:demo-event", (event) =>
+      target.__observed!.push((event as CustomEvent).detail),
+    );
+  });
+  await page.route(`**/api/shops/${doc.id}?*`, async (route) => {
+    if (route.request().method() === "PATCH")
+      await route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({
+          errors: [{ message: "Synthetic save unavailable" }],
+        }),
+      });
+    else await route.continue();
+  });
+  const select = page.getByRole("button", {
+    name: "Select content",
+    exact: true,
+  });
+  if ((await select.getAttribute("aria-pressed")) !== "true")
+    await select.click();
+  const heading = page.locator('[data-ve-field="heading"]').first();
+  await heading.click();
+  await heading.fill("Observed private copy");
+  await expect(
+    page.getByRole("alert").filter({ hasText: "Saving did not finish" }),
+  ).toBeVisible();
+  await page.unroute(`**/api/shops/${doc.id}?*`);
+  await page.getByRole("button", { name: "Retry saving", exact: true }).click();
+  await expect
+    .poll(
+      async () =>
+        (
+          await (
+            await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+          ).json()
+        ).layout[0].heading,
+    )
+    .toBe("Observed private copy");
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          (
+            (
+              window as Window & {
+                __observed?: {
+                  type: string;
+                  operation: string;
+                  outcome?: string;
+                }[];
+              }
+            ).__observed || []
+          ).filter(
+            (event) =>
+              event.type === "operation-settled" &&
+              event.operation === "preview" &&
+              event.outcome === "succeeded",
+          ).length,
+      ),
+    )
+    .toBe(1);
+  await page
+    .getByRole("button", { name: "Review changes", exact: true })
+    .click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  const events = await page.evaluate(
+    () =>
+      (
+        window as Window & {
+          __observed?: {
+            type: string;
+            operation: string;
+            operationId: string;
+            parentOperationId?: string;
+            outcome?: string;
+            scope: { document: { id: string | number } };
+          }[];
+        }
+      ).__observed || [],
+  );
+  expect(
+    events.filter(
+      (event) =>
+        event.operation === "save" && event.type === "operation-started",
+    ),
+  ).toHaveLength(2);
+  expect(
+    events.filter(
+      (event) =>
+        event.operation === "save" &&
+        event.type === "operation-settled" &&
+        event.outcome === "succeeded",
+    ),
+  ).toHaveLength(1);
+  expect(
+    events.some(
+      (event) =>
+        event.operation === "review" &&
+        event.type === "operation-settled" &&
+        event.outcome === "succeeded",
+    ),
+  ).toBe(true);
+  expect(
+    events.filter(
+      (event) =>
+        event.operation === "save" &&
+        event.type === "operation-settled" &&
+        event.outcome === "failed",
+    ),
+  ).toHaveLength(1);
+  const save = events.find(
+    (event) =>
+      event.operation === "save" &&
+      event.type === "operation-settled" &&
+      event.outcome === "succeeded",
+  );
+  expect(
+    events.find((event) => event.operation === "preview")?.parentOperationId,
+  ).toBe(save?.operationId);
+  expect(
+    events.every((event) => String(event.scope.document.id) === String(doc.id)),
+  ).toBe(true);
+  expect(JSON.stringify(events)).not.toMatch(
+    /Observed private copy|_veActivation|reviewToken|password|candidate|formState/,
+  );
+});

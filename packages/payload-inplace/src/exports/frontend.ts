@@ -22,3 +22,11 @@ export type {
   MediaPage,
   MediaLibraryAdapter,
 } from "../frontend/media-library.js";
+export { useEditorObserver } from "../frontend/lifecycle.js";
+export type {
+  EditorLifecycleEvent,
+  EditorObserver,
+  EditorOperation,
+  EditorOutcome,
+  EditorFailureCategory,
+} from "../../../core/src/events.js";

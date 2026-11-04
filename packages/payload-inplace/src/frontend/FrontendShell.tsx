@@ -49,6 +49,8 @@ import { PreviewStatusContext } from "./preview-status.js";
 import type { EditorPreviewSnapshot, EditorPreviewResponse } from "../types.js";
 import { FieldStrategiesProvider } from "./field-strategies.js";
 import { TransientPreviewProvider } from "./transient-preview.js";
+import { EditorLifecycleProvider, useEditorLifecycle } from "./lifecycle.js";
+import type { EditorOperationHandle } from "../../../core/src/events.js";
 import { FrontendControls } from "./FrontendControls.js";
 
 type ShellProps = {
@@ -217,17 +219,21 @@ export function FrontendShell(props: ShellProps) {
                   >
                     <EditDepthProvider>
                       <OperationProvider operation="update">
-                        <NativeDocumentForm
-                          {...bootstrap}
-                          onSnapshot={acceptSnapshot}
-                          preview={visible.preview}
-                          previewTarget={previewTarget}
-                          previewReady={previewReady}
-                          onPreviewReady={() => setPreviewReady(true)}
-                          renderedRevision={visible.revision}
+                        <EditorLifecycleProvider
+                          target={bootstrap.context.target}
                         >
-                          {visible.children}
-                        </NativeDocumentForm>
+                          <NativeDocumentForm
+                            {...bootstrap}
+                            onSnapshot={acceptSnapshot}
+                            preview={visible.preview}
+                            previewTarget={previewTarget}
+                            previewReady={previewReady}
+                            onPreviewReady={() => setPreviewReady(true)}
+                            renderedRevision={visible.revision}
+                          >
+                            {visible.children}
+                          </NativeDocumentForm>
+                        </EditorLifecycleProvider>
                       </OperationProvider>
                     </EditDepthProvider>
                   </DocumentInfoProvider>
@@ -253,6 +259,19 @@ function NativeDocumentForm(
     { config } = useConfig(),
     { getFormState } = useServerFunctions();
   const recovery = useRecoveryState(props.statusURL);
+  const events = useEditorLifecycle(),
+    pendingOperation = useRef<EditorOperationHandle | null>(null),
+    lastSave = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (recovery.failure) {
+      pendingOperation.current?.settle(
+        recovery.failure.kind === "conflict" ? "conflict" : "failed",
+        recovery.failure.kind,
+      );
+      pendingOperation.current = null;
+    }
+  }, [recovery.failure]);
+  useEffect(() => () => pendingOperation.current?.settle("cancelled"), []);
   const nativeForm = useRef<ReturnType<typeof useForm> | null>(null);
   const [previewPending, setPreviewPending] = useState(false),
     [previewError, setPreviewError] = useState("");
@@ -273,6 +292,7 @@ function NativeDocumentForm(
     previewRead.current = true;
     setPreviewPending(true);
     setPreviewError("");
+    const observation = events.start("preview", lastSave.current);
     try {
       let again = false;
       do {
@@ -280,6 +300,10 @@ function NativeDocumentForm(
         const result = await props.refreshPreview();
         if (disposed.current) return;
         if ("error" in result) {
+          observation.settle(
+            "failed",
+            result.error === "denied" ? "session" : "preview",
+          );
           if (result.error === "denied") {
             recovery.setFailure({
               kind: "session",
@@ -295,6 +319,7 @@ function NativeDocumentForm(
         }
         props.onSnapshot(result);
         if (result.revision < minimum) {
+          observation.settle("failed", "preview");
           setPreviewError(
             "Your draft is saved. The server preview has not reached its saved revision yet.",
           );
@@ -302,12 +327,15 @@ function NativeDocumentForm(
         }
         again = requested.current > result.revision;
       } while (again);
+      observation.settle(disposed.current ? "cancelled" : "succeeded");
     } catch {
+      observation.settle("failed", "preview");
       if (!disposed.current)
         setPreviewError(
           "Your draft is saved. The server preview could not refresh.",
         );
     } finally {
+      observation.settle("cancelled");
       previewRead.current = false;
       if (!disposed.current) setPreviewPending(false);
     }
@@ -326,8 +354,16 @@ function NativeDocumentForm(
           className="pve:contents"
           disabled={!info.hasSavePermission}
           disableValidationOnSubmit
-          onSubmit={() => {
+          onSubmit={(_fields, data) => {
             recovery.started();
+            pendingOperation.current?.settle("cancelled");
+            pendingOperation.current = events.start(
+              data._status === "published"
+                ? "publish"
+                : data._veRestoreVersion
+                  ? "restore"
+                  : "save",
+            );
             generation.current++;
             inFlightChange.current?.abort();
           }}
@@ -386,6 +422,9 @@ function NativeDocumentForm(
             recovery.saved();
             info.setData(doc);
             info.setLastUpdateTime(new Date(doc.updatedAt).getTime());
+            lastSave.current = pendingOperation.current?.id;
+            pendingOperation.current?.settle("succeeded");
+            pendingOperation.current = null;
             void refreshSavedPreview(doc._veRevision ?? doc.updatedAt);
             return protectNativeAcknowledgement(
               result.state,

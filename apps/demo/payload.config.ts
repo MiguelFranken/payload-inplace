@@ -231,6 +231,12 @@ export const editorOptions: VisualEditorOptions = {
       blockTypes: ["hero"],
     },
   ],
+  providers: [
+    {
+      id: "demo-observer",
+      Component: "./components/DemoLifecycleObserver#DemoLifecycleObserver",
+    },
+  ],
   strategyProviders: [
     {
       id: "commerce-strategies",
