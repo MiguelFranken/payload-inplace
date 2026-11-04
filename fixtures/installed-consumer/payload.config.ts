@@ -14,7 +14,7 @@ export const editorOptions: VisualEditorOptions = {
   canEdit: ({ req }) => req.user?.role === "author",
   concurrency: postgresConcurrency(),
   blockControls: {
-    callout: { inlineEdit: ["headline", "summary"] },
+    callout: { inlineEdit: ["headline", "summary", "body"] },
     quotation: { inlineEdit: ["headline", "attribution"] },
   },
   strategyProviders: [

@@ -31,13 +31,14 @@
     "lint:source": "eslint packages apps scripts",
     "lint:oxlint": "oxlint packages apps scripts",
     "build:demo:css": "tailwindcss -i apps/demo/tailwind.css -o apps/demo/styles.css --minify && tailwindcss -i apps/demo/protected.tailwind.css -o apps/demo/protected.styles.css --minify",
-    "test:package": "publint packages/payload-inplace && pnpm pack:check && pnpm test:consumer",
+    "test:package": "publint packages/payload-inplace && pnpm pack:check && pnpm test:consumer && pnpm test:package-types",
     "test:components": "vitest run --project components",
     "test:coverage": "vitest run --project 'unit:*' --project components --coverage --reporter=default --reporter=json --outputFile=test-results/unit-domains.json",
     "test:domain": "vitest run --project",
     "docs:generate": "node scripts/generate-api-docs.mjs",
     "docs:check": "node scripts/generate-api-docs.mjs --check",
-    "test:feature-budgets": "node scripts/check-feature-budgets.mjs"
+    "test:feature-budgets": "node scripts/check-feature-budgets.mjs",
+    "test:package-types": "node scripts/check-package-types.mjs"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",

@@ -32,6 +32,7 @@ jobs:
       - run: corepack pnpm release:check
       - run: corepack pnpm pack:check
       - run: corepack pnpm test:consumer
+      - run: corepack pnpm test:package-types
       - run: corepack pnpm test:installed-consumer
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
