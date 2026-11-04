@@ -2,7 +2,7 @@
 
 The mark combines a webpage frame, a selected content block and a pointer. Cobalt connects it to the editor's existing accent; the independent symbol does not reuse Payload's logo.
 
-- Asset: [icon.png](icon.png), 1280 × 1280 PNG with transparency.
+- Asset: [icon.png](icon.png), 1254 × 1254 PNG with transparency.
 - Generated with the built-in `image_gen` tool, then refined once. The final original PNG is included unchanged.
 - Use the transparent image on light or dark surfaces. The README displays it at 96 × 96.
 
