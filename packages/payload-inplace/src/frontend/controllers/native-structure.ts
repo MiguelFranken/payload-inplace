@@ -1,5 +1,12 @@
 "use client";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   useConfig,
   useDocumentInfo,
@@ -9,6 +16,7 @@ import {
 } from "@payloadcms/ui";
 import type { BlocksFieldClientProps, ClientBlock, ClientField } from "payload";
 import type { InsertionTarget } from "../../../../core/src/insertion.js";
+import { preparedInsertedRow } from "../../../../core/src/row-preparation.js";
 import { previewExample } from "../../schema/example-preview.js";
 import { resolveBinding } from "../../schema/resolve-binding.js";
 import { canUpdateInlineField } from "../../schema/inline-access.js";
@@ -37,6 +45,7 @@ export function useNativeStructure({
   policy,
   disabled,
   onError,
+  onInserted,
 }: {
   root: string;
   collection: string;
@@ -46,10 +55,41 @@ export function useNativeStructure({
   policy?: StructuralPolicy;
   disabled: boolean;
   onError: (message: string) => void;
+  onInserted?: (row: {
+    id: string;
+    path: string;
+    target: InsertionTarget;
+    blockType?: string;
+  }) => boolean;
 }) {
   const form = useForm(),
     { config } = useConfig(),
     info = useDocumentInfo();
+  const pending = useRef<
+    | {
+        target: InsertionTarget;
+        container: string;
+        before: Set<string>;
+      }
+    | undefined
+  >(undefined);
+  const inserted = useEffectEvent(
+    (row: {
+      id: string;
+      path: string;
+      target: InsertionTarget;
+      blockType?: string;
+    }) => onInserted?.(row),
+  );
+  const prepared = useFormFields(([fields]) => {
+    const intent = pending.current;
+    if (!intent) return "";
+    const row = preparedInsertedRow(fields, intent.container, intent.before);
+    return row ? JSON.stringify(row) : "";
+  });
+  useEffect(() => {
+    pending.current = undefined;
+  }, [nonce]);
   const rootState = useField({ path: root, hasRows: true });
   const [generation, setGeneration] = useState(0);
   const history = useMemo(() => {
@@ -73,6 +113,7 @@ export function useNativeStructure({
     // These tokens describe updates in Payload's external mutable form store.
     void fingerprint;
     void generation;
+    void prepared;
     void revision;
     return collectSections({
       field,
@@ -91,12 +132,24 @@ export function useNativeStructure({
     config.blocksMap,
     fingerprint,
     generation,
+    prepared,
     revision,
   ]);
   useEffect(() => {
+    const intent = pending.current;
+    if (!prepared || !intent) return;
+    const row = JSON.parse(prepared) as {
+      id: string;
+      path: string;
+      blockType?: string;
+    };
+    if (inserted({ ...row, target: intent.target }))
+      pending.current = undefined;
+  }, [prepared, sections]);
+  useEffect(() => {
     void fingerprint;
     if (history.captureResult(form.getFields())) setGeneration((n) => n + 1);
-  }, [fingerprint, form, history]);
+  }, [fingerprint, prepared, form, history]);
   const invalidate = useCallback(
     (issue?: string) => {
       onError(issue || "");
@@ -282,34 +335,45 @@ export function useNativeStructure({
     if (!options)
       return invalidate("This insertion point is no longer available.");
     const { field: f, parent, schema, choices } = options;
-    return invalidate(
-      applyCommand(
-        form,
-        root,
-        schema,
-        f.type === "array"
-          ? { type: "add-array" }
-          : {
-              type: "add",
-              blockType: blockType || "",
-              ...(target.kind === "adjacent"
-                ? { adjacent: { identity: target.identity, side: target.side } }
-                : {}),
-            },
-        {
-          container: parent,
-          disabled,
-          min: f.minRows ?? (f.required ? 1 : 0),
-          max: f.maxRows,
-          allowed: choices.map((b) => b.slug),
-          policy: parent === root ? policy : undefined,
-          history,
-        },
+    pending.current = {
+      target,
+      container: parent,
+      before: new Set(
+        (form.getField(parent)?.rows || []).map((row) => String(row.id)),
       ),
+    };
+    const issue = applyCommand(
+      form,
+      root,
+      schema,
+      f.type === "array"
+        ? { type: "add-array" }
+        : {
+            type: "add",
+            blockType: blockType || "",
+            ...(target.kind === "adjacent"
+              ? { adjacent: { identity: target.identity, side: target.side } }
+              : {}),
+          },
+      {
+        container: parent,
+        disabled,
+        min: f.minRows ?? (f.required ? 1 : 0),
+        max: f.maxRows,
+        allowed: choices.map((b) => b.slug),
+        policy: parent === root ? policy : undefined,
+        history,
+      },
     );
+    if (issue) pending.current = undefined;
+    return invalidate(issue);
   }
+  const cancelInsertionIntent = useCallback(() => {
+    pending.current = undefined;
+  }, []);
   return {
     sections,
+    cancelInsertionIntent,
     insertionOptions,
     previewInsertion,
     insert,

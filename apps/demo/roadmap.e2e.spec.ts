@@ -96,6 +96,8 @@ test("canvas insertion chooses an exact stable boundary and cancelling writes no
 }) => {
   const { createShopEditor } = await import("./testing/editor-fixtures");
   const { doc } = await createShopEditor(page);
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
   const hero = page.locator("main > [data-ve-block]").first();
   await hero.scrollIntoViewIfNeeded();
   await hero.hover();
@@ -139,6 +141,10 @@ test("canvas insertion chooses an exact stable boundary and cancelling writes no
   expect(saved.layout[0].id).toBe(doc.layout[0].id);
   expect(saved.layout[1].blockType).toBe("editorial");
   expect(saved.layout[2].id).toBe(doc.layout[1].id);
+  await expect(
+    page.getByRole("button", { name: "Close Studio story panel", exact: true }),
+  ).toBeVisible();
+  expect(errors).toEqual([]);
 });
 
 test("an explicitly bound empty native array can add an item on the canvas", async ({
@@ -146,6 +152,8 @@ test("an explicitly bound empty native array can add an item on the canvas", asy
 }) => {
   const { createShopEditor } = await import("./testing/editor-fixtures");
   const { doc } = await createShopEditor(page, { emptyCards: true });
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
   const list = page.locator('[data-ve-list="cards"]');
   await list.scrollIntoViewIfNeeded();
   await list.hover();
@@ -160,6 +168,15 @@ test("an explicitly bound empty native array can add an item on the canvas", asy
         ).layout.find((b: any) => b.blockType === "productGrid").cards.length,
     )
     .toBe(1);
+  const panel = page.getByRole("complementary", {
+    name: "Edit content",
+    exact: true,
+  });
+  await expect(
+    panel.getByRole("textbox", { name: "Heading", exact: true }),
+  ).toBeVisible();
+  await expect(panel.getByText("Studio card", { exact: true })).toHaveCount(0);
+  expect(errors).toEqual([]);
 });
 
 test("inline Lexical edits structured text through the native queue without replacing page chrome", async ({

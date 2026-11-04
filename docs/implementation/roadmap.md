@@ -67,3 +67,11 @@ Added typed, document-local strategy registration through configured import-map 
 Implemented lazy, scope-authorized native version pagination and changed-only comparison. Timeline reads expose metadata only until selection. Show-on-page resolves current stable row identities. Restore sends a server-resolved intent through the same native Form submission queue, preserving the transactional revision guard and reviewed publication. Pending edits block restoration; success resets structural history/selection without replacing the website route or header.
 
 142 unit/component assertions, TypeScript and lint passed. A real browser/Postgres case compared/restored a version with exactly one PATCH, a new revision/draft status, retained header/URL and repeated close/reopen (9.9s). Access-revocation/race/pagination and broad production acceptance remain pending.
+
+## Native asynchronous readiness and idle submission
+
+Canvas insertion now keeps only a pending row intent. Selection waits until native row metadata, the row's ID field and leaf fields agree, then opens the new block or just the inserted array item's fields. Another selection cancels that intent. It never selects an older row occupying the same numeric path. The history capture also observes native preparation completion.
+
+Extracted an idle-trigger controller with no document/persistence store. Callback/metadata refreshes do not restart the typing deadline; composition and native processing cancel it. Unacknowledged native attempts wait for explicit recovery. Rejected callbacks produce recovery feedback without an unhandled timer rejection.
+
+146 unit/component assertions passed, including fake-timer typing/metadata/in-flight/composition/scope cleanup cases. Real browser checks passed for correctly scoped new block/array controls (9.5s), and one-save typing bursts plus composition (14.2s). TypeScript and lint passed.

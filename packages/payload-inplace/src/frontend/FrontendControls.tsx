@@ -44,6 +44,7 @@ import {
 import type { BlocksFieldClientProps } from "payload";
 import type { Activation } from "../types.js";
 
+import { getArrayItemPath } from "../../../core/src/annotations.js";
 import { stableDataPath } from "../../../core/src/stable-path.js";
 import { resolveBinding } from "../schema/resolve-binding.js";
 import { canUpdateInlineField } from "../schema/inline-access.js";
@@ -209,6 +210,7 @@ export function FrontendControls({
   );
   const [historyEpoch, setHistoryEpoch] = useState(0);
   const {
+    cancelInsertionIntent,
     sections,
     insertionOptions,
     insert,
@@ -228,6 +230,35 @@ export function FrontendControls({
     policy,
     disabled: baseDisabled,
     onError: setError,
+    onInserted: (row) => {
+      if (row.blockType) {
+        const section = sections.find(
+          (section) =>
+            section.path === row.path && section.identity.blockId === row.id,
+        );
+        if (!section) return false;
+        pickSection(section, true);
+        return true;
+      }
+      if (row.target.kind !== "list" || !row.target.identity) return true;
+      const identity = row.target.identity,
+        section = sections.find(
+          (section) =>
+            section.identity.blockId === identity.blockId &&
+            JSON.stringify(section.identity.ancestors || []) ===
+              JSON.stringify(identity.ancestors || []),
+        );
+      if (!section) return true;
+      const element = sectionElement(section) || document.body;
+      pick({
+        identity,
+        element,
+        field: getArrayItemPath(row.target.field, row.id),
+        edit: "panel",
+      });
+      setSettingsOpen(true);
+      return true;
+    },
   });
   const selected = sections.find(
     (s) =>
@@ -265,13 +296,22 @@ export function FrontendControls({
         return;
       }
       if (target.identity.root !== context.target.root) return;
+      cancelInsertionIntent();
       closeView();
       closeTools();
       setSelection(target);
       setSettingsOpen(false);
       setOutline(false);
     },
-    [context.target, closeTools, closeView, t, setSettingsOpen, setOutline],
+    [
+      context.target,
+      closeTools,
+      closeView,
+      t,
+      setSettingsOpen,
+      setOutline,
+      cancelInsertionIntent,
+    ],
   );
   useEffect(() => {
     if (rootElement.current)

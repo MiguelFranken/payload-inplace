@@ -18,13 +18,11 @@ import {
   hasAutosaveEnabled,
   hasDraftValidationEnabled,
 } from "payload/shared";
-
-/** Payload does not export its admin Autosave component in 3.91. This idle trigger delegates directly to the sole native Form.submit.
- * There is no second persistence queue or mutation path: manual draft save, publication and autosave share that form's submission guard and merge policy.
- */
+import { useNativeIdleSubmit } from "./controllers/idle-submit.js";
+/** The idle trigger delegates directly to the sole native Form.submit. An unacknowledged attempt waits for explicit recovery, never another timer. */
 export function NativeAutosaveTrigger() {
-  const recovery = useEditorRecovery();
-  const form = useForm(),
+  const recovery = useEditorRecovery(),
+    form = useForm(),
     info = useDocumentInfo(),
     { config } = useConfig(),
     locale = useLocale();
@@ -35,8 +33,8 @@ export function NativeAutosaveTrigger() {
   const valueKey = useMemo(() => authoredFieldKey(fields), [fields]);
   const [composing, setComposing] = useState(false);
   useEffect(() => {
-    const start = () => setComposing(true);
-    const end = () => setComposing(false);
+    const start = () => setComposing(true),
+      end = () => setComposing(false);
     window.addEventListener("compositionstart", start, true);
     window.addEventListener("compositionend", end, true);
     return () => {
@@ -44,61 +42,55 @@ export function NativeAutosaveTrigger() {
       window.removeEventListener("compositionend", end, true);
     };
   }, []);
-  useEffect(() => {
-    if (
-      composing ||
-      recovery.failure ||
-      !info.docConfig ||
-      !hasAutosaveEnabled(info.docConfig) ||
-      !modified ||
-      processing ||
-      background ||
-      form.disabled
-    )
-      return;
-    const timer = setTimeout(
-      async () => {
-        const beforeFields = form.getFields();
-        const submittedKey = authoredFieldKey(beforeFields);
-        let saved = false;
-        form.setBackgroundProcessing(true);
-        try {
-          const result = await form.submit({
-            action: nativeDraftAction(
-              config.routes.api,
-              { collection: info.collectionSlug!, id: info.id! },
-              locale.code,
-              true,
-            ),
-            method: "PATCH",
-            overrides: { _status: "draft" },
-            acceptValues: true, // onSuccess admits server values only when the submitted snapshot still matches; see protectNativeAcknowledgement.
-            disableFormWhileProcessing: false,
-            disableSuccessStatus: true,
-            skipValidation: !hasDraftValidationEnabled(info.docConfig!),
-          });
-          saved = Boolean(result?.res.ok);
-        } finally {
-          form.setBackgroundProcessing(false);
-          // Payload 3.91 marks its own setModified(false) as a background edit,
-          // leaking that flag into the next submission. Clear only a successful
-          // unchanged authored snapshot, after leaving background processing.
-          if (saved && submittedKey === authoredFieldKey(form.getFields()))
-            form.setModified(false);
-        }
-      },
-      autosaveDelay(getAutosaveInterval(info.docConfig)),
-    );
-    return () => clearTimeout(timer);
-  }, [
-    valueKey,
-    composing,
-    locale.code,
-    modified,
-    processing,
-    background,
-    form.disabled,
-    recovery.failure,
-  ]);
+  const enabled = Boolean(
+    !composing &&
+      !recovery.failure &&
+      info.docConfig &&
+      hasAutosaveEnabled(info.docConfig) &&
+      modified &&
+      !processing &&
+      !background &&
+      !form.disabled &&
+      recovery.attempt === recovery.acknowledged.current,
+  );
+  useNativeIdleSubmit({
+    authoredKey: valueKey,
+    scope: JSON.stringify([info.collectionSlug, info.id, locale.code]),
+    enabled,
+    delay: info.docConfig
+      ? autosaveDelay(getAutosaveInterval(info.docConfig))
+      : 1500,
+    onError: () =>
+      recovery.setFailure({
+        kind: "network",
+        message: "Saving could not finish. Keep your working copy and retry.",
+      }),
+    onIdle: async () => {
+      const submittedKey = authoredFieldKey(form.getFields());
+      let saved = false;
+      form.setBackgroundProcessing(true);
+      try {
+        const result = await form.submit({
+          action: nativeDraftAction(
+            config.routes.api,
+            { collection: info.collectionSlug!, id: info.id! },
+            locale.code,
+            true,
+          ),
+          method: "PATCH",
+          overrides: { _status: "draft" },
+          acceptValues: true,
+          disableFormWhileProcessing: false,
+          disableSuccessStatus: true,
+          skipValidation: !hasDraftValidationEnabled(info.docConfig!),
+        });
+        saved = Boolean(result?.res.ok);
+      } finally {
+        form.setBackgroundProcessing(false);
+        if (saved && submittedKey === authoredFieldKey(form.getFields()))
+          form.setModified(false);
+      }
+    },
+  });
   return null;
 }
