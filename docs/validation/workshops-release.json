@@ -1,20 +1,21 @@
 {
   "packageName": "payload-inplace",
-  "packageVersion": "0.0.1",
-  "packageSHA256": "26f644e351c8c7b125cadf6d19144bb0087ac88582523bd70e841a088c2d8a97",
-  "packageSourceSHA": "f2ecbf224a596a03e3aea1f340971308463c385c",
-  "packageValidationRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/41827981388",
-  "appSHA": "7844a5a35bd95e453f5f914ed544c6b932daaa28",
+  "packageVersion": "0.0.2",
+  "packageSHA256": "2e5ac872d309c82852ce00dfd220fafc55a552abdcfd8374d27abc77f36f7c81",
+  "packageSourceSHA": "d5720140b9e07d073bcd96466bad9c01b6d85bef",
+  "packageValidationRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/41839908051",
+  "appSHA": "21235807843ec414d0b90cf22b52e02e0ee0b19f",
   "appPullRequest": "https://github.com/MiguelFranken/fluid-bodies/pull/397",
   "result": "passed",
   "active": {
-    "appSHA": "7844a5a35bd95e453f5f914ed544c6b932daaa28",
+    "appSHA": "21235807843ec414d0b90cf22b52e02e0ee0b19f",
     "dirty": false,
-    "runId": "20261104T123037Z-23401",
+    "sourceTreeSHA256": "bfcee2ad29314995c6acf3da7c82b68aa5e96a554bbd0730eb508b112fe9bff3",
+    "runId": "20261104T135414Z-3590",
     "result": "passed",
     "totals": {
-      "passed": 10,
       "failed": 0,
+      "passed": 10,
       "skipped": 0,
       "total": 10
     },
@@ -22,52 +23,52 @@
       {
         "title": "chromium > visual-editor-public-baseline.spec.ts > published website keeps native editor resources unloaded",
         "status": "passed",
-        "durationMs": 6132
+        "durationMs": 6571
       },
       {
         "title": "chromium > visual-editor-public-resources.spec.ts > public resources exclude editor work: anonymous",
         "status": "passed",
-        "durationMs": 7481
+        "durationMs": 7494
       },
       {
         "title": "chromium > visual-editor-public-resources.spec.ts > public resources exclude editor work: staff inactive",
         "status": "passed",
-        "durationMs": 9806
+        "durationMs": 10011
       },
       {
         "title": "chromium > visual-editor-security.spec.ts > warm public caches and stale Draft Mode never expose a private page after logout",
         "status": "passed",
-        "durationMs": 5990
+        "durationMs": 7959
       },
       {
         "title": "chromium > visual-editor.spec.ts > website editing uses the installed native Form and keeps drafts private",
         "status": "passed",
-        "durationMs": 15011
+        "durationMs": 13517
       },
       {
         "title": "chromium > visual-editor.spec.ts > workshop website editing preserves the empty booking state",
         "status": "passed",
-        "durationMs": 23296
+        "durationMs": 25675
       },
       {
         "title": "chromium > visual-editor.spec.ts > workshop website editing preserves the upcoming booking state",
         "status": "passed",
-        "durationMs": 24683
+        "durationMs": 25165
       },
       {
         "title": "chromium > visual-editor.spec.ts > workshop website editing preserves the sold-out booking state",
         "status": "passed",
-        "durationMs": 23756
+        "durationMs": 22638
       },
       {
         "title": "chromium > visual-editor.spec.ts > homepage-shaped blocks reorder by pointer without a render loop",
         "status": "passed",
-        "durationMs": 33691
+        "durationMs": 32510
       },
       {
         "title": "chromium > visual-editor.spec.ts > the configured preview alias activates the editor on the same homepage",
         "status": "passed",
-        "durationMs": 4538
+        "durationMs": 4368
       }
     ]
   },
@@ -98,19 +99,23 @@
     "activePositiveControl": true,
     "injectedLeakRejected": true
   },
-  "bootstrap": {
-    "status": "publicly available",
-    "method": "owner authenticated first publication through npm CLI and Firefox passkey; no CI provenance claimed",
-    "registryVersion": "0.0.1",
-    "registryTag": "latest",
-    "anonymousArchiveSHA256": "26f644e351c8c7b125cadf6d19144bb0087ac88582523bd70e841a088c2d8a97",
-    "trustedPublisher": {
-      "configured": true,
-      "repository": "MiguelFranken/payload-inplace",
-      "workflow": "release.yml",
-      "environment": "npm",
-      "oidcReleaseVerified": false
-    }
+  "plugin": {
+    "unitPassed": 108,
+    "productionBrowserPassed": 45,
+    "independentInstalledPassed": 4,
+    "independentDisabledPassed": 3,
+    "independentDisabledSkipped": 1
   },
-  "previousReceipt": "2026-11-04-scoped-0.0.1-release.json"
+  "publication": {
+    "status": "pending",
+    "method": "GitHub Actions trusted publisher OIDC",
+    "repository": "MiguelFranken/payload-inplace",
+    "workflow": "release.yml",
+    "environment": "npm"
+  },
+  "deployment": {
+    "status": "pending",
+    "target": "Workshops feature preview only"
+  },
+  "previousReceipt": "2026-11-04-unscoped-0.0.1-release.json"
 }
