@@ -395,7 +395,11 @@ test("installed media adapter uploads, retries and replaces image/video referenc
     page.getByRole("navigation", { name: "Editing toolbar" }),
   ).toBeVisible();
   await page.locator('[data-ve-field="image"]').click();
-  const search = page.getByLabel("Search media", { exact: true });
+  const mediaPanel = page.getByRole("complementary", {
+    name: "Edit content",
+    exact: true,
+  });
+  const search = mediaPanel.getByLabel("Search media", { exact: true });
   await expect(search).toBeVisible();
   await expect(
     page.getByRole("button", { name: /native-image.png/ }),
@@ -416,7 +420,7 @@ test("installed media adapter uploads, retries and replaces image/video referenc
     mimeType: "image/png",
     buffer: image,
   });
-  await expect(page.getByRole("alert")).toContainText("Upload failed");
+  await expect(mediaPanel.getByRole("alert")).toContainText("Upload failed");
   expect((await read())._veRevision).toBe(before);
   await page.getByRole("button", { name: "Retry upload", exact: true }).click();
   await expect
@@ -438,7 +442,7 @@ test("installed media adapter uploads, retries and replaces image/video referenc
     }),
   );
   await search.fill("denied");
-  await expect(page.getByRole("alert")).toContainText(
+  await expect(mediaPanel.getByRole("alert")).toContainText(
     "Media could not be loaded",
   );
   expect((await read()).article.sections[0].image).toBe(videoAsset.id);
