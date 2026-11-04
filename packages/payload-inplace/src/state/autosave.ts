@@ -19,6 +19,7 @@ export function authoredFieldKey(fields: FormState): string {
             "_veRevision",
             "_veActivation",
             "_veReviewToken",
+            "_veRestoreVersion",
           ].includes(path),
       )
       .sort(([a], [b]) => a.localeCompare(b))

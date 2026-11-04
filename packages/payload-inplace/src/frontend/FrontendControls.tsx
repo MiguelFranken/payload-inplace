@@ -39,10 +39,12 @@ import {
   Minus,
   LogOut,
   LocateFixed,
+  History,
 } from "lucide-react";
 import type { BlocksFieldClientProps } from "payload";
 import type { Activation } from "../types.js";
 
+import { stableDataPath } from "../../../core/src/stable-path.js";
 import { resolveBinding } from "../schema/resolve-binding.js";
 import { canUpdateInlineField } from "../schema/inline-access.js";
 
@@ -92,6 +94,11 @@ import {
   showSectionOnPage,
 } from "./BlockReorder.js";
 import type { NativeSection } from "../schema/tree.js";
+const VersionBrowser = lazy(() =>
+  import("./VersionBrowser.js").then((module) => ({
+    default: module.VersionBrowser,
+  })),
+);
 const InlineRichText = lazy(() =>
   import("./InlineRichText.js").then((module) => ({
     default: module.InlineRichText,
@@ -127,6 +134,9 @@ export function FrontendControls({
     null,
   );
   const {
+    panel,
+    open: openView,
+    close: closeView,
     outline,
     settingsOpen,
     customTool,
@@ -140,7 +150,12 @@ export function FrontendControls({
     editorTools.openPanels.forEach(editorTools.closePanel);
     setCustomTool(null);
     setValidationPath(null);
-  }, [editorTools.openPanels, editorTools.closePanel]);
+  }, [
+    editorTools.openPanels,
+    editorTools.closePanel,
+    setCustomTool,
+    setValidationPath,
+  ]);
   useEffect(() => {
     if (editorTools.openPanels.length) {
       setOutline(false);
@@ -165,7 +180,10 @@ export function FrontendControls({
     info = useDocumentInfo(),
     { config } = useConfig(),
     { i18n } = useTranslation();
-  const t = (en: string, de: string) => (i18n.language === "de" ? de : en);
+  const t = useCallback(
+    (en: string, de: string) => (i18n.language === "de" ? de : en),
+    [i18n.language],
+  );
   const [inspecting, setInspecting] = useState(() =>
       editorTools.tools.includes("content"),
     ),
@@ -189,6 +207,7 @@ export function FrontendControls({
       form.disabled ||
       !info.hasSavePermission,
   );
+  const [historyEpoch, setHistoryEpoch] = useState(0);
   const {
     sections,
     insertionOptions,
@@ -203,7 +222,7 @@ export function FrontendControls({
   } = useNativeStructure({
     root: context.target.root,
     collection: context.target.collection,
-    nonce: context.nonce,
+    nonce: `${context.nonce}:${historyEpoch}`,
     field,
     permissions,
     policy,
@@ -246,12 +265,13 @@ export function FrontendControls({
         return;
       }
       if (target.identity.root !== context.target.root) return;
+      closeView();
       closeTools();
       setSelection(target);
       setSettingsOpen(false);
       setOutline(false);
     },
-    [context.nonce, closeTools],
+    [context.target, closeTools, closeView, t, setSettingsOpen, setOutline],
   );
   useEffect(() => {
     if (rootElement.current)
@@ -309,6 +329,7 @@ export function FrontendControls({
             : outline
               ? sectionsButton.current
               : inspectButton.current;
+        closeView();
         setSelection(undefined);
         setSettingsOpen(false);
         setOutline(false);
@@ -786,11 +807,13 @@ export function FrontendControls({
   );
   const hasPanel =
     expanded &&
-    (outline ||
+    (panel.kind === "versions" ||
+      outline ||
       (selected && settingsOpen) ||
       Boolean(extension) ||
       Boolean(validationPath));
   function minimize() {
+    closeView();
     closeTools();
     setExpanded(false);
     requestAnimationFrame(() => launcherButton.current?.focus());
@@ -970,6 +993,52 @@ export function FrontendControls({
           data-ve-panel-stack=""
           className="pve:fixed pve:right-3 pve:bottom-[calc(var(--pve-dock-height,56px)+24px)] pve:z-60 pve:sm:right-5"
         >
+          {expanded && panel.kind === "versions" && (
+            <Floatable
+              title={t("Saved versions", "Gespeicherte Versionen")}
+              width={680}
+              returnFocus={toolsButton}
+              onClose={() => closeView("versions")}
+            >
+              <Suspense
+                fallback={
+                  <p role="status">
+                    {t("Loading versions…", "Versionen werden geladen…")}
+                  </p>
+                }
+              >
+                <VersionBrowser
+                  onRestored={() => {
+                    setSelection(undefined);
+                    setHistoryEpoch((value) => value + 1);
+                    closeView("versions");
+                  }}
+                  onLocate={(path) => {
+                    const data = form.getData();
+                    const match = sections
+                      .map((section) => ({
+                        section,
+                        stable: stableDataPath(data, section.path),
+                      }))
+                      .filter(
+                        (entry) =>
+                          entry.stable &&
+                          (path === entry.stable ||
+                            path.startsWith(entry.stable + ".")),
+                      )
+                      .sort((a, b) => b.stable!.length - a.stable!.length)[0];
+                    if (!match || !showSectionOnPage(match.section))
+                      setError(
+                        t(
+                          "This change is not visible on the current page.",
+                          "Diese Änderung ist auf der aktuellen Seite nicht sichtbar.",
+                        ),
+                      );
+                  }}
+                />
+              </Suspense>
+            </Floatable>
+          )}
           {expanded &&
             validationPath &&
             recovery.failure?.kind === "validation" && (
@@ -1471,6 +1540,18 @@ export function FrontendControls({
                     <DropdownMenuSeparator />
                     {editorTools.tools.includes("history") && (
                       <>
+                        <DropdownMenuItem
+                          disabled={processing || background || modified}
+                          onClick={() => {
+                            (document.activeElement as HTMLElement)?.blur();
+                            closeTools();
+                            setSelection(undefined);
+                            openView({ kind: "versions" });
+                          }}
+                        >
+                          <History size={16} />
+                          {t("Saved versions", "Gespeicherte Versionen")}
+                        </DropdownMenuItem>
                         <DropdownMenuItem
                           disabled={disabled || !history.canUndo}
                           onClick={() => undo()}

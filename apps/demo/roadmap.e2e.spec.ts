@@ -339,3 +339,119 @@ test("a consumer scalar strategy saves through native Form and can hand back to 
     page.getByRole("navigation", { name: "Editing toolbar" }),
   ).toBeVisible();
 });
+
+test("saved versions reopen, compare changed content and restore a guarded draft through the native queue", async ({
+  page,
+}) => {
+  const { createShopEditor } = await import("./testing/editor-fixtures");
+  const { doc } = await createShopEditor(page);
+  const select = page.getByRole("button", {
+    name: "Select content",
+    exact: true,
+  });
+  if ((await select.getAttribute("aria-pressed")) !== "true")
+    await select.click();
+  const heading = page.locator('main [data-ve-field="heading"]').first();
+  await heading.click();
+  await heading.press("ControlOrMeta+End");
+  await heading.pressSequentially(" Revision two");
+  await expect
+    .poll(
+      async () =>
+        (
+          await (
+            await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+          ).json()
+        )._veRevision,
+    )
+    .toBeGreaterThan(doc._veRevision);
+  await heading.press("Escape");
+  await expect(
+    page.getByRole("button", { name: "Review changes", exact: true }),
+  ).toBeEnabled();
+  const url = page.url();
+  await page.evaluate(() => {
+    (window as any).__versionHeader = document.querySelector(
+      "[data-test-site-header]",
+    );
+  });
+  await page.getByRole("button", { name: "More tools", exact: true }).click();
+  await page
+    .getByRole("menuitem", { name: "Saved versions", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Saved versions", exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", {
+      name: `Compare version ${doc._veRevision}`,
+      exact: true,
+    })
+    .click();
+  await expect(page.locator("[data-ve-diff-path]")).not.toHaveCount(0);
+  const writes: string[] = [];
+  page.on("request", (request) => {
+    if (
+      request.method() === "PATCH" &&
+      request.url().includes(`/api/shops/${doc.id}?`)
+    )
+      writes.push(request.url());
+  });
+  await page
+    .getByRole("button", { name: "Restore as draft", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Saved versions", exact: true }),
+  ).toHaveCount(0);
+  await expect
+    .poll(
+      async () =>
+        (
+          await (
+            await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+          ).json()
+        ).layout[0].heading,
+    )
+    .toBe(doc.layout[0].heading);
+  await expect
+    .poll(
+      async () =>
+        (
+          await (
+            await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+          ).json()
+        )._veRevision,
+    )
+    .toBeGreaterThan(doc._veRevision + 1);
+  const saved = await (
+    await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+  ).json();
+  expect(saved._status).toBe("draft");
+  expect(page.url()).toBe(url);
+  expect(
+    await page.evaluate(
+      () =>
+        (window as any).__versionHeader ===
+        document.querySelector("[data-test-site-header]"),
+    ),
+  ).toBe(true);
+  await page.waitForTimeout(1800);
+  expect(writes).toHaveLength(1);
+  await page.getByRole("button", { name: "More tools", exact: true }).click();
+  await page
+    .getByRole("menuitem", { name: "Saved versions", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Saved versions", exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Close Saved versions panel", exact: true })
+    .click();
+  await page.getByRole("button", { name: "More tools", exact: true }).click();
+  await page
+    .getByRole("menuitem", { name: "Saved versions", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Saved versions", exact: true }),
+  ).toBeVisible();
+});

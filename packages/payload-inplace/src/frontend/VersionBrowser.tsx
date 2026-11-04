@@ -1,0 +1,287 @@
+"use client";
+import { useEffect, useRef, useState } from "react";
+import {
+  useConfig,
+  useDocumentInfo,
+  useForm,
+  useFormModified,
+  useFormProcessing,
+  useFormBackgroundProcessing,
+  useLocale,
+  useTranslation,
+} from "@payloadcms/ui";
+import { hasDraftValidationEnabled } from "payload/shared";
+import type { ClientBlock } from "payload";
+import {
+  History,
+  ChevronLeft,
+  ChevronRight,
+  RotateCcw,
+  LoaderCircle,
+} from "lucide-react";
+import { Button } from "./ui/button.js";
+import { DocumentReview } from "../admin/DocumentReview.js";
+import { nativeDraftAction } from "../adapters/native-request.js";
+import { chrome } from "../admin/chrome.js";
+interface SavedVersion {
+  id: string;
+  updatedAt?: string;
+  createdAt?: string;
+  status?: string;
+  revision?: number;
+}
+interface Result {
+  versions: SavedVersion[];
+  page: number;
+  hasNextPage: boolean;
+  revision: number | string;
+  restorable: boolean;
+  version?: Record<string, unknown> | null;
+}
+/** Read-only paginated history. Restore is a server-resolved intent submitted by the existing native Form queue. */
+export function VersionBrowser({
+  onRestored,
+  onLocate,
+}: {
+  onRestored: () => void;
+  onLocate?: (path: string) => void;
+}) {
+  const { config } = useConfig(),
+    info = useDocumentInfo(),
+    form = useForm(),
+    locale = useLocale(),
+    { i18n } = useTranslation();
+  const modified = useFormModified(),
+    processing = useFormProcessing(),
+    background = useFormBackgroundProcessing();
+  const [page, setPage] = useState(1),
+    [timeline, setTimeline] = useState<Result>(),
+    [selected, setSelected] = useState<string>(),
+    [snapshot, setSnapshot] = useState<Record<string, unknown>>(),
+    [loading, setLoading] = useState(false),
+    [restoring, setRestoring] = useState(false),
+    [error, setError] = useState("");
+  const request = useRef<AbortController | null>(null),
+    generation = useRef(0),
+    disposed = useRef(false);
+  const de = i18n.language === "de";
+  async function read(versionID?: string) {
+    request.current?.abort();
+    const controller = new AbortController();
+    request.current = controller;
+    const expected = ++generation.current;
+    setLoading(true);
+    setError("");
+    try {
+      const query = locale.code
+        ? `?locale=${encodeURIComponent(locale.code)}`
+        : "";
+      const response = await fetch(
+        `${config.routes.api}/visual-editor/versions${query}`,
+        {
+          method: "POST",
+          signal: controller.signal,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            proof: form.getData()._veActivation,
+            page,
+            ...(versionID ? { versionID } : {}),
+          }),
+        },
+      );
+      const result = (await response.json()) as Result & { error?: string };
+      if (!response.ok)
+        throw new Error(result.error || "Saved versions unavailable");
+      if (expected !== generation.current || controller.signal.aborted) return;
+      if (versionID) {
+        if (!result.version)
+          throw new Error("This version is no longer available");
+        setSnapshot(result.version);
+      } else setTimeline(result);
+    } catch (error) {
+      if (!controller.signal.aborted)
+        setError(
+          error instanceof Error ? error.message : "Saved versions unavailable",
+        );
+    } finally {
+      if (!controller.signal.aborted && !disposed.current) setLoading(false);
+    }
+  }
+  useEffect(() => {
+    disposed.current = false;
+    setSelected(undefined);
+    setSnapshot(undefined);
+    void read();
+    return () => {
+      disposed.current = true;
+      request.current?.abort();
+    };
+  }, [page, locale.code]);
+  function choose(id: string) {
+    setSelected(id);
+    setSnapshot(undefined);
+    void read(id);
+  }
+  async function restore() {
+    if (
+      !selected ||
+      !snapshot ||
+      restoring ||
+      modified ||
+      processing ||
+      background ||
+      form.disabled
+    )
+      return;
+    setRestoring(true);
+    setError("");
+    try {
+      // The server re-reads this exact version and current target; this snapshot is never submitted as content.
+      const result = await form.submit({
+        action: nativeDraftAction(
+          config.routes.api,
+          { collection: info.collectionSlug!, id: info.id! },
+          locale.code,
+        ),
+        method: "PATCH",
+        overrides: { _status: "draft", _veRestoreVersion: selected },
+        acceptValues: true,
+        disableFormWhileProcessing: true,
+        skipValidation: !hasDraftValidationEnabled(info.docConfig!),
+      });
+      if (!result?.res.ok)
+        throw new Error(
+          de
+            ? "Wiederherstellen fehlgeschlagen. Aktuellen Entwurf erneut prüfen."
+            : "Restore failed. Review the current draft before trying again.",
+        );
+      onRestored();
+    } catch (error) {
+      if (!disposed.current)
+        setError(error instanceof Error ? error.message : "Restore failed");
+    } finally {
+      if (!disposed.current) setRestoring(false);
+    }
+  }
+  const busy = loading || restoring || processing || background;
+  const date = (version: SavedVersion) => {
+    const value = new Date(version.updatedAt || version.createdAt || "");
+    return Number.isNaN(value.getTime())
+      ? de
+        ? "Gespeicherte Version"
+        : "Saved version"
+      : new Intl.DateTimeFormat(i18n.language, {
+          dateStyle: "medium",
+          timeStyle: "short",
+        }).format(value);
+  };
+  return (
+    <div className="pve:grid pve:gap-4">
+      <p className={`pve:m-0 pve:text-sm pve:leading-relaxed ${chrome.muted}`}>
+        {de
+          ? "Gespeicherte Versionen vergleichen. Wiederherstellen erzeugt einen Entwurf; Veröffentlichen bleibt ein eigener Schritt."
+          : "Compare saved versions. Restoring creates a draft; publication stays a separate reviewed step."}
+      </p>
+      <div
+        className="pve:grid pve:gap-2"
+        aria-label={de ? "Gespeicherte Versionen" : "Saved versions"}
+      >
+        {timeline?.versions.map((version) => (
+          <Button
+            key={version.id}
+            variant="outline"
+            aria-pressed={selected === version.id}
+            className="pve:h-auto pve:min-h-11 pve:justify-start pve:py-2 pve:text-left"
+            aria-label={`${de ? "Version vergleichen" : "Compare version"} ${version.revision ?? version.id}`}
+            disabled={restoring || processing}
+            onClick={() => choose(version.id)}
+          >
+            <History size={15} />
+            <span>{date(version)}</span>
+            <span className={`pve:ml-auto pve:text-xs ${chrome.muted}`}>
+              {version.status === "published"
+                ? de
+                  ? "Veröffentlicht"
+                  : "Published"
+                : de
+                  ? "Entwurf"
+                  : "Draft"}
+            </span>
+          </Button>
+        ))}
+        {timeline?.versions.length === 0 && (
+          <p>{de ? "Keine gespeicherten Versionen." : "No saved versions."}</p>
+        )}
+      </div>
+      <div className="pve:flex pve:items-center pve:justify-between">
+        <Button
+          size="icon"
+          aria-label={de ? "Neuere Versionen" : "Newer versions"}
+          disabled={page === 1 || busy}
+          onClick={() => setPage((value) => value - 1)}
+        >
+          <ChevronLeft size={17} />
+        </Button>
+        <span className={`pve:text-xs ${chrome.muted}`}>
+          {de ? "Seite" : "Page"} {page}
+        </span>
+        <Button
+          size="icon"
+          aria-label={de ? "Ältere Versionen" : "Older versions"}
+          disabled={!timeline?.hasNextPage || busy}
+          onClick={() => setPage((value) => value + 1)}
+        >
+          <ChevronRight size={17} />
+        </Button>
+      </div>
+      {loading && (
+        <p
+          role="status"
+          className="pve:flex pve:items-center pve:gap-2 pve:text-sm"
+        >
+          <LoaderCircle className="pve:motion-safe:animate-spin" size={16} />
+          {de ? "Version wird geladen…" : "Loading version…"}
+        </p>
+      )}
+      {error && (
+        <div role="alert">
+          <p>{error}</p>
+          <Button onClick={() => void read(selected)}>
+            {de ? "Erneut versuchen" : "Retry"}
+          </Button>
+        </div>
+      )}
+      {snapshot && (
+        <>
+          <DocumentReview
+            before={info.data || form.getData()}
+            after={snapshot}
+            beforeLabel={de ? "Aktueller Entwurf" : "Current draft"}
+            afterLabel={de ? "Gewählte Version" : "Selected version"}
+            fields={info.docConfig?.fields || []}
+            blocksMap={config.blocksMap as Record<string, ClientBlock>}
+            de={de}
+            onLocate={onLocate}
+          />
+          {modified && (
+            <p role="status">
+              {de
+                ? "Zuerst die aktuellen Änderungen speichern."
+                : "Save current changes before restoring."}
+            </p>
+          )}
+          <Button
+            variant="default"
+            disabled={
+              !timeline?.restorable || busy || modified || form.disabled
+            }
+            onClick={() => void restore()}
+          >
+            <RotateCcw size={16} />
+            {de ? "Als Entwurf wiederherstellen" : "Restore as draft"}
+          </Button>
+        </>
+      )}
+    </div>
+  );
+}

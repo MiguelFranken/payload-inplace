@@ -61,3 +61,9 @@ Added a lazy Base UI catalogue with descriptions, searchable groups, thumbnails 
 Added typed, document-local strategy registration through configured import-map providers. Definitions declare compatible kinds, optional matching/priority and native-only overrides. The selected strategy mounts under the existing single field owner and uses a guarded native useField bridge. Explicit native annotations, consumer native Field overrides, ACL/readOnly and native conditions retain precedence. Native handoff unmounts the custom control before mounting native UI.
 
 140 unit/component assertions, TypeScript and lint passed. A real native browser fixture selected a custom background palette, persisted the select value and handed back to Payload's actual native field (7.0s). Further custom media adapters and packed external strategy fixture acceptance remain tracked separately.
+
+## Saved version timeline and native restore intent
+
+Implemented lazy, scope-authorized native version pagination and changed-only comparison. Timeline reads expose metadata only until selection. Show-on-page resolves current stable row identities. Restore sends a server-resolved intent through the same native Form submission queue, preserving the transactional revision guard and reviewed publication. Pending edits block restoration; success resets structural history/selection without replacing the website route or header.
+
+142 unit/component assertions, TypeScript and lint passed. A real browser/Postgres case compared/restored a version with exactly one PATCH, a new revision/draft status, retained header/URL and repeated close/reopen (9.9s). Access-revocation/race/pagination and broad production acceptance remain pending.

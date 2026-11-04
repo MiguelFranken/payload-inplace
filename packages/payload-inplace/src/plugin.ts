@@ -1,3 +1,4 @@
+import { prepareVersionRestore, versionEndpoint } from "./server/versions.js";
 import { trustedEditorOrigins } from "./server/origins.js";
 import { readEditorCookie, validatePagePath } from "./server/page-context.js";
 import type {
@@ -129,9 +130,23 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
         admin: { hidden: true },
         access: { read: () => false },
       });
+      fields.push({
+        name: "_veRestoreVersion",
+        type: "text",
+        virtual: true,
+        admin: { hidden: true },
+        access: { read: () => false },
+      });
       const guardActivation: import("payload").CollectionBeforeOperationHook =
         async ({ args, req, operation }) => {
           const proof = (args as any).data?._veActivation;
+          if (
+            operation === "update" &&
+            (args as { data?: Record<string, unknown> }).data
+              ?._veRestoreVersion !== undefined &&
+            (typeof proof !== "string" || !proof)
+          )
+            throw new Error("Restore needs an active editor session");
           if (proof && operation === "update") {
             const { context } = await readEditContext(req, proof, options);
             if (
@@ -139,6 +154,26 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
               String(context.target.id) !== String((args as any).id)
             )
               throw new Error("Visual editor target mismatch");
+            const intent = (args as { data?: Record<string, unknown> }).data
+              ?._veRestoreVersion;
+            if (intent !== undefined) {
+              if (
+                typeof intent !== "string" ||
+                !intent ||
+                intent.length > 128 ||
+                !(args as { draft?: boolean }).draft
+              )
+                throw new Error("Restore must create a reviewed draft");
+              (args as { data: Record<string, unknown> }).data =
+                await prepareVersionRestore(
+                  req,
+                  proof,
+                  intent,
+                  (args as { data?: Record<string, unknown> }).data
+                    ?._veRevision,
+                  options,
+                );
+            }
           }
           return args;
         };
@@ -274,6 +309,11 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
       },
       endpoints: [
         ...(config.endpoints ?? []),
+        {
+          path: "/visual-editor/versions",
+          method: "post",
+          handler: (req) => versionEndpoint(req, options, trustedOrigins),
+        },
         {
           path: "/visual-editor/action",
           method: "post",

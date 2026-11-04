@@ -6,6 +6,7 @@ import {
   ArrowUp,
   Check,
   Minus,
+  LocateFixed,
   Plus,
 } from "lucide-react";
 import {
@@ -13,6 +14,7 @@ import {
   reviewText,
   changedText,
 } from "../state/document-diff.js";
+import { Button } from "../frontend/ui/button.js";
 import { chrome } from "./chrome.js";
 
 /** Only changed native leaves and structural operations are shown; unchanged sibling rows never flood the review. */
@@ -24,7 +26,9 @@ export function DocumentReview({
   de = false,
   fields = [],
   blocksMap = {},
+  onLocate,
 }: {
+  onLocate?: (path: string) => void;
   before: Record<string, any> | null;
   after: Record<string, any>;
   beforeLabel: string;
@@ -103,6 +107,17 @@ export function DocumentReview({
                   </span>
                 ))}
               </h3>
+              {onLocate && (
+                <Button
+                  size="icon"
+                  className="pve:size-8 pve:ml-auto"
+                  aria-label={`${de ? "Auf der Seite zeigen" : "Show on page"}: ${change.labels.join(" / ")}`}
+                  tooltip={de ? "Auf der Seite zeigen" : "Show on page"}
+                  onClick={() => onLocate(change.path)}
+                >
+                  <LocateFixed size={15} />
+                </Button>
+              )}
               <span
                 className={`pve:inline-flex pve:items-center pve:gap-1 pve:text-xs ${chrome.muted}`}
               >

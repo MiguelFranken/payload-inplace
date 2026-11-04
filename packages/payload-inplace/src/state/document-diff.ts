@@ -1,4 +1,5 @@
 import type { ClientBlock, ClientField } from "payload";
+import { getArrayItemPath } from "../../../core/src/annotations.js";
 import { namedField } from "../schema/project-fields.js";
 
 /** One authored leaf or structural row change. Stable row IDs prevent a move from appearing as rewritten content. */
@@ -19,6 +20,7 @@ const metadata = new Set([
   "_veRevision",
   "_veReviewToken",
   "_veActivation",
+  "_veRestoreVersion",
 ]);
 function equal(a: unknown, b: unknown): boolean {
   if (Object.is(a, b)) return true;
@@ -114,7 +116,7 @@ export function documentChanges(
               locale,
             );
           const rowLabels = [...labels, `${rowName} ${Math.max(from, to) + 1}`],
-            rowPath = `${path}.@${id}`;
+            rowPath = getArrayItemPath(path, id);
           if (from < 0 || to < 0 || old.blockType !== next.blockType) {
             changes.push({
               path: rowPath,
