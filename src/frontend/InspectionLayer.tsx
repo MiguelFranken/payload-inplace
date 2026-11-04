@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useEffectEvent, useRef } from "react";
 import type { BlockIdentity } from "../types.js";
 import { elementRect } from "../preview/geometry.js";
 
@@ -76,10 +76,18 @@ export function InspectionLayer({
   hint?: (target: InspectionTarget) => string;
 }) {
   const hover = useRef<HTMLDivElement>(null),
-    caption = useRef<HTMLSpanElement>(null);
+    caption = useRef<HTMLSpanElement>(null),
+    hoverTarget = useRef<InspectionTarget | undefined>(undefined);
+  // Native form/save renders change callbacks, not the pointer or selected target.
+  const currentSelection = useEffectEvent(() => selected);
+  const label = useEffectEvent(
+    (target: InspectionTarget) =>
+      `${describe(target)} · ${hint?.(target) || "Click to edit"}`,
+  );
+  const pick = useEffectEvent((target: InspectionTarget) => onPick(target));
+  const selectedElement = selected?.element;
   useEffect(() => {
     let frame = 0,
-      hoverTarget: Element | null = null,
       disposed = false;
     const observer = new ResizeObserver(() => schedule(false));
     observer.observe(document.body);
@@ -113,16 +121,21 @@ export function InspectionLayer({
     function draw(animate: boolean) {
       frame = 0;
       if (disposed) return;
-      const hovered = inspecting && highlighting ? hoverTarget : null;
-      const target = hovered || selected?.element || null;
+      const selected = currentSelection();
+      const hovered =
+        inspecting && highlighting ? hoverTarget.current : undefined;
+      const target = hovered || selected;
       const box = hover.current;
       box?.toggleAttribute("data-ve-hover-outline", Boolean(hovered));
       box?.toggleAttribute(
         "data-ve-selection-outline",
-        Boolean(target && target === selected?.element),
+        Boolean(target && target.element === selected?.element),
       );
-      if (caption.current) caption.current.hidden = !hovered;
-      place(box, target, animate && Boolean(hovered));
+      if (caption.current) {
+        caption.current.hidden = !target;
+        caption.current.textContent = target ? label(target) : "";
+      }
+      place(box, target?.element || null, animate && Boolean(hovered));
     }
     function schedule(animate = false) {
       if (frame) cancelAnimationFrame(frame);
@@ -143,12 +156,8 @@ export function InspectionLayer({
       const target = readTarget(
         event.target instanceof Element ? event.target : null,
       );
-      if (hoverTarget === target?.element) return;
-      hoverTarget = target?.element || null;
-      if (caption.current)
-        caption.current.textContent = target
-          ? `${describe(target)} · ${hint?.(target) || "Click to edit"}`
-          : "";
+      if (hoverTarget.current?.element === target?.element) return;
+      hoverTarget.current = target;
       schedule(true);
     }
     function click(event: MouseEvent) {
@@ -165,7 +174,7 @@ export function InspectionLayer({
       if (!target) return;
       event.preventDefault();
       event.stopImmediatePropagation();
-      onPick({ ...target, point: { x: event.clientX, y: event.clientY } });
+      pick({ ...target, point: { x: event.clientX, y: event.clientY } });
     }
     function submit(event: Event) {
       if (!ignored(event)) {
@@ -177,7 +186,7 @@ export function InspectionLayer({
       schedule(false);
     }
     function leave() {
-      hoverTarget = null;
+      hoverTarget.current = undefined;
       schedule(false);
     }
     if (inspecting && highlighting)
@@ -199,7 +208,7 @@ export function InspectionLayer({
       window.removeEventListener("scroll", scroll, true);
       window.removeEventListener("resize", scroll);
     };
-  }, [inspecting, highlighting, selected, onPick, describe, hint]);
+  }, [inspecting, highlighting, selectedElement]);
   const geometry =
     "pve:pointer-events-none pve:fixed pve:z-40 pve:box-border pve:left-[var(--pve-left)] pve:top-[var(--pve-top)] pve:w-[var(--pve-width)] pve:h-[var(--pve-height)] pve:rounded-sm pve:border-2 pve:border-solid pve:border-[var(--pve-accent,#3455db)]";
   return (
@@ -208,7 +217,7 @@ export function InspectionLayer({
         ref={hover}
         hidden
         aria-hidden="true"
-        className={`${geometry} pve:data-[ve-hover-outline]:bg-[var(--pve-hover-fill,#3455db0d)] pve:motion-safe:data-[animate=true]:transition-[left,top,width,height,opacity] pve:motion-safe:data-[animate=true]:duration-100 pve:motion-safe:data-[animate=true]:ease-[cubic-bezier(0.2,0,0,1)]`}
+        className={`${geometry} pve:bg-[var(--pve-hover-fill,#3455db0d)] pve:motion-safe:data-[animate=true]:transition-[left,top,width,height,opacity] pve:motion-safe:data-[animate=true]:duration-100 pve:motion-safe:data-[animate=true]:ease-[cubic-bezier(0.2,0,0,1)]`}
       >
         <span
           ref={caption}

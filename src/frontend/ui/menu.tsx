@@ -1,9 +1,22 @@
 "use client";
 // Adapted from shadcn/ui registry/base-nova/ui/dropdown-menu.tsx (MIT).
+import { clsx } from "clsx";
+import { buttonVariants } from "./button.js";
 import { Menu } from "@base-ui/react/menu";
 import { useChromePortal } from "./portal.js";
 export const DropdownMenu = Menu.Root;
-export const DropdownMenuTrigger = Menu.Trigger;
+/** Menu.Trigger owns button behavior and refs; reuse button styling without nesting a second Base UI button adapter. */
+export function DropdownMenuTrigger({
+  className,
+  ...props
+}: Omit<Menu.Trigger.Props, "className"> & { className?: string }) {
+  return (
+    <Menu.Trigger
+      {...props}
+      className={clsx(buttonVariants({ size: "icon" }), className)}
+    />
+  );
+}
 /** One keyboard navigable menu contains secondary editor commands. */
 export function DropdownMenuContent({ children }: Menu.Popup.Props) {
   const container = useChromePortal();

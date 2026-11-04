@@ -1,25 +1,22 @@
 import fs from "node:fs";
 import postcss from "postcss";
-import { nativeShadowSelector } from "./native-shadow-selectors.mjs";
+import { nativeShadowStyles } from "./native-shadow-styles.mjs";
 const native = fs.readFileSync(
   new URL(import.meta.resolve("@payloadcms/next/css")),
   "utf8",
 );
-const tree = postcss.parse(native);
-tree.walkRules((rule) => {
-  if (rule.parent?.type === "atrule" && /keyframes$/.test(rule.parent.name))
-    return;
-  rule.selector = nativeShadowSelector(rule.selector);
-});
+const tree = nativeShadowStyles(postcss.parse(native));
 // Lexical's separately bundled feature styles must cross the same shadow boundary.
 // Remove exact rules already present in core UI, preserving upstream cascade and conditional groups.
-const lexical = postcss.parse(
-  fs.readFileSync(
-    new URL(
-      "./bundled.css",
-      import.meta.resolve("@payloadcms/richtext-lexical/client"),
+const lexical = nativeShadowStyles(
+  postcss.parse(
+    fs.readFileSync(
+      new URL(
+        "./bundled.css",
+        import.meta.resolve("@payloadcms/richtext-lexical/client"),
+      ),
+      "utf8",
     ),
-    "utf8",
   ),
 );
 const seen = new Set();
@@ -36,8 +33,6 @@ function ruleKey(rule) {
 }
 tree.walkRules((rule) => seen.add(ruleKey(rule)));
 lexical.walkRules((rule) => {
-  if (!(rule.parent?.type === "atrule" && /keyframes$/.test(rule.parent.name)))
-    rule.selector = nativeShadowSelector(rule.selector);
   const key = ruleKey(rule);
   if (seen.has(key)) rule.remove();
   else seen.add(key);

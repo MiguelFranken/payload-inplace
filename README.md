@@ -45,6 +45,8 @@ visualEditor({
     offers: { roots: ["detailPage.layout"] },
   },
   previewOrigin: "https://your-site.example",
+  // Optional exact aliases owned by this deployment; never populate from request headers.
+  additionalPreviewOrigins: ["https://branch.your-site.example"],
   editorPath: "/visual-editor",
   canEdit: ({ req, document }) => yourDocumentCapability(req.user, document),
   concurrency: postgresConcurrency(),

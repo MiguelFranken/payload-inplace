@@ -24,7 +24,14 @@ import {
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { GripVertical, Layers, Settings2, LockKeyhole } from "lucide-react";
+import {
+  GripVertical,
+  Layers,
+  Settings2,
+  LockKeyhole,
+  LocateFixed,
+} from "lucide-react";
+import { useTranslation } from "@payloadcms/ui";
 import type { NativeSection } from "../schema/tree.js";
 import {
   elementRect,
@@ -33,6 +40,19 @@ import {
 } from "../preview/geometry.js";
 import { Button } from "./ui/button.js";
 const key = (s: NativeSection) => JSON.stringify(s.identity);
+// Renderer-owned roots may be fragments/display:contents. dnd-kit must measure the
+// same rendered union as the visible page outline, rather than a zero wrapper box.
+function measureCanvas(node: HTMLElement) {
+  const { top, right, bottom, left, width, height } =
+    elementRect(node) || node.getBoundingClientRect();
+  // dnd-kit spreads the measurement into its scroll-adjusted Rect. DOMRect's
+  // coordinates are prototype getters, so return enumerable values explicitly.
+  return { top, right, bottom, left, width, height };
+}
+const canvasMeasurements = {
+  draggable: { measure: measureCanvas },
+  droppable: { measure: measureCanvas },
+};
 export function sectionLabel(s: NativeSection) {
   return typeof s.block?.labels?.singular === "string"
     ? s.block.labels.singular
@@ -52,6 +72,39 @@ export function sectionElement(s: NativeSection) {
         JSON.stringify(s.identity.ancestors || []),
   );
 }
+/** Locate a renderer-owned block, including fragment roots, without selecting fields or mutating the native Form. */
+export function showSectionOnPage(section: NativeSection): boolean {
+  const element = sectionElement(section);
+  const rect = element && elementRect(element);
+  if (!rect) return false;
+  const headers = [...document.querySelectorAll("header")].filter((header) => {
+    const position = getComputedStyle(header).position;
+    const box = header.getBoundingClientRect();
+    return (
+      (position === "fixed" || position === "sticky") &&
+      box.top <= 1 &&
+      box.bottom > 0 &&
+      box.height < innerHeight / 2
+    );
+  });
+  const clearance = Math.max(
+    24,
+    ...headers.map((header) => header.getBoundingClientRect().bottom + 16),
+    (parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) ||
+      0) + 16,
+  );
+  const top = Math.max(
+    clearance,
+    (innerHeight - Math.min(rect.height, innerHeight - clearance - 96)) / 2,
+  );
+  window.scrollBy({
+    top: rect.top - top,
+    behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? "instant"
+      : "smooth",
+  });
+  return true;
+}
 /** Both surfaces dispatch exactly one native identity-based move on drop. Drag state never changes document data. */
 export function BlockReorder({
   sections,
@@ -60,6 +113,7 @@ export function BlockReorder({
   onMove,
   onPick,
   onSettings,
+  onLocate,
   lockedReason,
   getHeading,
 }: {
@@ -70,11 +124,13 @@ export function BlockReorder({
   onMove: (from: NativeSection, to: NativeSection) => string | undefined;
   onPick: (s: NativeSection) => void;
   onSettings?: (s: NativeSection) => void;
+  onLocate?: (s: NativeSection) => void;
   lockedReason?: (s: NativeSection) => string | undefined;
 }) {
   const [active, setActive] = useState<string | null>(null),
     [over, setOver] = useState<string | null>(null),
     [message, setMessage] = useState("");
+  const keyboardTarget = useRef<string | null>(null);
   const keyboardCoordinates: KeyboardCoordinateGetter = (
     event,
     { active, context },
@@ -88,12 +144,13 @@ export function BlockReorder({
     const parent = sections.find((s) => key(s) === active)?.parent;
     const siblings = sections.filter((s) => s.parent === parent);
     const current = siblings.findIndex(
-      (s) => key(s) === (context.over?.id || active),
+      (s) => key(s) === (keyboardTarget.current || active),
     );
     const next = siblings[current + (event.code === "ArrowDown" ? 1 : -1)];
     if (!next) return;
     const rect = context.droppableRects.get(key(next));
     if (!rect || context.droppableContainers.get(key(next))?.disabled) return;
+    keyboardTarget.current = key(next);
     // Center the overlay in variable-height real blocks; top-edge alignment can collide with the previous block.
     return {
       x: rect.left + (rect.width - context.collisionRect.width) / 2,
@@ -109,6 +166,16 @@ export function BlockReorder({
   );
   const ids = useMemo(() => sections.map(key), [sections]);
   const collision: CollisionDetection = (args) => {
+    // Keyboard intent is ordinal, not geometric. Overlay size, page scrolling and
+    // fragment unions must never turn ArrowDown into a move to an earlier row.
+    if (
+      keyboardTarget.current &&
+      args.droppableContainers.some(
+        (container) =>
+          container.id === keyboardTarget.current && !container.disabled,
+      )
+    )
+      return [{ id: keyboardTarget.current }];
     const scoped = {
       ...args,
       droppableContainers: args.droppableContainers.filter(
@@ -120,6 +187,7 @@ export function BlockReorder({
       : closestCenter(scoped);
   };
   function finish(e: DragEndEvent) {
+    keyboardTarget.current = null;
     const from = sections.find((s) => key(s) === e.active.id),
       to = sections.find((s) => key(s) === e.over?.id);
     setActive(null);
@@ -135,13 +203,17 @@ export function BlockReorder({
   return (
     <DndContext
       sensors={sensors}
+      measuring={canvas ? canvasMeasurements : undefined}
       collisionDetection={collision}
       onDragStart={(e) => {
+        keyboardTarget.current =
+          e.activatorEvent.type === "keydown" ? String(e.active.id) : null;
         setActive(String(e.active.id));
         setMessage("");
       }}
       onDragOver={(e) => setOver(e.over ? String(e.over.id) : null)}
       onDragCancel={() => {
+        keyboardTarget.current = null;
         setActive(null);
         setOver(null);
         setMessage("Move cancelled.");
@@ -178,6 +250,7 @@ export function BlockReorder({
             after={Boolean(activeSection && activeSection.index < s.index)}
             onPick={() => onPick(s)}
             onSettings={onSettings ? () => onSettings(s) : undefined}
+            onLocate={onLocate ? () => onLocate(s) : undefined}
           />
         ))}
       </SortableContext>
@@ -204,6 +277,7 @@ function ReorderItem({
   after,
   onPick,
   onSettings,
+  onLocate,
   lock,
   heading,
 }: {
@@ -216,8 +290,10 @@ function ReorderItem({
   after: boolean;
   onPick: () => void;
   onSettings?: () => void;
+  onLocate?: () => void;
   lock?: string;
 }) {
+  const { i18n } = useTranslation();
   const id = key(s),
     {
       attributes,
@@ -244,9 +320,12 @@ function ReorderItem({
     if (bar.current) observer.observe(bar.current);
     function draw(timestamp: number) {
       frame = 0;
-      element = sectionElement(s);
+      const next = sectionElement(s);
+      if (next !== element) {
+        element = next;
+        setNodeRef(element || null);
+      }
       const rect = element && elementRect(element);
-      setNodeRef(element || null);
       setBound(Boolean(rect));
       if (!rect || !overlay.current) return;
       if (bar.current) {
@@ -298,7 +377,7 @@ function ReorderItem({
       window.removeEventListener("resize", schedule);
       setNodeRef(null);
     };
-  }, [canvas, s.path, id, setNodeRef]);
+  }, [canvas, id, setNodeRef]);
   const label = sectionLabel(s);
   const handle = (
     <Button
@@ -388,6 +467,22 @@ function ReorderItem({
           </span>
         </span>
       </button>
+      {onLocate && (
+        <Button
+          size="icon"
+          aria-label={
+            i18n.language === "de"
+              ? `${label} auf der Seite zeigen`
+              : `Show ${label} on page`
+          }
+          title={
+            i18n.language === "de" ? "Auf der Seite zeigen" : "Show on page"
+          }
+          onClick={onLocate}
+        >
+          <LocateFixed size={16} />
+        </Button>
+      )}
       {onSettings && (
         <Button
           size="icon"

@@ -33,6 +33,7 @@ import {
   Check,
   Minus,
   LogOut,
+  LocateFixed,
 } from "lucide-react";
 import type { BlocksFieldClientProps, ClientBlock } from "payload";
 import type { Activation } from "../types.js";
@@ -83,7 +84,11 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "./ui/menu.js";
-import { BlockReorder, sectionElement } from "./BlockReorder.js";
+import {
+  BlockReorder,
+  sectionElement,
+  showSectionOnPage,
+} from "./BlockReorder.js";
 import type { NativeSection } from "../schema/tree.js";
 /** Floating authoring controls share one native Form. Selecting a field changes its sole mounted owner instead of duplicating inputs. */
 export function FrontendControls({
@@ -391,6 +396,15 @@ export function FrontendControls({
     const error = commandFor(selected, { type, identity: selected.identity });
     if (!error && type === "remove") setSelection(undefined);
   }
+  function locateSection(section: NativeSection) {
+    if (!showSectionOnPage(section))
+      setError(
+        t(
+          "This section is not visible on the page.",
+          "Dieser Abschnitt ist auf der Seite nicht sichtbar.",
+        ),
+      );
+  }
   function pickSection(section: NativeSection, settings = false) {
     const element = sectionElement(section);
     if (!element) {
@@ -400,12 +414,7 @@ export function FrontendControls({
       setSettingsOpen(true);
       return;
     }
-    element.scrollIntoView({
-      block: "center",
-      behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "instant"
-        : "smooth",
-    });
+    showSectionOnPage(section);
     if (!settings) {
       const profile = blockControls?.[section.block?.slug || ""];
       const fields = section.block
@@ -752,13 +761,19 @@ export function FrontendControls({
       binding?.permissionPath || "",
     ) &&
     quickField?.admin?.readOnly !== true;
+  // Payload ADD_ROW first exposes the new row, then asynchronously prepares its
+  // leaf field state. Preserve inline intent across that gap instead of opening
+  // settings, which would claim the field before the inline owner can mount.
+  const inlinePending = inlineEligible && !inlineState;
   useEffect(() => {
-    if (selection && !canInline && !disabled) setSettingsOpen(true);
+    if (selection && !canInline && !inlinePending && !disabled)
+      setSettingsOpen(true);
   }, [
     selection?.element,
     selection?.field,
     selection?.fields,
     canInline,
+    inlinePending,
     disabled,
   ]);
   const grouped = selection?.fields?.map((path) =>
@@ -890,7 +905,7 @@ export function FrontendControls({
         role="region"
         aria-label="Website editor"
         data-ve-ui=""
-        className="pve:fixed pve:inset-0 pve:pointer-events-none pve:z-[var(--pve-z-index,2147483000)] pve:font-[family-name:var(--pve-font-family,system-ui)] pve:text-[var(--pve-text,var(--theme-text,#202127))] pve:[&_[class*='upload-relationship-details']_button]:min-h-11! pve:[&_[class*='upload-relationship-details']_button]:min-w-11! pve:[&_[class*='upload-relationship-details']_[class*='meta']]:text-[var(--theme-elevation-700)]! pve:[&_[class*='dragAndDropText']]:text-[var(--theme-elevation-700)]! pve:[&_[class*='orText']]:text-[var(--theme-elevation-700)]! pve:[&_.clear-indicator]:min-h-10! pve:[&_.clear-indicator]:min-w-10! pve:[&_.dropdown-indicator]:min-h-10! pve:[&_.dropdown-indicator]:min-w-10!"
+        className="pve:@container/pve-native pve:fixed pve:inset-0 pve:pointer-events-none pve:z-[var(--pve-z-index,2147483000)] pve:font-[family-name:var(--pve-font-family,system-ui)] pve:text-[var(--pve-text,var(--theme-text,#202127))] pve:[&_[class*='upload-relationship-details']_button]:min-h-11! pve:[&_[class*='upload-relationship-details']_button]:min-w-11! pve:[&_[class*='upload-relationship-details']_[class*='meta']]:text-[var(--theme-elevation-700)]! pve:[&_[class*='dragAndDropText']]:text-[var(--theme-elevation-700)]! pve:[&_[class*='orText']]:text-[var(--theme-elevation-700)]!"
       >
         {expanded && (
           <InspectionLayer
@@ -902,7 +917,7 @@ export function FrontendControls({
             hint={describeAction}
           />
         )}
-        {expanded && selected && selection && canInline && (
+        {expanded && selected && selection && canInline && !hasPanel && (
           <NativeFieldsOwner
             key={inlinePath}
             path={inlinePath!}
@@ -945,6 +960,7 @@ export function FrontendControls({
               })
             }
             onPick={pickSection}
+            onLocate={locateSection}
             onSettings={(section) => pickSection(section, true)}
             lockedReason={(s) =>
               s.parent === context.target.root &&
@@ -992,6 +1008,19 @@ export function FrontendControls({
             <Floatable
               title={selection?.field ? describe(selection) : title}
               label="Edit content"
+              actions={
+                <ChromeButton
+                  size="icon"
+                  aria-label={t(
+                    "Show section on page",
+                    "Abschnitt auf der Seite zeigen",
+                  )}
+                  title={t("Show on page", "Auf der Seite zeigen")}
+                  onClick={() => locateSection(selected)}
+                >
+                  <LocateFixed size={16} />
+                </ChromeButton>
+              }
               returnFocus={inspectButton}
               onBack={
                 editorTools.tools.includes("sections")
@@ -1141,6 +1170,7 @@ export function FrontendControls({
                     })
                   }
                   onPick={pickSection}
+                  onLocate={locateSection}
                   onSettings={(section) => pickSection(section, true)}
                   lockedReason={(s) =>
                     s.parent === context.target.root &&
@@ -1436,14 +1466,9 @@ export function FrontendControls({
                 <DropdownMenu>
                   <DropdownMenuTrigger
                     ref={toolsButton}
-                    render={
-                      <ChromeButton
-                        size="icon"
-                        className="pve:max-sm:size-9"
-                        aria-label={t("More tools", "Weitere Werkzeuge")}
-                        title={t("More tools", "Weitere Werkzeuge")}
-                      />
-                    }
+                    className="pve:max-sm:size-9"
+                    aria-label={t("More tools", "Weitere Werkzeuge")}
+                    title={t("More tools", "Weitere Werkzeuge")}
                   >
                     <MoreHorizontal size={18} />
                   </DropdownMenuTrigger>

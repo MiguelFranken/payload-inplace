@@ -16,6 +16,10 @@ export interface BlockIdentity {
 export interface VisualEditorOptions {
   collections: Record<string, { roots: string[] }>;
   previewOrigin: string;
+  /** Exact additional trusted browser origins serving this same editor (for example a deployment's branch alias).
+   * Configure these on the server; wildcards and request-derived host trust are deliberately unsupported.
+   */
+  additionalPreviewOrigins?: string[];
   previewPath?: string;
   /** Legacy dedicated editing route. Same-page hosts explicitly opt into a signed website session through resolvePagePath. */
   editorPath?: string;

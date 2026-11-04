@@ -365,36 +365,65 @@ test("an empty native layout can add its first section and edit its empty headin
   await page
     .getByRole("button", { name: "Start editing", exact: true })
     .click();
-  await page.getByRole("button", { name: "Sections", exact: true }).click();
-  await page
-    .getByRole("combobox", { name: "Add section", exact: true })
-    .click();
-  await page.getByRole("option", { name: "Hero", exact: true }).click();
-  await expect(
-    page.getByRole("heading", { name: "Add a heading", exact: true }),
-  ).toBeVisible();
-  await page
-    .getByRole("button", { name: "Close Sections panel", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Select content", exact: true })
-    .click();
-  await page
-    .getByRole("heading", { name: "Add a heading", exact: true })
-    .click();
-  await page
-    .locator('main [contenteditable="plaintext-only"]')
-    .fill("First section, created inline");
-  await expect
-    .poll(
-      async () =>
-        (
-          await (
-            await page.request.get(`/api/pages/${doc.id}?draft=true&depth=0`)
-          ).json()
-        ).layout?.[0]?.heading,
-    )
-    .toBe("First section, created inline");
+  let releaseMetadata!: () => void, metadataStarted!: () => void;
+  const metadataHeld = new Promise<void>((resolve) => {
+    releaseMetadata = resolve;
+  });
+  const metadataRequest = new Promise<void>((resolve) => {
+    metadataStarted = resolve;
+  });
+  let held = false;
+  await page.route("**/visual-editor?*", async (route) => {
+    if (
+      !held &&
+      route.request().method() === "POST" &&
+      route.request().postData()?.includes("hero")
+    ) {
+      held = true;
+      metadataStarted();
+      await metadataHeld;
+    }
+    await route.continue();
+  });
+  try {
+    await page.getByRole("button", { name: "Sections", exact: true }).click();
+    await page
+      .getByRole("combobox", { name: "Add section", exact: true })
+      .click();
+    await page.getByRole("option", { name: "Hero", exact: true }).click();
+    await expect(
+      page.getByRole("heading", { name: "Add a heading", exact: true }),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "Close Sections panel", exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "Select content", exact: true })
+      .click();
+    await page
+      .getByRole("heading", { name: "Add a heading", exact: true })
+      .click();
+    await metadataRequest;
+    await expect(
+      page.getByRole("complementary", { name: "Edit content", exact: true }),
+    ).toHaveCount(0);
+    releaseMetadata();
+    await page
+      .locator('main [contenteditable="plaintext-only"]')
+      .fill("First section, created inline");
+    await expect
+      .poll(
+        async () =>
+          (
+            await (
+              await page.request.get(`/api/pages/${doc.id}?draft=true&depth=0`)
+            ).json()
+          ).layout?.[0]?.heading,
+      )
+      .toBe("First section, created inline");
+  } finally {
+    releaseMetadata();
+  }
 });
 
 test("sections drag on list and page keeps native order, undo, policy and keyboard cancellation", async ({
@@ -480,6 +509,12 @@ test("sections drag on list and page keeps native order, undo, policy and keyboa
     .click();
   await expect.poll(order).toEqual(before);
   // Keyboard reordering uses real page-bound rectangles, with no framework-specific canvas wrapper.
+  await page
+    .locator("main section")
+    .nth(1)
+    .evaluate((element: HTMLElement) => {
+      element.style.minHeight = "1400px";
+    });
   const canvasText = page
     .locator(`[data-ve-canvas-handle="${doc.layout[1].id}"]`)
     .getByRole("button", { name: "Move Text section", exact: true });
@@ -490,6 +525,9 @@ test("sections drag on list and page keeps native order, undo, policy and keyboa
     page.locator(`[data-ve-canvas-handle="${doc.layout[1].id}"]`),
   ).toHaveAttribute("data-ve-drag-over", "true");
   await page.keyboard.press("ArrowDown");
+  await expect(
+    page.locator(`[data-ve-canvas-handle="${doc.layout[2].id}"]`),
+  ).toHaveAttribute("data-ve-drag-over", "true");
   await expect(page.locator("[data-ve-drop-indicator]")).toBeVisible();
   await page.keyboard.press("Space");
   await expect.poll(order).toEqual([before[0], before[2], before[1]]);
@@ -1070,7 +1108,7 @@ test("large documents keep native inline input within the active interaction bud
     .getByRole("heading", { name: "Large document heading", exact: true })
     .click();
   const inline = page.locator('main [contenteditable="plaintext-only"]');
-  await inline.evaluate((element) => {
+  await inline.evaluate((element: HTMLElement) => {
     const samples: number[] = [];
     (window as any).__inlineFrames = samples;
     element.addEventListener("input", () => {
@@ -1413,4 +1451,374 @@ test("in-place activation and exit preserve the website, URL and viewport while 
         (window as any).__editorFooter === document.querySelector("footer"),
     ),
   ).toBe(true);
+});
+
+test("the selected field retains its label and tint through a delayed save without moving its caret or dock", async ({
+  page,
+}) => {
+  const doc = await createEditor(page);
+  let release!: () => void, started!: () => void;
+  const held = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const saving = new Promise<void>((resolve) => {
+    started = resolve;
+  });
+  let delayed = false;
+  await page.route(`**/api/pages/${doc.id}?*`, async (route) => {
+    if (route.request().method() === "PATCH" && !delayed) {
+      delayed = true;
+      started();
+      await held;
+    }
+    await route.continue();
+  });
+  try {
+    const inline = await selectHeading(page);
+    const outline = page.locator("[data-ve-selection-outline]");
+    const caption = outline.locator("span").first();
+    await expect(caption).toBeVisible();
+    await expect(caption).toContainText("Heading");
+    const tint = await outline.evaluate(
+      (element: Element) => getComputedStyle(element).backgroundColor,
+    );
+    expect(tint).not.toBe("rgba(0, 0, 0, 0)");
+    const dock = page.getByRole("navigation", { name: "Editing toolbar" });
+    const initialDock = (await dock.boundingBox())!;
+    await inline.evaluate((element: HTMLElement) => {
+      (window as any).__stableInline = element;
+    });
+    await inline.fill("A steady headline");
+    await saving;
+    await expect(caption).toBeVisible();
+    expect(
+      await outline.evaluate(
+        (element: Element) => getComputedStyle(element).backgroundColor,
+      ),
+    ).toBe(tint);
+    release();
+    await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+    await expect(caption).toBeVisible();
+    await expect(inline).toBeFocused();
+    expect(
+      await inline.evaluate(
+        (element: HTMLElement) => element === (window as any).__stableInline,
+      ),
+    ).toBe(true);
+    expect(
+      await outline.evaluate(
+        (element: Element) => getComputedStyle(element).backgroundColor,
+      ),
+    ).toBe(tint);
+    const savedDock = (await dock.boundingBox())!;
+    expect(savedDock.x).toBeCloseTo(initialDock.x, 0);
+    expect(savedDock.y).toBeCloseTo(initialDock.y, 0);
+    expect(savedDock.width).toBeCloseTo(initialDock.width, 0);
+    await page.screenshot({ path: "test-results/stable-inline-selection.png" });
+  } finally {
+    release();
+  }
+});
+
+test("native field panels resize from the top and left, retain fields and match the admin input scale", async ({
+  page,
+  context,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  const doc = await createEditor(page);
+  const inline = await selectHeading(page);
+  await page
+    .getByRole("button", { name: "Options for Heading", exact: true })
+    .click();
+  const panel = page.getByRole("complementary", {
+    name: "Edit content",
+    exact: true,
+  });
+  await panel
+    .getByRole("button", { name: "Edit all section fields", exact: true })
+    .click();
+  const field = panel
+    .getByRole("textbox", { name: "Heading", exact: false })
+    .first();
+  await expect(field).toHaveValue("Immediate heading");
+  const before = (await panel.boundingBox())!;
+  const inputBefore = await field.evaluate((element: HTMLElement) => {
+    (window as any).__panelField = element;
+    const css = getComputedStyle(element);
+    return {
+      height: css.height,
+      size: css.fontSize,
+      padding: css.padding,
+      line: css.lineHeight,
+    };
+  });
+  // This is Payload's desktop baseline, independent of the website's 16px html font size.
+  expect(inputBefore.size).toBe("13px");
+  expect(inputBefore.height).toBe("40px");
+  const width = panel.getByRole("separator", { name: "Resize panel width" });
+  const left = (await width.boundingBox())!;
+  await page.mouse.move(left.x + left.width / 2, left.y + left.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(left.x - 180, left.y + left.height / 2, { steps: 12 });
+  await page.mouse.up();
+  const wider = (await panel.boundingBox())!;
+  expect(wider.width).toBeGreaterThan(before.width + 170);
+  expect(wider.x + wider.width).toBeCloseTo(before.x + before.width, 0);
+  const height = panel.getByRole("separator", { name: "Resize panel height" });
+  const top = (await height.boundingBox())!;
+  await page.mouse.move(top.x + top.width / 2, top.y + 3);
+  await page.mouse.down();
+  await page.mouse.move(top.x + top.width / 2, top.y - 140, { steps: 12 });
+  await page.mouse.up();
+  const taller = (await panel.boundingBox())!;
+  expect(taller.height).toBeGreaterThan(wider.height + 120);
+  expect(taller.y + taller.height).toBeCloseTo(wider.y + wider.height, 0);
+  expect(
+    await field.evaluate(
+      (element: HTMLElement) => element === (window as any).__panelField,
+    ),
+  ).toBe(true);
+  await field.fill("Resize keeps the field mounted");
+  await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+  await expect(field).toBeFocused();
+  await width.focus();
+  await width.press("ArrowRight");
+  expect((await panel.boundingBox())!.width).toBeCloseTo(taller.width - 16, 0);
+  await page.screenshot({ path: "test-results/native-resizable-panel.png" });
+  await page.setViewportSize({ width: 320, height: 740 });
+  const narrow = (await panel.boundingBox())!;
+  expect(narrow.x).toBeGreaterThanOrEqual(0);
+  expect(narrow.x + narrow.width).toBeLessThanOrEqual(320);
+  expect(narrow.y).toBeGreaterThanOrEqual(0);
+  await expect(field).toHaveValue("Resize keeps the field mounted");
+  await page.screenshot({
+    path: "test-results/native-resizable-panel-320.png",
+  });
+  // Compare the same native field in the real admin, at the same desktop viewport.
+  const admin = await context.newPage();
+  try {
+    await admin.setViewportSize({ width: 1440, height: 1000 });
+    await admin.goto(`/admin/collections/pages/${doc.id}`);
+    const expand = admin
+      .getByRole("button", { name: /Show all|Expand all/ })
+      .first();
+    if (await expand.count()) await expand.click();
+    const native = admin
+      .getByRole("textbox", { name: "Heading", exact: false })
+      .first();
+    await expect(native).toBeVisible();
+    expect(
+      await native.evaluate((element: HTMLElement) => {
+        const css = getComputedStyle(element);
+        return {
+          height: css.height,
+          size: css.fontSize,
+          padding: css.padding,
+          line: css.lineHeight,
+        };
+      }),
+    ).toEqual(inputBefore);
+  } finally {
+    await admin.close();
+  }
+  expect(errors).toEqual([]);
+  void inline;
+});
+
+test("streamed saved previews keep the native editor mounted throughout structural acknowledgement", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
+  const doc = await createEditor(
+    page,
+    "pages",
+    "Immediate heading",
+    false,
+    false,
+    "streaming-optimistic",
+  );
+  await page.getByRole("button", { name: "Sections", exact: true }).click();
+  const panel = page.getByRole("complementary", {
+    name: "Sections",
+    exact: true,
+  });
+  const toolbar = page.getByRole("navigation", { name: "Editing toolbar" });
+  await toolbar.evaluate((element: HTMLElement) => {
+    const scope = window as any;
+    scope.__streamToolbar = element;
+    scope.__streamHidden = 0;
+    scope.__streamTracking = true;
+    function sample() {
+      if (!scope.__streamTracking) return;
+      if (!element.isConnected || element.getBoundingClientRect().height === 0)
+        scope.__streamHidden++;
+      requestAnimationFrame(sample);
+    }
+    requestAnimationFrame(sample);
+  });
+  try {
+    const handle = panel.getByRole("button", {
+      name: "Move Server data section",
+      exact: true,
+    });
+    const from = (await handle.boundingBox())!;
+    const target = (await panel
+      .locator("[data-ve-sortable]")
+      .nth(1)
+      .boundingBox())!;
+    await page.mouse.move(from.x + 20, from.y + 20);
+    await page.mouse.down();
+    await page.mouse.move(from.x + 20, from.y + 10, { steps: 5 });
+    await page.mouse.move(target.x + 80, target.y + target.height / 2, {
+      steps: 12,
+    });
+    await expect(panel.locator("[data-ve-sortable]").nth(1)).toHaveAttribute(
+      "data-ve-drop-target",
+      "true",
+    );
+    await page.mouse.up();
+    await expect
+      .poll(async () => {
+        const saved = await (
+          await page.request.get(`/api/pages/${doc.id}?draft=true&depth=0`)
+        ).json();
+        return saved.layout.map((block: { id: string }) => block.id);
+      })
+      .toEqual([doc.layout[0].id, doc.layout[2].id, doc.layout[1].id]);
+    await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+    await expect
+      .poll(async () =>
+        Number(
+          await page
+            .locator("main [data-server-revision]")
+            .getAttribute("data-server-revision"),
+        ),
+      )
+      .toBeGreaterThan(doc._veRevision);
+    const beforeInlineRevision = Number(
+      await page
+        .locator("main [data-server-revision]")
+        .getAttribute("data-server-revision"),
+    );
+    await page
+      .getByRole("button", { name: "Close Sections panel", exact: true })
+      .click();
+    const inline = await selectHeading(page);
+    await inline.fill("Streamed inline update");
+    await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Sections", exact: true }).click();
+    await expect
+      .poll(async () =>
+        Number(
+          await page
+            .locator("main [data-server-revision]")
+            .getAttribute("data-server-revision"),
+        ),
+      )
+      .toBeGreaterThan(beforeInlineRevision);
+    await expect(
+      page.getByRole("heading", {
+        name: "Streamed inline update",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(panel).toBeVisible();
+    expect(
+      await toolbar.evaluate(
+        (element: HTMLElement) => element === (window as any).__streamToolbar,
+      ),
+    ).toBe(true);
+    expect(await page.evaluate(() => (window as any).__streamHidden)).toBe(0);
+    expect(errors).toEqual([]);
+    await page.screenshot({
+      path: "test-results/streamed-preview-stable-editor.png",
+    });
+  } finally {
+    await page.evaluate(() => {
+      (window as any).__streamTracking = false;
+    });
+  }
+});
+
+test("show on page locates fragment blocks without selecting or changing native fields", async ({
+  page,
+}) => {
+  const doc = await createEditor(page);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page
+    .locator("main section")
+    .first()
+    .evaluate((element: HTMLElement) => {
+      element.style.minHeight = "1500px";
+    });
+  const fragment = page
+    .locator(`main [data-ve-block="${doc.layout[2].id}"]`)
+    .first();
+  await fragment.evaluate((element: HTMLElement) => {
+    element.style.display = "contents";
+  });
+  expect(
+    await fragment.evaluate(
+      (element) => element.getBoundingClientRect().height,
+    ),
+  ).toBe(0);
+  let writes = 0;
+  page.on("request", (request) => {
+    if (request.method() === "PATCH") writes++;
+  });
+  await page.getByRole("button", { name: "Sections", exact: true }).click();
+  const sections = page.getByRole("complementary", {
+    name: "Sections",
+    exact: true,
+  });
+  await sections
+    .getByRole("button", { name: "Show Server data on page", exact: true })
+    .click();
+  await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(1000);
+  await expect(
+    page.getByRole("heading", { name: "Server-only fragment", exact: true }),
+  ).toBeInViewport();
+  await expect(sections).toBeVisible();
+  await expect(page.locator("main [contenteditable]")).toHaveCount(0);
+  expect(writes).toBe(0);
+  await sections
+    .getByRole("button", {
+      name: "Settings for Server data section",
+      exact: true,
+    })
+    .click();
+  const settings = page.getByRole("complementary", {
+    name: "Edit content",
+    exact: true,
+  });
+  const input = settings.getByRole("textbox", { name: "Heading", exact: true });
+  await expect(input).toHaveValue("Server-only fragment");
+  await input.evaluate((element) => {
+    (window as any).__locateField = element;
+  });
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+  await settings
+    .getByRole("button", { name: "Show section on page", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Server-only fragment", exact: true }),
+  ).toBeInViewport();
+  expect(
+    await input.evaluate(
+      (element) => element === (window as any).__locateField,
+    ),
+  ).toBe(true);
+  await expect(input).toHaveValue("Server-only fragment");
+  expect(writes).toBe(0);
+  await page.screenshot({ path: "test-results/locate-section.png" });
+  await page.setViewportSize({ width: 320, height: 720 });
+  await expect(
+    settings.getByRole("button", { name: "Show section on page", exact: true }),
+  ).toBeInViewport();
+  await page.screenshot({ path: "test-results/locate-section-320.png" });
 });
