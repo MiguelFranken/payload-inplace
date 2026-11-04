@@ -1,76 +1,61 @@
 {
   "packageName": "@miguel.franken/payload-visual-editor",
-  "packageVersion": "0.1.0-alpha.14",
-  "packageSHA256": "0de798021cd6de343e5f470afe6f24311549649dc85d1f5647224885abe7e6b3",
-  "packageSourceSHA": "0cf1166325c1a94879cb743f9f114d17fbf8f3fb",
-  "packageValidationRun": "https://github.com/MiguelFranken/payload-visual-editor/actions/runs/41735505823",
-  "appSHA": "ef1559115c0e64f4f92416c56a7e17aa8cdc1da4",
+  "packageVersion": "0.1.0-alpha.15",
+  "packageSHA256": "f280e375bf754bf4e8fdefdcaf9fdf6625fe9225ca11df1a0a415f9aec136d85",
+  "packageSourceSHA": "b3baa531c78888ae9a0b67060283210a2a24fa7b",
+  "packageValidationRun": "https://github.com/MiguelFranken/payload-visual-editor/actions/runs/41750056561",
+  "appSHA": "b3d4f6b8ffd5d2246e9b98268370de100579f2f0",
   "appPullRequest": "https://github.com/MiguelFranken/fluid-bodies/pull/397",
   "result": "passed",
   "active": {
-    "appSHA": "ef1559115c0e64f4f92416c56a7e17aa8cdc1da4",
+    "appSHA": "b3d4f6b8ffd5d2246e9b98268370de100579f2f0",
     "dirty": false,
-    "runId": "20261103T231119Z-49394",
+    "runId": "20261104T010532Z-77603",
     "result": "passed",
     "totals": {
-      "passed": 5,
       "failed": 0,
+      "passed": 7,
       "skipped": 0,
-      "total": 5
+      "total": 7
     },
     "tests": [
       {
         "title": "chromium > visual-editor-public-baseline.spec.ts > published website keeps native editor resources unloaded",
         "status": "passed",
-        "durationMs": 6133
+        "durationMs": 6219
       },
       {
         "title": "chromium > visual-editor.spec.ts > website editing uses the installed native Form and keeps drafts private",
         "status": "passed",
-        "durationMs": 18142
+        "durationMs": 17574
       },
       {
         "title": "chromium > visual-editor.spec.ts > workshop website editing preserves the empty booking state",
         "status": "passed",
-        "durationMs": 23614
+        "durationMs": 25954
       },
       {
         "title": "chromium > visual-editor.spec.ts > workshop website editing preserves the upcoming booking state",
         "status": "passed",
-        "durationMs": 25124
+        "durationMs": 25529
       },
       {
         "title": "chromium > visual-editor.spec.ts > workshop website editing preserves the sold-out booking state",
         "status": "passed",
-        "durationMs": 24582
+        "durationMs": 23573
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > homepage-shaped blocks reorder by pointer without a render loop",
+        "status": "passed",
+        "durationMs": 22372
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > the configured preview alias activates the editor on the same homepage",
+        "status": "passed",
+        "durationMs": 4430
       }
     ]
   },
-  "report": "https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/493",
-  "scope": "Canonical main-CI archive installed in a clean committed Workshops checkout. Production Turbopack Page/Workshop acceptance, same URL/query/hash/document/header/footer/viewport, matching headline appearance, nested fields, media, review/publication, three booking states and public isolation. Isolated app preview delivery follows registry publication; no production rollout.",
-  "artifactEquivalence": {
-    "localArchiveFiles": "byte-for-byte identical to the independently validated local alpha.14 archive",
-    "result": "passed"
-  },
-  "npm": {
-    "version": "0.1.0-alpha.14",
-    "next": "0.1.0-alpha.14",
-    "sha256": "0de798021cd6de343e5f470afe6f24311549649dc85d1f5647224885abe7e6b3",
-    "tarball": "https://registry.npmjs.org/@miguel.franken/payload-visual-editor/-/payload-visual-editor-0.1.0-alpha.14.tgz",
-    "integrity": "sha512-jWAbirlvhva97BBvpzK2lduEtlRGo9GOtCHhV/Hre3K7dLh27yw6P2nbu4GpAs6gwUZueIUONC6MacSH7pBYVw==",
-    "attestations": {
-      "url": "https://registry.npmjs.org/-/npm/v1/attestations/@miguel.franken%2fpayload-visual-editor@0.1.0-alpha.14",
-      "provenance": {
-        "predicateType": "https://slsa.dev/provenance/v1"
-      }
-    },
-    "publicationRun": "https://github.com/MiguelFranken/payload-visual-editor/actions/runs/41737638499"
-  },
-  "httpsPortlessAcceptance": {
-    "appSHA": "e8e4ef707c1687cfab09bc11a1702ae361720f64",
-    "dirty": false,
-    "report": "https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/495",
-    "result": "passed",
-    "scope": "real HTTPS Portless same-page activation/native editing, draft save, review/publication, URL/query/hash/shared chrome/viewport preservation, no page/console errors"
-  }
+  "report": "https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/515",
+  "scope": "Canonical main-CI archive installed in a clean committed Workshops checkout. Production Turbopack Page/Workshop acceptance, inline and nested field editing, private drafts, unchanged route and shared chrome, native fields, review/publication, three booking states, repeated pointer and precise keyboard reordering, show-on-page navigation, responsive panels and same-page activation. All 56 artifacts uploaded; 16 review captures. Preview rollout follows npm publication; no production rollout."
 }
