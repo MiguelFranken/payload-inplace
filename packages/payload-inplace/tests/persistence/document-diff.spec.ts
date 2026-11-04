@@ -99,3 +99,39 @@ describe("document review leaf and structural changes", () => {
     });
   });
 });
+
+it("uses consumer UI overrides and native language fallback for generic review row labels", async () => {
+  const { createEditorMessages } = await import("../../src/i18n/messages.js");
+  const messages = createEditorMessages({
+    locale: "de-DE",
+    messages: { de: { item: "Zeile" } },
+  });
+  const changes = documentChanges(
+    { rows: [{ id: "a", title: "Before" }] },
+    { rows: [{ id: "a", title: "After" }] },
+    [],
+    {},
+    "de-DE",
+    messages,
+  );
+  expect(changes[0]?.labels).toContain("Zeile 1");
+  const localized = structuredClone(fields);
+  const root = localized[0];
+  if (root?.type !== "blocks")
+    throw Error("Expected the native blocks fixture");
+  root.blocks[0]!.labels = {
+    singular: { de: "Abschnitt", en: "Section" },
+    plural: "Sections",
+  };
+  const value = structuredClone(rows);
+  value[0]!.heading = "After";
+  expect(
+    documentChanges(
+      { layout: rows },
+      { layout: value },
+      localized,
+      {},
+      "de-DE",
+    )[0]?.labels,
+  ).toContain("Abschnitt 1");
+});

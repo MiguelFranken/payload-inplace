@@ -39,9 +39,17 @@ export function DocumentReview({
   fields?: ClientField[];
   blocksMap?: Record<string, ClientBlock>;
 }) {
-  const { t, locale } = useEditorMessages(undefined, de ? "de" : "en");
+  const messages = useEditorMessages(undefined, de ? "de" : "en"),
+    { t, locale } = messages;
 
-  const changes = documentChanges(before, after, fields, blocksMap, locale);
+  const changes = documentChanges(
+    before,
+    after,
+    fields,
+    blocksMap,
+    locale,
+    messages,
+  );
   const empty = t("empty");
   if (!changes.length)
     return (

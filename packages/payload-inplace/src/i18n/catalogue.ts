@@ -210,6 +210,7 @@ export const englishMessages = {
   addSectionAfter: "Add section after",
   searchMedia: "Search media",
   retryUpload: "Retry upload",
+  item: "Item",
   unavailableSection: "Unavailable section",
   clickToEdit: "Click to edit",
   sectionMoved: "{label} moved to position {position}.",
@@ -570,6 +571,7 @@ export const germanMessages = {
   addSectionAfter: "Abschnitt danach hinzufügen",
   searchMedia: "Medien suchen",
   retryUpload: "Upload wiederholen",
+  item: "Eintrag",
   unavailableSection: "Abschnitt nicht verfügbar",
   clickToEdit: "Zum Bearbeiten klicken",
   sectionMoved: "{label} auf Position {position} verschoben.",
@@ -672,7 +674,7 @@ export const germanMessages = {
   mediaSearchFailed:
     "Medien konnten nicht geladen werden. Versuche es erneut oder nutze die CMS-Felder.",
   mediaUploadFailed:
-    "Upload fehlgeschlagen. Wähle die Datei erneut aus oder nutze die CMS-Felder.",
+    "Upload fehlgeschlagen. Wiederhole den Upload oder nutze die CMS-Felder.",
   searching: "Suche läuft…",
   noMediaFound: "Keine Medien gefunden.",
   saveCouldNotFinish:

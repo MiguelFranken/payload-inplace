@@ -273,6 +273,28 @@ test("installed nested-root native fields, optimistic draft and reviewed publish
         grip!.y + grip!.height > heading!.y,
     ).toBe(false);
     await page.screenshot({ path: "test-results/installed-mobile.png" });
+    const catalogueRevision = (await readStory())._veRevision;
+    await page
+      .getByRole("combobox", { name: "Add section", exact: true })
+      .click();
+    const sectionSearch = page.getByRole("combobox", {
+      name: "Search sections",
+      exact: true,
+    });
+    await sectionSearch.fill("quoted");
+    const quote = page.getByRole("option", { name: "Quotation", exact: true });
+    await expect(quote).toBeVisible();
+    await quote.hover();
+    await expect(
+      page.getByRole("heading", { name: "Preview only", exact: true }),
+    ).toBeVisible();
+    await page.waitForTimeout(1800);
+    expect((await readStory())._veRevision).toBe(catalogueRevision);
+    await sectionSearch.press("Escape");
+    await expect(
+      page.getByRole("heading", { name: "Preview only", exact: true }),
+    ).toHaveCount(0);
+    expect((await readStory())._veRevision).toBe(catalogueRevision);
   } finally {
     await anonymous.close().catch(() => {});
   }

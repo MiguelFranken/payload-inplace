@@ -127,7 +127,7 @@ Runtime entrypoints have different ownership: bindings are inert; server/RSC/nat
 | [`useEditorMessages`](../packages/payload-inplace/src/frontend/messages.tsx#L43) | function | Consumers may use explicit options outside authoring; active controls normally inherit the current editor catalogue. |
 | [`useEditorObserver`](../packages/payload-inplace/src/frontend/lifecycle.tsx#L51) | function | Consumer import-map providers opt into metadata events. Changing callbacks neither reloads the document nor changes native submission behavior. |
 | [`useEditorPreviewData`](../packages/payload-inplace/src/frontend/preview-data.ts#L17) | function | Read an optimistic projection of the sole native Form, without another document store or persistence path. The initial authorized, populated document supplies relationship objects only while their IDs match. Rendering is held while the browser owns inline composition/caret; direct text is already visible in the DOM. This hook belongs exclusively to an activated client renderer. Keep data loading/domain effects in server slots. |
-| [`useVisualEditor`](../packages/payload-inplace/src/frontend/tools-context.tsx#L47) | function | Consumer controls share the current authorized target and native form; server actions recheck their own capability. |
+| [`useVisualEditor`](../packages/payload-inplace/src/frontend/tools-context.tsx#L48) | function | Consumer controls share the current authorized target and native form; server actions recheck their own capability. |
 
 ## `payload-inplace/launcher`
 
@@ -146,7 +146,7 @@ Runtime entrypoints have different ownership: bindings are inert; server/RSC/nat
 
 | Export | Kind | Contract |
 | --- | --- | --- |
-| [`withVisualEditorNext`](../packages/payload-inplace/src/exports/next.ts#L9) | function | Keep Payload's admin RootLayout/global CSS out of website entrypoints while retaining its unchanged native server functions. The exact supported Payload peer owns this internal bridge; installed-consumer and production browser checks validate it. Native admin routes continue to import |
+| [`withVisualEditorNext`](../packages/payload-inplace/src/exports/next.ts#L13) | function | Keep Payload's admin RootLayout/global CSS out of website entrypoints while retaining its unchanged native server functions. The exact supported Payload peer owns this internal bridge; installed-consumer and production browser checks validate it. Native admin routes continue to import |
 
 ## `payload-inplace/native`
 
@@ -166,7 +166,7 @@ Runtime entrypoints have different ownership: bindings are inert; server/RSC/nat
 | Export | Kind | Contract |
 | --- | --- | --- |
 | [`createEditorMessages`](../packages/payload-inplace/src/i18n/messages.ts#L18) | function | Construct an overridable UI catalogue for server renderers, launchers and active controls. Unknown locales fall back to English copy with their own Intl formatting/direction. |
-| [`EditorMessageKey`](../packages/payload-inplace/src/i18n/catalogue.ts#L338) | type | See the linked declaration for the exact typed contract. |
+| [`EditorMessageKey`](../packages/payload-inplace/src/i18n/catalogue.ts#L351) | type | See the linked declaration for the exact typed contract. |
 | [`EditorMessageOverrides`](../packages/payload-inplace/src/i18n/messages.ts#L8) | type | See the linked declaration for the exact typed contract. |
 | [`EditorMessages`](../packages/payload-inplace/src/i18n/messages.ts#L7) | type | See the linked declaration for the exact typed contract. |
 | [`EditorUIOptions`](../packages/payload-inplace/src/i18n/messages.ts#L12) | interface | UI copy/formatting only. This configuration never selects a Payload content locale or expands document access. |

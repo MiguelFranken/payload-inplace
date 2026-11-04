@@ -752,6 +752,32 @@ export function FrontendControls({
     binding && selected
       ? richTextCapabilities?.[`${selected.schemaPath}.${binding.schemaPath}`]
       : undefined;
+  // Assess opaque renderer projections once per explicit pick, after native
+  // field initialization. Later structural reindexing/server projection can
+  // temporarily show older DOM; that must not reclassify a retained selection
+  // and open settings over the panel the user just chose. ACL/condition/type
+  // checks below remain live and authoritative on every native state change.
+  const markupAssessment = useRef<{
+    selection: InspectionTarget;
+    safe: boolean;
+  } | null>(null);
+  if (!selection) markupAssessment.current = null;
+  if (
+    selection &&
+    candidate &&
+    inlineState &&
+    markupAssessment.current?.selection !== selection
+  )
+    markupAssessment.current = {
+      selection,
+      safe:
+        selection.element instanceof HTMLElement &&
+        (candidate.type === "richText" ||
+          selection.element.hasAttribute("data-ve-inline-active") ||
+          (selection.element.childElementCount === 0 &&
+            canAdoptPlainText(selection.element, inlineState.value))) &&
+        !selection.element.closest("a,button,input,textarea,select"),
+    };
   const strategy =
     candidate && binding && selection
       ? resolveEditorStrategy({
@@ -770,12 +796,9 @@ export function FrontendControls({
               profile.inlineEdit.includes(binding.permissionPath)),
           lexicalFeatures,
           markupSafe:
-            selection.element instanceof HTMLElement &&
-            (candidate.type === "richText" ||
-              selection.element.hasAttribute("data-ve-inline-active") ||
-              (selection.element.childElementCount === 0 &&
-                canAdoptPlainText(selection.element, inlineState?.value))) &&
-            !selection.element.closest("a,button,input,textarea,select"),
+            markupAssessment.current?.selection === selection
+              ? markupAssessment.current.safe
+              : true,
         })
       : { kind: "native" as const };
   const contextualMatch =
@@ -801,7 +824,7 @@ export function FrontendControls({
       setSettingsOpen(true);
     // Each pick is a fresh user intent, even when the DOM element and field are
     // unchanged. A closed row/settings panel must reopen on the next pick.
-  }, [selection, canInline, inlinePending, disabled]);
+  }, [selection, canInline, inlinePending, disabled, setSettingsOpen]);
   const grouped = selection?.fields?.map((path) =>
     selected
       ? resolveBinding({

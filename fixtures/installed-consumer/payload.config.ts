@@ -17,6 +17,15 @@ export const editorOptions: VisualEditorOptions = {
     callout: { inlineEdit: ["headline", "summary", "body"] },
     quotation: { inlineEdit: ["headline", "attribution"] },
   },
+  catalogue: {
+    quotation: {
+      label: "Quotation",
+      description: "A quoted thought.",
+      group: "Editorial",
+      thumbnail: { src: "/missing-catalogue.png" },
+      example: { headline: "Preview only", attribution: "Unsaved example" },
+    },
+  },
   strategyProviders: [
     {
       id: "synthetic-control",

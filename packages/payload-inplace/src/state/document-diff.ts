@@ -1,3 +1,5 @@
+import { createEditorMessages, type EditorMessages } from "../i18n/messages.js";
+import { localizedLabel } from "../i18n/labels.js";
 import type { ClientBlock, ClientField } from "payload";
 import { getArrayItemPath } from "../../../core/src/annotations.js";
 import { isDocumentMetadataField } from "../../../core/src/document-metadata.js";
@@ -31,13 +33,8 @@ function equal(a: unknown, b: unknown): boolean {
   );
 }
 function title(value: unknown, fallback: string, locale: string): string {
-  if (typeof value === "string") return value;
-  if (value && typeof value === "object") {
-    const label =
-      (value as Record<string, unknown>)[locale] ||
-      (value as Record<string, unknown>).en;
-    if (typeof label === "string") return label;
-  }
+  const label = localizedLabel(value, locale, "");
+  if (label) return label;
   return fallback
     .replace(/([a-z])([A-Z])/g, "$1 $2")
     .replace(/[_-]/g, " ")
@@ -61,6 +58,9 @@ export function documentChanges(
   fields: ClientField[] = [],
   blocksMap: Record<string, ClientBlock> = {},
   locale = "en",
+  messages: Pick<EditorMessages, "t" | "number"> = createEditorMessages({
+    locale,
+  }),
 ): DocumentChange[] {
   const changes: DocumentChange[] = [];
   function walk(
@@ -104,10 +104,13 @@ export function documentChanges(
             row.blockName ||
             title(
               block?.labels?.singular,
-              row.blockType || (locale === "de" ? "Eintrag" : "Item"),
+              row.blockType || messages.t("item"),
               locale,
             );
-          const rowLabels = [...labels, `${rowName} ${Math.max(from, to) + 1}`],
+          const rowLabels = [
+              ...labels,
+              `${rowName} ${messages.number(Math.max(from, to) + 1)}`,
+            ],
             rowPath = getArrayItemPath(path, id);
           if (from < 0 || to < 0 || old.blockType !== next.blockType) {
             changes.push({
