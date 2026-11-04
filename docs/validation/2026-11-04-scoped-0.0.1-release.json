@@ -1,0 +1,165 @@
+{
+  "packageName": "@miguel.franken/payload-visual-editor",
+  "packageVersion": "0.0.1",
+  "packageSHA256": "fc2c4dac6ddea64189039b236f4fc5835ffc2cf889545d3a66b5e94182e958e4",
+  "packageSourceSHA": "7a616820da320100047c6c1c1f4bd30431fc98e1",
+  "packageValidationRun": "https://github.com/MiguelFranken/payload-visual-editor/actions/runs/41809345628",
+  "appSHA": "c0262b6caf302cd2c6527ae99ca5e5cbca50ec1a",
+  "appPullRequest": "https://github.com/MiguelFranken/fluid-bodies/pull/397",
+  "result": "passed",
+  "active": {
+    "appSHA": "c0262b6caf302cd2c6527ae99ca5e5cbca50ec1a",
+    "dirty": false,
+    "runId": "20261104T095311Z-50283",
+    "result": "passed",
+    "totals": {
+      "failed": 0,
+      "passed": 7,
+      "skipped": 0,
+      "total": 7
+    },
+    "tests": [
+      {
+        "title": "chromium > visual-editor-public-baseline.spec.ts > published website keeps native editor resources unloaded",
+        "status": "passed",
+        "durationMs": 6801
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > website editing uses the installed native Form and keeps drafts private",
+        "status": "passed",
+        "durationMs": 13370
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > workshop website editing preserves the empty booking state",
+        "status": "passed",
+        "durationMs": 21847
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > workshop website editing preserves the upcoming booking state",
+        "status": "passed",
+        "durationMs": 23546
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > workshop website editing preserves the sold-out booking state",
+        "status": "passed",
+        "durationMs": 21982
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > homepage-shaped blocks reorder by pointer without a render loop",
+        "status": "passed",
+        "durationMs": 32683
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > the configured preview alias activates the editor on the same homepage",
+        "status": "passed",
+        "durationMs": 3393
+      }
+    ]
+  },
+  "report": "https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/525",
+  "scope": "Canonical main-CI archive installed in a clean committed Workshops checkout. Production Turbopack public isolation, Page and nested native fields, private drafts, reviewed publication, three booking states, real homepage workshop-feed terminal editing, exactly one native save for a typing burst, repeated pointer/keyboard ordering, locate action and same-page activation. All 16 desktop/mobile captures inspected. Registry publication and the deployed preview are verified in the records below; application PR397 remains open and production is unchanged.",
+  "pluginValidation": {
+    "unitPassed": 96,
+    "productionBrowserPassed": 39,
+    "databaseIntegrationPassed": 8,
+    "independentInstalledConsumerPassed": 7,
+    "changesetsRun": "https://github.com/MiguelFranken/payload-visual-editor/actions/runs/41809345386",
+    "changesetsResult": "passed; pinned official bundled v2.1.2 action, no publication command",
+    "changesetsVersionPRSetting": "explicitly approved by the owner and verified enabled; default_workflow_permissions remains read"
+  },
+  "rootCauses": {
+    "modalReopen": "Consume native modal close transitions once and use a current effect callback; review and custom actions can reopen after close/Escape/failure.",
+    "saveBurst": "Legacy 100ms autosave plus metadata invalidation and background modified bookkeeping caused duplicate saves. Apply a 1500ms authored-change debounce, pause IME composition, and clear only the unchanged acknowledged snapshot after background completion.",
+    "homepageTerminal": "The homepage uses editorialWorkshopFeed, not the already bound session-selection module. Share its presentation between server output and native Form projection; recurse nested groups and stable row IDs while keeping business relationships atomic.",
+    "galleryIdentity": "Keep row IDs, caption values and annotations together while filtering missing media; emit React keys before spreads.",
+    "testTypeBoundary": "The caret setup referenced a CMS variable named document instead of the DOM ownerDocument. The final app commit uses element.ownerDocument; complete E2E typecheck and exact-head app CI passed."
+  },
+  "ui": {
+    "dock": "fixed-size icon actions, accessible spinner/check status and 500ms tooltips",
+    "sections": "full-width plus Base UI picker; no redundant label/divider",
+    "resize": "top/left and diagonal resize with quiet thin accent, keyboard controls and Escape cancellation",
+    "review": "only changed schema leaves and stable-ID structure; published or opening-session comparison; complete signed draft remains the publication unit",
+    "boundedValidation": "desktop, 320px reflow, reduced motion, dark fields and axe verified; screen-reader speech, RTL and physical touch devices not verified"
+  },
+  "previousRelease": {
+    "packageVersion": "0.1.0-alpha.15",
+    "packageSHA256": "f280e375bf754bf4e8fdefdcaf9fdf6625fe9225ca11df1a0a415f9aec136d85",
+    "packageSourceSHA": "b3baa531c78888ae9a0b67060283210a2a24fa7b",
+    "appSHA": "b3d4f6b8ffd5d2246e9b98268370de100579f2f0",
+    "report": "https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/515"
+  },
+  "npm": {
+    "version": "0.0.1",
+    "sha256": "fc2c4dac6ddea64189039b236f4fc5835ffc2cf889545d3a66b5e94182e958e4",
+    "tarball": "https://registry.npmjs.org/@miguel.franken/payload-visual-editor/-/payload-visual-editor-0.0.1.tgz",
+    "integrity": "sha512-7W+za5TiWXdm0OmFfOqDDMtPXy1AXNQPONB/NoYTtzchpughR+MDBjDQ/mskwAFccffLd5NHrqNGoNY6cvVCUw==",
+    "attestations": {
+      "url": "https://registry.npmjs.org/-/npm/v1/attestations/@miguel.franken%2fpayload-visual-editor@0.0.1",
+      "provenance": {
+        "predicateType": "https://slsa.dev/provenance/v1"
+      }
+    },
+    "publicationRun": "https://github.com/MiguelFranken/payload-visual-editor/actions/runs/41811368240",
+    "registryArchiveDownload": "passed; anonymous SHA256 matches the canonical main-CI archive",
+    "latest": "0.0.1",
+    "githubRelease": "https://github.com/MiguelFranken/payload-visual-editor/releases/tag/v0.0.1",
+    "githubPrerelease": false
+  },
+  "httpsPortlessAcceptance": {
+    "appSHA": "01f912f13bf7a99d440ab4455e88ebdf637172db",
+    "dirty": false,
+    "report": "https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/527",
+    "result": "passed",
+    "totals": {
+      "failed": 0,
+      "passed": 1,
+      "skipped": 0,
+      "total": 1
+    },
+    "scope": "Public npm 0.0.1 installed with frozen lockfile on real HTTPS Portless; native inline and nested fields, private drafts, native media, review and publication; no page/console errors"
+  },
+  "deployedPreview": {
+    "appSHA": "042d271e0965effb8992bc20ac5fc3d2986ed9f4",
+    "deploymentID": "dpl_DrWxSyHFZAJMBSe296mmGM3n7VeS",
+    "url": "https://fluid-bodies-workshops-6dfik9xiz-fluid-bodies.vercel.app",
+    "alias": "https://feature-payload-visual-editor.workshops.dev.fluid-bodies.com",
+    "state": "READY",
+    "consumerCI": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/41813059325",
+    "deploymentWorkflow": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/41813059593",
+    "workshopsDeploymentCheck": "SUCCESS",
+    "customAliasAcceptance": {
+      "report": "https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/530",
+      "runId": "20261104T103204Z-80566",
+      "result": "passed",
+      "totals": {
+        "failed": 0,
+        "passed": 3,
+        "skipped": 0,
+        "total": 3
+      },
+      "dirty": false,
+      "reviewCaptures": 8,
+      "capturesReviewed": 4,
+      "scope": "Same-page activation, native inline and nested fields, private drafts, media, complete reviewed publication, real homepage terminal headline and one native save per typing burst, repeated pointer and precise keyboard ordering, locate action; no page/console errors. Desktop/mobile section picker and focused review captures inspected."
+    },
+    "generatedHostnameAcceptance": {
+      "report": "https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/531",
+      "runId": "20261104T103415Z-81646",
+      "result": "passed",
+      "totals": {
+        "failed": 0,
+        "passed": 1,
+        "skipped": 0,
+        "total": 1
+      },
+      "dirty": false,
+      "scope": "Authenticated normal-homepage activation retains the same URL on the generated Vercel hostname."
+    },
+    "codexBrowser": {
+      "url": "https://feature-payload-visual-editor.workshops.dev.fluid-bodies.com/",
+      "result": "Public homepage rendered and visually inspected in the Codex browser; no observed console errors. Authenticated UI behavior is covered separately by deployed browser acceptance."
+    },
+    "scope": "Isolated feature preview only; application PR397 remains open; no production rollout."
+  },
+  "validationAccess": "The first remote attempt used an expired development OIDC token and reached Vercel login. Refreshed the same-project token with vercel env pull, kept deployment protection enabled, removed only the CLI-generated redundant .gitignore line, and reran from clean source. Node-only Security Checkpoint 429 was transport evidence; browser-backed acceptance passed."
+}
