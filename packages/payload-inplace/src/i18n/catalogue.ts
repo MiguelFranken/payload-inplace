@@ -26,6 +26,7 @@ export const englishMessages = {
     "The moved section was removed. Your current working copy is unchanged.",
   commandInsertionUnavailable: "This insertion point is no longer available.",
 
+  unsupportedRichNode: "{type} · edit in settings",
   loadingNativeFields: "Loading fields…",
   searchPatterns: "Search patterns",
   noMatchingPatterns: "No matching patterns",
@@ -208,6 +209,17 @@ export const englishMessages = {
   addSectionBefore: "Add section before",
   addSectionAfter: "Add section after",
   searchMedia: "Search media",
+  retryUpload: "Retry upload",
+  unavailableSection: "Unavailable section",
+  clickToEdit: "Click to edit",
+  sectionMoved: "{label} moved to position {position}.",
+  sectionPickedUp: "Picked up {label}.",
+  dragPosition: "Position {position}.",
+  sectionReleased: "Section released.",
+  moveCancelled: "Move cancelled.",
+  dragHandleHelp: "Drag to move · Space for keyboard",
+  dragInstructions:
+    "Press Space to pick up a section, arrow keys to move it, Space to drop, or Escape to cancel. Sections stay within their current block field.",
   retrySearch: "Retry search",
   loadMore: "Load more",
   uploadMedia: "Upload media",
@@ -299,7 +311,7 @@ export const englishMessages = {
   mediaSearchFailed:
     "Media could not be loaded. Try again or use the native editor.",
   mediaUploadFailed:
-    "Upload failed. Choose the file again to retry, or use the native editor.",
+    "Upload failed. Retry the upload or use the native editor.",
   searching: "Searching…",
   noMediaFound: "No media found.",
   saveCouldNotFinish:
@@ -370,6 +382,7 @@ export const germanMessages = {
     "Der verschobene Abschnitt wurde entfernt. Deine Arbeitskopie bleibt erhalten.",
   commandInsertionUnavailable: "Diese Einfügestelle ist nicht mehr verfügbar.",
 
+  unsupportedRichNode: "{type} · in den Einstellungen bearbeiten",
   loadingNativeFields: "Felder werden geladen…",
   searchPatterns: "Vorlagen durchsuchen",
   noMatchingPatterns: "Keine passenden Vorlagen",
@@ -556,6 +569,17 @@ export const germanMessages = {
   addSectionBefore: "Abschnitt davor hinzufügen",
   addSectionAfter: "Abschnitt danach hinzufügen",
   searchMedia: "Medien suchen",
+  retryUpload: "Upload wiederholen",
+  unavailableSection: "Abschnitt nicht verfügbar",
+  clickToEdit: "Zum Bearbeiten klicken",
+  sectionMoved: "{label} auf Position {position} verschoben.",
+  sectionPickedUp: "{label} ausgewählt.",
+  dragPosition: "Position {position}.",
+  sectionReleased: "Abschnitt abgelegt.",
+  moveCancelled: "Verschieben abgebrochen.",
+  dragHandleHelp: "Zum Verschieben ziehen · Leertaste für Tastatur",
+  dragInstructions:
+    "Mit der Leertaste einen Abschnitt aufnehmen, mit Pfeiltasten verschieben, mit der Leertaste ablegen oder mit Escape abbrechen. Abschnitte bleiben im aktuellen Blockfeld.",
   retrySearch: "Suche wiederholen",
   loadMore: "Mehr laden",
   uploadMedia: "Medien hochladen",

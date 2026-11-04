@@ -76,6 +76,7 @@ export function InlineRichText({
     disabled,
     label,
     features,
+    t,
   }));
   const change = useEffectEvent((value: RichDocument) => {
     if (!disabled && !field.disabled) field.setValue(value);
@@ -120,6 +121,8 @@ export function InlineRichText({
         onError: () => setError("nativeRichTextRequired"),
         disabled: disabled || field.disabled,
         features,
+        unsupportedNodeLabel: (type) =>
+          current().t("unsupportedRichNode", { type }),
       });
     } catch {
       setError("nativeRichTextRequired");
@@ -164,6 +167,18 @@ export function InlineRichText({
       );
     };
   }, [element, path]);
+  useEffect(() => {
+    // Only immutable presentation islands are relabelled; the editor value,
+    // selection and native field owner stay unchanged when UI language changes.
+    for (const island of runtime.current?.editor
+      .getRootElement()
+      ?.querySelectorAll<HTMLElement>("[data-pve-opaque]") || []) {
+      const label = t("unsupportedRichNode", {
+        type: island.dataset.pveOpaque || "",
+      });
+      if (island.textContent !== label) island.textContent = label;
+    }
+  }, [t]);
   useEffect(() => {
     runtime.current?.editor.setEditable(!disabled && !field.disabled);
     runtime.current?.editor
@@ -246,7 +261,7 @@ export function InlineRichText({
                 className="pve:size-8"
                 tooltip={label}
                 aria-label={label}
-                disabled={disabled}
+                disabled={disabled || field.disabled}
                 onClick={() => runtime.current?.format(format)}
               >
                 <Icon size={15} />
@@ -257,6 +272,7 @@ export function InlineRichText({
             <DropdownMenuTrigger
               className="pve:size-8"
               aria-label={t("textStyle")}
+              disabled={disabled || field.disabled}
             >
               <Pilcrow size={15} />
             </DropdownMenuTrigger>
@@ -289,6 +305,7 @@ export function InlineRichText({
                   size="icon"
                   className="pve:size-8"
                   aria-label={t("editLink")}
+                  disabled={disabled || field.disabled}
                   tooltip={t("editLink")}
                 />
               }
@@ -306,11 +323,13 @@ export function InlineRichText({
                   dir={direction}
                   data-ve-ui=""
                   aria-label={t("editLink")}
+                  aria-disabled={disabled || field.disabled}
                   className={`pve:grid pve:w-64 pve:gap-2 pve:rounded-xl pve:border pve:border-solid pve:p-3 pve:shadow-lg ${chrome.surface} ${chrome.border}`}
                 >
                   <label className="pve:grid pve:gap-1 pve:text-sm">
                     {t("linkAddress")}
                     <input
+                      disabled={disabled || field.disabled}
                       value={linkURL}
                       onChange={(event) => setLinkURL(event.target.value)}
                       placeholder={t("httpsExampleCom")}
@@ -320,6 +339,7 @@ export function InlineRichText({
                   <Button
                     size="sm"
                     variant="default"
+                    disabled={disabled || field.disabled}
                     onClick={() => {
                       if (runtime.current?.link(linkURL)) {
                         setError(null);
@@ -332,6 +352,7 @@ export function InlineRichText({
                   </Button>
                   <Button
                     size="sm"
+                    disabled={disabled || field.disabled}
                     onClick={() => {
                       runtime.current?.format("unlink");
                       setLinkOpen(false);

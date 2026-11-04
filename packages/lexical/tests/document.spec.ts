@@ -148,3 +148,40 @@ it("allows only intentional link protocols for imported/pasted anchors", () => {
   expect(safeLink("https://good.test")).toBe("https://good.test");
   expect(safeLink("/page")).toBe("/page");
 });
+
+it("reports collapsed link selection honestly and blocks commands while native editing is disabled", () => {
+  const changes: RichDocument[] = [];
+  const runtime = mountRichEditor({
+    autofocus: false,
+    value: documentValue(),
+    features: ["bold", "link"],
+    onChange: (value) => changes.push(value),
+    onError: (error) => {
+      throw error;
+    },
+  });
+  dispose = runtime.dispose;
+  runtime.editor.update(() => $getRoot().selectEnd(), {
+    discrete: true,
+    tag: SKIP_DOM_SELECTION_TAG,
+  });
+  expect(runtime.link("https://example.test")).toBe(false);
+  runtime.editor.update(
+    () => {
+      const first = $getRoot().getFirstDescendant();
+      if ($isTextNode(first)) first.select(0, 5);
+    },
+    { discrete: true, tag: SKIP_DOM_SELECTION_TAG },
+  );
+  runtime.editor.setEditable(false);
+  const before = runtime.editor.getEditorState().toJSON();
+  runtime.format("bold");
+  expect(runtime.link("https://example.test")).toBe(false);
+  expect(runtime.editor.getEditorState().toJSON()).toEqual(before);
+  expect(changes).toEqual([]);
+  runtime.editor.setEditable(true);
+  expect(runtime.link("https://example.test")).toBe(true);
+  expect(JSON.stringify(runtime.editor.getEditorState().toJSON())).toContain(
+    "https://example.test",
+  );
+});

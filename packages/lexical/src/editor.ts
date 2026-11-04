@@ -56,6 +56,7 @@ export function mountRichEditor({
   onChange,
   onError,
   features,
+  unsupportedNodeLabel,
   autofocus = true,
   disabled = false,
 }: {
@@ -66,6 +67,8 @@ export function mountRichEditor({
   onError: (error: Error) => void;
   disabled?: boolean;
   features?: readonly string[];
+  /** Presentation-only label for immutable custom/upload islands; never serialized. */
+  unsupportedNodeLabel?: (type: string) => string;
   /** Hosts may defer focus to their own click/caret placement; headless state tests disable DOM focus. */
   autofocus?: boolean;
 }) {
@@ -99,7 +102,12 @@ export function mountRichEditor({
       ListNode,
       ListItemNode,
       PayloadLinkNode,
-      ...unknownNodeTypes(document).map(opaqueNode),
+      ...unknownNodeTypes(document).map((type) =>
+        opaqueNode(
+          type,
+          unsupportedNodeLabel ? () => unsupportedNodeLabel(type) : undefined,
+        ),
+      ),
     ],
     theme: {
       text: {
@@ -171,45 +179,56 @@ export function mountRichEditor({
     format: (format: RichFormat) => formatRichText(editor, format),
     link: (url: string) => {
       const safe = safeLink(url);
-      if (!safe || (features && !features.includes("link"))) return false;
-      editor.update(() => {
-        const selection = $getSelection();
-        if (!$isRangeSelection(selection) || selection.isCollapsed()) return;
-        const nodes = selection.extract();
-        if (!nodes.length) return;
-        const existing = nodes[0].getParent();
-        if (existing instanceof PayloadLinkNode) {
-          const writable = existing.getWritable();
-          writable.__raw = {
-            ...writable.__raw,
-            fields: {
-              ...(writable.__raw.fields as Record<string, unknown>),
-              linkType: "custom",
-              url: safe,
-            },
-          };
-          return;
-        }
-        // Only contiguous inline siblings can be wrapped; multi-block links remain native settings.
-        if (
-          !nodes.every(
-            (node) =>
-              node.getParent() === existing &&
-              (node.isInline() || node.getType() === "text"),
+      if (
+        !editor.isEditable() ||
+        !safe ||
+        (features && !features.includes("link"))
+      )
+        return false;
+      let applied = false;
+      editor.update(
+        () => {
+          const selection = $getSelection();
+          if (!$isRangeSelection(selection) || selection.isCollapsed()) return;
+          const nodes = selection.extract();
+          if (!nodes.length) return;
+          const existing = nodes[0].getParent();
+          if (existing instanceof PayloadLinkNode) {
+            const writable = existing.getWritable();
+            applied = true;
+            writable.__raw = {
+              ...writable.__raw,
+              fields: {
+                ...(writable.__raw.fields as Record<string, unknown>),
+                linkType: "custom",
+                url: safe,
+              },
+            };
+            return;
+          }
+          // Only contiguous inline siblings can be wrapped; multi-block links remain native settings.
+          if (
+            !nodes.every(
+              (node) =>
+                node.getParent() === existing &&
+                (node.isInline() || node.getType() === "text"),
+            )
           )
-        )
-          return;
-        const link = new PayloadLinkNode({
-          type: "link",
-          version: 3,
-          id: crypto.randomUUID(),
-          fields: { linkType: "custom", url: safe, newTab: false },
-        });
-        nodes[0].insertBefore(link);
-        link.append(...nodes);
-        link.selectEnd();
-      });
-      return true;
+            return;
+          const link = new PayloadLinkNode({
+            type: "link",
+            version: 3,
+            id: crypto.randomUUID(),
+            fields: { linkType: "custom", url: safe, newTab: false },
+          });
+          nodes[0].insertBefore(link);
+          link.append(...nodes);
+          link.selectEnd();
+          applied = true;
+        },
+        { discrete: true },
+      );
+      return applied;
     },
     dispose: () => {
       dispose();
@@ -219,6 +238,7 @@ export function mountRichEditor({
 }
 /** Formatting updates the existing Lexical transaction and its local text history. */
 export function formatRichText(editor: LexicalEditor, format: RichFormat) {
+  if (!editor.isEditable()) return;
   if (format === "bullet" || format === "number") {
     editor.dispatchCommand(
       format === "bullet"

@@ -110,7 +110,10 @@ export class PayloadLinkNode extends ElementNode {
 /** Unknown/custom nodes are immutable islands. Their complete JSON survives unrelated edits.
  * Consumers use native settings for the island itself; no arbitrary HTML or upload URL is trusted here.
  */
-export function opaqueNode(type: string): Klass<LexicalNode> {
+export function opaqueNode(
+  type: string,
+  label?: () => string,
+): Klass<LexicalNode> {
   return class OpaqueNode extends DecoratorNode<null> {
     __raw: RichNode;
     static getType() {
@@ -132,7 +135,8 @@ export function opaqueNode(type: string): Klass<LexicalNode> {
     createDOM() {
       const dom = document.createElement("span");
       dom.setAttribute("contenteditable", "false");
-      dom.textContent = `[${type} · edit in settings]`;
+      dom.dataset.pveOpaque = type;
+      dom.textContent = label?.() ?? `[${type} · edit in settings]`;
       return dom;
     }
     updateDOM() {
