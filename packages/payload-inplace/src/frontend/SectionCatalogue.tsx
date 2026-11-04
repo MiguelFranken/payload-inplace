@@ -138,10 +138,12 @@ export function SectionCatalogue({
                 className="pve:h-11 pve:w-full pve:border-0 pve:bg-transparent pve:font-inherit pve:text-sm pve:text-inherit pve:outline-none"
               />
             </div>
-            <Combobox.Empty className="pve:p-5 pve:text-sm pve:text-[var(--pve-muted,#646b78)]">
-              {locale === "de"
-                ? "Keine passenden Abschnitte."
-                : "No matching sections."}
+            <Combobox.Empty>
+              <p className="pve:m-0 pve:p-5 pve:text-sm pve:text-[var(--pve-muted,#646b78)]">
+                {locale === "de"
+                  ? "Keine passenden Abschnitte."
+                  : "No matching sections."}
+              </p>
             </Combobox.Empty>
             <Combobox.List className="pve:max-h-[min(55dvh,360px)] pve:overflow-auto pve:overscroll-contain pve:p-1.5">
               {(slug: string) => {
