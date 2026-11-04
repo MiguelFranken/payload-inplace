@@ -1,14 +1,17 @@
 # Changelog
 
-## 0.1.0-alpha.15 — candidate
+## 0.1.0-alpha.15
 
+- Adopt streamed server previews in React transitions without hiding the website or reconnecting its controls.
+- Keep inline intent while Payload prepares a newly added row’s native field state.
+- Locate a section from its list row or open field panel without selecting or changing its content.
 - Keep the selected field’s label, tint, DOM and focus stable through native draft saves.
 - Resize the contextual panel from its top and left edges, with keyboard controls and viewport bounds.
 - Preserve Payload’s native root-unit scale inside isolated styles; adapt field layouts to panel width.
-- Measure fragment-bound canvas blocks through their rendered content and retain stable drag bindings across native moves.
+- Measure fragment-bound canvas blocks through their rendered content and retain stable drag bindings across native moves; make keyboard destinations follow sibling identity.
 - Accept additional exact, server-configured preview origins for deployment aliases.
 
-## 0.1.0-alpha.14 — candidate
+## 0.1.0-alpha.14
 
 - Preserve rendered fallback text when inline editing begins; save only real input and ignore detached DOM during teardown.
 - Activate and exit editing on the actual website URL with a soft refresh, preserving shared page chrome, query parameters, fragments and viewport.
