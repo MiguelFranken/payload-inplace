@@ -13,12 +13,50 @@ export function OptimisticPage({
   serverContent?: Record<string, ReactNode>;
 }) {
   const document = useEditorPreviewData(initialDocument);
+  const [products, setProducts] = useState<Record<string, any>>({});
+  const rows =
+    root.split(".").reduce((value, key) => value?.[key], document) || [];
+  const missing = [
+    ...new Set<string>(
+      rows.flatMap((block: any) =>
+        (block.cards || [])
+          .map((card: any) =>
+            typeof card.product === "object" ? undefined : card.product,
+          )
+          .filter(Boolean),
+      ),
+    ),
+  ]
+    .sort()
+    .join(",");
+  useEffect(() => {
+    if (!missing) return;
+    const controller = new AbortController();
+    for (const id of missing.split(",")) {
+      fetch(`/api/products/${encodeURIComponent(id)}?depth=2`, {
+        signal: controller.signal,
+      })
+        .then(async (response) => {
+          if (!response.ok) throw new Error("Product unavailable");
+          return response.json();
+        })
+        .then((product) => {
+          if (!controller.signal.aborted)
+            setProducts((current) => ({ ...current, [id]: product }));
+        })
+        .catch(() => {});
+    }
+    return () => controller.abort();
+  }, [missing]);
   return (
     <RenderPageView
       document={document}
       root={root}
       active
       serverContent={serverContent}
+      resolveProduct={(product) =>
+        product && typeof product === "object" ? product : products[product]
+      }
       renderImage={(image) => <PreviewImage image={image} />}
     />
   );

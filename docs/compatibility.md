@@ -1,19 +1,19 @@
-# Supported candidate contract
+# Supported runtime contract
 
-The initial candidate intentionally pins one runtime combination. Broad peer ranges would claim evidence that does not exist.
+Payload and Next remain version-pinned. React is limited to the 19.2 patch line, covering the independent consumer and Workshops host versions; other runtime combinations remain unverified.
 
-| Surface | Verified scope | Boundary |
-| --- | --- | --- |
-| Payload / UI / Postgres adapter | 3.91.0 | All packages must match exactly |
-| Same-page native handler bridge | Exact Payload Next 3.91.0 internal handler, app-relative Turbopack alias | Requires `/next` configuration and `/native` import; other bundlers/peer versions unverified |
-| Next / React / React DOM | 16.4.2 / 19.2.6 / 19.2.6, production Turbopack | Other versions and bundlers are unverified |
-| Node / pnpm | Node 24 CI, Node 26 local; pnpm 10.28.0 | Node 24 is the release runtime |
-| Database | Postgres 17.11, real transactional competing writers | Mongo is a development/demo single-writer fallback; no atomic concurrency guarantee |
-| Documents | Collections with existing blocks roots; nested groups/tabs/arrays and blockReferences | No globals, localized editing or cross-origin frontend |
-| Native fields | Text, selects, upload/media drawers, arrays, Lexical and custom native components | Plain-text inline mode does not edit embedded Lexical nodes |
-| Browser | Chromium desktop and 320px reflow, keyboard, reduced motion | Firefox/WebKit, hardware touch, RTL and full assistive-technology speech are unverified |
-| Theme / language | Native light/dark controls; English/German editor copy | Consumer token overrides need their own contrast review |
-| Deployment | Same-origin local production builds, private/no-store editor responses, published public caches | No production CDN/service-worker guarantee is claimed without deployment-specific checks |
+| Surface                         | Verified scope                                                                                                                           | Boundary                                                                                     |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Payload / UI / Postgres adapter | 3.91.0                                                                                                                                   | All packages must match exactly                                                              |
+| Same-page native handler bridge | Exact Payload Next 3.91.0 internal handler, app-relative Turbopack alias                                                                 | Requires `/next` configuration and `/native` import; other bundlers/peer versions unverified |
+| Next / React / React DOM        | 16.4.2 / React 19.2 patch line (`~19.2.4`), tested with 19.2.6 in the independent consumer and 19.2.4 in Workshops, production Turbopack | Other versions and bundlers are unverified                                                   |
+| Node / pnpm                     | Node 24 CI, Node 26 local; pnpm 10.28.0                                                                                                  | Node 24 is the release runtime                                                               |
+| Database                        | Postgres 17.11, real transactional competing writers                                                                                     | Mongo is a development/demo single-writer fallback; no atomic concurrency guarantee          |
+| Documents                       | Collections with existing blocks roots; nested groups/tabs/arrays and blockReferences                                                    | No globals, localized editing or cross-origin frontend                                       |
+| Native fields                   | Text, selects, upload/media drawers, arrays, Lexical and custom native components                                                        | Plain-text inline mode does not edit embedded Lexical nodes                                  |
+| Browser                         | Chromium desktop and 320px reflow, keyboard, reduced motion                                                                              | Firefox/WebKit, hardware touch, RTL and full assistive-technology speech are unverified      |
+| Theme / language                | Native light/dark controls; English/German editor copy                                                                                   | Consumer token overrides need their own contrast review                                      |
+| Deployment                      | Same-origin local production builds, private/no-store editor responses, published public caches                                          | No production CDN/service-worker guarantee is claimed without deployment-specific checks     |
 
 The exact installed-consumer and Workshops package hashes live in `docs/validation`; historical reports retain their original candidate identifiers. Source-demo success is not a substitute for installed package acceptance.
 

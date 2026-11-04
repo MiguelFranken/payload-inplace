@@ -63,6 +63,7 @@ try {
       env: {
         ...process.env,
         VE_DATABASE: "postgres",
+        ...(process.argv[2] === "e2e" ? { VE_TEST_SCHEMA: "1" } : {}),
         VE_RUN_ID: name,
         VE_RUN_STATE: stateFile,
         DATABASE_URL: `postgresql://postgres:${password}@127.0.0.1:${port}/visual_editor`,

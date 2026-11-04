@@ -489,3 +489,99 @@ it.skipIf(process.env.VE_DATABASE !== "postgres")(
     expect(draft._veRevision).toBe(operational._veRevision + 1);
   },
 );
+
+it("keeps complex product drafts, nested row IDs and field permissions with guarded revisions where supported", async () => {
+  const admin = (
+    await payload.find({
+      collection: "users",
+      overrideAccess: true,
+      where: { role: { equals: "admin" } },
+    })
+  ).docs[0];
+  const editor = (
+    await payload.find({
+      collection: "users",
+      overrideAccess: true,
+      where: { role: { equals: "editor" } },
+    })
+  ).docs[0];
+  const req = await createLocalReq(
+    { user: { ...admin, collection: "users" } },
+    payload,
+  );
+  const original = (
+    await payload.find({
+      collection: "products",
+      overrideAccess: false,
+      req,
+      where: { slug: { equals: "arc-chair" } },
+      depth: 0,
+    })
+  ).docs[0];
+  const data = structuredClone(original.presentation!);
+  const first = data.layout![0];
+  if (first.blockType !== "productDetails")
+    throw Error("Product fixture missing");
+  first.heading = "A considered product draft";
+  first.variants![1].details!.care![0].instruction = "A new care instruction";
+  const updated = await payload.update({
+    collection: "products",
+    id: original.id,
+    overrideAccess: false,
+    req,
+    draft: true,
+    data: {
+      presentation: data,
+      _status: "draft",
+      _veRevision: original._veRevision,
+    },
+  });
+  const transactional = process.env.VE_DATABASE === "postgres";
+  if (transactional)
+    expect(updated._veRevision).toBe((original._veRevision ?? 0) + 1);
+  expect(updated.presentation?.layout?.map((row) => row.id)).toEqual(
+    original.presentation?.layout?.map((row) => row.id),
+  );
+  expect(updated.internalCost).toBe(310);
+  const published = await payload.findByID({
+    collection: "products",
+    id: original.id,
+    draft: false,
+    overrideAccess: false,
+    depth: 0,
+  });
+  expect(published.presentation?.layout?.[0]).toMatchObject({
+    heading: "Arc lounge chair",
+  });
+  const editorReq = await createLocalReq(
+    { user: { ...editor, collection: "users" } },
+    payload,
+  );
+  const allowed = await payload.findByID({
+    collection: "products",
+    id: original.id,
+    draft: true,
+    overrideAccess: false,
+    req: editorReq,
+    depth: 0,
+  });
+  expect(allowed).not.toHaveProperty("internalCost");
+  expect(allowed.presentation?.layout?.[0]).toMatchObject({
+    heading: "A considered product draft",
+  });
+  if (transactional)
+    await expect(
+      payload.update({
+        collection: "products",
+        id: original.id,
+        draft: true,
+        overrideAccess: false,
+        req,
+        data: {
+          presentation: original.presentation,
+          _status: "draft",
+          _veRevision: original._veRevision,
+        },
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+});

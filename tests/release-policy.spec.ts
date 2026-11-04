@@ -5,8 +5,8 @@ const sha = "a".repeat(40),
 function proof() {
   return {
     run: {
-      repository: { full_name: "MiguelFranken/payload-visual-editor" },
-      head_repository: { full_name: "MiguelFranken/payload-visual-editor" },
+      repository: { full_name: "MiguelFranken/payload-inplace" },
+      head_repository: { full_name: "MiguelFranken/payload-inplace" },
       event: "push",
       head_branch: "main",
       conclusion: "success",

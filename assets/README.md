@@ -6,6 +6,8 @@ The mark combines a webpage frame, a selected content block and a pointer. Cobal
 - Generated with the built-in `image_gen` tool, then refined once. The final original PNG is included unchanged.
 - Use the transparent image on light or dark surfaces. The README displays it at 96 × 96.
 
+The icon predates the package rename; its original generation prompts are retained verbatim below.
+
 ## Initial prompt
 
 Use case: logo-brand.

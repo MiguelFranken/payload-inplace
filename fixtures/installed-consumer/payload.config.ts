@@ -5,8 +5,8 @@ import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import {
   visualEditor,
   type VisualEditorOptions,
-} from "@miguel.franken/payload-visual-editor";
-import { postgresConcurrency } from "@miguel.franken/payload-visual-editor/postgres";
+} from "payload-inplace";
+import { postgresConcurrency } from "payload-inplace/postgres";
 const write = ({ req }: { req: PayloadRequest }): boolean =>
   req.user?.role === "author";
 export const editorOptions: VisualEditorOptions = {

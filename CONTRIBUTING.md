@@ -13,7 +13,7 @@ corepack pnpm dev:generate-importmap
 corepack pnpm dev
 ```
 
-Open `http://127.0.0.1:3127/visual-editor/start?collection=pages&slug=demo` to sign in and edit the actual website. The native CMS remains at `/admin`. Synthetic accounts are `admin@example.test`, `editor@example.test`, and `reader@example.test`, each with password `synthetic-demo-password`. These accounts exist only in the disposable local demo. Public routes: `/pages/demo` and `/offers/demo`.
+Open `http://127.0.0.1:3127/shop` to explore the homewares demo. Use its footer’s **Try Payload Inplace** link to sign in, then activate the small edit button on the actual page. The native CMS remains at `/admin`. Synthetic accounts are `admin@example.test`, `editor@example.test`, and `reader@example.test`, each with password `synthetic-demo-password`. These accounts exist only in the disposable local demo. Native `/admin/login` prefills the admin account through Payload’s `admin.autoLogin.prefillOnly`; login still requires pressing the button. Public ecommerce routes are `/shop` and `/products/arc-chair`. Legacy `/pages/demo` and `/offers/demo` routes remain regression fixtures.
 
 The launcher creates a temporary Mongo replica set, initializes fixtures once, starts explicit Turbopack, and removes the database after shutdown. Production browser runs use a separate `.next-prod` output. Stop the launcher normally to complete cleanup; never reuse a human's running server.
 

@@ -1,4 +1,5 @@
 import path from "node:path";
+import sharp from "sharp";
 import { fileURLToPath } from "node:url";
 import { en } from "@payloadcms/translations/languages/en";
 import { de } from "@payloadcms/translations/languages/de";
@@ -9,6 +10,8 @@ import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { postgresConcurrency } from "../dist/exports/postgres.js";
 import { visualEditor } from "../dist/index.js";
 import { seed } from "./seed";
+import { commerceCollections } from "./commerce/schema";
+import { commercePath } from "./commerce/paths";
 import type { VisualEditorOptions } from "../dist/exports/types.js";
 import type {
   Block,
@@ -180,9 +183,10 @@ const content = (
 });
 export const editorOptions: VisualEditorOptions = {
   resolvePagePath: ({ target, document }) =>
-    document.slug?.startsWith("inplace-")
+    commercePath(target.collection, String(document.slug)) ||
+    (document.slug?.startsWith("inplace-")
       ? `/${target.collection}/${document.slug}`
-      : undefined,
+      : undefined),
   operationalWrites: {
     offers: {
       paths: ["unrelated"],
@@ -192,9 +196,18 @@ export const editorOptions: VisualEditorOptions = {
   fieldPanels: [
     {
       id: "search-appearance",
+      canUse: ({ target }) =>
+        ["pages", "offers", "validatedPages"].includes(target.collection),
       label: { en: "Search appearance", de: "Suchdarstellung" },
       fields: ["meta.title", "meta.description"],
       scope: "document",
+    },
+    {
+      id: "product-search",
+      label: "Search appearance",
+      scope: "document",
+      fields: ["search.title", "search.description"],
+      canUse: ({ target }) => target.collection === "products",
     },
     {
       id: "appearance",
@@ -250,8 +263,19 @@ export const editorOptions: VisualEditorOptions = {
     pages: { roots: ["layout"] },
     validatedPages: { roots: ["layout"] },
     offers: { roots: ["detailPage.layout"] },
+    shops: { roots: ["layout"] },
+    products: { roots: ["presentation.layout"] },
   },
   policies: {
+    shops: {
+      layout: { first: "collectionHero", exactlyOne: ["collectionHero"] },
+    },
+    products: {
+      "presentation.layout": {
+        first: "productDetails",
+        exactlyOne: ["productDetails"],
+      },
+    },
     pages: { layout: { first: "hero", exactlyOne: ["hero"] } },
     offers: { "detailPage.layout": { first: "hero", exactlyOne: ["hero"] } },
   },
@@ -260,8 +284,14 @@ export const editorOptions: VisualEditorOptions = {
   disabled: process.env.VE_DISABLED === "1",
 };
 export default buildConfig({
+  sharp,
   i18n: { fallbackLanguage: "en", supportedLanguages: { en, de } },
   admin: {
+    autoLogin: {
+      email: "admin@example.test",
+      password: "synthetic-demo-password",
+      prefillOnly: true,
+    },
     user: "users",
     importMap: {
       baseDir: dirname,
@@ -295,6 +325,14 @@ export default buildConfig({
       slug: "media",
       upload: {
         staticDir: process.env.VE_MEDIA_DIR || path.join(dirname, "media"),
+        imageSizes: [
+          {
+            name: "card",
+            width: 1200,
+            withoutEnlargement: true,
+            formatOptions: { format: "webp", options: { quality: 85 } },
+          },
+        ],
       },
       access: {
         read: () => true,
@@ -304,6 +342,7 @@ export default buildConfig({
       },
       fields: [{ name: "alt", type: "text" }],
     },
+    ...commerceCollections,
     content("pages"),
     content("validatedPages", false, true),
     content("offers", true),

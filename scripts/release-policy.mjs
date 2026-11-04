@@ -9,7 +9,7 @@ export function assertReleasePolicy({
   tag,
 }) {
   if (
-    run.repository?.full_name !== "MiguelFranken/payload-visual-editor" ||
+    run.repository?.full_name !== "MiguelFranken/payload-inplace" ||
     run.head_repository?.full_name !== run.repository.full_name ||
     run.event !== "push" ||
     run.head_branch !== "main" ||

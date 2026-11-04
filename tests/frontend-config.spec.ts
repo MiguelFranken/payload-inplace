@@ -1,6 +1,7 @@
 import { expect, it } from "vitest";
 import {
   frontendConfig,
+  synchronizeNativeSchemaCaches,
   withFrontendImportMap,
 } from "../src/server/frontend-config.js";
 
@@ -84,4 +85,26 @@ it("preserves the request map when native Local API operations replace a cold pa
   expect(req.payload.importMap).toBe(map);
   expect(req.payload.db).toBe(original.db);
   expect(original.importMap).toBeUndefined();
+});
+
+it("invalidates all three native schema caches together only when the sanitized config changes", () => {
+  const cache = globalThis as any;
+  const config = {} as any;
+  synchronizeNativeSchemaCaches(config);
+  expect([
+    cache._payload_doNotCacheClientConfig,
+    cache._payload_doNotCacheSchemaMap,
+    cache._payload_doNotCacheClientSchemaMap,
+  ]).toEqual([true, true, true]);
+  cache._payload_doNotCacheClientConfig = false;
+  cache._payload_doNotCacheSchemaMap = false;
+  cache._payload_doNotCacheClientSchemaMap = false;
+  synchronizeNativeSchemaCaches(config);
+  expect(cache._payload_doNotCacheSchemaMap).toBe(false);
+  synchronizeNativeSchemaCaches({ ...config });
+  expect([
+    cache._payload_doNotCacheClientConfig,
+    cache._payload_doNotCacheSchemaMap,
+    cache._payload_doNotCacheClientSchemaMap,
+  ]).toEqual([true, true, true]);
 });

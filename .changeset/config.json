@@ -3,7 +3,7 @@
   "changelog": [
     "@changesets/cli/changelog",
     {
-      "repo": "MiguelFranken/payload-visual-editor"
+      "repo": "MiguelFranken/payload-inplace"
     }
   ],
   "commit": false,

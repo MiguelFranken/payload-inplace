@@ -3,7 +3,16 @@ import { getPayload } from "payload";
 import config, { editorOptions } from "@payload-config";
 import { EditorPageTransition } from "../../../dist/exports/launcher.js";
 import "../../styles.css";
+import {
+  StorefrontHeader,
+  StorefrontFooter,
+} from "../../commerce/StorefrontChrome";
 import type { ReactNode } from "react";
+export const metadata = {
+  title: "Still & Form — Furniture for everyday living",
+  description:
+    "A small, editable homewares storefront powered by Payload Inplace.",
+};
 export default async function Layout({ children }: { children: ReactNode }) {
   const requestHeaders = await headers();
   let editor = false;
@@ -17,17 +26,14 @@ export default async function Layout({ children }: { children: ReactNode }) {
   }
   return (
     <html lang="en">
-      <body className="demo:m-0 demo:font-sans demo:bg-white demo:text-neutral-950">
-        <header data-test-site-header="">
-          Website header{" "}
-          <a href="/pages/demo#site-footer">Website navigation</a>
-        </header>
+      <body className="demo:m-0 demo:font-sans demo:bg-canvas demo:text-ink demo:antialiased">
+        <StorefrontHeader />
         {editor ? (
           <EditorPageTransition>{children}</EditorPageTransition>
         ) : (
           children
         )}
-        <footer id="site-footer">Website footer</footer>
+        <StorefrontFooter />
       </body>
     </html>
   );

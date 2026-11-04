@@ -1,6 +1,6 @@
 # Changesets releases and non-destructive rollback
 
-Public source: [MiguelFranken/payload-visual-editor](https://github.com/MiguelFranken/payload-visual-editor). Distribution policy: public npm, package `@miguel.franken/payload-visual-editor`, anonymous installation. Version **0.0.1** is published on npm with provenance. The [delivery receipt](validation/workshops-release.json) records the validated archive and verified Workshops preview. Package publication and application production deployment remain separate steps.
+Public source: [MiguelFranken/payload-inplace](https://github.com/MiguelFranken/payload-inplace). Distribution policy: public npm, package `payload-inplace`, anonymous installation. Version **0.0.1** is published on npm with provenance. The [delivery receipt](validation/workshops-release.json) records the validated archive and verified Workshops preview. Package publication and application production deployment remain separate steps.
 
 ## Versioning with Changesets
 

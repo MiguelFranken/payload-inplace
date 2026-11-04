@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 const origin = `http://127.0.0.1:${process.env.VE_PORT || 3127}`;
 export default defineConfig({
   testDir: "dev",
-  testMatch: ["e2e.spec.ts", "optimistic.e2e.spec.ts"],
+  testMatch: ["e2e.spec.ts", "optimistic.e2e.spec.ts", "commerce.e2e.spec.ts"],
   workers: 1,
   reporter: [["list"], ["json", { outputFile: "test-results/results.json" }]],
   timeout: 60000,

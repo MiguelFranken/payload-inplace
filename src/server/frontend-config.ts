@@ -55,6 +55,7 @@ export function withFrontendImportMap(
   req: PayloadRequest,
   importMap: ImportMap,
 ): PayloadRequest {
+  synchronizeNativeSchemaCaches(req.payload.config);
   const scope = (payload: PayloadRequest["payload"]) =>
     Object.create(payload, {
       importMap: { value: importMap, writable: true, enumerable: true },
@@ -70,4 +71,27 @@ export function withFrontendImportMap(
       payload = scope(next);
     },
   });
+}
+
+const nativeSchemaKey = Symbol.for("payload-inplace.native-schema-config");
+
+/** Keep Payload v3's process-wide server and client schema caches on the same sanitized config.
+ * Payload's native hot reload uses these invalidation flags, but separate Next server module graphs
+ * can consume only part of that reset. Invalidate the complete trio once per config identity, before
+ * native form construction. Ordinary requests and autosaves retain the native caches.
+ * No user permissions, document values or shared component maps are cached here.
+ * @see withFrontendImportMap establishes this boundary for the initial frontend Form.
+ */
+export function synchronizeNativeSchemaCaches(config: SanitizedConfig): void {
+  const cache = globalThis as typeof globalThis & {
+    [nativeSchemaKey]?: SanitizedConfig;
+    _payload_doNotCacheClientConfig?: boolean;
+    _payload_doNotCacheSchemaMap?: boolean;
+    _payload_doNotCacheClientSchemaMap?: boolean;
+  };
+  if (cache[nativeSchemaKey] === config) return;
+  cache[nativeSchemaKey] = config;
+  cache._payload_doNotCacheClientConfig = true;
+  cache._payload_doNotCacheSchemaMap = true;
+  cache._payload_doNotCacheClientSchemaMap = true;
 }

@@ -1,6 +1,7 @@
+import { commercePath } from "../../../commerce/paths";
 import { cookies } from "next/headers";
 import { unstable_rethrow } from "next/navigation";
-import { handleServerFunctions } from "@miguel.franken/payload-visual-editor/native";
+import { handleServerFunctions } from "payload-inplace/native";
 import type { ServerFunctionClient } from "payload";
 import config, { editorOptions } from "@payload-config";
 import { FrontendEditor } from "../../../../dist/exports/rsc.js";
@@ -39,7 +40,9 @@ export async function DocumentEditor({ identifier }: { identifier: string }) {
         collection: context.target.collection as any,
         id: context.target.id,
         draft: true,
-        depth: 1,
+        depth: ["shops", "products"].includes(context.target.collection)
+          ? 3
+          : 1,
         req,
         overrideAccess: false,
       });
@@ -72,7 +75,7 @@ export async function DocumentEditor({ identifier }: { identifier: string }) {
     collection: context.target.collection as any,
     id: context.target.id,
     draft: true,
-    depth: 1,
+    depth: ["shops", "products"].includes(context.target.collection) ? 3 : 1,
     req,
     overrideAccess: false,
   });
@@ -99,7 +102,10 @@ export async function DocumentEditor({ identifier }: { identifier: string }) {
           )}
         />
       }
-      exitURL={`/${context.target.collection}/${document.slug}`}
+      exitURL={
+        commercePath(context.target.collection, String(document.slug)) ||
+        `/${context.target.collection}/${document.slug}`
+      }
     >
       <RenderPage document={document} root={context.target.root} active />
     </FrontendEditor>

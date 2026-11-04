@@ -769,14 +769,9 @@ export function FrontendControls({
   useEffect(() => {
     if (selection && !canInline && !inlinePending && !disabled)
       setSettingsOpen(true);
-  }, [
-    selection?.element,
-    selection?.field,
-    selection?.fields,
-    canInline,
-    inlinePending,
-    disabled,
-  ]);
+    // Each pick is a fresh user intent, even when the DOM element and field are
+    // unchanged. A closed row/settings panel must reopen on the next pick.
+  }, [selection, canInline, inlinePending, disabled]);
   const grouped = selection?.fields?.map((path) =>
     selected
       ? resolveBinding({

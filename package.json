@@ -1,5 +1,5 @@
 {
-  "name": "@miguel.franken/payload-visual-editor",
+  "name": "payload-inplace",
   "version": "0.0.1",
   "description": "Live editing for Payload CMS websites with inline text, native fields, block reordering and reviewed drafts.",
   "type": "module",
@@ -7,7 +7,7 @@
   "author": "Miguel Franken",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MiguelFranken/payload-visual-editor.git"
+    "url": "git+https://github.com/MiguelFranken/payload-inplace.git"
   },
   "engines": {
     "node": ">=24"
@@ -119,8 +119,8 @@
     "@payloadcms/ui": "3.91.0",
     "next": "16.4.2",
     "payload": "3.91.0",
-    "react": "19.2.6",
-    "react-dom": "19.2.6"
+    "react": "~19.2.4",
+    "react-dom": "~19.2.4"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",
@@ -171,9 +171,9 @@
     "clsx": "2.1.1",
     "lucide-react": "1.66.0"
   },
-  "homepage": "https://github.com/MiguelFranken/payload-visual-editor#readme",
+  "homepage": "https://github.com/MiguelFranken/payload-inplace#readme",
   "bugs": {
-    "url": "https://github.com/MiguelFranken/payload-visual-editor/issues"
+    "url": "https://github.com/MiguelFranken/payload-inplace/issues"
   },
   "keywords": [
     "payload",

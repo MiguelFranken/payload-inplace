@@ -4,6 +4,7 @@ import { createLocalReq } from "payload";
 import { getPayload } from "payload";
 import config, { editorOptions } from "@payload-config";
 import { notFound } from "next/navigation";
+import { demoRoot } from "../../../../commerce/paths";
 import { RenderPage } from "../../../../components/RenderPage";
 export default async function Page({
   params,
@@ -11,14 +12,15 @@ export default async function Page({
   params: Promise<{ collection: string; slug: string }>;
 }) {
   const { collection, slug } = await params;
-  if (!["pages", "offers"].includes(collection)) notFound();
+  if (!["pages", "offers", "shops", "products"].includes(collection))
+    notFound();
   const payload = await getPayload({ config });
   const result = await payload.find({
     collection: collection as any,
     where: { slug: { equals: slug } },
     draft: false,
     overrideAccess: false,
-    depth: 1,
+    depth: ["shops", "products"].includes(collection) ? 3 : 1,
     limit: 1,
   });
   if (!result.docs[0]) notFound();
@@ -43,7 +45,7 @@ export default async function Page({
           target={{
             collection,
             id: result.docs[0].id,
-            root: collection === "pages" ? "layout" : "detailPage.layout",
+            root: demoRoot(collection),
           }}
           options={editorOptions}
         />
@@ -52,10 +54,7 @@ export default async function Page({
   }
   const content = (
     <>
-      <RenderPage
-        document={result.docs[0]}
-        root={collection === "pages" ? "layout" : "detailPage.layout"}
-      />
+      <RenderPage document={result.docs[0]} root={demoRoot(collection)} />
       {launcher}
     </>
   );

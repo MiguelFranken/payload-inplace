@@ -1444,7 +1444,7 @@ test("in-place activation and exit preserve the website, URL and viewport while 
   await saveStarted;
   try {
     await page
-      .getByRole("link", { name: "Website navigation", exact: true })
+      .getByRole("link", { name: "Collection", exact: true })
       .click();
     await expect(
       page.getByRole("button", { name: "Stay on this page", exact: true }),

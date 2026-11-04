@@ -1,4 +1,5 @@
 import type { Payload } from "payload";
+import { seedCommerce } from "./commerce/seed";
 /** Deterministic synthetic content only; no consumer services or customer records. */
 export async function seed(payload: Payload) {
   if (
@@ -16,6 +17,7 @@ export async function seed(payload: Payload) {
         role,
       },
     });
+  await seedCommerce(payload);
   for (const collection of ["pages", "offers"]) {
     const layout = [
       {

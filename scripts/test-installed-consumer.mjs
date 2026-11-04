@@ -122,7 +122,7 @@ function graph() {
   const forbidden = Object.keys(publicModules).filter(
     (source) =>
       !registrations.includes(source) &&
-      /payload-visual-editor|@payloadcms[+/]ui|richtext.*lexical.*client/.test(
+      /payload-inplace|payload-visual-editor|@payloadcms[+/]ui|richtext.*lexical.*client/.test(
         source,
       ),
   );
@@ -273,7 +273,7 @@ try {
     path.join(directory, "app/(payload)/admin/importMap.js"),
     "utf8",
   );
-  if (!importMap.includes("@miguel.franken/payload-visual-editor/client#"))
+  if (!importMap.includes("payload-inplace/client#"))
     throw Error("Installed plugin entries missing from generated import map");
   const peers = Object.fromEntries(
     [

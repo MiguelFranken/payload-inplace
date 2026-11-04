@@ -6,7 +6,7 @@ import { assertReleasePolicy } from "./release-policy.mjs";
 const [runID, expectedSHA256, tag = "latest"] = process.argv.slice(2);
 if (!/^[1-9][0-9]*$/.test(runID || ""))
   throw new Error("Numeric validation run ID required");
-const repository = "MiguelFranken/payload-visual-editor";
+const repository = "MiguelFranken/payload-inplace";
 const api = (endpoint) =>
   JSON.parse(execFileSync("gh", ["api", endpoint], { encoding: "utf8" }));
 const run = api(`repos/${repository}/actions/runs/${runID}`);
@@ -86,7 +86,7 @@ try {
     }),
   );
   if (
-    pkg.name !== "@miguel.franken/payload-visual-editor" ||
+    pkg.name !== "payload-inplace" ||
     pkg.version !== installed.package.version ||
     pkg.publishConfig?.access !== "public" ||
     pkg.publishConfig?.registry !== "https://registry.npmjs.org"

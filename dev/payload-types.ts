@@ -13,53 +13,53 @@
  * via the `definition` "supportedTimezones".
  */
 export type SupportedTimezones =
-  | "Pacific/Midway"
-  | "Pacific/Niue"
-  | "Pacific/Honolulu"
-  | "Pacific/Rarotonga"
-  | "America/Anchorage"
-  | "Pacific/Gambier"
-  | "America/Los_Angeles"
-  | "America/Tijuana"
-  | "America/Denver"
-  | "America/Phoenix"
-  | "America/Chicago"
-  | "America/Guatemala"
-  | "America/New_York"
-  | "America/Bogota"
-  | "America/Caracas"
-  | "America/Santiago"
-  | "America/Buenos_Aires"
-  | "America/Sao_Paulo"
-  | "Atlantic/South_Georgia"
-  | "Atlantic/Azores"
-  | "Atlantic/Cape_Verde"
-  | "Europe/London"
-  | "Europe/Berlin"
-  | "Africa/Lagos"
-  | "Europe/Athens"
-  | "Africa/Cairo"
-  | "Europe/Moscow"
-  | "Asia/Riyadh"
-  | "Asia/Dubai"
-  | "Asia/Baku"
-  | "Asia/Karachi"
-  | "Asia/Tashkent"
-  | "Asia/Calcutta"
-  | "Asia/Dhaka"
-  | "Asia/Almaty"
-  | "Asia/Jakarta"
-  | "Asia/Bangkok"
-  | "Asia/Shanghai"
-  | "Asia/Singapore"
-  | "Asia/Tokyo"
-  | "Asia/Seoul"
-  | "Australia/Brisbane"
-  | "Australia/Sydney"
-  | "Pacific/Guam"
-  | "Pacific/Noumea"
-  | "Pacific/Auckland"
-  | "Pacific/Fiji";
+  | 'Pacific/Midway'
+  | 'Pacific/Niue'
+  | 'Pacific/Honolulu'
+  | 'Pacific/Rarotonga'
+  | 'America/Anchorage'
+  | 'Pacific/Gambier'
+  | 'America/Los_Angeles'
+  | 'America/Tijuana'
+  | 'America/Denver'
+  | 'America/Phoenix'
+  | 'America/Chicago'
+  | 'America/Guatemala'
+  | 'America/New_York'
+  | 'America/Bogota'
+  | 'America/Caracas'
+  | 'America/Santiago'
+  | 'America/Buenos_Aires'
+  | 'America/Sao_Paulo'
+  | 'Atlantic/South_Georgia'
+  | 'Atlantic/Azores'
+  | 'Atlantic/Cape_Verde'
+  | 'Europe/London'
+  | 'Europe/Berlin'
+  | 'Africa/Lagos'
+  | 'Europe/Athens'
+  | 'Africa/Cairo'
+  | 'Europe/Moscow'
+  | 'Asia/Riyadh'
+  | 'Asia/Dubai'
+  | 'Asia/Baku'
+  | 'Asia/Karachi'
+  | 'Asia/Tashkent'
+  | 'Asia/Calcutta'
+  | 'Asia/Dhaka'
+  | 'Asia/Almaty'
+  | 'Asia/Jakarta'
+  | 'Asia/Bangkok'
+  | 'Asia/Shanghai'
+  | 'Asia/Singapore'
+  | 'Asia/Tokyo'
+  | 'Asia/Seoul'
+  | 'Australia/Brisbane'
+  | 'Australia/Sydney'
+  | 'Pacific/Guam'
+  | 'Pacific/Noumea'
+  | 'Pacific/Auckland'
+  | 'Pacific/Fiji';
 
 export interface Config {
   auth: {
@@ -69,29 +69,29 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    shops: Shop;
+    products: Product;
     pages: Page;
+    validatedPages: ValidatedPage;
     offers: Offer;
-    "payload-kv": PayloadKv;
-    "payload-locked-documents": PayloadLockedDocument;
-    "payload-preferences": PayloadPreference;
-    "payload-migrations": PayloadMigration;
+    'payload-kv': PayloadKv;
+    'payload-locked-documents': PayloadLockedDocument;
+    'payload-preferences': PayloadPreference;
+    'payload-migrations': PayloadMigration;
   };
   collectionsJoins: {};
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    shops: ShopsSelect<false> | ShopsSelect<true>;
+    products: ProductsSelect<false> | ProductsSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
+    validatedPages: ValidatedPagesSelect<false> | ValidatedPagesSelect<true>;
     offers: OffersSelect<false> | OffersSelect<true>;
-    "payload-kv": PayloadKvSelect<false> | PayloadKvSelect<true>;
-    "payload-locked-documents":
-      | PayloadLockedDocumentsSelect<false>
-      | PayloadLockedDocumentsSelect<true>;
-    "payload-preferences":
-      | PayloadPreferencesSelect<false>
-      | PayloadPreferencesSelect<true>;
-    "payload-migrations":
-      | PayloadMigrationsSelect<false>
-      | PayloadMigrationsSelect<true>;
+    'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
+    'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
+    'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
+    'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
     defaultIDType: number;
@@ -133,7 +133,7 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
-  role: "admin" | "editor" | "reader";
+  role: 'admin' | 'editor' | 'reader';
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -152,7 +152,7 @@ export interface User {
       }[]
     | null;
   password?: string | null;
-  collection: "users";
+  collection: 'users';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -172,6 +172,239 @@ export interface Media {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
+  sizes?: {
+    card?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shops".
+ */
+export interface Shop {
+  id: number;
+  title: string;
+  slug: string;
+  layout?:
+    | (
+        | {
+            eyebrow?: string | null;
+            heading: string;
+            description?: string | null;
+            image?: (number | null) | Media;
+            action?: {
+              label?: string | null;
+              href?: string | null;
+            };
+            note?: string | null;
+            background?: ('canvas' | 'sage' | 'sand') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'collectionHero';
+          }
+        | {
+            heading: string;
+            description?: string | null;
+            collectionLabel?: string | null;
+            background?: ('canvas' | 'sage' | 'sand') | null;
+            promo?: {
+              eyebrow?: string | null;
+              heading?: string | null;
+              action?: {
+                label?: string | null;
+                href?: string | null;
+              };
+              background?: ('canvas' | 'sage' | 'sand') | null;
+            };
+            cards?:
+              | {
+                  product: number | Product;
+                  /**
+                   * Card copy belongs to this storefront. The linked product stays unchanged.
+                   */
+                  heading?: string | null;
+                  description?: string | null;
+                  priceCaption?: string | null;
+                  image?: (number | null) | Media;
+                  linkLabel?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            products?: (number | Product)[] | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'productGrid';
+          }
+        | {
+            eyebrow?: string | null;
+            background?: ('canvas' | 'sage' | 'sand') | null;
+            heading: string;
+            description?: string | null;
+            body?: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            } | null;
+            image?: (number | null) | Media;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'editorial';
+          }
+        | {
+            heading: string;
+            background?: ('canvas' | 'sage' | 'sand') | null;
+            items?:
+              | {
+                  question: string;
+                  answer: string;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'faq';
+          }
+      )[]
+    | null;
+  _veActivation?: string | null;
+  _veRevision?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products".
+ */
+export interface Product {
+  id: number;
+  title: string;
+  slug: string;
+  internalCost?: number | null;
+  presentation?: {
+    layout?:
+      | (
+          | {
+              eyebrow?: string | null;
+              heading: string;
+              description?: string | null;
+              image?: (number | null) | Media;
+              background?: ('canvas' | 'sage' | 'sand') | null;
+              breadcrumb?: {
+                label?: string | null;
+                href?: string | null;
+              };
+              action?: {
+                label?: string | null;
+                href?: string | null;
+              };
+              finishesHeading?: string | null;
+              careHeading?: string | null;
+              purchaseNote?: string | null;
+              pricing: {
+                amount: number;
+                currency?: ('EUR' | 'USD') | null;
+              };
+              variants?:
+                | {
+                    name: string;
+                    sku: string;
+                    deliveryNote?: string | null;
+                    available?: boolean | null;
+                    /**
+                     * Shown only when this finish is made to order.
+                     */
+                    leadTime?: string | null;
+                    details?: {
+                      material?: string | null;
+                      care?:
+                        | {
+                            instruction?: string | null;
+                            id?: string | null;
+                          }[]
+                        | null;
+                    };
+                    id?: string | null;
+                  }[]
+                | null;
+              specifications?:
+                | {
+                    label: string;
+                    value: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              id?: string | null;
+              blockName?: string | null;
+              blockType: 'productDetails';
+            }
+          | {
+              eyebrow?: string | null;
+              background?: ('canvas' | 'sage' | 'sand') | null;
+              heading: string;
+              description?: string | null;
+              body?: {
+                root: {
+                  type: string;
+                  children: {
+                    type: any;
+                    version: number;
+                    [k: string]: unknown;
+                  }[];
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  indent: number;
+                  version: number;
+                };
+                [k: string]: unknown;
+              } | null;
+              image?: (number | null) | Media;
+              id?: string | null;
+              blockName?: string | null;
+              blockType: 'editorial';
+            }
+          | {
+              heading: string;
+              background?: ('canvas' | 'sage' | 'sand') | null;
+              items?:
+                | {
+                    question: string;
+                    answer: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              id?: string | null;
+              blockName?: string | null;
+              blockType: 'faq';
+            }
+        )[]
+      | null;
+  };
+  search?: {
+    title?: string | null;
+    description?: string | null;
+  };
+  _veActivation?: string | null;
+  _veRevision?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -187,10 +420,14 @@ export interface Page {
             heading: string;
             caption?: string | null;
             image?: (number | null) | Media;
+            appearance?: {
+              tone?: ('light' | 'dark') | null;
+              align?: ('start' | 'center') | null;
+            };
             privateNote?: string | null;
             id?: string | null;
             blockName?: string | null;
-            blockType: "hero";
+            blockType: 'hero';
           }
         | {
             heading?: string | null;
@@ -202,15 +439,8 @@ export interface Page {
                   version: number;
                   [k: string]: unknown;
                 }[];
-                direction: ("ltr" | "rtl") | null;
-                format:
-                  | "left"
-                  | "start"
-                  | "center"
-                  | "right"
-                  | "end"
-                  | "justify"
-                  | "";
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
                 indent: number;
                 version: number;
               };
@@ -220,25 +450,115 @@ export interface Page {
             items?:
               | {
                   label?: string | null;
+                  note?: string | null;
                   id?: string | null;
                 }[]
               | null;
             id?: string | null;
             blockName?: string | null;
-            blockType: "text";
+            blockType: 'text';
           }
         | {
             heading?: string | null;
             id?: string | null;
             blockName?: string | null;
-            blockType: "serverData";
+            blockType: 'serverData';
           }
       )[]
     | null;
   unrelated?: string | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    synonyms?:
+      | {
+          word?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  _veActivation?: string | null;
+  _veRevision?: number | null;
   updatedAt: string;
   createdAt: string;
-  _status?: ("draft" | "published") | null;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "validatedPages".
+ */
+export interface ValidatedPage {
+  id: number;
+  title: string;
+  slug: string;
+  layout?:
+    | (
+        | {
+            heading: string;
+            caption?: string | null;
+            image?: (number | null) | Media;
+            appearance?: {
+              tone?: ('light' | 'dark') | null;
+              align?: ('start' | 'center') | null;
+            };
+            privateNote?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'hero';
+          }
+        | {
+            heading?: string | null;
+            body?: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            } | null;
+            hidden?: boolean | null;
+            items?:
+              | {
+                  label?: string | null;
+                  note?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'text';
+          }
+        | {
+            heading?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'serverData';
+          }
+      )[]
+    | null;
+  unrelated?: string | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    synonyms?:
+      | {
+          word?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  _veActivation?: string | null;
+  _veRevision?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -255,10 +575,14 @@ export interface Offer {
               heading: string;
               caption?: string | null;
               image?: (number | null) | Media;
+              appearance?: {
+                tone?: ('light' | 'dark') | null;
+                align?: ('start' | 'center') | null;
+              };
               privateNote?: string | null;
               id?: string | null;
               blockName?: string | null;
-              blockType: "hero";
+              blockType: 'hero';
             }
           | {
               heading?: string | null;
@@ -270,15 +594,8 @@ export interface Offer {
                     version: number;
                     [k: string]: unknown;
                   }[];
-                  direction: ("ltr" | "rtl") | null;
-                  format:
-                    | "left"
-                    | "start"
-                    | "center"
-                    | "right"
-                    | "end"
-                    | "justify"
-                    | "";
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
                   indent: number;
                   version: number;
                 };
@@ -288,26 +605,39 @@ export interface Offer {
               items?:
                 | {
                     label?: string | null;
+                    note?: string | null;
                     id?: string | null;
                   }[]
                 | null;
               id?: string | null;
               blockName?: string | null;
-              blockType: "text";
+              blockType: 'text';
             }
           | {
               heading?: string | null;
               id?: string | null;
               blockName?: string | null;
-              blockType: "serverData";
+              blockType: 'serverData';
             }
         )[]
       | null;
   };
   unrelated?: string | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    synonyms?:
+      | {
+          word?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  _veActivation?: string | null;
+  _veRevision?: number | null;
   updatedAt: string;
   createdAt: string;
-  _status?: ("draft" | "published") | null;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -334,24 +664,36 @@ export interface PayloadLockedDocument {
   id: number;
   document?:
     | ({
-        relationTo: "users";
+        relationTo: 'users';
         value: number | User;
       } | null)
     | ({
-        relationTo: "media";
+        relationTo: 'media';
         value: number | Media;
       } | null)
     | ({
-        relationTo: "pages";
+        relationTo: 'shops';
+        value: number | Shop;
+      } | null)
+    | ({
+        relationTo: 'products';
+        value: number | Product;
+      } | null)
+    | ({
+        relationTo: 'pages';
         value: number | Page;
       } | null)
     | ({
-        relationTo: "offers";
+        relationTo: 'validatedPages';
+        value: number | ValidatedPage;
+      } | null)
+    | ({
+        relationTo: 'offers';
         value: number | Offer;
       } | null);
   globalSlug?: string | null;
   user: {
-    relationTo: "users";
+    relationTo: 'users';
     value: number | User;
   };
   updatedAt: string;
@@ -364,7 +706,7 @@ export interface PayloadLockedDocument {
 export interface PayloadPreference {
   id: number;
   user: {
-    relationTo: "users";
+    relationTo: 'users';
     value: number | User;
   };
   key?: string | null;
@@ -432,6 +774,232 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+  sizes?:
+    | T
+    | {
+        card?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shops_select".
+ */
+export interface ShopsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  layout?:
+    | T
+    | {
+        collectionHero?:
+          | T
+          | {
+              eyebrow?: T;
+              heading?: T;
+              description?: T;
+              image?: T;
+              action?:
+                | T
+                | {
+                    label?: T;
+                    href?: T;
+                  };
+              note?: T;
+              background?: T;
+              id?: T;
+              blockName?: T;
+            };
+        productGrid?:
+          | T
+          | {
+              heading?: T;
+              description?: T;
+              collectionLabel?: T;
+              background?: T;
+              promo?:
+                | T
+                | {
+                    eyebrow?: T;
+                    heading?: T;
+                    action?:
+                      | T
+                      | {
+                          label?: T;
+                          href?: T;
+                        };
+                    background?: T;
+                  };
+              cards?:
+                | T
+                | {
+                    product?: T;
+                    heading?: T;
+                    description?: T;
+                    priceCaption?: T;
+                    image?: T;
+                    linkLabel?: T;
+                    id?: T;
+                  };
+              products?: T;
+              id?: T;
+              blockName?: T;
+            };
+        editorial?:
+          | T
+          | {
+              eyebrow?: T;
+              background?: T;
+              heading?: T;
+              description?: T;
+              body?: T;
+              image?: T;
+              id?: T;
+              blockName?: T;
+            };
+        faq?:
+          | T
+          | {
+              heading?: T;
+              background?: T;
+              items?:
+                | T
+                | {
+                    question?: T;
+                    answer?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+      };
+  _veActivation?: T;
+  _veRevision?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products_select".
+ */
+export interface ProductsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  internalCost?: T;
+  presentation?:
+    | T
+    | {
+        layout?:
+          | T
+          | {
+              productDetails?:
+                | T
+                | {
+                    eyebrow?: T;
+                    heading?: T;
+                    description?: T;
+                    image?: T;
+                    background?: T;
+                    breadcrumb?:
+                      | T
+                      | {
+                          label?: T;
+                          href?: T;
+                        };
+                    action?:
+                      | T
+                      | {
+                          label?: T;
+                          href?: T;
+                        };
+                    finishesHeading?: T;
+                    careHeading?: T;
+                    purchaseNote?: T;
+                    pricing?:
+                      | T
+                      | {
+                          amount?: T;
+                          currency?: T;
+                        };
+                    variants?:
+                      | T
+                      | {
+                          name?: T;
+                          sku?: T;
+                          deliveryNote?: T;
+                          available?: T;
+                          leadTime?: T;
+                          details?:
+                            | T
+                            | {
+                                material?: T;
+                                care?:
+                                  | T
+                                  | {
+                                      instruction?: T;
+                                      id?: T;
+                                    };
+                              };
+                          id?: T;
+                        };
+                    specifications?:
+                      | T
+                      | {
+                          label?: T;
+                          value?: T;
+                          id?: T;
+                        };
+                    id?: T;
+                    blockName?: T;
+                  };
+              editorial?:
+                | T
+                | {
+                    eyebrow?: T;
+                    background?: T;
+                    heading?: T;
+                    description?: T;
+                    body?: T;
+                    image?: T;
+                    id?: T;
+                    blockName?: T;
+                  };
+              faq?:
+                | T
+                | {
+                    heading?: T;
+                    background?: T;
+                    items?:
+                      | T
+                      | {
+                          question?: T;
+                          answer?: T;
+                          id?: T;
+                        };
+                    id?: T;
+                    blockName?: T;
+                  };
+            };
+      };
+  search?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  _veActivation?: T;
+  _veRevision?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -449,6 +1017,12 @@ export interface PagesSelect<T extends boolean = true> {
               heading?: T;
               caption?: T;
               image?: T;
+              appearance?:
+                | T
+                | {
+                    tone?: T;
+                    align?: T;
+                  };
               privateNote?: T;
               id?: T;
               blockName?: T;
@@ -463,6 +1037,7 @@ export interface PagesSelect<T extends boolean = true> {
                 | T
                 | {
                     label?: T;
+                    note?: T;
                     id?: T;
                   };
               id?: T;
@@ -477,6 +1052,89 @@ export interface PagesSelect<T extends boolean = true> {
             };
       };
   unrelated?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        synonyms?:
+          | T
+          | {
+              word?: T;
+              id?: T;
+            };
+      };
+  _veActivation?: T;
+  _veRevision?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "validatedPages_select".
+ */
+export interface ValidatedPagesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  layout?:
+    | T
+    | {
+        hero?:
+          | T
+          | {
+              heading?: T;
+              caption?: T;
+              image?: T;
+              appearance?:
+                | T
+                | {
+                    tone?: T;
+                    align?: T;
+                  };
+              privateNote?: T;
+              id?: T;
+              blockName?: T;
+            };
+        text?:
+          | T
+          | {
+              heading?: T;
+              body?: T;
+              hidden?: T;
+              items?:
+                | T
+                | {
+                    label?: T;
+                    note?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        serverData?:
+          | T
+          | {
+              heading?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
+  unrelated?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        synonyms?:
+          | T
+          | {
+              word?: T;
+              id?: T;
+            };
+      };
+  _veActivation?: T;
+  _veRevision?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -500,6 +1158,12 @@ export interface OffersSelect<T extends boolean = true> {
                     heading?: T;
                     caption?: T;
                     image?: T;
+                    appearance?:
+                      | T
+                      | {
+                          tone?: T;
+                          align?: T;
+                        };
                     privateNote?: T;
                     id?: T;
                     blockName?: T;
@@ -514,6 +1178,7 @@ export interface OffersSelect<T extends boolean = true> {
                       | T
                       | {
                           label?: T;
+                          note?: T;
                           id?: T;
                         };
                     id?: T;
@@ -529,6 +1194,20 @@ export interface OffersSelect<T extends boolean = true> {
             };
       };
   unrelated?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        synonyms?:
+          | T
+          | {
+              word?: T;
+              id?: T;
+            };
+      };
+  _veActivation?: T;
+  _veRevision?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -581,7 +1260,7 @@ export interface CollectionsWidget {
   data?: {
     [k: string]: unknown;
   };
-  width: "full";
+  width: 'full';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -591,6 +1270,7 @@ export interface Auth {
   [k: string]: unknown;
 }
 
-declare module "payload" {
+
+declare module 'payload' {
   export interface GeneratedTypes extends Config {}
 }

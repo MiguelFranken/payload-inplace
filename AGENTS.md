@@ -1,4 +1,4 @@
-# Payload Visual Editor
+# Payload Inplace
 
 Generic editing, preview protocol, schema adapters and tests belong here. Consumers own renderers, authorization policy and business constraints.
 

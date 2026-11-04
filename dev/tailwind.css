@@ -5,3 +5,15 @@
 @source "./components/**/*.tsx";
 @source "./app/**/*.tsx";
 @source not "./app/(protected)/**";
+
+@source "./commerce/**/*.tsx";
+@theme {
+  --color-canvas: #faf9f6;
+  --color-ink: #242823;
+  --color-muted: #5e635c;
+  --color-accent: #315342;
+  --color-line: #d9ddd5;
+  --color-soft: #eeeee7;
+  --color-photo: #e8e1d7;
+  --font-display: Georgia, "Times New Roman", serif;
+}

@@ -7,7 +7,7 @@ import {
   getArrayItemAttributes,
   getArrayItemPath,
   getFieldAttributes,
-} from '@miguel.franken/payload-visual-editor/bindings'
+} from 'payload-inplace/bindings'
 
 const identity = { root: 'layout', blockId: section.id }
 

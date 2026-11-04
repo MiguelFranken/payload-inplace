@@ -1,3 +1,4 @@
+import { CommercePageView } from "../commerce/CommercePageView";
 import { RichText } from "@payloadcms/richtext-lexical/react";
 import {
   getBlockAttributes,
@@ -11,17 +12,41 @@ export function RenderPageView({
   root,
   active = false,
   renderImage,
+  resolveProduct,
   serverContent,
 }: {
   document: any;
   root: string;
   active?: boolean;
+  resolveProduct?: (product: any) => any;
   renderImage?: (image: any) => import("react").ReactNode;
   serverContent?: Record<string, import("react").ReactNode>;
 }) {
+  const rows =
+    root.split(".").reduce((value, key) => value?.[key], document) || [];
+  if (
+    rows.some((block: any) =>
+      [
+        "collectionHero",
+        "productDetails",
+        "productGrid",
+        "editorial",
+        "faq",
+      ].includes(block.blockType),
+    )
+  )
+    return (
+      <CommercePageView
+        document={document}
+        root={root}
+        active={active}
+        renderImage={renderImage}
+        resolveProduct={resolveProduct}
+      />
+    );
   const layout = root.split(".").reduce((v, k) => v?.[k], document) ?? [];
   return (
-    <main>
+    <main id="main-content">
       {layout.map((block: any, index: number) => {
         const identity = { root, blockId: block.id };
         if (block.hidden) return null;

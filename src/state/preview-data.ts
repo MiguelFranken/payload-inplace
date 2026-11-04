@@ -15,7 +15,9 @@ export function mergePreviewData(initial: unknown, current: unknown): unknown {
       mergePreviewData(
         value && typeof value === "object" && value.id != null
           ? byID.get(String(value.id))
-          : undefined,
+          : value != null && typeof value !== "object"
+            ? byID.get(String(value))
+            : undefined,
         value,
       ),
     );

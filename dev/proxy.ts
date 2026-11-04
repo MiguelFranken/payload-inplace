@@ -7,7 +7,8 @@ export function proxy(request: NextRequest) {
   if (
     process.env.VE_DISABLED !== "1" &&
     request.cookies.has("payload-token") &&
-    /^\/(pages|offers)\/[^/]+$/.test(path) &&
+    (path === "/shop" ||
+      /^\/(pages|offers|shops|products)\/[^/]+$/.test(path)) &&
     hasPageEditorSession(request.headers, path)
   ) {
     const url = new URL(request.url);
@@ -19,4 +20,12 @@ export function proxy(request: NextRequest) {
   }
   return NextResponse.next();
 }
-export const config = { matcher: ["/pages/:slug", "/offers/:slug"] };
+export const config = {
+  matcher: [
+    "/shop",
+    "/pages/:slug",
+    "/offers/:slug",
+    "/shops/:slug",
+    "/products/:slug",
+  ],
+};

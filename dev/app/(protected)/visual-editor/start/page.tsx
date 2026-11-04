@@ -16,7 +16,7 @@ export default async function Page({
   }>;
 }) {
   const params = await searchParams,
-    collection = params.collection || "pages";
+    collection = params.collection || "shops";
   const setting =
     editorOptions.collections[
       collection as keyof typeof editorOptions.collections
@@ -31,7 +31,11 @@ export default async function Page({
     collection: collection as any,
     where: params.id
       ? { id: { equals: params.id } }
-      : { slug: { equals: params.slug || "demo" } },
+      : {
+          slug: {
+            equals: params.slug || (collection === "shops" ? "home" : "demo"),
+          },
+        },
     draft: Boolean(user),
     depth: 1,
     limit: 1,
