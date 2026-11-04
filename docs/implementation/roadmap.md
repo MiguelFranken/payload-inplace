@@ -105,3 +105,7 @@ Added a lazy frozen three-way comparison using the last acknowledged native copy
 Added native user-based lock awareness with serialized Postgres lease operations, bounded visible-only heartbeats, exact-stamp cleanup and paused foreign-user controls. No owner profiles, takeover capability, new collection or migration. Native REST lock checks and transactional revision enforcement remain authoritative. Same-account windows remain an advisory limitation, documented explicitly.
 
 178 unit/component assertions pass in 52 files. Eight real Postgres cases pass. Browser recovery combines disjoint changes after a real stale-write rejection and passes 320px layout (8.6s); two-user lease pause/exit/resume passes at narrow width (5.9s). Full production/installed-archive and access-change/race acceptance still needs its final run; no roadmap ticket is marked complete solely from this slice.
+
+## Visitor graph contract after workspace migration
+
+Updated module detection for the actual nested facade dist layout, retaining old-layout negative controls and explicitly allowing ordinary Next runtime dist files. The active positive control now resolves the real workspace DeferredEditor entry. Deliberate native/editor/core-event leaks are rejected in unit fixtures; the nonempty delivered production observation is still required by the full graph gate. This fixes the gate itself rather than inferring visitor safety from a source-only build.

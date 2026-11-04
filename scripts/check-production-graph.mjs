@@ -1,3 +1,7 @@
+import {
+  assertPublicGraph,
+  assertActiveGraph,
+} from "./production-graph-contract.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
@@ -15,16 +19,6 @@ function manifest(route) {
 }
 const published = manifest("(public)/[collection]/[slug]"),
   preview = manifest("(protected)/visual-editor");
-export function assertPublicGraph(modules) {
-  for (const source of Object.keys(modules))
-    if (
-      !source.endsWith("/dist/payload-inplace/src/launcher/DeferredLauncher.js") &&
-      /(?:\[project\]\/dist\/|@payloadcms[+/]ui|@payloadcms[+/]richtext|lexical|visual-editor)/.test(
-        source,
-      )
-    )
-      throw Error(`Public client module leak: ${source}`);
-}
 // The route manifest registers both published and authorized RSC branches. The production
 // browser observation identifies which registered chunks were actually delivered publicly.
 const observation = JSON.parse(
@@ -47,12 +41,7 @@ const deliveredModules = Object.fromEntries(
 if (!Object.keys(deliveredModules).length)
   throw Error("Empty delivered graph cannot prove isolation");
 assertPublicGraph(deliveredModules);
-if (
-  !Object.keys(preview.clientModules).some((source) =>
-    source.includes("[project]/dist/frontend/DeferredEditor.js"),
-  )
-)
-  throw Error("Active editor graph missing native shell");
+assertActiveGraph(preview.clientModules);
 let rejected = false;
 try {
   assertPublicGraph({
@@ -63,7 +52,10 @@ try {
   rejected = true;
 }
 if (!rejected) throw Error("Leak negative control failed");
-const bootstrap = fs.readFileSync("packages/payload-inplace/dist/payload-inplace/src/launcher/DeferredLauncher.js", "utf8");
+const bootstrap = fs.readFileSync(
+  "packages/payload-inplace/dist/payload-inplace/src/launcher/DeferredLauncher.js",
+  "utf8",
+);
 if (
   Buffer.byteLength(bootstrap) > 4096 ||
   /@payloadcms|\.css|useEffect|useLayoutEffect/.test(bootstrap)
