@@ -2,29 +2,29 @@
 
 Branch: `feature/onpage-roadmap`. Owner instruction: commit completed slices locally; **no push, release or deployment until the owner gives the signal**.
 
-Baseline: `fa1f80f`, 108 unit tests passed before edits. Full roadmap: Linear COURSE-233, children COURSE-234–254. Work is accepted per domain, not by file movement alone.
+Baseline: `fa1f80f`, 108 unit tests passed before edits. Full roadmap: Linear COURSE-233, children COURSE-234–254. Checked entries mean implemented and locally validated on the declared runtime matrix, not released or deployed. The final evidence and explicit boundaries are recorded below. Work is accepted per domain, not by file movement alone.
 
-- [ ] COURSE-234 workspace/build/package preservation
-- [ ] COURSE-235 native-backed domain controllers
-- [ ] COURSE-236 domain Vitest/component coverage
-- [ ] COURSE-237 Oxlint/rule and import boundaries
-- [ ] COURSE-238 document-bound mapping/diagnostics
-- [ ] COURSE-239 native v3 compatibility bridge
-- [ ] COURSE-240 inline Lexical rich text
-- [ ] COURSE-241 contextual insertion
-- [ ] COURSE-242 catalogue/transient previews
-- [ ] COURSE-243 contextual editor strategies
-- [ ] COURSE-244 contextual media adapter
-- [ ] COURSE-245 globals/multiple document scopes
-- [ ] COURSE-246 advisory locks/safe conflict reconciliation
-- [ ] COURSE-247 typed UI messages/content locales
-- [ ] COURSE-248 redacted lifecycle events
-- [ ] COURSE-249 active-editor budgets/latency
-- [ ] COURSE-250 frontend versions/canvas change navigation
-- [ ] COURSE-251 optional reusable patterns
-- [ ] COURSE-252 predictable undo precedence
-- [ ] COURSE-253 consumer test kit/API examples
-- [ ] COURSE-254 source text semantics
+- [x] COURSE-234 workspace/build/package preservation
+- [x] COURSE-235 native-backed domain controllers
+- [x] COURSE-236 domain Vitest/component coverage
+- [x] COURSE-237 Oxlint/rule and import boundaries
+- [x] COURSE-238 document-bound mapping/diagnostics
+- [x] COURSE-239 native v3 compatibility bridge
+- [x] COURSE-240 inline Lexical rich text
+- [x] COURSE-241 contextual insertion
+- [x] COURSE-242 catalogue/transient previews
+- [x] COURSE-243 contextual editor strategies
+- [x] COURSE-244 contextual media adapter
+- [x] COURSE-245 globals/multiple document scopes
+- [x] COURSE-246 advisory locks/safe conflict reconciliation
+- [x] COURSE-247 typed UI messages/content locales
+- [x] COURSE-248 redacted lifecycle events
+- [x] COURSE-249 active-editor budgets/latency
+- [x] COURSE-250 frontend versions/canvas change navigation
+- [x] COURSE-251 optional reusable patterns
+- [x] COURSE-252 predictable undo precedence
+- [x] COURSE-253 consumer test kit/API examples
+- [x] COURSE-254 source text semantics
 
 ## Foundation validation
 
@@ -159,3 +159,16 @@ Added own-module compressed-size ceilings, lazy-boundary checks and oversized ne
 The first complete 64-case production run passed 61 cases. Three stale test fixtures prevented their intended checks: an English name for a translated toolbar, and review/action failure interceptors that omitted new locale query parameters. Corrected focused runs passed the toolbar/action checks and reached a real review accessibility failure. Review comparison buttons now derive their accessible names from visible text, with counts explained separately; the native 320px Axe/retry/close/reopen flow passes. The Mongo pattern fixture now uses its supported timestamp revision and checks unchanged source content, rather than comparing two missing numeric revisions.
 
 Current local gates: 218 unit/component assertions; 81% statements / 76.64% branches / 84.15% functions / 83.24% lines in the documented denominator; 12 Postgres cases; five applicable Mongo cases with seven explicitly transaction-specific skips. TypeScript and lint pass. A fresh full production run and the clean installed archive remain the final acceptance gates.
+
+
+## Final local acceptance
+
+All 21 implementation domains above are present and locally validated on the pinned v3 matrix. The final production run passed all 64 cases in 4.3 minutes, including same-page draft activation, delayed/stale/failed saves, caret/selection stability, native fields/drawers, reorder/history, source text, review/retry/reopen, localization/RTL, global/document scopes, patterns and actual admin/panel geometry parity.
+
+The frozen public archive `a25dacbf69794e9a46898a4218f363e8f01e14f4285e14686914d03521f70246` comes from clean source `bc1db9e`. A separate installed production app passed its two public-kit/control unit tests, all four enabled browser cases and three disabled-isolation cases. It saved native and inline structured rich text, custom number controls and reviewed publication, retained unrelated values, and compared inactive resources byte for byte. Its harness source is separately recorded because the host fixture was corrected to use the documented Next bridge, trusted Origin on API draft probes and an explicit inline-body whitelist. These corrections did not alter the frozen package.
+
+Final domain coverage is 218 assertions in 74 files, 81% statements / 76.64% branches / 84.15% functions / 83.24% lines for the documented denominator. All 12 native Postgres cases and five applicable Mongo cases pass. Seven transaction/global cases are intentionally Postgres-only. TypeScript, Oxlint/retained ESLint, generated API freshness, publint, archive/inert bindings, all JavaScript ESM/type entrypoints, feature budgets and visitor graph checks pass. The CSS asset is excluded only from JavaScript type resolution and remains covered by packaging and real browser loading.
+
+See [machine-readable acceptance](../validation/2026-11-04-roadmap/acceptance.json), [production cases](../validation/2026-11-04-roadmap/browser-summary.json), [installed archive receipt](../validation/2026-11-04-roadmap/installed-consumer.json), [native gutter comparison](../validation/2026-11-04-native-panel-gutters.md) and [native adapter inventory](../native-v3-adapters.md). Hardware touch, Firefox/WebKit and full speech-assistive-technology behavior remain unverified; unsupported cross-origin/custom-node authoring and native-peer loading boundaries remain explicit in compatibility/performance docs. Existing hook-dependency migration warnings are retained visibly.
+
+No commits have been pushed. No package version has been published and no deployment has been started during this local implementation. The owner retains the push/release signal.

@@ -1,0 +1,12 @@
+{
+  "archive": "payload-inplace-0.0.2.tgz",
+  "sourceSHA": "bc1db9ecbd3d5a036fdbc55ab83f4439326e4c85",
+  "sourceDirty": false,
+  "sha256": "a25dacbf69794e9a46898a4218f363e8f01e14f4285e14686914d03521f70246",
+  "graph": [
+    "packages/payload-inplace/dist/exports/bindings.js",
+    "packages/payload-inplace/dist/core/annotations.js",
+    "packages/payload-inplace/dist/core/src/document-ref.js",
+    "packages/payload-inplace/dist/core/src/editable.js"
+  ]
+}
