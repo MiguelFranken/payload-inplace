@@ -133,6 +133,14 @@ test("installed nested-root native fields, optimistic draft and reviewed publish
       })
     ).json();
     const doc = documents.docs[0];
+    const readStory = async (draft = true) => {
+      const response = await page.request.get(
+        `/api/stories/${doc.id}?draft=${draft}&depth=0`,
+        { headers: { Origin: process.env.CONSUMER_ORIGIN! } },
+      );
+      expect(response.ok()).toBe(true);
+      return response.json();
+    };
     expect(doc.unrelated).toBe("Keep unrelated data");
     expect(doc.article.sections[0].headline).toBe("Packed app draft");
     expect(doc.article.sections[0].tone).toBe("quiet");
@@ -149,16 +157,7 @@ test("installed nested-root native fields, optimistic draft and reviewed publish
       .getByRole("button", { name: "Increase 12", exact: true })
       .click();
     await expect
-      .poll(
-        async () =>
-          (
-            await (
-              await page.request.get(
-                `/api/stories/${doc.id}?draft=true&depth=0`,
-              )
-            ).json()
-          ).article.sections[0].readingTime,
-      )
+      .poll(async () => (await readStory()).article.sections[0].readingTime)
       .toBe(13);
     await page
       .getByRole("button", { name: "Native options", exact: true })
@@ -179,15 +178,7 @@ test("installed nested-root native fields, optimistic draft and reviewed publish
     await inlineRich.pressSequentially(" Packed inline rich text");
     await expect
       .poll(async () =>
-        JSON.stringify(
-          (
-            await (
-              await page.request.get(
-                `/api/stories/${doc.id}?draft=true&depth=0`,
-              )
-            ).json()
-          ).article.sections[0].body,
-        ),
+        JSON.stringify((await readStory()).article.sections[0].body),
       )
       .toContain("Packed inline rich text");
     await expect(inlineRich).toBeFocused();
@@ -212,9 +203,7 @@ test("installed nested-root native fields, optimistic draft and reviewed publish
     await expect(publicPage.locator("main")).toContainText(
       "Packed inline rich text",
     );
-    const published = await (
-      await page.request.get(`/api/stories/${doc.id}?draft=false&depth=0`)
-    ).json();
+    const published = await readStory(false);
     expect(published.article.sections[0].readingTime).toBe(13);
     expect(JSON.stringify(published.article.sections[0].body)).toContain(
       "Packed inline rich text",
