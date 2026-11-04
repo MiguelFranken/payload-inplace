@@ -45,6 +45,7 @@ import type { BlocksFieldClientProps } from "payload";
 import type { Activation } from "../types.js";
 
 import { getArrayItemPath } from "../../../core/src/annotations.js";
+import { isPrivateEditorField } from "../../../core/src/document-metadata.js";
 import { stableDataPath } from "../../../core/src/stable-path.js";
 import { resolveBinding } from "../schema/resolve-binding.js";
 import { canUpdateInlineField } from "../schema/inline-access.js";
@@ -561,9 +562,11 @@ export function FrontendControls({
     return () => clearTimeout(timer);
   }, [context.expires]);
   function downloadWorkingCopy() {
-    const data = { ...form.getData() };
-    delete data._veActivation;
-    delete data._veReviewToken;
+    const data = Object.fromEntries(
+      Object.entries(form.getData()).filter(
+        ([key]) => !isPrivateEditorField(key),
+      ),
+    );
     const url = URL.createObjectURL(
       new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }),
     );

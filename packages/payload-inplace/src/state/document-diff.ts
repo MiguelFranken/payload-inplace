@@ -1,5 +1,6 @@
 import type { ClientBlock, ClientField } from "payload";
 import { getArrayItemPath } from "../../../core/src/annotations.js";
+import { isDocumentMetadataField } from "../../../core/src/document-metadata.js";
 import { namedField } from "../schema/project-fields.js";
 
 /** One authored leaf or structural row change. Stable row IDs prevent a move from appearing as rewritten content. */
@@ -12,16 +13,7 @@ export type DocumentChange = {
   from?: number;
   to?: number;
 };
-const metadata = new Set([
-  "id",
-  "createdAt",
-  "updatedAt",
-  "_status",
-  "_veRevision",
-  "_veReviewToken",
-  "_veActivation",
-  "_veRestoreVersion",
-]);
+
 function equal(a: unknown, b: unknown): boolean {
   if (Object.is(a, b)) return true;
   if (
@@ -171,7 +163,7 @@ export function documentChanges(
       }
       for (const key of keys) {
         if (
-          (path === "" && metadata.has(key)) ||
+          (path === "" && isDocumentMetadataField(key)) ||
           (path.includes(".@") && key === "id")
         )
           continue;

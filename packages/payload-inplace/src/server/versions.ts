@@ -1,5 +1,6 @@
 import type { CollectionSlug, PayloadRequest } from "payload";
 import type { VisualEditorOptions } from "../types.js";
+import { isDocumentMetadataField } from "../../../core/src/document-metadata.js";
 import { readEditContext } from "./context.js";
 import { resolveTools } from "./tools.js";
 interface VersionRow {
@@ -83,19 +84,11 @@ export async function prepareVersionRestore(
     throw new Error(
       "The version or current revision changed. Review it again.",
     );
-  const omitted = new Set([
-    "id",
-    "createdAt",
-    "updatedAt",
-    "_status",
-    "_veRevision",
-    "_veActivation",
-    "_veReviewToken",
-    "_veRestoreVersion",
-  ]);
   return {
     ...Object.fromEntries(
-      Object.entries(version.version).filter(([key]) => !omitted.has(key)),
+      Object.entries(version.version).filter(
+        ([key]) => !isDocumentMetadataField(key),
+      ),
     ),
     _status: "draft",
     _veRevision: expected,

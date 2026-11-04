@@ -1,3 +1,4 @@
+import { isDocumentMetadataField } from "../../../core/src/document-metadata.js";
 import type { FormState } from "payload";
 
 /** Local preview is immediate; persistence waits for a typing pause even when a consumer's legacy live-preview interval is very short. */
@@ -9,19 +10,7 @@ export function autosaveDelay(configured: number): number {
 export function authoredFieldKey(fields: FormState): string {
   return JSON.stringify(
     Object.entries(fields)
-      .filter(
-        ([path]) =>
-          ![
-            "id",
-            "createdAt",
-            "updatedAt",
-            "_status",
-            "_veRevision",
-            "_veActivation",
-            "_veReviewToken",
-            "_veRestoreVersion",
-          ].includes(path),
-      )
+      .filter(([path]) => !isDocumentMetadataField(path))
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([path, state]) => [
         path,

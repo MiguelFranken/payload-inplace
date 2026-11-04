@@ -75,3 +75,9 @@ Canvas insertion now keeps only a pending row intent. Selection waits until nati
 Extracted an idle-trigger controller with no document/persistence store. Callback/metadata refreshes do not restart the typing deadline; composition and native processing cancel it. Unacknowledged native attempts wait for explicit recovery. Rejected callbacks produce recovery feedback without an unhandled timer rejection.
 
 146 unit/component assertions passed, including fake-timer typing/metadata/in-flight/composition/scope cleanup cases. Real browser checks passed for correctly scoped new block/array controls (9.5s), and one-save typing bursts plus composition (14.2s). TypeScript and lint passed.
+
+## Metadata policy and revision characterization
+
+Centralized private transport/root-metadata classification across authored hashes, review candidates, diffs, autosave fingerprints, version copies, presentation and working-copy downloads. Nested row IDs remain content identity. Added direct revision-guard characterization for lock-before-read order, stale/bulk writes, exact reviewed publication, explicit system scope, guarded native restores and authoritative revision assignment. These unit fixtures complement the real database race tests; they do not claim concurrency proof.
+
+151 unit/component assertions, TypeScript and lint passed.

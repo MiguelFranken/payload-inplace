@@ -1,15 +1,8 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import type { PayloadRequest } from "payload";
+import { isDocumentMetadataField } from "../../../core/src/document-metadata.js";
 import { currentSession } from "./context.js";
-const ignored = new Set([
-  "id",
-  "createdAt",
-  "updatedAt",
-  "_status",
-  "_veRevision",
-  "_veReviewToken",
-  "_veActivation",
-]);
+
 /** Canonical authored-input hash excludes server metadata but retains nested row identities. */
 export function contentHash(data: Record<string, unknown>): string {
   function canonical(value: any): any {
@@ -28,7 +21,9 @@ export function contentHash(data: Record<string, unknown>): string {
       JSON.stringify(
         canonical(
           Object.fromEntries(
-            Object.entries(data).filter(([key]) => !ignored.has(key)),
+            Object.entries(data).filter(
+              ([key]) => !isDocumentMetadataField(key),
+            ),
           ),
         ),
       ),
@@ -83,7 +78,7 @@ export function candidateMatches(
   // Native Form omits unowned/default fields such as null blockName. Compare its submitted
   // projection while the review displays the complete authorized draft. Row identities/order stay exact.
   return Object.entries(candidate)
-    .filter(([key]) => !ignored.has(key))
+    .filter(([key]) => !isDocumentMetadataField(key))
     .every(([key, value]) =>
       Object.hasOwn(draft, key)
         ? matches(value, draft[key])
