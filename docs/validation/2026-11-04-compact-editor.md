@@ -23,3 +23,9 @@ Current validation is bounded to the pinned supported peers. Screen-reader speec
 ## Release contract
 
 0.0.1 is generated with `changeset version` from the owner-requested normal 0.0.x baseline. The pinned Changesets action maintains future version/changelog PRs. Publication remains the existing OIDC workflow with exact CI artifact and matching consumer receipts; new dispatches target `latest`. Existing alpha versions stay immutable.
+
+## Canonical release gates
+
+[Main CI](https://github.com/MiguelFranken/payload-visual-editor/actions/runs/41809345628) passed at `7a616820da320100047c6c1c1f4bd30431fc98e1`: 96 unit, 39 production browser, eight database integration and seven independent installed-consumer checks. The normal 0.0.1 archive has SHA256 `fc2c4dac6ddea64189039b236f4fc5835ffc2cf889545d3a66b5e94182e958e4`. The repaired Changesets workflow also passed.
+
+[Clean Workshops production acceptance](https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/525) passed all seven cases at `c0262b6caf302cd2c6527ae99ca5e5cbca50ec1a`, with no failures/skips or dirty source. All 16 captures were inspected, including mobile/dark native fields, icon dock, section plus and changed-only review. Registry and deployed-preview outcomes are recorded separately in `workshops-release.json` after they complete.
