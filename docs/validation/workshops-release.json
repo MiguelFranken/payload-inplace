@@ -57,5 +57,20 @@
     ]
   },
   "report": "https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/515",
-  "scope": "Canonical main-CI archive installed in a clean committed Workshops checkout. Production Turbopack Page/Workshop acceptance, inline and nested field editing, private drafts, unchanged route and shared chrome, native fields, review/publication, three booking states, repeated pointer and precise keyboard reordering, show-on-page navigation, responsive panels and same-page activation. All 56 artifacts uploaded; 16 review captures. Preview rollout follows npm publication; no production rollout."
+  "scope": "Canonical main-CI archive installed in a clean committed Workshops checkout. Production Turbopack Page/Workshop acceptance, inline and nested field editing, private drafts, unchanged route and shared chrome, native fields, review/publication, three booking states, repeated pointer and precise keyboard reordering, show-on-page navigation, responsive panels and same-page activation. All 56 artifacts uploaded; 16 review captures. Preview rollout follows npm publication; no production rollout.",
+  "npm": {
+    "version": "0.1.0-alpha.15",
+    "sha256": "f280e375bf754bf4e8fdefdcaf9fdf6625fe9225ca11df1a0a415f9aec136d85",
+    "tarball": "https://registry.npmjs.org/@miguel.franken/payload-visual-editor/-/payload-visual-editor-0.1.0-alpha.15.tgz",
+    "integrity": "sha512-uglNoUorqJzxZ0e7+S+IDE8yw/3LFcnvMQ2PJrSs74enkZ1ZkxmwR4fGg57hXNkYYZn3WnCo7m+GkDJ4USxb7A==",
+    "attestations": {
+      "url": "https://registry.npmjs.org/-/npm/v1/attestations/@miguel.franken%2fpayload-visual-editor@0.1.0-alpha.15",
+      "provenance": {
+        "predicateType": "https://slsa.dev/provenance/v1"
+      }
+    },
+    "publicationRun": "https://github.com/MiguelFranken/payload-visual-editor/actions/runs/41752104024",
+    "registryArchiveDownload": "passed; anonymous SHA256 matches canonical CI archive",
+    "next": "0.1.0-alpha.15"
+  }
 }
