@@ -209,6 +209,16 @@ test("installed nested-root native fields, optimistic draft and reviewed publish
         exact: true,
       }),
     ).toBeVisible();
+    await expect(publicPage.locator("main")).toContainText(
+      "Packed inline rich text",
+    );
+    const published = await (
+      await page.request.get(`/api/stories/${doc.id}?draft=false&depth=0`)
+    ).json();
+    expect(published.article.sections[0].readingTime).toBe(13);
+    expect(JSON.stringify(published.article.sections[0].body)).toContain(
+      "Packed inline rich text",
+    );
     await page.setViewportSize({ width: 320, height: 740 });
     await page.getByRole("button", { name: "Sections", exact: true }).click();
     await expect(

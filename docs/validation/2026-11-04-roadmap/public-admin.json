@@ -1,0 +1,150 @@
+{
+  "role": "admin",
+  "production": true,
+  "samples": [
+    {
+      "ttfb": 11.600000023841858,
+      "dom": 34.89999997615814,
+      "requests": 12,
+      "decodedResourceBytes": 481132,
+      "resources": [
+        {
+          "url": "/_next/static/chunks/2er7wnfsqzm6l.css",
+          "bytes": 14976
+        },
+        {
+          "url": "/_next/static/chunks/20wen1g5_o_lo.js",
+          "bytes": 13311
+        },
+        {
+          "url": "/_next/static/chunks/124yikkp5in-g.js",
+          "bytes": 30179
+        },
+        {
+          "url": "/_next/static/chunks/turbopack-2c3mg3r-05n1w.js",
+          "bytes": 11255
+        },
+        {
+          "url": "/_next/static/chunks/3bieweqjq9y4j.js",
+          "bytes": 13888
+        },
+        {
+          "url": "/_next/static/chunks/1xrxvcfpdz4mq.js",
+          "bytes": 3489
+        },
+        {
+          "url": "/_next/static/chunks/0xg6fs89o7rbm.js",
+          "bytes": 159548
+        },
+        {
+          "url": "/_next/static/chunks/24c90_jw-bs5o.js",
+          "bytes": 229942
+        },
+        {
+          "url": "/_next/static/chunks/36bxym9_7q1gl.js",
+          "bytes": 1604
+        },
+        {
+          "url": "/_next/static/chunks/31qmfmse622n6.js",
+          "bytes": 2940
+        }
+      ]
+    },
+    {
+      "ttfb": 15.899999976158142,
+      "dom": 28.200000047683716,
+      "requests": 11,
+      "decodedResourceBytes": 481132,
+      "resources": [
+        {
+          "url": "/_next/static/chunks/2er7wnfsqzm6l.css",
+          "bytes": 14976
+        },
+        {
+          "url": "/_next/static/chunks/20wen1g5_o_lo.js",
+          "bytes": 13311
+        },
+        {
+          "url": "/_next/static/chunks/124yikkp5in-g.js",
+          "bytes": 30179
+        },
+        {
+          "url": "/_next/static/chunks/24c90_jw-bs5o.js",
+          "bytes": 229942
+        },
+        {
+          "url": "/_next/static/chunks/0xg6fs89o7rbm.js",
+          "bytes": 159548
+        },
+        {
+          "url": "/_next/static/chunks/turbopack-2c3mg3r-05n1w.js",
+          "bytes": 11255
+        },
+        {
+          "url": "/_next/static/chunks/3bieweqjq9y4j.js",
+          "bytes": 13888
+        },
+        {
+          "url": "/_next/static/chunks/1xrxvcfpdz4mq.js",
+          "bytes": 3489
+        },
+        {
+          "url": "/_next/static/chunks/36bxym9_7q1gl.js",
+          "bytes": 1604
+        },
+        {
+          "url": "/_next/static/chunks/31qmfmse622n6.js",
+          "bytes": 2940
+        }
+      ]
+    },
+    {
+      "ttfb": 13,
+      "dom": 21.200000047683716,
+      "requests": 11,
+      "decodedResourceBytes": 481132,
+      "resources": [
+        {
+          "url": "/_next/static/chunks/2er7wnfsqzm6l.css",
+          "bytes": 14976
+        },
+        {
+          "url": "/_next/static/chunks/20wen1g5_o_lo.js",
+          "bytes": 13311
+        },
+        {
+          "url": "/_next/static/chunks/124yikkp5in-g.js",
+          "bytes": 30179
+        },
+        {
+          "url": "/_next/static/chunks/24c90_jw-bs5o.js",
+          "bytes": 229942
+        },
+        {
+          "url": "/_next/static/chunks/0xg6fs89o7rbm.js",
+          "bytes": 159548
+        },
+        {
+          "url": "/_next/static/chunks/turbopack-2c3mg3r-05n1w.js",
+          "bytes": 11255
+        },
+        {
+          "url": "/_next/static/chunks/3bieweqjq9y4j.js",
+          "bytes": 13888
+        },
+        {
+          "url": "/_next/static/chunks/1xrxvcfpdz4mq.js",
+          "bytes": 3489
+        },
+        {
+          "url": "/_next/static/chunks/36bxym9_7q1gl.js",
+          "bytes": 1604
+        },
+        {
+          "url": "/_next/static/chunks/31qmfmse622n6.js",
+          "bytes": 2940
+        }
+      ]
+    }
+  ]
+}
