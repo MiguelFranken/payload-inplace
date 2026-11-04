@@ -11,9 +11,21 @@ export async function getServerPageSlots(
       .filter((block) => block.blockType === "serverData")
       .map((block) => [
         block.id,
-        <p key={block.id} data-server-revision={document._veRevision}>
-          Server result: {document.slug}
-        </p>,
+        <ServerResult key={block.id} document={document} />,
       ]),
+  );
+}
+
+async function ServerResult({ document }: { document: Record<string, any> }) {
+  // A deterministic streamed server fragment exercises preview adoption under real RSC latency.
+  if (
+    document.slug?.startsWith("streaming-optimistic") &&
+    document._veRevision > 1
+  )
+    await new Promise((resolve) => setTimeout(resolve, 1800));
+  return (
+    <p data-server-revision={document._veRevision}>
+      Server result: {document.slug}
+    </p>
   );
 }

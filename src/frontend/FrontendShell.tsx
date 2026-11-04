@@ -2,6 +2,7 @@
 import { createPortal } from "react-dom";
 import {
   Component,
+  startTransition,
   useCallback,
   useLayoutEffect,
   useMemo,
@@ -82,16 +83,18 @@ export function FrontendShell(props: ShellProps) {
   });
   const acceptSnapshot = useCallback(
     (snapshot: EditorPreviewSnapshot) =>
-      setServerSnapshot((current) =>
-        snapshot.revision >= current.revision
-          ? {
-              ...snapshot,
-              preview:
-                snapshot.preview === undefined
-                  ? current.preview
-                  : snapshot.preview,
-            }
-          : current,
+      startTransition(() =>
+        setServerSnapshot((current) =>
+          snapshot.revision >= current.revision
+            ? {
+                ...snapshot,
+                preview:
+                  snapshot.preview === undefined
+                    ? current.preview
+                    : snapshot.preview,
+              }
+            : current,
+        ),
       ),
     [],
   );
@@ -139,17 +142,18 @@ export function FrontendShell(props: ShellProps) {
           preview: props.preview,
         };
   const revision = source.revision;
-  if (
+  // A suspended preview must not leak into an urgent editor render through a ref.
+  // Retain only the last committed tree while inline editing owns the page DOM.
+  const visible =
     !inlineActive &&
     !waitingForInlineSave &&
     revision >= floor.current &&
     revision >= accepted.current.revision
-  )
-    accepted.current = {
-      revision,
-      children: source.content,
-      preview: source.preview,
-    };
+      ? { revision, children: source.content, preview: source.preview }
+      : accepted.current;
+  useLayoutEffect(() => {
+    accepted.current = visible;
+  }, [visible]);
   useEffect(() => {
     if (host.current)
       setShadow(
@@ -160,10 +164,10 @@ export function FrontendShell(props: ShellProps) {
     <InlinePreviewContext value={inlineGuard}>
       {props.preview ? (
         <div ref={setPreviewTarget} data-ve-preview="">
-          {!previewReady && accepted.current.children}
+          {!previewReady && visible.children}
         </div>
       ) : (
-        accepted.current.children
+        visible.children
       )}
       <div
         ref={host}
@@ -207,12 +211,12 @@ export function FrontendShell(props: ShellProps) {
                         <NativeDocumentForm
                           {...bootstrap}
                           onSnapshot={acceptSnapshot}
-                          preview={accepted.current.preview}
-                          children={accepted.current.children}
+                          preview={visible.preview}
+                          children={visible.children}
                           previewTarget={previewTarget}
                           previewReady={previewReady}
                           onPreviewReady={() => setPreviewReady(true)}
-                          renderedRevision={accepted.current.revision}
+                          renderedRevision={visible.revision}
                         />
                       </OperationProvider>
                     </EditDepthProvider>

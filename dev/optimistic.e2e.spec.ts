@@ -1587,3 +1587,95 @@ test("native field panels resize from the top and left, retain fields and match 
   expect(errors).toEqual([]);
   void inline;
 });
+
+test("streamed saved previews keep the native editor mounted throughout structural acknowledgement", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
+  const doc = await createEditor(
+    page,
+    "pages",
+    "Immediate heading",
+    false,
+    false,
+    "streaming-optimistic",
+  );
+  await page.getByRole("button", { name: "Sections", exact: true }).click();
+  const panel = page.getByRole("complementary", {
+    name: "Sections",
+    exact: true,
+  });
+  const toolbar = page.getByRole("navigation", { name: "Editing toolbar" });
+  await toolbar.evaluate((element: HTMLElement) => {
+    const scope = window as any;
+    scope.__streamToolbar = element;
+    scope.__streamHidden = 0;
+    scope.__streamTracking = true;
+    function sample() {
+      if (!scope.__streamTracking) return;
+      if (!element.isConnected || element.getBoundingClientRect().height === 0)
+        scope.__streamHidden++;
+      requestAnimationFrame(sample);
+    }
+    requestAnimationFrame(sample);
+  });
+  try {
+    const handle = panel.getByRole("button", {
+      name: "Move Server data section",
+      exact: true,
+    });
+    const from = (await handle.boundingBox())!;
+    const target = (await panel
+      .locator("[data-ve-sortable]")
+      .nth(1)
+      .boundingBox())!;
+    await page.mouse.move(from.x + 20, from.y + 20);
+    await page.mouse.down();
+    await page.mouse.move(from.x + 20, from.y + 10, { steps: 5 });
+    await page.mouse.move(target.x + 80, target.y + target.height / 2, {
+      steps: 12,
+    });
+    await expect(panel.locator("[data-ve-sortable]").nth(1)).toHaveAttribute(
+      "data-ve-drop-target",
+      "true",
+    );
+    await page.mouse.up();
+    await expect
+      .poll(async () => {
+        const saved = await (
+          await page.request.get(`/api/pages/${doc.id}?draft=true&depth=0`)
+        ).json();
+        return saved.layout.map((block: { id: string }) => block.id);
+      })
+      .toEqual([doc.layout[0].id, doc.layout[2].id, doc.layout[1].id]);
+    await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+    await expect
+      .poll(async () =>
+        Number(
+          await page
+            .locator("main [data-server-revision]")
+            .getAttribute("data-server-revision"),
+        ),
+      )
+      .toBeGreaterThan(doc._veRevision);
+    await expect(panel).toBeVisible();
+    expect(
+      await toolbar.evaluate(
+        (element: HTMLElement) => element === (window as any).__streamToolbar,
+      ),
+    ).toBe(true);
+    expect(await page.evaluate(() => (window as any).__streamHidden)).toBe(0);
+    expect(errors).toEqual([]);
+    await page.screenshot({
+      path: "test-results/streamed-preview-stable-editor.png",
+    });
+  } finally {
+    await page.evaluate(() => {
+      (window as any).__streamTracking = false;
+    });
+  }
+});
