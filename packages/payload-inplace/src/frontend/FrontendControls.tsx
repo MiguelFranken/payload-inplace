@@ -96,6 +96,12 @@ import {
   showSectionOnPage,
 } from "./BlockReorder.js";
 import type { NativeSection } from "../schema/tree.js";
+import { useAdvisoryLock } from "./advisory-lock.js";
+const ConflictReview = lazy(() =>
+  import("./ConflictReview.js").then((module) => ({
+    default: module.ConflictReview,
+  })),
+);
 const VersionBrowser = lazy(() =>
   import("./VersionBrowser.js").then((module) => ({
     default: module.VersionBrowser,
@@ -129,6 +135,7 @@ export function FrontendControls({
 }) {
   const transient = useTransientPreview();
   const recovery = useEditorRecovery();
+  const advisory = useAdvisoryLock();
   const serverPreview = usePreviewStatus();
   const editorTools = useVisualEditor();
   const [expanded, setExpanded] = useState(true);
@@ -201,7 +208,8 @@ export function FrontendControls({
     processing = useFormProcessing(),
     background = useFormBackgroundProcessing();
   const baseDisabled = Boolean(
-    (recovery.failure?.kind !== "validation" && recovery.failure) ||
+    advisory.status === "other" ||
+      (recovery.failure?.kind !== "validation" && recovery.failure) ||
       processing ||
       field.admin?.readOnly ||
       permissions === false ||
@@ -851,6 +859,7 @@ export function FrontendControls({
   const hasPanel =
     expanded &&
     (panel.kind === "versions" ||
+      panel.kind === "conflict" ||
       outline ||
       (selected && settingsOpen) ||
       Boolean(extension) ||
@@ -1036,6 +1045,29 @@ export function FrontendControls({
           data-ve-panel-stack=""
           className="pve:fixed pve:right-3 pve:bottom-[calc(var(--pve-dock-height,56px)+24px)] pve:z-60 pve:sm:right-5"
         >
+          {expanded && panel.kind === "conflict" && (
+            <Floatable
+              title={t("Resolve draft conflict", "Entwürfe abgleichen")}
+              width={680}
+              onClose={() => closeView("conflict")}
+            >
+              <Suspense
+                fallback={
+                  <p role="status">
+                    {t("Loading comparison…", "Vergleich wird geladen…")}
+                  </p>
+                }
+              >
+                <ConflictReview
+                  onApplied={() => {
+                    setSelection(undefined);
+                    setHistoryEpoch((value) => value + 1);
+                    closeView("conflict");
+                  }}
+                />
+              </Suspense>
+            </Floatable>
+          )}
           {expanded && panel.kind === "versions" && (
             <Floatable
               title={t("Saved versions", "Gespeicherte Versionen")}
@@ -1369,7 +1401,8 @@ export function FrontendControls({
           ref={feedbackStack}
           className="pve:fixed pve:right-3 pve:bottom-3 pve:z-80 pve:max-w-[calc(100vw-24px)] pve:sm:right-5 pve:sm:bottom-4"
         >
-          {(error ||
+          {(advisory.status === "other" ||
+            error ||
             (recovery.failure && !validationPath) ||
             serverPreview.error ||
             actionResult) &&
@@ -1404,6 +1437,21 @@ export function FrontendControls({
                     </ChromeButton>
                   </>
                 )}
+                {advisory.status === "other" && (
+                  <p role="status" className="pve:m-0">
+                    {t(
+                      "Another editor is working on this document. Editing resumes when their lock is released.",
+                      "Eine andere Person bearbeitet dieses Dokument. Nach Freigabe wird die Bearbeitung fortgesetzt.",
+                    )}
+                    <ChromeButton
+                      size="sm"
+                      variant="outline"
+                      onClick={advisory.retry}
+                    >
+                      {t("Check again", "Erneut prüfen")}
+                    </ChromeButton>
+                  </p>
+                )}
                 {recovery.failure && !validationPath && (
                   <div role="alert">
                     <p className="pve:mt-0">{recovery.failure.message}</p>
@@ -1419,6 +1467,18 @@ export function FrontendControls({
                             {t("Edit", "Bearbeiten:")} {validationLabel(path)}
                           </ChromeButton>
                         ))}
+                      {recovery.failure.kind === "conflict" && (
+                        <ChromeButton
+                          size="sm"
+                          variant="default"
+                          onClick={() => openView({ kind: "conflict" })}
+                        >
+                          {t(
+                            "Compare and recover",
+                            "Vergleichen und fortsetzen",
+                          )}
+                        </ChromeButton>
+                      )}
                       <ChromeButton
                         size="sm"
                         variant="outline"
@@ -1516,6 +1576,7 @@ export function FrontendControls({
                 {editorTools.tools.includes("content") && (
                   <ChromeButton
                     ref={inspectButton}
+                    disabled={advisory.status === "other"}
                     size="icon"
                     aria-label={t("Select content", "Inhalte auswählen")}
                     aria-pressed={highlighting && !outline && !hasPanel}

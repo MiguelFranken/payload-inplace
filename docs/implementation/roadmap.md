@@ -97,3 +97,11 @@ A fresh Node 24 production build completed; the first full run passed 49/52 case
 ## Redacted lifecycle events
 
 Added active-only import-map providers and a typed metadata channel for native save/restore/publication, review and server-preview outcomes. Explicit projection excludes values, raw errors and activation/review credentials. Opaque operation handles settle once; saved previews correlate to their parent save. Pure/component tests cover ordering, redaction, cleanup and observer failures. A real native browser case rejected a save, retried explicitly, reconciled its preview and opened review while the observer rejected every callback (7.9s). Seven Postgres integration tests and three applicable Mongo cases also passed; four PG-only tests remain explicitly skipped on Mongo.
+
+## Reviewed reconciliation and native advisory presence
+
+Added a lazy frozen three-way comparison using the last acknowledged native copy, current working Form and freshly authorized saved draft. Separate leaf changes combine by stable identity; overlaps require explicit Base UI choices, structural overlaps are whole-list decisions and malformed native IDs fail closed. Acceptance rebuilds native field state, preserves current proof/latest revision, resets structural history and delegates saving to the same native queue. Cancellation/late input do not replace native fields.
+
+Added native user-based lock awareness with serialized Postgres lease operations, bounded visible-only heartbeats, exact-stamp cleanup and paused foreign-user controls. No owner profiles, takeover capability, new collection or migration. Native REST lock checks and transactional revision enforcement remain authoritative. Same-account windows remain an advisory limitation, documented explicitly.
+
+178 unit/component assertions pass in 52 files. Eight real Postgres cases pass. Browser recovery combines disjoint changes after a real stale-write rejection and passes 320px layout (8.6s); two-user lease pause/exit/resume passes at narrow width (5.9s). Full production/installed-archive and access-change/race acceptance still needs its final run; no roadmap ticket is marked complete solely from this slice.

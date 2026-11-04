@@ -1,3 +1,5 @@
+import { advisoryLockEndpoint } from "./server/advisory-lock.js";
+import { latestDraftEndpoint } from "./server/reconcile.js";
 import { prepareVersionRestore, versionEndpoint } from "./server/versions.js";
 import { trustedEditorOrigins } from "./server/origins.js";
 import { readEditorCookie, validatePagePath } from "./server/page-context.js";
@@ -313,6 +315,16 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
       },
       endpoints: [
         ...(config.endpoints ?? []),
+        {
+          path: "/visual-editor/lock",
+          method: "post",
+          handler: (req) => advisoryLockEndpoint(req, options, trustedOrigins),
+        },
+        {
+          path: "/visual-editor/latest",
+          method: "post",
+          handler: (req) => latestDraftEndpoint(req, options, trustedOrigins),
+        },
         {
           path: "/visual-editor/versions",
           method: "post",

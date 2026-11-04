@@ -585,3 +585,111 @@ it("keeps complex product drafts, nested row IDs and field permissions with guar
       }),
     ).rejects.toMatchObject({ status: 409 });
 });
+
+it.skipIf(process.env.VE_DATABASE !== "postgres")(
+  "native advisory leases respect another user, heartbeat, expiry and exact-stamp cleanup",
+  async () => {
+    const { manageAdvisoryLock } = await import(
+      "../../packages/payload-inplace/src/server/advisory-lock.js"
+    );
+    const { createContext, signContext } = await import(
+      "../../packages/payload-inplace/src/server/context.js"
+    );
+    const { editorOptions } = await import("./payload.config.js");
+    const admins = await payload.find({
+      collection: "users",
+      where: { role: { equals: "admin" } },
+      overrideAccess: true,
+      limit: 1,
+    });
+    const other = await payload.create({
+      collection: "users",
+      data: {
+        email: `lease-${Date.now()}@example.test`,
+        password: "synthetic-lease-password",
+        role: "admin",
+      },
+      overrideAccess: true,
+    });
+    const makeReq = (user: typeof other, sid: string) =>
+      createLocalReq(
+        { user: { ...user, collection: "users", _sid: sid } as any },
+        payload,
+      );
+    const a = await makeReq(admins.docs[0]!, "synthetic-a"),
+      b = await makeReq(other, "synthetic-b");
+    const pages = await payload.find({
+        collection: "pages",
+        overrideAccess: true,
+        limit: 1,
+      }),
+      target = { collection: "pages", id: pages.docs[0]!.id, root: "layout" };
+    const proofA = signContext(createContext(a, target), payload.secret),
+      proofB = signContext(createContext(b, target), payload.secret);
+    const original = payload.collections.pages.config.lockDocuments;
+    payload.collections.pages.config.lockDocuments = { duration: 1 };
+    try {
+      const first = await manageAdvisoryLock(
+        a,
+        proofA,
+        editorOptions,
+        "acquire",
+      );
+      expect(first.status).toBe("owned");
+      expect(first.lease).toBeTruthy();
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      const heartbeat = await manageAdvisoryLock(
+        a,
+        proofA,
+        editorOptions,
+        "acquire",
+      );
+      expect(heartbeat.lease?.updatedAt).not.toBe(first.lease?.updatedAt);
+      const foreign = await manageAdvisoryLock(
+        b,
+        proofB,
+        editorOptions,
+        "acquire",
+      );
+      expect(foreign.status).toBe("other");
+      expect(JSON.stringify(foreign)).not.toMatch(/email|password|user/);
+      await manageAdvisoryLock(
+        a,
+        proofA,
+        editorOptions,
+        "release",
+        first.lease,
+      );
+      expect(
+        (await manageAdvisoryLock(b, proofB, editorOptions, "acquire")).status,
+      ).toBe("other");
+      await manageAdvisoryLock(
+        a,
+        proofA,
+        editorOptions,
+        "release",
+        heartbeat.lease,
+      );
+      expect(
+        (await manageAdvisoryLock(b, proofB, editorOptions, "acquire")).status,
+      ).toBe("owned");
+      await new Promise((resolve) => setTimeout(resolve, 1100));
+      const expired = await manageAdvisoryLock(
+        a,
+        proofA,
+        editorOptions,
+        "acquire",
+      );
+      expect(expired.status).toBe("owned");
+      await manageAdvisoryLock(
+        a,
+        proofA,
+        editorOptions,
+        "release",
+        expired.lease,
+      );
+    } finally {
+      payload.collections.pages.config.lockDocuments = original;
+    }
+  },
+);

@@ -51,6 +51,7 @@ import { FieldStrategiesProvider } from "./field-strategies.js";
 import { TransientPreviewProvider } from "./transient-preview.js";
 import { EditorLifecycleProvider, useEditorLifecycle } from "./lifecycle.js";
 import type { EditorOperationHandle } from "../../../core/src/events.js";
+import { AdvisoryLockContext, useNativeAdvisoryLock } from "./advisory-lock.js";
 import { FrontendControls } from "./FrontendControls.js";
 
 type ShellProps = {
@@ -259,6 +260,10 @@ function NativeDocumentForm(
     { config } = useConfig(),
     { getFormState } = useServerFunctions();
   const recovery = useRecoveryState(props.statusURL);
+  const advisory = useNativeAdvisoryLock(
+    config.routes.api,
+    String(props.initialState._veActivation?.value || ""),
+  );
   const events = useEditorLifecycle(),
     pendingOperation = useRef<EditorOperationHandle | null>(null),
     lastSave = useRef<string | undefined>(undefined);
@@ -346,141 +351,149 @@ function NativeDocumentForm(
   return (
     <ReviewBaselineContext value={props.initialData}>
       <RecoveryContext value={recovery}>
-        <Form
-          initialState={props.initialState}
-          isDocumentForm
-          method="PATCH"
-          action={`${config.routes.api}/${props.context.target.collection}/${props.context.target.id}?draft=true&depth=0`}
-          className="pve:contents"
-          disabled={!info.hasSavePermission}
-          disableValidationOnSubmit
-          onSubmit={(_fields, data) => {
-            recovery.started();
-            pendingOperation.current?.settle("cancelled");
-            pendingOperation.current = events.start(
-              data._status === "published"
-                ? "publish"
-                : data._veRestoreVersion
-                  ? "restore"
-                  : "save",
-            );
-            generation.current++;
-            inFlightChange.current?.abort();
-          }}
-          onChange={[
-            async ({ formState, submitted }) => {
+        <AdvisoryLockContext value={advisory}>
+          <Form
+            initialState={props.initialState}
+            isDocumentForm
+            method="PATCH"
+            action={`${config.routes.api}/${props.context.target.collection}/${props.context.target.id}?draft=true&depth=0`}
+            className="pve:contents"
+            disabled={
+              !info.hasSavePermission ||
+              advisory.status === "other" ||
+              Boolean(
+                recovery.failure && recovery.failure.kind !== "validation",
+              )
+            }
+            disableValidationOnSubmit
+            onSubmit={(_fields, data) => {
+              recovery.started();
+              pendingOperation.current?.settle("cancelled");
+              pendingOperation.current = events.start(
+                data._status === "published"
+                  ? "publish"
+                  : data._veRestoreVersion
+                    ? "restore"
+                    : "save",
+              );
+              generation.current++;
               inFlightChange.current?.abort();
-              const controller = new AbortController();
-              inFlightChange.current = controller;
-              const before = generation.current;
+            }}
+            onChange={[
+              async ({ formState, submitted }) => {
+                inFlightChange.current?.abort();
+                const controller = new AbortController();
+                inFlightChange.current = controller;
+                const before = generation.current;
+                const result = await getFormState({
+                  id: props.context.target.id,
+                  collectionSlug: props.context.target.collection,
+                  docPermissions: info.docPermissions,
+                  docPreferences: { fields: {} },
+                  formState,
+                  operation: "update",
+                  schemaPath: props.context.target.collection,
+                  renderAllFields: false,
+                  returnLockStatus: false,
+                  skipValidation: !submitted,
+                  signal: controller.signal,
+                });
+                if (controller.signal.aborted || before !== generation.current)
+                  return undefined as unknown as FormState;
+                if (result?.state)
+                  result.state._veActivation = props.initialState._veActivation;
+                if (
+                  !nativeSnapshotMatches(
+                    formState,
+                    nativeForm.current?.getFields() || formState,
+                  )
+                )
+                  return undefined as unknown as FormState;
+                return result?.state || formState;
+              },
+            ]}
+            onSuccess={async (json: any, ctx) => {
+              const doc = json.doc || json;
               const result = await getFormState({
                 id: props.context.target.id,
                 collectionSlug: props.context.target.collection,
+                data: doc,
+                formState: ctx?.formState,
                 docPermissions: info.docPermissions,
                 docPreferences: { fields: {} },
-                formState,
                 operation: "update",
                 schemaPath: props.context.target.collection,
                 renderAllFields: false,
-                returnLockStatus: false,
-                skipValidation: !submitted,
-                signal: controller.signal,
+                skipValidation: true,
               });
-              if (controller.signal.aborted || before !== generation.current)
-                return undefined as unknown as FormState;
-              if (result?.state)
-                result.state._veActivation = props.initialState._veActivation;
-              if (
-                !nativeSnapshotMatches(
-                  formState,
-                  nativeForm.current?.getFields() || formState,
-                )
-              )
-                return undefined as unknown as FormState;
-              return result?.state || formState;
-            },
-          ]}
-          onSuccess={async (json: any, ctx) => {
-            const doc = json.doc || json;
-            const result = await getFormState({
-              id: props.context.target.id,
-              collectionSlug: props.context.target.collection,
-              data: doc,
-              formState: ctx?.formState,
-              docPermissions: info.docPermissions,
-              docPreferences: { fields: {} },
-              operation: "update",
-              schemaPath: props.context.target.collection,
-              renderAllFields: false,
-              skipValidation: true,
-            });
-            if (!result?.state)
-              throw new Error(
-                "Saved; unable to refresh native field state. Reload the saved draft.",
+              if (!result?.state)
+                throw new Error(
+                  "Saved; unable to refresh native field state. Reload the saved draft.",
+                );
+              result.state._veActivation = props.initialState._veActivation;
+              recovery.saved();
+              info.setData(doc);
+              info.setLastUpdateTime(new Date(doc.updatedAt).getTime());
+              lastSave.current = pendingOperation.current?.id;
+              pendingOperation.current?.settle("succeeded");
+              pendingOperation.current = null;
+              void refreshSavedPreview(doc._veRevision ?? doc.updatedAt);
+              return protectNativeAcknowledgement(
+                result.state,
+                ctx?.formState || {},
+                nativeForm.current?.getFields() || ctx?.formState || {},
               );
-            result.state._veActivation = props.initialState._veActivation;
-            recovery.saved();
-            info.setData(doc);
-            info.setLastUpdateTime(new Date(doc.updatedAt).getTime());
-            lastSave.current = pendingOperation.current?.id;
-            pendingOperation.current?.settle("succeeded");
-            pendingOperation.current = null;
-            void refreshSavedPreview(doc._veRevision ?? doc.updatedAt);
-            return protectNativeAcknowledgement(
-              result.state,
-              ctx?.formState || {},
-              nativeForm.current?.getFields() || ctx?.formState || {},
-            );
-          }}
-        >
-          <CaptureNativeForm formRef={nativeForm} />
-          <PreviewStatusContext
-            value={{
-              pending: previewPending,
-              error: previewError,
-              retry: () => void refreshSavedPreview(requested.current),
             }}
           >
-            <EditorToolsProvider
-              context={props.context}
-              tools={props.tools}
-              extensions={props.extensions}
+            <CaptureNativeForm formRef={nativeForm} />
+            <PreviewStatusContext
+              value={{
+                pending: previewPending,
+                error: previewError,
+                retry: () => void refreshSavedPreview(requested.current),
+              }}
             >
-              <FieldOwnershipProvider>
-                <FieldStrategiesProvider>
-                  {props.strategyProviders}
-                  <TransientPreviewProvider capable={Boolean(props.preview)}>
-                    {props.preview && props.previewTarget && (
-                      <PreviewPortal
-                        target={props.previewTarget}
-                        ready={props.previewReady}
-                        onReady={props.onPreviewReady}
-                      >
-                        <PreviewBoundary fallback={props.children}>
-                          {props.preview}
-                        </PreviewBoundary>
-                      </PreviewPortal>
-                    )}
-                    <FrontendControls
-                      context={props.context}
-                      richTextCapabilities={props.richTextCapabilities}
-                      field={props.field}
-                      blockControls={props.blockControls}
-                      catalogue={props.catalogue}
-                      permissions={props.fieldPermissions}
-                      policy={props.policy}
-                      exitURL={props.exitURL}
-                      renderedRevision={props.renderedRevision}
-                    />
-                  </TransientPreviewProvider>
-                </FieldStrategiesProvider>
-              </FieldOwnershipProvider>
-            </EditorToolsProvider>
-          </PreviewStatusContext>
-          <NativeAutosaveTrigger />
-          <NativeSubmissionMonitor />
-          <NativePreviewSync />
-        </Form>
+              <EditorToolsProvider
+                context={props.context}
+                tools={props.tools}
+                extensions={props.extensions}
+              >
+                <FieldOwnershipProvider>
+                  <FieldStrategiesProvider>
+                    {props.strategyProviders}
+                    <TransientPreviewProvider capable={Boolean(props.preview)}>
+                      {props.preview && props.previewTarget && (
+                        <PreviewPortal
+                          target={props.previewTarget}
+                          ready={props.previewReady}
+                          onReady={props.onPreviewReady}
+                        >
+                          <PreviewBoundary fallback={props.children}>
+                            {props.preview}
+                          </PreviewBoundary>
+                        </PreviewPortal>
+                      )}
+                      <FrontendControls
+                        context={props.context}
+                        richTextCapabilities={props.richTextCapabilities}
+                        field={props.field}
+                        blockControls={props.blockControls}
+                        catalogue={props.catalogue}
+                        permissions={props.fieldPermissions}
+                        policy={props.policy}
+                        exitURL={props.exitURL}
+                        renderedRevision={props.renderedRevision}
+                      />
+                    </TransientPreviewProvider>
+                  </FieldStrategiesProvider>
+                </FieldOwnershipProvider>
+              </EditorToolsProvider>
+            </PreviewStatusContext>
+            <NativeAutosaveTrigger />
+            <NativeSubmissionMonitor />
+            <NativePreviewSync />
+          </Form>
+        </AdvisoryLockContext>
       </RecoveryContext>
     </ReviewBaselineContext>
   );

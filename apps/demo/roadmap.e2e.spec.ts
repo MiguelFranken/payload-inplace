@@ -670,3 +670,190 @@ test("lifecycle observers correlate failed and retried saves without leaking con
     /Observed private copy|_veActivation|reviewToken|password|candidate|formState/,
   );
 });
+
+test("a stale native writer reviews and combines disjoint changes without replacing another editor’s fields", async ({
+  page,
+}) => {
+  const { createShopEditor } = await import("./testing/editor-fixtures");
+  const { doc } = await createShopEditor(page);
+  let release!: () => void, started!: () => void;
+  const waiting = new Promise<void>((resolve) => {
+    started = resolve;
+  });
+  await page.route(`**/api/shops/${doc.id}?*`, async (route) => {
+    if (route.request().method() === "PATCH") {
+      started();
+      await new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      await route.continue();
+    } else await route.continue();
+  });
+  const select = page.getByRole("button", {
+    name: "Select content",
+    exact: true,
+  });
+  if ((await select.getAttribute("aria-pressed")) !== "true")
+    await select.click();
+  const heading = page.locator('[data-ve-field="heading"]').first();
+  await heading.click();
+  await heading.fill("My recovered heading");
+  await waiting;
+  const before = await (
+    await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+  ).json();
+  const remote = await page.request.patch(
+    `/api/shops/${doc.id}?draft=true&depth=0`,
+    {
+      data: {
+        title: "Remote title kept",
+        _status: "draft",
+        _veRevision: before._veRevision,
+      },
+    },
+  );
+  expect(remote.ok()).toBeTruthy();
+  const rejected = page.waitForResponse(
+    (response) =>
+      response.request().method() === "PATCH" &&
+      new URL(response.url()).pathname === `/api/shops/${doc.id}`,
+  );
+  release();
+  expect((await rejected).status()).toBe(409);
+  await page.unroute(`**/api/shops/${doc.id}?*`);
+  await page
+    .getByRole("button", { name: "Compare and recover", exact: true })
+    .click();
+  const panel = page.getByRole("complementary", {
+    name: "Resolve draft conflict",
+    exact: true,
+  });
+  await expect(
+    panel.getByText(
+      "These changes affect separate fields and can be combined safely.",
+    ),
+  ).toBeVisible();
+  await page.screenshot({
+    path: "test-results/roadmap-conflict-comparison.png",
+  });
+  await page.setViewportSize({ width: 320, height: 760 });
+  await expect(panel).toBeInViewport();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: "test-results/roadmap-conflict-comparison-320.png",
+  });
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await panel
+    .getByRole("button", {
+      name: "Close Resolve draft conflict panel",
+      exact: true,
+    })
+    .click();
+  expect(
+    (
+      await (
+        await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+      ).json()
+    ).layout[0].heading,
+  ).not.toBe("My recovered heading");
+  await page
+    .getByRole("button", { name: "Compare and recover", exact: true })
+    .click();
+  await panel
+    .getByRole("button", { name: "Use combined copy and save", exact: true })
+    .click();
+  await expect(panel).toHaveCount(0);
+  await expect
+    .poll(
+      async () =>
+        (
+          await (
+            await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+          ).json()
+        ).layout[0].heading,
+    )
+    .toBe("My recovered heading");
+  const saved = await (
+    await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+  ).json();
+  expect(saved.title).toBe("Remote title kept");
+  expect(saved._veRevision).toBe((await remote.json()).doc._veRevision + 1);
+  expect(saved._status).toBe("draft");
+  await page.screenshot({
+    path: "test-results/roadmap-conflict-recovered.png",
+  });
+});
+
+test("native advisory locks pause another user and release when the original editor exits", async ({
+  page,
+  browser,
+}) => {
+  const { createShopEditor } = await import("./testing/editor-fixtures");
+  const { doc } = await createShopEditor(page);
+  const email = `lease-browser-${Date.now()}@example.test`,
+    password = "synthetic-lease-browser";
+  expect(
+    (
+      await page.request.post("/api/users", {
+        data: { email, password, role: "admin" },
+      })
+    ).ok(),
+  ).toBeTruthy();
+  const other = await browser.newContext();
+  try {
+    const login = await other.request.post(
+      new URL("/api/users/login", page.url()).href,
+      { data: { email, password } },
+    );
+    expect(login.ok()).toBeTruthy();
+    const second = await other.newPage();
+    await second.goto(
+      new URL(`/visual-editor/start?collection=shops&id=${doc.id}`, page.url())
+        .href,
+    );
+    await second
+      .getByRole("button", { name: "Start editing", exact: true })
+      .click();
+    await expect(
+      second
+        .getByRole("status")
+        .filter({ hasText: "Another editor is working on this document." }),
+    ).toBeVisible();
+    await expect(
+      second.getByRole("button", { name: "Select content", exact: true }),
+    ).toBeDisabled();
+    await second.setViewportSize({ width: 320, height: 760 });
+    expect(
+      await second.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await second.screenshot({
+      path: "test-results/roadmap-native-lock-320.png",
+    });
+    await page.getByRole("button", { name: "More tools", exact: true }).click();
+    await page
+      .getByRole("menuitem", { name: "Exit editing", exact: true })
+      .click();
+    await expect(
+      page.getByRole("navigation", { name: "Editing toolbar" }),
+    ).toHaveCount(0);
+    await second
+      .getByRole("button", { name: "Check again", exact: true })
+      .click();
+    await expect(
+      second.getByRole("button", { name: "Select content", exact: true }),
+    ).toBeEnabled();
+    await expect(
+      second
+        .getByRole("status")
+        .filter({ hasText: "Another editor is working on this document." }),
+    ).toHaveCount(0);
+  } finally {
+    await other.close();
+  }
+});
