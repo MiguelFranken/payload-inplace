@@ -20,6 +20,7 @@ import {
   DeferredFrontendShell as FrontendShell,
 } from "./DeferredEditor.js";
 import { richTextCapabilities } from "../adapters/richtext-capabilities.js";
+import { projectCatalogue } from "../server/catalogue.js";
 import { frontendStyles } from "./theme.generated.js";
 
 /** Prepare one native Payload Form for an explicitly activated frontend document.
@@ -191,6 +192,24 @@ export async function FrontendEditor({
         collection.config.fields,
         context.target.collection,
         req.payload.config,
+      )}
+      catalogue={projectCatalogue(
+        options.catalogue,
+        field as import("payload").BlocksFieldClientProps["field"],
+        context.target.root
+          .split(".")
+          .reduce(
+            (p: unknown, key: string) =>
+              p &&
+              typeof p === "object" &&
+              "fields" in p &&
+              p.fields &&
+              typeof p.fields === "object"
+                ? (p.fields as Record<string, unknown>)[key]
+                : undefined,
+            docPermissions,
+          ),
+        clientConfig.blocksMap as Record<string, import("payload").ClientBlock>,
       )}
       blockControls={options.blockControls}
       tools={available.tools}

@@ -9,6 +9,7 @@ import {
 } from "@payloadcms/ui";
 import type { BlocksFieldClientProps, ClientBlock, ClientField } from "payload";
 import type { InsertionTarget } from "../../../../core/src/insertion.js";
+import { previewExample } from "../../schema/example-preview.js";
 import { resolveBinding } from "../../schema/resolve-binding.js";
 import { canUpdateInlineField } from "../../schema/inline-access.js";
 import { availableBlocks } from "../../schema/available-blocks.js";
@@ -253,6 +254,29 @@ export function useNativeStructure({
     if (f.type === "blocks" && !choices.length) return;
     return { field: f, parent, schema, choices };
   }
+  function previewInsertion(
+    target: InsertionTarget,
+    blockType: string,
+    example: Record<string, unknown>,
+  ) {
+    const options = insertionOptions(target),
+      block = options?.choices.find((block) => block.slug === blockType);
+    if (!options || !block) return;
+    const projection = previewExample(
+      block.fields,
+      example,
+      true,
+      config.blocksMap as Record<string, ClientBlock>,
+    );
+    return {
+      target,
+      row: {
+        ...projection,
+        blockType,
+        id: `ve-preview-${crypto.randomUUID()}`,
+      },
+    };
+  }
   function insert(target: InsertionTarget, blockType?: string) {
     const options = insertionOptions(target);
     if (!options)
@@ -287,6 +311,7 @@ export function useNativeStructure({
   return {
     sections,
     insertionOptions,
+    previewInsertion,
     insert,
     history,
     generation,

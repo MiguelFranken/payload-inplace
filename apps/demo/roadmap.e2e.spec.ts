@@ -236,3 +236,59 @@ test("inline Lexical edits structured text through the native queue without repl
   ).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test("catalogue search and delayed canvas previews cancel without a native save or history entry", async ({
+  page,
+}) => {
+  const { createShopEditor } = await import("./testing/editor-fixtures");
+  const { doc } = await createShopEditor(page);
+  const patches: string[] = [];
+  page.on("request", (request) => {
+    if (
+      request.method() === "PATCH" &&
+      request.url().includes(`/api/shops/${doc.id}?`)
+    )
+      patches.push(request.url());
+  });
+  const hero = page.locator("main > [data-ve-block]").first();
+  await hero.scrollIntoViewIfNeeded();
+  await hero.hover();
+  await page.mouse.wheel(0, 200);
+  const add = page.getByRole("combobox", {
+    name: "Add section after",
+    exact: true,
+  });
+  await add.click();
+  const search = page.getByRole("combobox", { name: "Search sections" });
+  await expect(search).toBeVisible();
+  await search.fill("does not exist");
+  await expect(
+    page.getByText("No matching sections.", { exact: true }),
+  ).toBeVisible();
+  await search.fill("storytelling");
+  const story = page.getByRole("option", { name: "Studio story", exact: true });
+  await expect(story).toBeVisible();
+  await story.hover();
+  await expect(
+    page.getByRole("heading", { name: "A story worth sharing.", exact: true }),
+  ).toBeVisible();
+  await page.screenshot({ path: "test-results/roadmap-catalogue-preview.png" });
+  // Native autosave's idle deadline passes while only the presentation delta exists.
+  await page.waitForTimeout(1800);
+  expect(patches).toEqual([]);
+  const saved = await (
+    await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+  ).json();
+  expect(saved._veRevision).toBe(doc._veRevision);
+  expect(saved.layout.map((row: any) => row.id)).toEqual(
+    doc.layout.map((row: any) => row.id),
+  );
+  await search.press("Escape");
+  await expect(
+    page.getByRole("heading", { name: "A story worth sharing.", exact: true }),
+  ).toHaveCount(0);
+  expect(patches).toEqual([]);
+  await expect(
+    page.getByRole("navigation", { name: "Editing toolbar" }),
+  ).toBeVisible();
+});

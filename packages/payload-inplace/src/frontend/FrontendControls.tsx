@@ -31,7 +31,6 @@ import {
   Trash2,
   Undo2,
   Pencil,
-  Plus,
   PanelsTopLeft,
   MoreHorizontal,
   LoaderCircle,
@@ -63,6 +62,8 @@ import {
   excludeFields,
   fieldOwnershipPaths,
 } from "../schema/project-fields.js";
+import { CatalogueLauncher as SectionCatalogue } from "./CatalogueLauncher.js";
+import { useTransientPreview } from "./transient-preview.js";
 import { InsertionPoints } from "./InsertionPoints.js";
 import { resolveEditorStrategy } from "../schema/editor-strategy.js";
 import { InlineText } from "./InlineText.js";
@@ -77,12 +78,6 @@ import { InspectionLayer, type InspectionTarget } from "./InspectionLayer.js";
 import { Button as ChromeButton } from "./ui/button.js";
 import { ChromeTooltip } from "./ui/tooltip.js";
 import { ChromePortalProvider } from "./ui/portal.js";
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-} from "./ui/select.js";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -107,6 +102,7 @@ export function FrontendControls({
   field,
   blockControls,
   richTextCapabilities,
+  catalogue,
   permissions,
   policy,
   exitURL,
@@ -115,11 +111,13 @@ export function FrontendControls({
   field: BlocksFieldClientProps["field"];
   blockControls?: import("../types.js").VisualEditorOptions["blockControls"];
   richTextCapabilities?: import("../adapters/richtext-capabilities.js").RichTextCapabilities;
+  catalogue?: import("../types.js").VisualEditorOptions["catalogue"];
   permissions: any;
   policy?: StructuralPolicy;
   exitURL: string;
   renderedRevision: string | number;
 }) {
+  const transient = useTransientPreview();
   const recovery = useEditorRecovery();
   const serverPreview = usePreviewStatus();
   const editorTools = useVisualEditor();
@@ -194,6 +192,7 @@ export function FrontendControls({
     sections,
     insertionOptions,
     insert,
+    previewInsertion,
     history,
     commandFor,
     add,
@@ -848,6 +847,17 @@ export function FrontendControls({
       >
         <InsertionPoints
           sections={sections}
+          catalogue={catalogue}
+          preview={
+            transient.capable
+              ? (target, slug) =>
+                  transient.preview(
+                    slug && catalogue?.[slug]?.example
+                      ? previewInsertion(target, slug, catalogue[slug].example)
+                      : undefined,
+                  )
+              : undefined
+          }
           document={{
             kind: "collection",
             collection: context.target.collection,
@@ -899,18 +909,22 @@ export function FrontendControls({
             )}
           </NativeFieldsOwner>
         )}
-        {expanded && selected && selection && !hasPanel && strategy.kind !== "richText" && (
-          <SelectionSettings
-            element={selection.element}
-            label={describe(selection)}
-            onOpen={() => {
-              (document.activeElement as HTMLElement)?.blur();
-              closeTools();
-              setOutline(false);
-              setSettingsOpen(true);
-            }}
-          />
-        )}
+        {expanded &&
+          selected &&
+          selection &&
+          !hasPanel &&
+          strategy.kind !== "richText" && (
+            <SelectionSettings
+              element={selection.element}
+              label={describe(selection)}
+              onOpen={() => {
+                (document.activeElement as HTMLElement)?.blur();
+                closeTools();
+                setOutline(false);
+                setSettingsOpen(true);
+              }}
+            />
+          )}
         {expanded && outline && (
           <BlockReorder
             sections={sections}
@@ -1147,43 +1161,39 @@ export function FrontendControls({
                 />
               </div>
               <div className="pve:mt-3">
-                <Select
-                  value={null}
-                  items={blockChoices.map((b) => ({
-                    value: b.slug,
-                    label:
-                      typeof b.labels?.singular === "string"
-                        ? b.labels.singular
-                        : b.slug,
-                  }))}
-                  onValueChange={(value) => {
-                    if (!value) return;
+                <SectionCatalogue
+                  choices={blockChoices}
+                  catalogue={catalogue}
+                  label={t("Add section", "Abschnitt hinzufügen")}
+                  locale={i18n.language}
+                  disabled={
+                    disabled ||
+                    (field.maxRows !== undefined &&
+                      rootRows.length >= field.maxRows)
+                  }
+                  onChoose={(value) => {
                     const result = add(value);
                     if (result) setError(result);
                   }}
-                >
-                  <SelectTrigger
-                    iconOnly
-                    aria-label={t("Add section", "Abschnitt hinzufügen")}
-                    disabled={
-                      disabled ||
-                      blockChoices.length === 0 ||
-                      (field.maxRows !== undefined &&
-                        rootRows.length >= field.maxRows)
-                    }
-                  >
-                    <Plus size={18} aria-hidden="true" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {blockChoices.map((b) => (
-                      <SelectItem key={b.slug} value={b.slug}>
-                        {typeof b.labels?.singular === "string"
-                          ? b.labels.singular
-                          : b.slug}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  onPreview={
+                    transient.capable
+                      ? (slug) =>
+                          transient.preview(
+                            slug && catalogue?.[slug]?.example
+                              ? previewInsertion(
+                                  {
+                                    kind: "list",
+                                    root: context.target.root,
+                                    field: "",
+                                  },
+                                  slug,
+                                  catalogue[slug].example,
+                                )
+                              : undefined,
+                          )
+                      : undefined
+                  }
+                />
               </div>
             </Floatable>
           )}

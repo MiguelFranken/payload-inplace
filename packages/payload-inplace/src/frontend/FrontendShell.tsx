@@ -47,9 +47,11 @@ import {
 } from "../state/acknowledgement.js";
 import { PreviewStatusContext } from "./preview-status.js";
 import type { EditorPreviewSnapshot, EditorPreviewResponse } from "../types.js";
+import { TransientPreviewProvider } from "./transient-preview.js";
 import { FrontendControls } from "./FrontendControls.js";
 
 type ShellProps = {
+  catalogue?: import("../types.js").VisualEditorOptions["catalogue"];
   richTextCapabilities?: import("../adapters/richtext-capabilities.js").RichTextCapabilities;
   blockControls?: import("../types.js").VisualEditorOptions["blockControls"];
   tools: EditorTool[];
@@ -403,7 +405,7 @@ function NativeDocumentForm(
               tools={props.tools}
               extensions={props.extensions}
             >
-              <FieldOwnershipProvider>
+              <FieldOwnershipProvider><TransientPreviewProvider capable={Boolean(props.preview)}>
                 {props.preview && props.previewTarget && (
                   <PreviewPortal
                     target={props.previewTarget}
@@ -420,12 +422,13 @@ function NativeDocumentForm(
                   richTextCapabilities={props.richTextCapabilities}
                   field={props.field}
                   blockControls={props.blockControls}
+                  catalogue={props.catalogue}
                   permissions={props.fieldPermissions}
                   policy={props.policy}
                   exitURL={props.exitURL}
                   renderedRevision={props.renderedRevision}
                 />
-              </FieldOwnershipProvider>
+              </TransientPreviewProvider></FieldOwnershipProvider>
             </EditorToolsProvider>
           </PreviewStatusContext>
           <NativeAutosaveTrigger />

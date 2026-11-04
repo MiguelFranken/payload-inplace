@@ -1,6 +1,8 @@
 "use client";
 import { useMemo, useRef } from "react";
 import { useForm, useFormFields } from "@payloadcms/ui";
+import { useTransientPreview } from "./transient-preview.js";
+import { projectInsertion } from "../../../core/src/projection.js";
 import { useInlinePreviewGuard } from "./inline-preview.js";
 import {
   mergePreviewData,
@@ -17,6 +19,7 @@ export function useEditorPreviewData<T extends Record<string, any>>(
 ): T {
   const form = useForm(),
     guard = useInlinePreviewGuard();
+  const transient=useTransientPreview();
   const fields = useFormFields(([fields]) => (guard.active ? null : fields));
   const data = useRef(initialDocument);
   return useMemo(() => {
@@ -25,6 +28,6 @@ export function useEditorPreviewData<T extends Record<string, any>>(
         mergePreviewData(initialDocument, form.getData()) as T,
         form.getFields(),
       ) as T;
-    return data.current;
-  }, [fields, guard.active, initialDocument]);
+    return projectInsertion(data.current, transient.capable ? transient.projection : undefined);
+  }, [fields, guard.active, initialDocument, form, transient.capable, transient.projection]);
 }

@@ -12,12 +12,8 @@ import { sectionElement } from "./BlockReorder.js";
 import type { NativeSection } from "../schema/tree.js";
 import { Button } from "./ui/button.js";
 import { ChromeTooltip } from "./ui/tooltip.js";
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-} from "./ui/select.js";
+import { CatalogueLauncher as SectionCatalogue } from "./CatalogueLauncher.js";
+import type { EditorCatalogueEntry } from "../types.js";
 type Hover = {
   element: HTMLElement;
   section?: NativeSection;
@@ -28,6 +24,8 @@ type Hover = {
  */
 export function InsertionPoints({
   sections,
+  catalogue,
+  preview,
   root,
   enabled,
   options,
@@ -35,6 +33,8 @@ export function InsertionPoints({
   locale = "en",
   document,
 }: {
+  catalogue?: Record<string, EditorCatalogueEntry>;
+  preview?: (target: InsertionTarget, slug?: string) => void;
   sections: NativeSection[];
   root: string;
   enabled: boolean;
@@ -48,10 +48,15 @@ export function InsertionPoints({
   insert: (target: InsertionTarget, blockType?: string) => string | undefined;
 }) {
   const [hover, setHover] = useState<Hover>();
+  const held = useRef(false);
   const box = useRef<HTMLDivElement>(null);
   const de = locale === "de";
   const choose = useEffectEvent((element: Element | null) => {
-    if (!element || element.closest("[data-ve-ui],[data-ve-inline-active]"))
+    if (
+      held.current ||
+      !element ||
+      element.closest("[data-ve-ui],[data-ve-inline-active]")
+    )
       return;
     const bound = element.closest<HTMLElement>(
       "[data-ve-list],[data-ve-block]",
@@ -207,88 +212,37 @@ export function InsertionPoints({
                 : "Add section after";
         const classes = `pve:pointer-events-auto pve:fixed pve:z-50 pve:left-[var(--pve-insert-x)] pve:-translate-x-1/2 pve:w-11 ${side === "before" ? "pve:top-[var(--pve-insert-before)] pve:group-data-[before-visible=false]/insert:hidden" : "pve:top-[var(--pve-insert-after)] pve:group-data-[after-visible=false]/insert:hidden"}`;
         return (
-          <InsertionControl
-            key={side}
-            classes={classes}
-            side={side}
-            label={label}
-            target={target}
-            allowed={allowed}
-            insert={insert}
-          />
+          <div className={classes} data-ve-insert-boundary={side} key={side}>
+            {allowed.field.type === "array" ? (
+              <ChromeTooltip label={label}>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  aria-label={label}
+                  onClick={() => insert(target)}
+                >
+                  <Plus size={16} />
+                </Button>
+              </ChromeTooltip>
+            ) : (
+              <SectionCatalogue
+                onOpenChange={(open) => {
+                  held.current = open;
+                }}
+                choices={allowed.choices}
+                catalogue={catalogue}
+                label={label}
+                locale={locale}
+                onChoose={(slug) => insert(target, slug)}
+                onPreview={
+                  preview ? (slug) => preview(target, slug) : undefined
+                }
+                className="pve:px-0"
+              />
+            )}
+          </div>
         );
       })}
-    </div>
-  );
-}
-
-function InsertionControl({
-  classes,
-  side,
-  label,
-  target,
-  allowed,
-  insert,
-}: {
-  classes: string;
-  side: string;
-  label: string;
-  target: InsertionTarget;
-  allowed: { field: { type: "array" | "blocks" }; choices: ClientBlock[] };
-  insert: (target: InsertionTarget, blockType?: string) => string | undefined;
-}) {
-  const [open, setOpen] = useState(false);
-  const escape = (event: React.KeyboardEvent) => {
-    if (event.key === "Escape") {
-      setOpen(false);
-      event.stopPropagation();
-    }
-  };
-  return (
-    <div className={classes} data-ve-insert-boundary={side}>
-      {allowed.field.type === "array" ? (
-        <ChromeTooltip label={label}>
-          <Button
-            size="icon"
-            variant="outline"
-            aria-label={label}
-            onClick={() => insert(target)}
-          >
-            <Plus size={16} aria-hidden="true" />
-          </Button>
-        </ChromeTooltip>
-      ) : (
-        <Select<string>
-          value={null}
-          open={open}
-          onOpenChange={setOpen}
-          items={allowed.choices.map((b) => ({ value: b.slug, label: b.slug }))}
-          onValueChange={(value) => {
-            if (value) {
-              setOpen(false);
-              insert(target, value);
-            }
-          }}
-        >
-          <ChromeTooltip label={label}>
-            <SelectTrigger iconOnly aria-label={label} onKeyDown={escape}>
-              <Plus size={16} aria-hidden="true" />
-            </SelectTrigger>
-          </ChromeTooltip>
-          <SelectContent
-            onKeyDown={escape}
-            className="pve:w-64 pve:max-w-[calc(100vw-24px)]"
-          >
-            {allowed.choices.map((block) => (
-              <SelectItem key={block.slug} value={block.slug}>
-                {typeof block.labels?.singular === "string"
-                  ? block.labels.singular
-                  : block.slug}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
     </div>
   );
 }

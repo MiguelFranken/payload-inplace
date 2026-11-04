@@ -231,6 +231,42 @@ export const editorOptions: VisualEditorOptions = {
       blockTypes: ["hero"],
     },
   ],
+  catalogue: {
+    editorial: {
+      description: "An image-led story with editable rich text.",
+      group: "Storytelling",
+      thumbnail: { src: "/api/media/file/studio.png", alt: "" },
+      example: {
+        heading: "A story worth sharing.",
+        description:
+          "A quiet space to introduce your materials, process and people.",
+        background: "sage",
+        eyebrow: "Inside the studio",
+      },
+    },
+    faq: {
+      description: "Clear answers, one question at a time.",
+      group: "Information",
+      example: {
+        heading: "Your questions, answered.",
+        background: "canvas",
+        items: [
+          {
+            question: "What makes this collection special?",
+            answer: "Considered details and honest materials.",
+          },
+        ],
+      },
+    },
+    text: {
+      description: "A flexible text section.",
+      group: "Content",
+      example: {
+        heading: "Your next chapter",
+        text: "A preview of your next section.",
+      },
+    },
+  },
   blockControls: {
     hero: {
       fields: ["heading", "caption", "image"],

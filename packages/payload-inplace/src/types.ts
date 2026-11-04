@@ -35,6 +35,8 @@ export interface VisualEditorOptions {
     Record<string, import("./state/policy.js").StructuralPolicy>
   >;
   concurrency?: ConcurrencyAdapter;
+  /** Optional catalogue presentation. Examples are transient render-only data, never default persisted content. */
+  catalogue?: Record<string, EditorCatalogueEntry>;
   /** Server-owned business commands may update explicit operational paths in the complete live snapshot.
    * Native access, transaction locks and expected revision remain mandatory. Paths cannot overlap visual roots.
    * This callback is never serialized and must authorize an existing reviewed domain command, never client data.
@@ -154,3 +156,13 @@ export interface EditorPreviewSnapshot {
 export type EditorPreviewResponse =
   | EditorPreviewSnapshot
   | { error: "denied" | "unavailable" };
+
+/** Describes an allowed block in the active editor; it cannot widen native block/field access. */
+export interface EditorCatalogueEntry {
+ label?: EditorLabel;
+ description?: EditorLabel;
+ group?: EditorLabel;
+ thumbnail?: {src:string;alt?:string};
+ /** Presentation example only. Committing still uses native schema defaults and validation. */
+ example?: Record<string,unknown>;
+}
