@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
-const root = "dev/.next-prod";
+const root = "apps/demo/.next-prod";
 function manifest(route) {
   const context = {};
   vm.runInNewContext(
@@ -18,7 +18,7 @@ const published = manifest("(public)/[collection]/[slug]"),
 export function assertPublicGraph(modules) {
   for (const source of Object.keys(modules))
     if (
-      !source.endsWith("/dist/launcher/DeferredLauncher.js") &&
+      !source.endsWith("/dist/payload-inplace/src/launcher/DeferredLauncher.js") &&
       /(?:\[project\]\/dist\/|@payloadcms[+/]ui|@payloadcms[+/]richtext|lexical|visual-editor)/.test(
         source,
       )
@@ -63,7 +63,7 @@ try {
   rejected = true;
 }
 if (!rejected) throw Error("Leak negative control failed");
-const bootstrap = fs.readFileSync("dist/launcher/DeferredLauncher.js", "utf8");
+const bootstrap = fs.readFileSync("packages/payload-inplace/dist/payload-inplace/src/launcher/DeferredLauncher.js", "utf8");
 if (
   Buffer.byteLength(bootstrap) > 4096 ||
   /@payloadcms|\.css|useEffect|useLayoutEffect/.test(bootstrap)

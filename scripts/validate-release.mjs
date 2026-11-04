@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import policy from "../release.config.mjs";
-const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+const pkg = JSON.parse(fs.readFileSync("packages/payload-inplace/package.json", "utf8"));
 if (
   pkg.name !== policy.package ||
   pkg.publishConfig?.registry !== policy.registry ||
@@ -11,7 +11,7 @@ if (!/^\d+\.\d+\.\d+$/.test(pkg.version))
   throw Error("Normal release version required; generate it with Changesets");
 if (
   !fs.existsSync(".changeset/config.json") ||
-  !fs.readFileSync("CHANGELOG.md", "utf8").includes(`## ${pkg.version}`)
+  !fs.readFileSync("packages/payload-inplace/CHANGELOG.md", "utf8").includes(`## ${pkg.version}`)
 )
   throw Error(
     "Changesets configuration and matching generated changelog required",

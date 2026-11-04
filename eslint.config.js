@@ -2,10 +2,10 @@ import tseslint from "typescript-eslint";
 export default tseslint.config(
   {
     ignores: [
-      "dist/**",
-      "dev/.next*/**",
-      "dev/payload-types.ts",
-      "dev/app/(payload)/admin/importMap.js",
+      "**/dist/**",
+      "apps/demo/.next*/**",
+      "apps/demo/payload-types.ts",
+      "apps/demo/app/(payload)/admin/importMap.js",
     ],
   },
   ...tseslint.configs.recommended,

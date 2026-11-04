@@ -12,9 +12,21 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "@payload-config": ["./dev/payload.config.ts"]
+      "@payload-config": [
+        "./apps/demo/payload.config.ts"
+      ]
     }
   },
-  "include": ["src", "tests", "dev/**/*.ts", "dev/**/*.tsx", "*.ts"],
-  "exclude": ["node_modules", "dist", "dev/.next", "dev/.next-e2e"]
+  "include": [
+    "packages/**/*.ts",
+    "packages/**/*.tsx",
+    "apps/demo/**/*.ts",
+    "apps/demo/**/*.tsx",
+    "*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/dist/**",
+    "**/.next*/**"
+  ]
 }

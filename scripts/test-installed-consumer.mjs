@@ -119,7 +119,7 @@ function graph() {
   );
   const publicModules = Object.values(sandbox.__RSC_MANIFEST)[0].clientModules;
   const registrations = Object.keys(publicModules).filter((source) =>
-    source.endsWith("/dist/launcher/DeferredLauncher.js"),
+    source.endsWith("/launcher/DeferredLauncher.js"),
   );
   for (const source of registrations) {
     const content = fs.readFileSync(
@@ -328,7 +328,7 @@ try {
     JSON.stringify(
       {
         package: {
-          version: JSON.parse(fs.readFileSync("package.json", "utf8")).version,
+          version: JSON.parse(fs.readFileSync("packages/payload-inplace/package.json", "utf8")).version,
           sha256: receipt.sha256,
         },
         packageSourceSHA: receipt.sourceSHA,

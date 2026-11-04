@@ -1,0 +1,86 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "react", "jsx-a11y", "import"],
+  "categories": {
+    "correctness": "error"
+  },
+  "rules": {
+    "no-debugger": "error",
+    "react/refs": "off",
+    "react/set-state-in-effect": "off",
+    "react/immutability": "off",
+    "react/preserve-manual-memoization": "off",
+    "react-hooks/exhaustive-deps": "warn",
+    "jsx-a11y/prefer-tag-over-role": "off"
+  },
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/.next*/**",
+    "**/node_modules/**",
+    "**/*.generated.ts",
+    "apps/demo/payload-types.ts",
+    "apps/demo/app/(payload)/admin/importMap.js",
+    "fixtures/**",
+    "test-results/**",
+    "playwright-report/**"
+  ],
+  "overrides": [
+    {
+      "files": ["packages/core/src/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "react",
+                  "react-dom",
+                  "next",
+                  "next/*",
+                  "payload",
+                  "payload/*",
+                  "@payloadcms/*",
+                  "@payload-inplace/*",
+                  "../*/../payload-inplace/*"
+                ],
+                "message": "Core must remain framework-free; native behavior belongs in adapters."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "packages/payload-inplace/src/preview/bindings.ts",
+        "packages/core/src/annotations.ts"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              "react",
+              "react-dom",
+              "next",
+              "payload",
+              "@payloadcms/*",
+              "../frontend/*",
+              "../admin/*"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "packages/payload-inplace/src/admin/ReviewPublishButton.tsx",
+        "packages/payload-inplace/src/frontend/FrontendControls.tsx"
+      ],
+      "rules": {
+        "jsx-a11y/no-noninteractive-tabindex": "off"
+      }
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 import { nativeShadowSelector } from "./native-shadow-selectors.mjs";
-import { nativeStyleUnits } from "../src/frontend/native-style-units.mjs";
+import { nativeStyleUnits } from "../packages/payload-inplace/src/frontend/native-style-units.mjs";
 /** Adapt exact peer CSS, retaining the native cascade and reduced-motion queries. Width breakpoints follow the nearest native surface. */
 export function nativeShadowStyles(tree) {
   tree.walkRules((rule) => {

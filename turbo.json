@@ -1,0 +1,64 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": [
+    "tsconfig.json",
+    "tsdown.config.ts",
+    "scripts/build-frontend-styles.mjs",
+    "scripts/native-shadow-*.mjs",
+    "vitest.config.ts",
+    "eslint.config.js",
+    ".oxlintrc.json",
+    "README.md",
+    "LICENSE",
+    "NOTICE",
+    "assets/**"
+  ],
+  "globalEnv": ["NODE_ENV"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "../../scripts/**",
+        "../../tsdown.config.ts"
+      ],
+      "outputs": [
+        "dist/**",
+        "src/**/*.generated.ts",
+        "src/**/*.css",
+        "README.md",
+        "LICENSE",
+        "NOTICE",
+        "assets/**"
+      ],
+      "env": ["NODE_ENV"]
+    },
+    "typecheck": {
+      "dependsOn": ["build"],
+      "outputs": []
+    },
+    "test:unit": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "lint": {
+      "outputs": []
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "test:int": {
+      "cache": false
+    },
+    "test:e2e": {
+      "cache": false
+    },
+    "pack:check": {
+      "cache": false
+    },
+    "release:check": {
+      "cache": false
+    }
+  }
+}

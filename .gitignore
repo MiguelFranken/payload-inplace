@@ -1,7 +1,7 @@
 node_modules/
 dist/
 .next*/
-dev/.next*/
+apps/demo/.next*/
 test-results/
 playwright-report/
 coverage/
@@ -9,22 +9,29 @@ coverage/
 *.tgz
 .env*
 !.env.example
-dev/media/
+apps/demo/media/
 
 # Tailwind output (compiled and packaged by build)
-src/admin/styles.css
-src/preview/styles.css
-dev/styles.css
+packages/payload-inplace/src/admin/styles.css
+packages/payload-inplace/src/preview/styles.css
+apps/demo/styles.css
 
-src/frontend/theme.generated.ts
+packages/payload-inplace/src/frontend/theme.generated.ts
 
-src/launcher/styles.css
-src/launcher/styles.generated.ts
+packages/payload-inplace/src/launcher/styles.css
+packages/payload-inplace/src/launcher/styles.generated.ts
 
-dev/protected.styles.css
+apps/demo/protected.styles.css
 
-src/frontend/inline.styles.css
-src/frontend/inline-styles.generated.ts
+packages/payload-inplace/src/frontend/inline.styles.css
+packages/payload-inplace/src/frontend/inline-styles.generated.ts
 
 release-input-*/
 release-output/
+
+.turbo/
+apps/demo/media/
+packages/payload-inplace/README.md
+packages/payload-inplace/LICENSE
+packages/payload-inplace/NOTICE
+packages/payload-inplace/assets/

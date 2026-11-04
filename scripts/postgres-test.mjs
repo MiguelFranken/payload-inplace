@@ -83,7 +83,7 @@ try {
       try {
         process.kill(state.pid, "SIGTERM");
       } catch (e) {
-        if (e.code !== "ESRCH") throw e;
+        if (e.code !== "ESRCH") console.error("Could not stop test launcher", e);
       }
       for (let i = 0; i < 40 && fs.existsSync(stateFile); i++)
         await new Promise((r) => setTimeout(r, 100));

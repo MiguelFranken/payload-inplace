@@ -4,7 +4,7 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 const output = execFileSync(
   "corepack",
-  ["pnpm", "pack", "--pack-destination", "."],
+  ["pnpm", "--dir", "packages/payload-inplace", "pack", "--pack-destination", process.cwd()],
   { encoding: "utf8" },
 );
 const archive = output.trim().split("\n").at(-1);
@@ -27,7 +27,7 @@ for (const entry of [
   "exports/rsc.js",
   "exports/postgres.js",
   "exports/types.d.ts",
-  "admin/styles.css",
+  "payload-inplace/src/admin/styles.css",
 ])
   if (!entries.includes(`package/dist/${entry}`))
     throw Error(`Missing ${entry}`);
@@ -52,8 +52,8 @@ const visit = (file, seen = new Set()) => {
     throw Error(`Public binding graph leaked client/editor work: ${file}`);
   return seen;
 };
-const graph = [...visit("dist/exports/bindings.js")];
-for (const file of ["dist/exports/client.js", "dist/exports/preview.js"])
+const graph = [...visit("packages/payload-inplace/dist/exports/bindings.js")];
+for (const file of ["packages/payload-inplace/dist/exports/client.js", "packages/payload-inplace/dist/exports/preview.js"])
   if (!fs.readFileSync(file, "utf8").startsWith('"use client"'))
     throw Error(`Missing directive ${file}`);
 fs.mkdirSync("test-results", { recursive: true });

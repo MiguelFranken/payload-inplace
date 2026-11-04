@@ -1,0 +1,13 @@
+{
+  "name": "@payload-inplace/demo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --dir ../.. dev",
+    "build:app": "pnpm --dir ../.. exec next build apps/demo --turbopack"
+  },
+  "dependencies": {
+    "payload-inplace": "workspace:*",
+    "lucide-react": "1.66.0"
+  }
+}

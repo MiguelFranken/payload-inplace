@@ -37,10 +37,10 @@ lexical.walkRules((rule) => {
   if (seen.has(key)) rule.remove();
   else seen.add(key);
 });
-const css = `${tree.toString()}\n${lexical.toString()}\n${fs.readFileSync("src/admin/styles.css", "utf8")}`;
-fs.mkdirSync("src/frontend", { recursive: true });
+const css = `${tree.toString()}\n${lexical.toString()}\n${fs.readFileSync("packages/payload-inplace/src/admin/styles.css", "utf8")}`;
+fs.mkdirSync("packages/payload-inplace/src/frontend", { recursive: true });
 fs.writeFileSync(
-  "src/frontend/theme.generated.ts",
+  "packages/payload-inplace/src/frontend/theme.generated.ts",
   `// Generated from the exact Payload peer and Tailwind inputs. Do not edit.\nexport const frontendStyles: string = ${JSON.stringify(css)};\n`,
 );
 console.log(
@@ -48,11 +48,11 @@ console.log(
 );
 
 fs.writeFileSync(
-  "src/launcher/styles.generated.ts",
-  `// Generated Tailwind utilities.\nexport const launcherStyles: string = ${JSON.stringify(fs.readFileSync("src/launcher/styles.css", "utf8"))};\n`,
+  "packages/payload-inplace/src/launcher/styles.generated.ts",
+  `// Generated Tailwind utilities.\nexport const launcherStyles: string = ${JSON.stringify(fs.readFileSync("packages/payload-inplace/src/launcher/styles.css", "utf8"))};\n`,
 );
 
 fs.writeFileSync(
-  "src/frontend/inline-styles.generated.ts",
-  `// Generated Tailwind utilities for the active, browser-owned inline field.\nexport const inlineStyles: string = ${JSON.stringify(fs.readFileSync("src/frontend/inline.styles.css", "utf8"))};\n`,
+  "packages/payload-inplace/src/frontend/inline-styles.generated.ts",
+  `// Generated Tailwind utilities for the active, browser-owned inline field.\nexport const inlineStyles: string = ${JSON.stringify(fs.readFileSync("packages/payload-inplace/src/frontend/inline.styles.css", "utf8"))};\n`,
 );

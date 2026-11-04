@@ -1,0 +1,143 @@
+{
+  "name": "payload-inplace",
+  "version": "0.0.2",
+  "description": "Live editing for Payload CMS websites with inline text, native fields, block reordering and reviewed drafts.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Miguel Franken",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MiguelFranken/payload-inplace.git"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "files": [
+    "dist",
+    "NOTICE",
+    "assets/icon.png"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./dist/exports/client.d.ts",
+      "import": "./dist/exports/client.js",
+      "default": "./dist/exports/client.js"
+    },
+    "./preview": {
+      "types": "./dist/exports/preview.d.ts",
+      "import": "./dist/exports/preview.js",
+      "default": "./dist/exports/preview.js"
+    },
+    "./bindings": {
+      "types": "./dist/exports/bindings.d.ts",
+      "import": "./dist/exports/bindings.js",
+      "default": "./dist/exports/bindings.js"
+    },
+    "./server": {
+      "types": "./dist/exports/server.d.ts",
+      "import": "./dist/exports/server.js",
+      "default": "./dist/exports/server.js"
+    },
+    "./types": {
+      "types": "./dist/exports/types.d.ts",
+      "import": "./dist/exports/types.js",
+      "default": "./dist/exports/types.js"
+    },
+    "./styles.css": "./dist/payload-inplace/src/admin/styles.css",
+    "./postgres": {
+      "types": "./dist/exports/postgres.d.ts",
+      "import": "./dist/exports/postgres.js"
+    },
+    "./rsc": {
+      "types": "./dist/exports/rsc.d.ts",
+      "import": "./dist/exports/rsc.js"
+    },
+    "./frontend": {
+      "types": "./dist/exports/frontend.d.ts",
+      "import": "./dist/exports/frontend.js"
+    },
+    "./launcher": {
+      "types": "./dist/exports/launcher.d.ts",
+      "import": "./dist/exports/launcher.js"
+    },
+    "./entry": {
+      "types": "./dist/exports/entry.d.ts",
+      "import": "./dist/exports/entry.js"
+    },
+    "./next": {
+      "types": "./dist/exports/next.d.ts",
+      "import": "./dist/exports/next.js",
+      "default": "./dist/exports/next.js"
+    },
+    "./native": {
+      "types": "./dist/exports/native.d.ts",
+      "import": "./dist/exports/native.js",
+      "default": "./dist/exports/native.js"
+    },
+    "./routing": {
+      "types": "./dist/exports/routing.d.ts",
+      "import": "./dist/exports/routing.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "scripts": {
+    "build": "pnpm --dir ../.. build:package",
+    "typecheck": "tsc --noEmit -p ../../tsconfig.json",
+    "test:unit": "vitest run --config ../../vitest.config.ts --project unit",
+    "lint": "pnpm --dir ../.. lint:source"
+  },
+  "peerDependencies": {
+    "@payloadcms/db-postgres": "3.91.0",
+    "@payloadcms/ui": "3.91.0",
+    "next": "16.4.2",
+    "payload": "3.91.0",
+    "react": "~19.2.4",
+    "react-dom": "~19.2.4"
+  },
+  "peerDependenciesMeta": {
+    "@payloadcms/db-postgres": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@base-ui/react": "1.9.0",
+    "@dnd-kit/core": "6.3.1",
+    "@dnd-kit/sortable": "10.0.0",
+    "@dnd-kit/utilities": "3.2.2",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "lucide-react": "1.66.0"
+  },
+  "homepage": "https://github.com/MiguelFranken/payload-inplace#readme",
+  "bugs": {
+    "url": "https://github.com/MiguelFranken/payload-inplace/issues"
+  },
+  "keywords": [
+    "payload",
+    "payloadcms",
+    "payload-plugin",
+    "visual-editor",
+    "inline-editing",
+    "live-editing",
+    "headless-cms",
+    "nextjs",
+    "react",
+    "typescript",
+    "content-editing",
+    "blocks"
+  ],
+  "devDependencies": {
+    "@payload-inplace/core": "workspace:*"
+  }
+}
