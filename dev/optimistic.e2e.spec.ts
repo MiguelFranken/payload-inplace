@@ -2093,7 +2093,7 @@ test("review shows only changed fields, preserves the opening baseline and recov
     review.getByText("Earlier unpublished change", { exact: true }),
   ).toHaveCount(0);
   await page.screenshot({ path: "test-results/focused-session-review.png" });
-  await review.getByRole("button", { name: /^Published version/ }).click();
+  await review.getByRole("button", { name: /^Published/ }).click();
   await page.screenshot({ path: "test-results/focused-published-review.png" });
   await page.setViewportSize({ width: 320, height: 720 });
   await expect(

@@ -138,7 +138,7 @@ test("frontend field selection preserves native media, rich text and structural 
   const create = await page.request.post("/api/pages", {
     data: {
       title: "Frontend composition",
-      slug: "composition",
+      slug: `composition-${Date.now()}`,
       unrelated: "Keep unrelated",
       _status: "draft",
       layout: [
@@ -159,8 +159,22 @@ test("frontend field selection preserves native media, rich text and structural 
   const doc = (await create.json()).doc;
   await open(page, "pages", doc.id);
   const editor = await inspect(page, "Composition hero");
-  await editor.getByRole("button", { name: "Choose from existing" }).click();
-  await page.getByText(media.filename, { exact: true }).click();
+  const choose = editor.getByRole("button", { name: "Choose from existing" });
+  for (let cycle = 0; cycle < 3; cycle++) {
+    await choose.click();
+    const drawer = page.locator("dialog[open]");
+    await expect(drawer).toBeVisible();
+    await expect(
+      drawer.getByText(media.filename, { exact: true }),
+    ).toBeVisible();
+    if (cycle < 2) {
+      await drawer
+        .getByRole("button", { name: "Close", exact: true })
+        .first()
+        .click();
+      await expect(drawer).toHaveCount(0);
+    } else await drawer.getByText(media.filename, { exact: true }).click();
+  }
   await expect(editor.getByText(media.filename, { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Close Heading panel" }).click();
   await page.getByRole("button", { name: "Sections" }).click();

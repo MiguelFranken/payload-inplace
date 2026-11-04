@@ -255,9 +255,6 @@ export function ReviewPublishButton({
                 <ChromeButton
                   size="sm"
                   variant="outline"
-                  aria-label={
-                    de ? "Vergleich: Veröffentlicht" : "Published version"
-                  }
                   aria-pressed={comparison === "published"}
                   onClick={() => setComparison("published")}
                 >
