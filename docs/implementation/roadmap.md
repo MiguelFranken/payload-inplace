@@ -85,3 +85,11 @@ Centralized private transport/root-metadata classification across authored hashe
 ## Domain testing and lint contracts
 
 Relocated all existing suites into named domains and added AST import-boundary negative controls, stable-path contracts and measured domain coverage floors. Native integration remains serial; independent units/components run in parallel. Turbo task hashes now include the exact Node runtime and root script/workspace inputs. See quality-gates.md for measured coverage scope, remaining gaps and rule responsibilities. No speedup is claimed from runs with different inputs.
+
+## Optional contextual media adapter
+
+Implemented a lazy opt-in media strategy with native single/polymorphic reference shapes, cancellable debounced pagination, upload progress/retry, editing-revocation cleanup and native fallback. Native same-origin search retains server ACLs; selecting never mutates shared asset metadata. Component tests cover out-of-order/aborted responses, pagination, invalid/foreign IDs, retry and late upload cancellation. The real demo browser replacement saved only the document reference, retained shared asset metadata and handed back to native UI (7.1s). Full new-media installed-consumer/mobile acceptance remains pending.
+
+## Full production audit and explicit retry regression
+
+A fresh Node 24 production build completed; the first full run passed 49/52 cases. Two failures exposed explicit retry being blocked by the new unacknowledged-attempt gate. Recovery now authorizes exactly the failed attempt for another idle/native submission without falsely acknowledging it as saved. A subsequent failure again requires explicit recovery. The third failure was a stale old-select implementation selector after successful drag/undo behavior; the test now observes the catalogue's semantic listbox. All three focused native browser regressions pass (22.7s). The original stalled Turbopack build was recovered by preserving the old generated output outside the checkout and building a fresh output; no timeout increase or bundler switch was used. Full final production rerun remains required.

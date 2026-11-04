@@ -22,7 +22,7 @@ export default defineConfig({
     process.env.VE_EXISTING === "1"
       ? undefined
       : {
-          stdout: "ignore",
+          stdout: "pipe",
           stderr: "pipe",
           command: "node apps/demo/start-server.mjs",
           url: `${origin}/admin/login`,

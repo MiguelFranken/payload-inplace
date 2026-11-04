@@ -12,7 +12,11 @@ import {
   useFormProcessing,
 } from "@payloadcms/ui";
 import { nativeDraftAction } from "../adapters/native-request.js";
-import { autosaveDelay, authoredFieldKey } from "../state/autosave.js";
+import {
+  autosaveDelay,
+  authoredFieldKey,
+  canScheduleNativeSave,
+} from "../state/autosave.js";
 import {
   getAutosaveInterval,
   hasAutosaveEnabled,
@@ -51,7 +55,11 @@ export function NativeAutosaveTrigger() {
       !processing &&
       !background &&
       !form.disabled &&
-      recovery.attempt === recovery.acknowledged.current,
+      canScheduleNativeSave(
+        recovery.attempt,
+        recovery.acknowledged.current,
+        recovery.retryAuthorized.current,
+      ),
   );
   useNativeIdleSubmit({
     authoredKey: valueKey,

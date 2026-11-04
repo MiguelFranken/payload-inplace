@@ -601,7 +601,7 @@ export function FrontendControls({
         });
         return;
       }
-      recovery.setFailure(null);
+      recovery.resume();
       form.setDisabled(false);
       form.setModified(true);
     } catch {

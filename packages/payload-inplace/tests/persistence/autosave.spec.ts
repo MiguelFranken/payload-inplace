@@ -24,3 +24,12 @@ describe("native autosave idle policy", () => {
     );
   });
 });
+
+it("allows explicit recovery without acknowledging the failed native write or allowing another automatic retry", async () => {
+  const { canScheduleNativeSave } = await import("../../src/state/autosave.js");
+  expect(canScheduleNativeSave(0, 0, 0)).toBe(true);
+  expect(canScheduleNativeSave(1, 0, 0)).toBe(false);
+  expect(canScheduleNativeSave(1, 0, 1)).toBe(true);
+  expect(canScheduleNativeSave(2, 0, 1)).toBe(false);
+  expect(canScheduleNativeSave(2, 2, 1)).toBe(true);
+});

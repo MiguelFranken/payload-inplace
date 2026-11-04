@@ -19,3 +19,12 @@ export function authoredFieldKey(fields: FormState): string {
       ]),
   );
 }
+
+/** A failed/unacknowledged native attempt cannot retry on a timer. Explicit recovery authorizes only the attempt the editor reviewed. */
+export function canScheduleNativeSave(
+  attempt: number,
+  acknowledged: number,
+  retryAuthorized: number,
+): boolean {
+  return attempt <= Math.max(acknowledged, retryAuthorized);
+}

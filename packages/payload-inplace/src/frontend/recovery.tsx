@@ -22,6 +22,8 @@ type Recovery = {
   started: () => void;
   saved: () => void;
   acknowledged: React.RefObject<number>;
+  retryAuthorized: React.RefObject<number>;
+  resume: () => void;
   statusURL: string;
 };
 export const RecoveryContext = createContext<Recovery>(null!);
@@ -31,12 +33,19 @@ export function useRecoveryState(statusURL: string): Recovery {
   const [failure, setFailure] = useState<EditorFailure | null>(null),
     [attempt, setAttempt] = useState(0);
   const current = useRef(0),
-    acknowledged = useRef(0);
+    acknowledged = useRef(0),
+    retryAuthorized = useRef(0);
   return {
     failure,
     setFailure,
     attempt,
     acknowledged,
+    retryAuthorized,
+    resume: () => {
+      // Explicit recovery authorizes another attempt; it does not acknowledge a failed write.
+      retryAuthorized.current = current.current;
+      setFailure(null);
+    },
     statusURL,
     started: () => {
       current.current++;

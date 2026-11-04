@@ -577,15 +577,12 @@ test("sections drag on list and page keeps native order, undo, policy and keyboa
   await expect(
     page.getByRole("option", { name: "Text", exact: true }),
   ).toBeVisible();
-  await expect(page.locator("[data-ve-select-popup]")).toHaveCSS(
-    "opacity",
-    "1",
-  );
+  await expect(page.getByRole("listbox")).toHaveCSS("opacity", "1");
   await page.screenshot({
     path: "test-results/compact-toolbar-sections-select.png",
   });
   await page.keyboard.press("Escape");
-  await expect(page.locator("[data-ve-select-popup]")).toBeHidden();
+  await expect(page.getByRole("listbox")).toBeHidden();
   await page.setViewportSize({ width: 320, height: 740 });
   await expect(
     page.getByRole("navigation", { name: "Editing toolbar" }),
@@ -1443,9 +1440,7 @@ test("in-place activation and exit preserve the website, URL and viewport while 
   await inline.fill("Kept while saving");
   await saveStarted;
   try {
-    await page
-      .getByRole("link", { name: "Collection", exact: true })
-      .click();
+    await page.getByRole("link", { name: "Collection", exact: true }).click();
     await expect(
       page.getByRole("button", { name: "Stay on this page", exact: true }),
     ).toBeVisible();
