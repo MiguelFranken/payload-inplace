@@ -27,6 +27,7 @@ function run(args, extra = {}) {
   if (result.status !== 0) throw Error(result.stdout + result.stderr);
   return result.stdout + result.stderr;
 }
+const manifests = new Map();
 const roots = [
   "packages/core/dist",
   "packages/lexical/dist",
@@ -46,13 +47,15 @@ function outputs() {
         ]);
     }
   }
-  return hash(JSON.stringify(files));
+  return { hash: hash(JSON.stringify(files)), files };
 }
-function summaries(log) {
-  const summary = fs
-    .readdirSync(path.join(directory, ".turbo/runs"))
-    .sort()
-    .at(-1);
+function summaryFiles() {
+  const folder = path.join(directory, ".turbo/runs");
+  return fs.existsSync(folder)
+    ? fs.readdirSync(folder).filter((file) => file.endsWith(".json"))
+    : [];
+}
+function summaries(log, summary) {
   const data = JSON.parse(
     fs.readFileSync(path.join(directory, ".turbo/runs", summary), "utf8"),
   );
@@ -66,6 +69,7 @@ function summaries(log) {
   };
 }
 function build(name, extra = {}) {
+  const previous = new Set(summaryFiles());
   const start = performance.now();
   const log = run(
     [
@@ -79,11 +83,18 @@ function build(name, extra = {}) {
     ],
     extra,
   );
+  const created = summaryFiles().filter((file) => !previous.has(file));
+  if (created.length !== 1)
+    throw Error(
+      `Expected one new Turbo run summary for ${name}, received ${created.length}`,
+    );
+  const output = outputs();
+  manifests.set(name, output.files);
   return {
     name,
     ms: Math.round(performance.now() - start),
-    outputSHA256: outputs(),
-    ...summaries(log),
+    outputSHA256: output.hash,
+    ...summaries(log, created[0]),
   };
 }
 try {
@@ -105,7 +116,20 @@ try {
     cold.outputSHA256 !== warm.outputSHA256 ||
     !warm.tasks.every((task) => task.cache === "HIT")
   )
-    throw Error("Warm cache is not equivalent to the cold output");
+    throw Error(
+      "Warm cache is not equivalent to the cold output: " +
+        JSON.stringify({
+          cold,
+          warm,
+          changedFiles: manifests
+            .get("cold")
+            .filter(
+              ([file, hash]) =>
+                new Map(manifests.get("warm")).get(file) !== hash,
+            )
+            .map(([file]) => file),
+        }),
+    );
   // Delete only generated outputs inside this disposable checkout. The next run
   // must restore them from cache rather than rely on an earlier dist directory.
   for (const root of roots)
