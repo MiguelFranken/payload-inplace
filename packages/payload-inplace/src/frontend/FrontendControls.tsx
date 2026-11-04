@@ -8,6 +8,7 @@ import { useBindingDiagnostics } from "./controllers/binding-diagnostics.js";
 import { useSectionPatterns } from "./section-patterns.js";
 import { SaveSectionPattern } from "./SaveSectionPattern.js";
 import { useDocumentScopes } from "./document-scope.js";
+import { localizedLabel } from "../i18n/labels.js";
 import { useEditorMessages } from "./messages.js";
 import { useEditorPageTransition } from "../launcher/EditorPageTransition.js";
 import {
@@ -80,6 +81,7 @@ import { CatalogueLauncher as SectionCatalogue } from "./CatalogueLauncher.js";
 import { useTransientPreview } from "./transient-preview.js";
 import { ContextualFieldEditor, useFieldStrategy } from "./field-strategies.js";
 import { InsertionPoints } from "./InsertionPoints.js";
+import { canAdoptPlainText } from "../adapters/plain-text.js";
 import { resolveEditorStrategy } from "../schema/editor-strategy.js";
 import { InlineText } from "./InlineText.js";
 import { usePreviewStatus } from "./preview-status.js";
@@ -204,7 +206,7 @@ export function FrontendControls({
     info = useDocumentInfo(),
     { config } = useConfig(),
     { i18n } = useTranslation();
-  const { t } = useEditorMessages();
+  const { t, locale: uiLocale } = useEditorMessages();
   const [inspecting, setInspecting] = useState(() =>
       editorTools.tools.includes("content"),
     ),
@@ -639,17 +641,15 @@ export function FrontendControls({
         field && "label" in field
           ? field.label
           : section?.block?.labels?.singular;
-      return typeof label === "string"
-        ? label
-        : label && typeof label === "object"
-          ? label[i18n.language] || label.en || t("content")
-          : target.field
-            ? target.field
-                .replace(/([a-z])([A-Z])/g, "$1 $2")
-                .replace(/^./, (c) => c.toUpperCase())
-            : t("contentSection");
+      return label
+        ? localizedLabel(label, uiLocale, t("content"))
+        : target.field
+          ? target.field
+              .replace(/([a-z])([A-Z])/g, "$1 $2")
+              .replace(/^./, (c) => c.toUpperCase())
+          : t("contentSection");
     },
-    [sections, i18n.language],
+    [sections, uiLocale, context.target, documentScopes.scopes, t, form],
   );
   const describeAction = useCallback(
     (target: InspectionTarget) => {
@@ -696,15 +696,21 @@ export function FrontendControls({
                   `${section.schemaPath}.${resolved.schemaPath}`
                 ],
               markupSafe:
+                target.element instanceof HTMLElement &&
                 (field.type === "richText" ||
-                  target.element.childElementCount === 0) &&
+                  target.element.hasAttribute("data-ve-inline-active") ||
+                  (target.element.childElementCount === 0 &&
+                    canAdoptPlainText(
+                      target.element,
+                      form.getField(`${section.path}.${resolved.path}`)?.value,
+                    ))) &&
                 !target.element.closest("a,button,input,textarea,select"),
             })
           : undefined;
       const inline = decision?.kind === "text" || decision?.kind === "richText";
       return inline ? t("editText") : t("openSettings");
     },
-    [sections, blockControls, i18n.language, richTextCapabilities, form],
+    [sections, blockControls, context.target, richTextCapabilities, form, t],
   );
   const fixedSelected = Boolean(
     selected &&
@@ -718,8 +724,11 @@ export function FrontendControls({
       policy?.exactlyOne?.includes(selected.block?.slug || ""),
   );
   const label = selected?.block?.labels?.singular;
-  const title =
-    typeof label === "string" ? label : selected?.block?.slug || t("section");
+  const title = localizedLabel(
+    label,
+    uiLocale,
+    selected?.block?.slug || t("section"),
+  );
   const profile = blockControls?.[selected?.block?.slug || ""];
   const configuredFields = selected?.block
     ? projectFields(selected.block.fields, profile?.fields)
@@ -763,7 +772,9 @@ export function FrontendControls({
           markupSafe:
             selection.element instanceof HTMLElement &&
             (candidate.type === "richText" ||
-              selection.element.childElementCount === 0) &&
+              selection.element.hasAttribute("data-ve-inline-active") ||
+              (selection.element.childElementCount === 0 &&
+                canAdoptPlainText(selection.element, inlineState?.value))) &&
             !selection.element.closest("a,button,input,textarea,select"),
         })
       : { kind: "native" as const };
@@ -1034,7 +1045,7 @@ export function FrontendControls({
               s.parent === context.target.root &&
               s.index === 0 &&
               s.block?.slug === policy?.first
-                ? "This section stays first"
+                ? t("sectionStaysFirst")
                 : undefined
             }
           />
@@ -1335,7 +1346,7 @@ export function FrontendControls({
                     s.parent === context.target.root &&
                     s.index === 0 &&
                     s.block?.slug === policy?.first
-                      ? "This section stays first"
+                      ? t("sectionStaysFirst")
                       : undefined
                   }
                 />

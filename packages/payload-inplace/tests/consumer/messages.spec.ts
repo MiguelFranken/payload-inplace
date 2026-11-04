@@ -41,3 +41,28 @@ it("keeps complete German catalogues and typed consumer fallback separate from c
     "Settings",
   );
 });
+
+it("resolves consumer labels for UI language and keeps drag/retry feedback overridable", async () => {
+  const { localizedLabel } = await import("../../src/i18n/labels.js");
+  expect(
+    localizedLabel({ en: "Section", fr: "Rubrique" }, "fr-FR", "fallback"),
+  ).toBe("Rubrique");
+  expect(localizedLabel({ fr: "Rubrique" }, "ja", "fallback")).toBe("fallback");
+  expect(localizedLabel(() => "server component", "en", "fallback")).toBe(
+    "fallback",
+  );
+  const messages = createEditorMessages({
+    locale: "de-DE",
+    messages: {
+      de: {
+        retryUpload: "Noch einmal hochladen",
+        sectionMoved: "{label} → {position}",
+      },
+    },
+  });
+  expect(messages.t("retryUpload")).toBe("Noch einmal hochladen");
+  expect(
+    messages.t("sectionMoved", { label: "Abschnitt", position: 1200 }),
+  ).toBe("Abschnitt → 1.200");
+  expect(messages.t("dragInstructions")).toContain("Leertaste");
+});

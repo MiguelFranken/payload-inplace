@@ -22,3 +22,17 @@ describe("authored plaintext semantics", () => {
     expect(readPlainText(el, false)).toBe(expected.replace(/\n/g, " "));
   });
 });
+
+it("rejects truncated renderer projections without treating CSS casing or empty fallbacks as authored data", async () => {
+  const { canAdoptPlainText } = await import(
+    "../../src/adapters/plain-text.js"
+  );
+  const element = document.createElement("p");
+  element.textContent = "Mixed Case\u00a0source";
+  element.style.textTransform = "capitalize";
+  expect(canAdoptPlainText(element, "Mixed Case\u00a0source")).toBe(true);
+  expect(canAdoptPlainText(element, "Mixed Case source and hidden tail")).toBe(
+    false,
+  );
+  expect(canAdoptPlainText(element, "")).toBe(true);
+});

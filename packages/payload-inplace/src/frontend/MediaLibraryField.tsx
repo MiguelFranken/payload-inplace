@@ -3,6 +3,7 @@ import type { EditorStaticMessageKey } from "../i18n/catalogue.js";
 import { useEditorMessages } from "./messages.js";
 
 import { useEffect, useRef, useState } from "react";
+import { ImageOff } from "lucide-react";
 import { Button } from "./ui/button.js";
 import type { ContextualFieldProps } from "./field-strategies.js";
 import type { MediaAsset, MediaLibraryAdapter } from "./media-library.js";
@@ -30,15 +31,21 @@ export function MediaLibraryField({
     [busy, setBusy] = useState(false),
     [error, setError] = useState<EditorStaticMessageKey | null>(null),
     [progress, setProgress] = useState<number>();
-  const upload = useRef<AbortController | null>(null);
+  const upload = useRef<AbortController | null>(null),
+    failedUpload = useRef<File | null>(null);
   const collections = mediaCollections(field),
     scope = JSON.stringify(collections);
   useEffect(() => {
     if (disabled) {
       upload.current?.abort();
+      failedUpload.current = null;
+      setError((current) => (current === "mediaUploadFailed" ? null : current));
       setProgress(undefined);
     }
-    return () => upload.current?.abort();
+    return () => {
+      upload.current?.abort();
+      failedUpload.current = null;
+    };
   }, [disabled, library, scope]);
   useEffect(() => {
     const controller = new AbortController();
@@ -93,6 +100,7 @@ export function MediaLibraryField({
     upload.current?.abort();
     const controller = new AbortController();
     upload.current = controller;
+    failedUpload.current = file;
     setProgress(0);
     setError(null);
     try {
@@ -105,7 +113,10 @@ export function MediaLibraryField({
             setProgress(Math.max(0, Math.min(100, value)));
         },
       });
-      if (!controller.signal.aborted) setValue(mediaReference(field, asset));
+      if (!controller.signal.aborted) {
+        setValue(mediaReference(field, asset));
+        failedUpload.current = null;
+      }
     } catch {
       if (!controller.signal.aborted) setError("mediaUploadFailed");
     } finally {
@@ -133,14 +144,18 @@ export function MediaLibraryField({
         <div role="alert">
           <p>{t(error)}</p>
           <Button
-            onClick={() =>
-              setRequest((current) => ({
-                ...current,
-                retry: current.retry + 1,
-              }))
-            }
+            disabled={disabled || progress !== undefined}
+            onClick={() => {
+              if (error === "mediaUploadFailed") {
+                if (failedUpload.current) void uploadFile(failedUpload.current);
+              } else
+                setRequest((current) => ({
+                  ...current,
+                  retry: current.retry + 1,
+                }));
+            }}
           >
-            {t("retrySearch")}
+            {t(error === "mediaUploadFailed" ? "retryUpload" : "retrySearch")}
           </Button>
         </div>
       )}
@@ -171,15 +186,12 @@ export function MediaLibraryField({
             className="pve:h-auto pve:min-h-16 pve:flex-col pve:items-start pve:p-3 pve:text-start pve:whitespace-normal"
             onClick={() => setValue(mediaReference(field, asset))}
           >
-            {asset.thumbnailURL &&
-              /^(?:\/[^/]|https:\/\/)/.test(asset.thumbnailURL) && (
-                <img
-                  src={asset.thumbnailURL}
-                  alt=""
-                  loading="lazy"
-                  className="pve:aspect-video pve:w-full pve:rounded pve:object-cover"
-                />
-              )}
+            {asset.thumbnailURL && (
+              <MediaThumbnail
+                key={asset.thumbnailURL}
+                url={asset.thumbnailURL}
+              />
+            )}
             <span>{asset.label}</span>
             {asset.mimeType && (
               <span className="pve:text-xs pve:opacity-60">
@@ -221,5 +233,43 @@ export function MediaLibraryField({
         {t("replacesThisFieldSMediaReferenceSharedAssetMetadata")}
       </p>
     </div>
+  );
+}
+
+// Thumbnails are presentation only. A missing image never clears a valid native
+// relationship; native media permissions remain authoritative when selecting it.
+function MediaThumbnail({ url }: { url: string }) {
+  const [failed, setFailed] = useState(false);
+  let source: string | undefined;
+  try {
+    const parsed = new URL(url, window.location.href);
+    if (
+      !parsed.username &&
+      !parsed.password &&
+      (parsed.protocol === "https:" ||
+        (parsed.protocol === "http:" &&
+          parsed.origin === window.location.origin))
+    )
+      source = parsed.href;
+  } catch {
+    /* Invalid library thumbnails retain the asset's visible label. */
+  }
+  if (!source || failed)
+    return (
+      <span
+        aria-hidden="true"
+        className="pve:flex pve:aspect-video pve:w-full pve:items-center pve:justify-center pve:rounded pve:bg-[var(--pve-muted-surface,#f4f5f7)] pve:opacity-60"
+      >
+        <ImageOff size={20} />
+      </span>
+    );
+  return (
+    <img
+      src={source}
+      alt=""
+      loading="lazy"
+      onError={() => setFailed(true)}
+      className="pve:aspect-video pve:w-full pve:rounded pve:object-cover"
+    />
   );
 }

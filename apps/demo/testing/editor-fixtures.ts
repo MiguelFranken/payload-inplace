@@ -2,7 +2,15 @@ import { expect, type Page } from "@playwright/test";
 /** Only synthetic records inside the caller's disposable demo database. Uses real native auth/create. */
 export async function createShopEditor(
   page: Page,
-  { emptyCards = false }: { emptyCards?: boolean } = {},
+  {
+    emptyCards = false,
+    richBody,
+    sourceText,
+  }: {
+    emptyCards?: boolean;
+    richBody?: unknown;
+    sourceText?: { eyebrow: string; description: string };
+  } = {},
 ) {
   await page.goto("/shop");
   expect(
@@ -31,11 +39,42 @@ export async function createShopEditor(
           )
         : value;
   const layout = clone(source.layout);
-  const story = layout.find((block: {blockType:string}) => block.blockType === 'editorial');
-  story.body ??= {root:{type:'root',version:1,format:'',indent:0,direction:null,children:[{type:'paragraph',version:1,format:'',indent:0,direction:null,children:[{type:'text',version:1,text:'Made with care. Built to last.',format:0,style:'',detail:0,mode:'normal'}]}]}};
+  if (sourceText) Object.assign(layout[0], sourceText);
+  const story = layout.find(
+    (block: { blockType: string }) => block.blockType === "editorial",
+  );
+  if (richBody !== undefined) story.body = richBody;
+  story.body ??= {
+    root: {
+      type: "root",
+      version: 1,
+      format: "",
+      indent: 0,
+      direction: null,
+      children: [
+        {
+          type: "paragraph",
+          version: 1,
+          format: "",
+          indent: 0,
+          direction: null,
+          children: [
+            {
+              type: "text",
+              version: 1,
+              text: "Made with care. Built to last.",
+              format: 0,
+              style: "",
+              detail: 0,
+              mode: "normal",
+            },
+          ],
+        },
+      ],
+    },
+  };
   if (emptyCards)
-    layout.find((block: any) => block.blockType === "productGrid").cards =
-      [];
+    layout.find((block: any) => block.blockType === "productGrid").cards = [];
   const created = await page.request.post("/api/shops", {
     data: {
       title: "Roadmap acceptance",

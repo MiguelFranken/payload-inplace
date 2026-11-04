@@ -7,6 +7,7 @@ export default defineConfig({
     "optimistic.e2e.spec.ts",
     "commerce.e2e.spec.ts",
     "roadmap.e2e.spec.ts",
+    "acceptance.e2e.spec.ts",
     "performance.e2e.spec.ts",
   ],
   workers: 1,

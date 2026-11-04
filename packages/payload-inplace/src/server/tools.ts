@@ -1,3 +1,4 @@
+import { localizedLabel } from "../i18n/labels.js";
 import type {
   EditorCapabilityContext,
   EditorLabel,
@@ -32,7 +33,9 @@ export async function resolveTools(
 }
 /** Resolve the supported editor UI locales without serializing host label functions. */
 export function editorLabel(label: EditorLabel, language: string) {
-  return typeof label === "string"
-    ? label
-    : label[language] || label[language.split("-")[0] || "en"] || label.en;
+  return localizedLabel(
+    label,
+    language,
+    typeof label === "string" ? label : label.en,
+  );
 }

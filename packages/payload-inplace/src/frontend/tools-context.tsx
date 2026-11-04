@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useEditorMessages } from "./messages.js";
 import { useConfig, useForm } from "@payloadcms/ui";
 import { useRouter } from "next/navigation";
 import type { Activation, BlockIdentity, EditorTool } from "../types.js";
@@ -62,6 +63,7 @@ export function EditorToolsProvider({
   extensions: ResolvedEditorExtension[];
   children: ReactNode;
 }) {
+  const { t } = useEditorMessages();
   const [openPanels, setOpenPanels] = useState<string[]>([]),
     [selection, setSelection] = useState<BlockIdentity>();
   const form = useForm(),
@@ -82,7 +84,7 @@ export function EditorToolsProvider({
   const runAction = useCallback(
     async (id: string, input?: unknown, subject?: string) => {
       if (!extensions.some((e) => e.id === id && e.kind === "action"))
-        throw new Error("This action is unavailable.");
+        throw new Error(t("actionUnavailable"));
       const response = await fetch(
         `${config.routes.api}/visual-editor/action${context.locale ? `?locale=${encodeURIComponent(context.locale)}` : ""}`,
         {
@@ -99,14 +101,11 @@ export function EditorToolsProvider({
         },
       );
       const result = await response.json();
-      if (!response.ok)
-        throw new Error(
-          result.error || "Action failed. Check your access and retry.",
-        );
+      if (!response.ok) throw new Error(result.error || t("actionFailed"));
       if (result.refresh) router.refresh();
       return result;
     },
-    [extensions, form, config.routes.api],
+    [extensions, form, config.routes.api, context.locale, t],
   );
   const value = useMemo(
     () => ({

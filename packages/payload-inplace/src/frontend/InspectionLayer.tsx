@@ -1,4 +1,5 @@
 "use client";
+import { useEditorMessages } from "./messages.js";
 import { useEffect, useEffectEvent, useRef } from "react";
 import {
   parseDocumentKey,
@@ -86,6 +87,7 @@ export function InspectionLayer({
   hint?: (target: InspectionTarget) => string;
   accept?: (target: InspectionTarget) => boolean;
 }) {
+  const { t } = useEditorMessages();
   const hover = useRef<HTMLDivElement>(null),
     caption = useRef<HTMLSpanElement>(null),
     hoverTarget = useRef<InspectionTarget | undefined>(undefined);
@@ -97,7 +99,7 @@ export function InspectionLayer({
   const currentSelection = useEffectEvent(() => selected);
   const label = useEffectEvent(
     (target: InspectionTarget) =>
-      `${describe(target)} · ${hint?.(target) || "Click to edit"}`,
+      `${describe(target)} · ${hint?.(target) || t("clickToEdit")}`,
   );
   const pick = useEffectEvent((target: InspectionTarget) => onPick(target));
   const selectedElement = selected?.element;

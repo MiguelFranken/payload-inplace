@@ -29,3 +29,19 @@ export function readPlainText(element: HTMLElement, multiline = false): string {
   const value = read(element).replace(/\r\n?/g, "\n");
   return multiline ? value : value.replace(/\n/g, " ");
 }
+
+/** A renderer may transform a value before output (for example truncating it).
+ * Only adopt an intact source or an empty-value fallback: editing an opaque
+ * projection must hand off to native fields instead of overwriting hidden text.
+ */
+export function canAdoptPlainText(
+  element: HTMLElement,
+  source: unknown,
+): boolean {
+  return (
+    typeof source !== "string" ||
+    source === "" ||
+    readPlainText(element, /[\r\n]/.test(source)) ===
+      source.replace(/\r\n?/g, "\n")
+  );
+}

@@ -1,3 +1,7 @@
+import {
+  assertNativeVersions,
+  nativePackageVersion,
+} from "../server/runtime-compatibility.js";
 import { createRequire } from "node:module";
 import { dirname, relative, resolve, sep } from "node:path";
 import type { NextConfig } from "next";
@@ -12,6 +16,15 @@ export function withVisualEditorNext(
 ): NextConfig {
   const require = createRequire(import.meta.url);
   const layouts = require.resolve("@payloadcms/next/layouts");
+  assertNativeVersions({
+    payload: nativePackageVersion(require.resolve("payload"), "payload"),
+    "@payloadcms/ui": nativePackageVersion(
+      require.resolve("@payloadcms/ui"),
+      "@payloadcms/ui",
+    ),
+    "@payloadcms/next": nativePackageVersion(layouts, "@payloadcms/next"),
+    next: nativePackageVersion(require.resolve("next"), "next"),
+  });
   const native = resolve(
     dirname(layouts),
     "../utilities/handleServerFunctions.js",

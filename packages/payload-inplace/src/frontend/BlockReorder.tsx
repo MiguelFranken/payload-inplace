@@ -1,4 +1,5 @@
 "use client";
+import { localizedLabel } from "../i18n/labels.js";
 import { findBoundBlock } from "../preview/dom-target.js";
 import type { DocumentReference } from "../../../core/src/document-ref.js";
 import { useEditorMessages } from "./messages.js";
@@ -57,10 +58,17 @@ const canvasMeasurements = {
   draggable: { measure: measureCanvas },
   droppable: { measure: measureCanvas },
 };
-export function sectionLabel(s: NativeSection) {
-  return typeof s.block?.labels?.singular === "string"
-    ? s.block.labels.singular
-    : s.block?.slug || "Unavailable section";
+/** Resolve native block labels without importing the server translation bridge. */
+export function sectionLabel(
+  s: NativeSection | undefined,
+  locale = "en",
+  fallback = "Unavailable section",
+) {
+  return localizedLabel(
+    s?.block?.labels?.singular,
+    locale,
+    s?.block?.slug || fallback,
+  );
 }
 /** Finds the renderer-owned binding without depending on a framework wrapper or transient array index. */
 export function sectionElement(s: NativeSection, scope?: DocumentReference) {
@@ -126,6 +134,9 @@ export function BlockReorder({
   onLocate?: (s: NativeSection) => void;
   lockedReason?: (s: NativeSection) => string | undefined;
 }) {
+  const { t, locale } = useEditorMessages();
+  const labelOf = (section: NativeSection | undefined) =>
+    sectionLabel(section, locale, t("unavailableSection"));
   const [active, setActive] = useState<string | null>(null),
     [over, setOver] = useState<string | null>(null),
     [message, setMessage] = useState("");
@@ -194,7 +205,8 @@ export function BlockReorder({
     if (from && to && key(from) !== key(to)) {
       const error = onMove(from, to);
       setMessage(
-        error || `${sectionLabel(from)} moved to position ${to.index + 1}.`,
+        error ||
+          t("sectionMoved", { label: labelOf(from), position: to.index + 1 }),
       );
     }
   }
@@ -215,23 +227,26 @@ export function BlockReorder({
         keyboardTarget.current = null;
         setActive(null);
         setOver(null);
-        setMessage("Move cancelled.");
+        setMessage(t("moveCancelled"));
       }}
       onDragEnd={finish}
       accessibility={{
         announcements: {
           onDragStart: ({ active }) =>
-            `Picked up ${sectionLabel(sections.find((s) => key(s) === active.id)!)}.`,
-          onDragOver: ({ over }) =>
-            over
-              ? `Position ${sections.find((s) => key(s) === over.id)!.index + 1}.`
-              : undefined,
-          onDragEnd: () => "Section released.",
-          onDragCancel: () => "Move cancelled.",
+            t("sectionPickedUp", {
+              label: labelOf(sections.find((s) => key(s) === active.id)),
+            }),
+          onDragOver: ({ over }) => {
+            const target = over && sections.find((s) => key(s) === over.id);
+            return target
+              ? t("dragPosition", { position: target.index + 1 })
+              : undefined;
+          },
+          onDragEnd: () => t("sectionReleased"),
+          onDragCancel: () => t("moveCancelled"),
         },
         screenReaderInstructions: {
-          draggable:
-            "Press Space to pick up a section, arrow keys to move it, Space to drop, or Escape to cancel. Sections stay within their current block field.",
+          draggable: t("dragInstructions"),
         },
       }}
     >
@@ -258,7 +273,7 @@ export function BlockReorder({
         {activeSection && (
           <div className="pve:pointer-events-none pve:flex pve:w-fit pve:items-center pve:gap-2 pve:rounded-lg pve:bg-[var(--pve-accent,#3451eb)] pve:px-3 pve:py-2 pve:text-sm pve:font-medium pve:text-white pve:shadow-lg">
             <GripVertical size={15} />
-            {sectionLabel(activeSection)}
+            {labelOf(activeSection)}
           </div>
         )}
       </DragOverlay>
@@ -296,7 +311,7 @@ function ReorderItem({
   lock?: string;
 }) {
   const { i18n } = useTranslation();
-  const { t, number } = useEditorMessages(undefined, i18n.language);
+  const { t, number, locale } = useEditorMessages(undefined, i18n.language);
 
   const id = key(s),
     {
@@ -382,14 +397,14 @@ function ReorderItem({
       setNodeRef(null);
     };
   }, [canvas, id, setNodeRef]);
-  const label = sectionLabel(s);
+  const label = sectionLabel(s, locale, t("unavailableSection"));
   const handle = (
     <Button
       ref={setActivatorNodeRef}
       size="icon"
       disabled={disabled || Boolean(lock)}
       aria-label={t("moveNamedSection", { label })}
-      title={lock || "Drag to move · Space for keyboard"}
+      title={lock || t("dragHandleHelp")}
       className="pve:touch-none pve:cursor-grab pve:active:cursor-grabbing"
       {...attributes}
       {...listeners}

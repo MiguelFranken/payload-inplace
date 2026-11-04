@@ -62,3 +62,21 @@ it("preserves an explicit host compatibility alias", () => {
   });
   expect(config.turbopack?.resolveAlias?.clsx).toBe("./host-clsx");
 });
+
+it("rejects unsupported native package combinations before field rendering", async () => {
+  const { assertNativeVersions } = await import(
+    "../../src/server/runtime-compatibility.js"
+  );
+  const supported = {
+    payload: "3.91.0",
+    "@payloadcms/ui": "3.91.0",
+    "@payloadcms/next": "3.91.0",
+    next: "16.4.2",
+  };
+  expect(() => assertNativeVersions(supported)).not.toThrow();
+  for (const name of Object.keys(supported)) {
+    expect(() =>
+      assertNativeVersions({ ...supported, [name]: "4.0.0" }),
+    ).toThrow(`unsupported ${name}@4.0.0`);
+  }
+});

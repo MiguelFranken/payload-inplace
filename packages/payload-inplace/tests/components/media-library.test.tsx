@@ -184,3 +184,74 @@ it("uses native same-origin ACL search and never turns external URLs into asset 
     fetch.mockRestore();
   }
 });
+
+it("retries the same failed upload instead of accidentally retrying search", async () => {
+  vi.useFakeTimers();
+  props.setValue.mockClear();
+  const file = new File(["synthetic"], "retry.png", { type: "image/png" });
+  const search = vi
+    .fn<MediaLibraryAdapter["search"]>()
+    .mockResolvedValue({ items: [] });
+  const upload = vi
+    .fn<NonNullable<MediaLibraryAdapter["upload"]>>()
+    .mockRejectedValueOnce(Error("offline"))
+    .mockResolvedValueOnce({ id: 9, collection: "media", label: "retry.png" });
+  render(
+    <MediaLibraryField {...props} library={{ id: "retry", search, upload }} />,
+  );
+  await tick();
+  await act(async () =>
+    fireEvent.change(screen.getByLabelText("Upload media"), {
+      target: { files: [file] },
+    }),
+  );
+  expect(screen.getByRole("alert").textContent).toContain("Upload failed");
+  await act(async () => fireEvent.click(screen.getByText("Retry upload")));
+  expect(upload).toHaveBeenCalledTimes(2);
+  expect(upload.mock.calls[0]?.[0].file).toBe(file);
+  expect(upload.mock.calls[1]?.[0].file).toBe(file);
+  expect(search).toHaveBeenCalledTimes(1);
+  expect(props.setValue).toHaveBeenCalledExactlyOnceWith(9);
+});
+
+it("keeps a missing thumbnail selectable and suppresses unsafe thumbnail protocols", async () => {
+  vi.useFakeTimers();
+  props.setValue.mockClear();
+  render(
+    <MediaLibraryField
+      {...props}
+      library={{
+        id: "missing",
+        search: async () => ({
+          items: [
+            {
+              id: 1,
+              collection: "media",
+              label: "Missing image",
+              thumbnailURL: "/missing.png",
+            },
+            {
+              id: 2,
+              collection: "media",
+              label: "Unsafe thumbnail",
+              thumbnailURL: "javascript:alert(1)",
+            },
+          ],
+        }),
+      }}
+    />,
+  );
+  await tick();
+  const missing = screen.getByRole("button", { name: "Missing image" });
+  const image = missing.querySelector("img")!;
+  expect(image.src).toContain("/missing.png");
+  fireEvent.error(image);
+  expect(missing.querySelector("img")).toBeNull();
+  expect(
+    screen
+      .getByRole("button", { name: "Unsafe thumbnail" })
+      .querySelector("img"),
+  ).toBeNull();
+  fireEvent.click(missing);
+  expect(props.setValue).toHaveBeenCalledExactlyOnceWith(1);
+});

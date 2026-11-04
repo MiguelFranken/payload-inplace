@@ -1,5 +1,6 @@
 "use client";
 // Adapted from shadcn/ui registry/base-nova/ui/dropdown-menu.tsx (MIT).
+import { useEditorMessages } from "../messages.js";
 import { clsx } from "clsx";
 import { buttonVariants } from "./button.js";
 import { Menu } from "@base-ui/react/menu";
@@ -11,8 +12,9 @@ export function DropdownMenuTrigger({
   className,
   ...props
 }: Omit<Menu.Trigger.Props, "className"> & { className?: string }) {
+  const { t } = useEditorMessages();
   return (
-    <ChromeTooltip label={String(props["aria-label"] || "More tools")}>
+    <ChromeTooltip label={String(props["aria-label"] || t("moreTools"))}>
       <Menu.Trigger
         {...props}
         title={undefined}
