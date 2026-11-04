@@ -31,7 +31,9 @@
     "lint:source": "eslint packages apps scripts",
     "lint:oxlint": "oxlint packages apps scripts",
     "build:demo:css": "tailwindcss -i apps/demo/tailwind.css -o apps/demo/styles.css --minify && tailwindcss -i apps/demo/protected.tailwind.css -o apps/demo/protected.styles.css --minify",
-    "test:package": "publint packages/payload-inplace && pnpm pack:check && pnpm test:consumer"
+    "test:package": "publint packages/payload-inplace && pnpm pack:check && pnpm test:consumer",
+    "test:components": "vitest run --project components",
+    "test:coverage": "vitest run --project unit --project components --coverage"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",

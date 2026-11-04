@@ -22,7 +22,8 @@
     "packages/**/*.tsx",
     "apps/demo/**/*.ts",
     "apps/demo/**/*.tsx",
-    "*.ts"
+    "*.ts",
+    "vitest.setup.ts"
   ],
   "exclude": [
     "node_modules",

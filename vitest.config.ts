@@ -2,6 +2,7 @@ import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 const root = fileURLToPath(new URL(".", import.meta.url));
 export default defineConfig({
+  esbuild: { jsx: "automatic" },
   root,
   test: {
     projects: [
@@ -11,6 +12,17 @@ export default defineConfig({
           root,
           include: ["packages/*/tests/**/*.spec.ts"],
           environment: "node",
+          testTimeout: 5000,
+          fileParallelism: true,
+        },
+      },
+      {
+        test: {
+          name: "components",
+          root,
+          include: ["packages/*/tests/**/*.test.tsx"],
+          environment: "happy-dom",
+          setupFiles: ["./vitest.setup.ts"],
           testTimeout: 5000,
           fileParallelism: true,
         },

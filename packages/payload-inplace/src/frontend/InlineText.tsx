@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useEffectEvent, useLayoutEffect, useRef } from "react";
+import { readPlainText } from "../adapters/plain-text.js";
 import { createPortal } from "react-dom";
 import { inlineStyles } from "./inline-styles.generated.js";
 import { useField } from "@payloadcms/ui";
@@ -31,7 +32,9 @@ export function InlineText({
   const composing = useRef(false),
     editing = useRef(false),
     dirty = useRef(false);
+  const environment = useEffectEvent(() => ({ guard, point, disabled }));
   useLayoutEffect(() => {
+    const { guard, point, disabled } = environment();
     // The selection layer supplies the visible focus perimeter. Avoid a second browser text-line outline.
     // System high-contrast mode retains the native indicator as well.
     const classes =
@@ -56,7 +59,10 @@ export function InlineText({
     );
     const placeholder = element.getAttribute("data-ve-placeholder") || "";
     function text() {
-      return element.innerText.replace(/\r\n/g, "\n");
+      return readPlainText(
+        element,
+        multiline || /[\r\n]/.test(current.current.field.value || ""),
+      );
     }
     function commit() {
       if (

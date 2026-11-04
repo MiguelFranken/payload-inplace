@@ -29,3 +29,11 @@ Baseline: `fa1f80f`, 108 unit tests passed before edits. Full roadmap: Linear CO
 ## Foundation validation
 
 Workspace build, TypeScript, 108 moved unit tests, Oxlint plus retained ESLint, publint, archive boundaries and the packed binding consumer passed. Turbo reports local cache hits for core and facade builds. Hook dependency migration warnings remain visible; stateful browser/database acceptance and further domain extraction remain pending. See ADR 0007 for packaging and lint migration choices.
+
+## Native controllers and text semantics
+
+Extracted structural/index/history and manual draft submission controllers; autosave now explicitly includes content locale and fallback-locale like manual save. A single panel transition model replaces independent disclosure booleans, with component tests for repeated close/reopen, stale close and queued toggles. DOM plaintext serialization preserves source casing/spaces and browser multiline markup instead of CSS-transformed innerText.
+
+Local verification: 121 unit/component assertions passed including host-alias preservation; TypeScript passed. Focused real-browser source-text regression passed (7.1s), including the negative control where innerText is uppercase but the field's source is mixed case, persisted draft read-back, stable URL and header node identity. Seven Postgres and three applicable Mongo native integration cases passed; four PostgreSQL-specific cases are skipped on Mongo.
+
+Codex browser exposed an undeclared clsx import in the pinned Payload UI client build after removing incidental root hoisting. The v3 Next adapter now resolves that dependency from our own declared runtime only when missing upstream, preserving an explicit consumer alias. Activation, site chrome and sections render correctly in Codex browser. Full production/installed-archive acceptance remains pending.

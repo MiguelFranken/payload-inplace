@@ -4,11 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   RenderFields,
   LeaveWithoutSaving,
-  useLocale,
   PublishButton,
   useConfig,
   useDocumentInfo,
-  useField,
   useForm,
   useFormBackgroundProcessing,
   useFormFields,
@@ -36,20 +34,18 @@ import {
   LogOut,
   LocateFixed,
 } from "lucide-react";
-import type { BlocksFieldClientProps, ClientBlock } from "payload";
+import type { BlocksFieldClientProps } from "payload";
 import type { Activation } from "../types.js";
-import { availableBlocks } from "../schema/available-blocks.js";
+
 import { resolveBinding } from "../schema/resolve-binding.js";
 import { canUpdateInlineField } from "../schema/inline-access.js";
-import { collectSections } from "../schema/tree.js";
+
 import { sectionHeading } from "../schema/section-heading.js";
-import { StructuralHistory } from "../state/history.js";
-import {
-  applyCommand,
-  ownsTypingOrModal,
-  restoreRoot,
-} from "../adapters/payload-form.js";
-import { structureTransitionError } from "../state/policy.js";
+import { useNativeStructure } from "./controllers/native-structure.js";
+import { usePanelNavigation } from "./controllers/panel-navigation.js";
+import { useNativeDraftSave } from "./controllers/draft-save.js";
+import { ownsTypingOrModal } from "../adapters/payload-form.js";
+
 import type { StructuralPolicy } from "../state/policy.js";
 import { ReviewPublishButton } from "../admin/ReviewPublishButton.js";
 import { installNativeUploadLabels } from "../admin/native-accessibility.js";
@@ -115,9 +111,16 @@ export function FrontendControls({
   const [portalContainer, setPortalContainer] = useState<HTMLDivElement | null>(
     null,
   );
-  const [customTool, setCustomTool] = useState<string | null>(null);
-  const [validationPath, setValidationPath] = useState<string | null>(null);
-  const locale = useLocale();
+  const {
+    outline,
+    settingsOpen,
+    customTool,
+    validationPath,
+    setOutline,
+    setSettingsOpen,
+    setCustomTool,
+    setValidationPath,
+  } = usePanelNavigation();
   const closeTools = useCallback(() => {
     editorTools.openPanels.forEach(editorTools.closePanel);
     setCustomTool(null);
@@ -138,7 +141,6 @@ export function FrontendControls({
     }
   }, [recovery.failure, validationPath]);
 
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const feedbackStack = useRef<HTMLDivElement>(null);
   const dock = useRef<HTMLElement>(null),
     rootElement = useRef<HTMLDivElement>(null);
@@ -153,10 +155,8 @@ export function FrontendControls({
       editorTools.tools.includes("content"),
     ),
     [selection, setSelection] = useState<InspectionTarget>(),
-    [outline, setOutline] = useState(false),
     [error, setError] = useState("");
   const [highlighting, setHighlighting] = useState(false);
-  const [generation, setGeneration] = useState(0);
   const inspector = useRef<HTMLElement>(null),
     inspectButton = useRef<HTMLButtonElement>(null),
     sectionsButton = useRef<HTMLButtonElement>(null),
@@ -165,98 +165,34 @@ export function FrontendControls({
   const modified = useFormModified(),
     processing = useFormProcessing(),
     background = useFormBackgroundProcessing();
-  const rootState = useField({ path: context.target.root, hasRows: true });
-  const nativeBlockChoices = availableBlocks(
-    field,
-    config.blocksMap as Record<string, ClientBlock>,
-    rootState.blocksFilterOptions,
-  );
-  const currentRows = form.getDataByPath(context.target.root);
-  const rootRows = Array.isArray(currentRows) ? currentRows : [];
-  const atStart = (slug: string) =>
-    policy?.first === slug && rootRows[0]?.blockType !== slug;
-  const blockChoices = nativeBlockChoices.filter(
-    (block) =>
-      !structureTransitionError(
-        rootRows,
-        atStart(block.slug)
-          ? [{ blockType: block.slug }, ...rootRows]
-          : [...rootRows, { blockType: block.slug }],
-        policy,
-      ),
-  );
-  const fingerprint = useFormFields(([fields]) =>
-    Object.entries(fields)
-      .filter(
-        ([path, state]) => path.startsWith(context.target.root) && state.rows,
-      )
-      .map(
-        ([path, state]) =>
-          `${path}:${state.rows?.map((r) => `${r.id}:${r.blockType}`).join(",")}`,
-      )
-      .join("|"),
-  );
-  const sections = useMemo(
-    () =>
-      collectSections({
-        field,
-        data: form.getDataByPath(context.target.root),
-        root: context.target.root,
-        schemaPath: `${context.target.collection}.${context.target.root}`,
-        permissions,
-        blocksMap: config.blocksMap as Record<string, ClientBlock>,
-      }),
-    [fingerprint, generation, info.data?.updatedAt, outline],
-  );
-  const selected = sections.find(
-    (s) =>
-      s.identity.blockId === selection?.identity.blockId &&
-      JSON.stringify(s.identity.ancestors) ===
-        JSON.stringify(selection?.identity.ancestors || []),
-  );
-  const disabled = Boolean(
+  const baseDisabled = Boolean(
     (recovery.failure?.kind !== "validation" && recovery.failure) ||
       processing ||
       field.admin?.readOnly ||
       permissions === false ||
       (permissions !== true && permissions?.update === false) ||
       form.disabled ||
-      !info.hasSavePermission ||
-      selected?.readOnly,
+      !info.hasSavePermission,
   );
-  const saveDraft = useCallback(async () => {
-    if (disabled || !modified || background) return;
-    form.setBackgroundProcessing(true);
-    try {
-      await form.submit({
-        action: `${config.routes.api}/${context.target.collection}/${context.target.id}?locale=${encodeURIComponent(locale.code)}&depth=0&fallback-locale=null&draft=true`,
-        method: "PATCH",
-        overrides: { _status: "draft" },
-        acceptValues: true,
-        disableFormWhileProcessing: false,
-        disableSuccessStatus: true,
-        skipValidation: true,
-      });
-    } finally {
-      form.setBackgroundProcessing(false);
-    }
-  }, [
-    disabled,
-    modified,
-    background,
-    form,
-    config.routes.api,
-    context.target.collection,
-    context.target.id,
-    locale.code,
-  ]);
-  const history = useMemo(
-    () => new StructuralHistory(context.target.root),
-    [context.nonce],
+  const { sections, history, commandFor, add, undo, blockChoices, rootRows } =
+    useNativeStructure({
+      root: context.target.root,
+      collection: context.target.collection,
+      nonce: context.nonce,
+      field,
+      permissions,
+      policy,
+      disabled: baseDisabled,
+      onError: setError,
+    });
+  const selected = sections.find(
+    (s) =>
+      s.identity.blockId === selection?.identity.blockId &&
+      JSON.stringify(s.identity.ancestors) ===
+        JSON.stringify(selection?.identity.ancestors || []),
   );
-  useEffect(() => {
-    if (history.captureResult(form.getFields())) setGeneration((n) => n + 1);
-  }, [fingerprint, history]);
+  const disabled = baseDisabled || Boolean(selected?.readOnly);
+  const saveDraft = useNativeDraftSave(context.target, disabled);
   const initialToolApplied = useRef(false);
   useEffect(() => {
     if (initialToolApplied.current) return;
@@ -295,17 +231,6 @@ export function FrontendControls({
           ?.focus({ preventScroll: true }),
       );
   }, [selected?.path, selection?.field, settingsOpen]);
-  function undo(redo = false) {
-    if (disabled) return;
-    const snapshot = redo
-      ? history.redo(form.getFields())
-      : history.undo(form.getFields());
-    if (snapshot) {
-      const issue = restoreRoot(form, context.target.root, snapshot);
-      setError(issue || "");
-      setGeneration((n) => n + 1);
-    }
-  }
   useEffect(() => {
     if (!expanded) return;
     const keyboard = (event: KeyboardEvent) => {
@@ -357,6 +282,7 @@ export function FrontendControls({
   }, [
     disabled,
     history,
+    undo,
     expanded,
     saveDraft,
     closeTools,
@@ -365,33 +291,6 @@ export function FrontendControls({
     editorTools.openPanels,
     outline,
   ]);
-  function commandFor(
-    section: NativeSection,
-    command: import("../adapters/payload-form.js").BlockCommand,
-  ) {
-    const result = applyCommand(
-      form,
-      context.target.root,
-      section.containerSchemaPath,
-      command,
-      {
-        disabled: disabled || section.readOnly,
-        min: section.field.minRows ?? (section.field.required ? 1 : 0),
-        max: section.field.maxRows,
-        allowed: availableBlocks(
-          section.field,
-          config.blocksMap as Record<string, ClientBlock>,
-          form.getField(section.parent)?.blocksFilterOptions,
-        ).map((b) => b.slug),
-        policy: section.parent === context.target.root ? policy : undefined,
-        history,
-        container: section.parent,
-      },
-    );
-    setError(result || "");
-    setGeneration((n) => n + 1);
-    return result;
-  }
   function action(type: "up" | "down" | "duplicate" | "remove") {
     if (!selected) return;
     const error = commandFor(selected, { type, identity: selected.identity });
@@ -1189,26 +1088,8 @@ export function FrontendControls({
                   }))}
                   onValueChange={(value) => {
                     if (!value) return;
-                    const result = applyCommand(
-                      form,
-                      context.target.root,
-                      `${context.target.collection}.${context.target.root}`,
-                      {
-                        type: "add",
-                        blockType: value,
-                        at: atStart(value) ? "start" : "end",
-                      },
-                      {
-                        disabled,
-                        min: field.minRows ?? 0,
-                        max: field.maxRows,
-                        allowed: blockChoices.map((b) => b.slug),
-                        policy,
-                        history,
-                      },
-                    );
-                    setError(result || "");
-                    setGeneration((n) => n + 1);
+                    const result = add(value);
+                    if (result) setError(result);
                   }}
                 >
                   <SelectTrigger

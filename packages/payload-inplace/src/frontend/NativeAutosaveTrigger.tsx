@@ -4,12 +4,14 @@ import { useEffect, useMemo, useState } from "react";
 import {
   useAllFormFields,
   useConfig,
+  useLocale,
   useDocumentInfo,
   useForm,
   useFormBackgroundProcessing,
   useFormModified,
   useFormProcessing,
 } from "@payloadcms/ui";
+import { nativeDraftAction } from "../adapters/native-request.js";
 import { autosaveDelay, authoredFieldKey } from "../state/autosave.js";
 import {
   getAutosaveInterval,
@@ -24,7 +26,8 @@ export function NativeAutosaveTrigger() {
   const recovery = useEditorRecovery();
   const form = useForm(),
     info = useDocumentInfo(),
-    { config } = useConfig();
+    { config } = useConfig(),
+    locale = useLocale();
   const [fields] = useAllFormFields(),
     modified = useFormModified(),
     processing = useFormProcessing(),
@@ -61,7 +64,12 @@ export function NativeAutosaveTrigger() {
         form.setBackgroundProcessing(true);
         try {
           const result = await form.submit({
-            action: `${config.routes.api}/${info.collectionSlug}/${info.id}?draft=true&autosave=true&depth=0`,
+            action: nativeDraftAction(
+              config.routes.api,
+              { collection: info.collectionSlug!, id: info.id! },
+              locale.code,
+              true,
+            ),
             method: "PATCH",
             overrides: { _status: "draft" },
             acceptValues: true, // onSuccess admits server values only when the submitted snapshot still matches; see protectNativeAcknowledgement.
@@ -85,6 +93,7 @@ export function NativeAutosaveTrigger() {
   }, [
     valueKey,
     composing,
+    locale.code,
     modified,
     processing,
     background,

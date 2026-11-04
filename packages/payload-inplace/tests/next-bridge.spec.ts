@@ -55,3 +55,8 @@ it("treats a cookie only as an exact-path, bounded routing candidate, including 
     ),
   ).toBe(true);
 });
+
+it("preserves an explicit host compatibility alias", () => {
+  const config = withVisualEditorNext({ turbopack: { resolveAlias: { clsx: "./host-clsx" } } });
+  expect(config.turbopack?.resolveAlias?.clsx).toBe("./host-clsx");
+});
