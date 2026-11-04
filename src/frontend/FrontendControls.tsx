@@ -26,9 +26,10 @@ import {
   Trash2,
   Undo2,
   Pencil,
+  Plus,
   PanelsTopLeft,
   MoreHorizontal,
-  CloudUpload,
+  LoaderCircle,
   AlertTriangle,
   Check,
   Minus,
@@ -69,11 +70,11 @@ import { NativeFieldsOwner, NativeFieldSlot } from "./field-ownership.js";
 import { InspectionLayer, type InspectionTarget } from "./InspectionLayer.js";
 
 import { Button as ChromeButton } from "./ui/button.js";
+import { ChromeTooltip } from "./ui/tooltip.js";
 import { ChromePortalProvider } from "./ui/portal.js";
 import {
   Select,
   SelectTrigger,
-  SelectValue,
   SelectContent,
   SelectItem,
 } from "./ui/select.js";
@@ -1181,13 +1182,7 @@ export function FrontendControls({
                   }
                 />
               </div>
-              <div className="pve:mt-4 pve:border-0 pve:border-t pve:border-solid pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:pt-3">
-                <label
-                  id="pve-add-section-label"
-                  className="pve:mb-2 pve:block pve:text-xs pve:font-medium"
-                >
-                  {t("Add section", "Abschnitt hinzufügen")}
-                </label>
+              <div className="pve:mt-3">
                 <Select
                   value={null}
                   items={blockChoices.map((b) => ({
@@ -1222,7 +1217,8 @@ export function FrontendControls({
                   }}
                 >
                   <SelectTrigger
-                    aria-labelledby="pve-add-section-label"
+                    iconOnly
+                    aria-label={t("Add section", "Abschnitt hinzufügen")}
                     disabled={
                       disabled ||
                       blockChoices.length === 0 ||
@@ -1230,9 +1226,7 @@ export function FrontendControls({
                         rootRows.length >= field.maxRows)
                     }
                   >
-                    <SelectValue
-                      placeholder={t("Choose a section…", "Abschnitt wählen…")}
-                    />
+                    <Plus size={18} aria-hidden="true" />
                   </SelectTrigger>
                   <SelectContent>
                     {blockChoices.map((b) => (
@@ -1390,7 +1384,7 @@ export function FrontendControls({
           <nav
             ref={dock}
             aria-label="Editing toolbar"
-            className={`pve:pointer-events-auto pve:flex pve:max-w-full pve:items-center pve:gap-1 pve:box-border pve:rounded-2xl pve:border pve:border-solid pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:bg-[var(--pve-surface,var(--theme-elevation-0,#fff))] pve:p-1.5 pve:shadow-[0_4px_24px_#0000001a] pve:[interpolate-size:allow-keywords] pve:motion-safe:transition-[width] pve:motion-safe:duration-200 pve:motion-safe:ease-[cubic-bezier(0.2,0,0,1)] pve:max-sm:gap-0 ${expanded ? "pve:w-max" : "pve:w-auto"}`}
+            className={`pve:pointer-events-auto pve:flex pve:max-w-full pve:items-center pve:gap-1 pve:box-border pve:rounded-2xl pve:border pve:border-solid pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:bg-[var(--pve-surface,var(--theme-elevation-0,#fff))] pve:p-1 pve:shadow-[0_4px_24px_#0000001a] pve:[interpolate-size:allow-keywords] pve:motion-safe:transition-[width] pve:motion-safe:duration-200 pve:motion-safe:ease-[cubic-bezier(0.2,0,0,1)] pve:max-sm:gap-0 ${expanded ? "pve:w-max" : "pve:w-auto"}`}
           >
             {!expanded ? (
               <ChromeButton
@@ -1419,10 +1413,10 @@ export function FrontendControls({
                 {editorTools.tools.includes("content") && (
                   <ChromeButton
                     ref={inspectButton}
-                    className="pve:max-sm:px-2"
+                    size="icon"
                     aria-label={t("Select content", "Inhalte auswählen")}
                     aria-pressed={highlighting && !outline && !hasPanel}
-                    title={t("Select content", "Inhalte auswählen")}
+                    tooltip={t("Select content", "Inhalte auswählen")}
                     onClick={() => {
                       closeTools();
                       setOutline(false);
@@ -1434,39 +1428,28 @@ export function FrontendControls({
                       setSelection(undefined);
                     }}
                   >
-                    <MousePointer2
-                      size={17}
-                      className="pve:hidden pve:sm:block"
-                    />
-                    <span className="pve:sm:hidden">
-                      {t("Select", "Auswählen")}
-                    </span>
-                    <span className="pve:hidden pve:sm:inline">
-                      {t("Select content", "Inhalte auswählen")}
-                    </span>
+                    <MousePointer2 size={18} aria-hidden="true" />
                   </ChromeButton>
                 )}
                 {editorTools.tools.includes("sections") && (
                   <ChromeButton
-                    className="pve:max-sm:px-2"
+                    size="icon"
                     ref={sectionsButton}
                     aria-label={t("Sections", "Abschnitte")}
                     aria-pressed={outline}
-                    title={t("Sections", "Abschnitte")}
+                    tooltip={t("Sections", "Abschnitte")}
                     onClick={() => {
                       closeTools();
                       setSettingsOpen(false);
                       setOutline((v) => !v);
                     }}
                   >
-                    <Layers size={17} className="pve:hidden pve:sm:block" />
-                    <span>{t("Sections", "Abschnitte")}</span>
+                    <Layers size={18} aria-hidden="true" />
                   </ChromeButton>
                 )}
                 <DropdownMenu>
                   <DropdownMenuTrigger
                     ref={toolsButton}
-                    className="pve:max-sm:size-9"
                     aria-label={t("More tools", "Weitere Werkzeuge")}
                     title={t("More tools", "Weitere Werkzeuge")}
                   >
@@ -1538,42 +1521,31 @@ export function FrontendControls({
                   aria-hidden="true"
                   className="pve:mx-1 pve:h-5 pve:w-px pve:shrink-0 pve:bg-[var(--pve-border,var(--theme-border-color,#e3e4e8))]"
                 />
-                <span
-                  role="status"
-                  title={statusText}
-                  className="pve:max-[360px]:sr-only pve:flex pve:items-center pve:gap-1.5 pve:px-1 pve:text-xs pve:whitespace-nowrap pve:text-[var(--pve-muted,var(--theme-elevation-700,#646773))]"
-                >
+                <ChromeTooltip label={statusText}>
                   <span
-                    aria-hidden="true"
-                    className="pve:inline-flex pve:items-center"
+                    role="status"
+                    aria-label={statusText}
+                    tabIndex={0}
+                    data-ve-save-status=""
+                    className="pve:inline-flex pve:size-10 pve:shrink-0 pve:items-center pve:justify-center pve:rounded-lg pve:text-[var(--pve-muted,var(--theme-elevation-700,#646773))] pve:focus-visible:outline-2 pve:focus-visible:outline-[var(--pve-accent,#3451eb)]"
                   >
-                    {recovery.failure ? (
-                      <AlertTriangle size={14} />
-                    ) : processing || background ? (
-                      <CloudUpload size={14} />
-                    ) : modified ? (
-                      <Pencil size={14} />
-                    ) : (
-                      <Check size={14} />
-                    )}
-                  </span>
-                  <span className="pve:sr-only pve:md:not-sr-only pve:md:grid">
-                    {[
-                      t("Unsaved changes", "Ungespeicherte Änderungen"),
-                      t("Confirming save…", "Speichern wird bestätigt…"),
-                    ].map((value) => (
-                      <span
-                        key={value}
-                        aria-hidden="true"
-                        data-width-label={value}
-                        className="pve:invisible pve:col-start-1 pve:row-start-1 pve:after:content-[attr(data-width-label)]"
-                      />
-                    ))}
-                    <span className="pve:col-start-1 pve:row-start-1">
-                      {statusText}
+                    <span aria-hidden="true">
+                      {recovery.failure ? (
+                        <AlertTriangle size={17} />
+                      ) : processing || background ? (
+                        <LoaderCircle
+                          size={17}
+                          className="pve:motion-safe:animate-spin"
+                        />
+                      ) : modified ? (
+                        <Pencil size={17} />
+                      ) : (
+                        <Check size={17} />
+                      )}
                     </span>
+                    <span className="pve:sr-only">{statusText}</span>
                   </span>
-                </span>
+                </ChromeTooltip>
                 {editorTools.tools.includes("publish") &&
                   (info.data?._veRevision !== undefined ? (
                     <ReviewPublishButton compact frontend />
@@ -1582,9 +1554,8 @@ export function FrontendControls({
                   ))}
                 <ChromeButton
                   size="icon"
-                  className="pve:max-sm:hidden!"
                   aria-label={t("Minimize editor", "Editor minimieren")}
-                  title={t("Minimize editor", "Editor minimieren")}
+                  tooltip={t("Minimize editor", "Editor minimieren")}
                   onClick={minimize}
                 >
                   <Minus size={16} />

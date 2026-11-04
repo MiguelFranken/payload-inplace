@@ -1,165 +1,192 @@
 "use client";
-import type { ReactNode } from "react";
+import type { ClientBlock, ClientField } from "payload";
+import {
+  ArrowDown,
+  ArrowRight,
+  ArrowUp,
+  Check,
+  Minus,
+  Plus,
+} from "lucide-react";
+import {
+  documentChanges,
+  reviewText,
+  changedText,
+} from "../state/document-diff.js";
 import { chrome } from "./chrome.js";
 
-const metadata = new Set([
-  "id",
-  "createdAt",
-  "updatedAt",
-  "_status",
-  "_veRevision",
-  "_veReviewToken",
-  "_veActivation",
-]);
-function label(key: string) {
-  return key
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/[_-]/g, " ")
-    .replace(/^./, (c) => c.toUpperCase());
-}
-function equal(a: unknown, b: unknown): boolean {
-  if (a === b) return true;
-  if (!a || !b || typeof a !== "object" || typeof b !== "object") return false;
-  if (Array.isArray(a) !== Array.isArray(b)) return false;
-  const keys = Object.keys(a);
-  return (
-    keys.length === Object.keys(b).length &&
-    keys.every((k) => equal((a as any)[k], (b as any)[k]))
-  );
-}
-function Value({
-  value,
-  empty,
-  depth = 0,
-}: {
-  value: any;
-  empty: string;
-  depth?: number;
-}): ReactNode {
-  if (value === null || value === undefined || value === "")
-    return <span className={chrome.muted}>{empty}</span>;
-  if (typeof value !== "object")
-    return (
-      <span className="pve:whitespace-pre-wrap pve:[overflow-wrap:anywhere]">
-        {String(value)}
-      </span>
-    );
-  // Lexical content is read as text, never injected as HTML. Keep its complete structure available below.
-  if (value.root?.children)
-    return (
-      <Value value={value.root.children} empty={empty} depth={depth + 1} />
-    );
-  if (typeof value.text === "string") return value.text;
-  if (Array.isArray(value))
-    return value.length ? (
-      <ol className="pve:m-0 pve:grid pve:gap-4 pve:ps-5">
-        {value.map((entry, i) => (
-          <li key={i}>
-            <Value value={entry} empty={empty} depth={depth + 1} />
-          </li>
-        ))}
-      </ol>
-    ) : (
-      <span className={chrome.muted}>{empty}</span>
-    );
-  if (Array.isArray(value.children))
-    return <Value value={value.children} empty={empty} depth={depth + 1} />;
-  return (
-    <dl className="pve:m-0 pve:grid pve:gap-3">
-      {Object.entries(value)
-        .filter(([key]) => !["id", "blockName"].includes(key))
-        .map(([key, entry]) => (
-          <div key={key} className="pve:grid pve:gap-1">
-            <dt className={`pve:text-xs ${chrome.muted}`}>{label(key)}</dt>
-            <dd className="pve:m-0">
-              <Value value={entry} empty={empty} depth={depth + 1} />
-            </dd>
-          </div>
-        ))}
-    </dl>
-  );
-}
-
-/** Compares the entire authorized saved document, including fields outside the selected visual root.
- * Native metadata is excluded only at the document level; nested content and stable row identity still affect comparison.
- */
+/** Only changed native leaves and structural operations are shown; unchanged sibling rows never flood the review. */
 export function DocumentReview({
   before,
   after,
   beforeLabel,
   afterLabel,
   de = false,
+  fields = [],
+  blocksMap = {},
 }: {
   before: Record<string, any> | null;
   after: Record<string, any>;
   beforeLabel: string;
   afterLabel: string;
   de?: boolean;
+  fields?: ClientField[];
+  blocksMap?: Record<string, ClientBlock>;
 }) {
-  const keys = [
-    ...new Set([...Object.keys(before || {}), ...Object.keys(after || {})]),
-  ].filter((k) => !metadata.has(k));
-  const changes = keys.filter((key) => !equal(before?.[key], after?.[key]));
-  const empty = de ? "Kein Inhalt" : "No content";
-  return (
-    <div className="pve:grid pve:gap-5">
-      {!changes.length && (
-        <p className={`pve:m-0 pve:text-sm ${chrome.muted}`}>
-          {de
-            ? "Keine inhaltlichen Änderungen gegenüber der veröffentlichten Version."
-            : "No content changes from the published version."}
-        </p>
-      )}
-      {changes.map((key) => (
-        <section
-          key={key}
-          className={`pve:min-w-0 pve:overflow-hidden pve:rounded-lg pve:border pve:border-solid ${chrome.border}`}
+  const changes = documentChanges(
+    before,
+    after,
+    fields,
+    blocksMap,
+    de ? "de" : "en",
+  );
+  const empty = de ? "Leer" : "Empty";
+  if (!changes.length)
+    return (
+      <div className="pve:grid pve:justify-items-center pve:gap-3 pve:py-16 pve:text-center">
+        <Check size={24} aria-hidden="true" />
+        <h3 className="pve:m-0 pve:text-base pve:font-semibold">
+          {de ? "Keine Änderungen" : "No changes"}
+        </h3>
+        <p
+          className={`pve:m-0 pve:max-w-prose pve:text-sm pve:leading-relaxed ${chrome.muted}`}
         >
-          <h3
-            className={`pve:m-0 pve:bg-[var(--theme-elevation-50)] pve:px-5 pve:py-3 pve:text-sm pve:font-semibold ${chrome.border}`}
-          >
-            {label(key)}
-          </h3>
-          <div className="pve:grid pve:min-w-0 pve:gap-6 pve:p-5 pve:md:grid-cols-2">
-            {[
-              [beforeLabel, before?.[key]],
-              [afterLabel, after?.[key]],
-            ].map(([title, value], i) => (
-              <div
-                key={i}
-                className="pve:grid pve:min-w-0 pve:content-start pve:gap-3 pve:text-sm pve:leading-relaxed"
-              >
-                <h4
-                  className={`pve:m-0 pve:text-xs pve:font-medium ${chrome.muted}`}
-                >
-                  {title}
-                </h4>
-                <Value value={value} empty={empty} />
-              </div>
-            ))}
-          </div>
-        </section>
-      ))}
-      <details
-        className={`pve:rounded-lg pve:border pve:border-solid pve:p-5 ${chrome.border}`}
-      >
-        <summary className="pve:cursor-pointer pve:text-sm pve:font-medium">
           {de
-            ? "Gesamten gespeicherten Entwurf anzeigen"
-            : "View complete saved draft"}
-        </summary>
-        <div className="pve:mt-5 pve:grid pve:gap-6">
-          {keys.map((key) => (
-            <section
-              key={key}
-              className="pve:grid pve:gap-3 pve:text-sm pve:leading-relaxed"
-            >
-              <h3 className={chrome.heading}>{label(key)}</h3>
-              <Value value={after[key]} empty={empty} />
-            </section>
-          ))}
-        </div>
-      </details>
+            ? "Dieser Stand stimmt mit der gewählten Vergleichsversion überein."
+            : "This draft matches the selected comparison."}
+        </p>
+      </div>
+    );
+  return (
+    <div className="pve:grid pve:gap-4" data-ve-document-diff="">
+      {changes.map((change) => {
+        const a = reviewText(change.before),
+          b = reviewText(change.after),
+          text = changedText(a, b);
+        const status =
+          change.kind === "added"
+            ? de
+              ? "Hinzugefügt"
+              : "Added"
+            : change.kind === "removed"
+              ? de
+                ? "Entfernt"
+                : "Removed"
+              : change.kind === "moved"
+                ? de
+                  ? "Verschoben"
+                  : "Moved"
+                : de
+                  ? "Geändert"
+                  : "Changed";
+        return (
+          <section
+            key={change.path}
+            data-ve-diff-path={change.path}
+            className={`pve:min-w-0 pve:overflow-hidden pve:rounded-xl pve:border pve:border-solid ${chrome.border}`}
+          >
+            <header className="pve:flex pve:flex-wrap pve:items-center pve:justify-between pve:gap-2 pve:bg-[var(--pve-hover,var(--theme-elevation-50))] pve:px-4 pve:py-3">
+              <h3 className="pve:m-0 pve:flex pve:min-w-0 pve:flex-wrap pve:items-center pve:gap-1 pve:text-sm pve:font-medium pve:leading-relaxed">
+                {change.labels.map((name, index) => (
+                  <span
+                    key={index}
+                    className="pve:inline-flex pve:items-center pve:gap-1"
+                  >
+                    {index > 0 && (
+                      <ArrowRight
+                        size={12}
+                        aria-hidden="true"
+                        className={chrome.muted}
+                      />
+                    )}
+                    {name}
+                  </span>
+                ))}
+              </h3>
+              <span
+                className={`pve:inline-flex pve:items-center pve:gap-1 pve:text-xs ${chrome.muted}`}
+              >
+                {change.kind === "added" ? (
+                  <Plus size={13} />
+                ) : change.kind === "removed" ? (
+                  <Minus size={13} />
+                ) : change.kind === "moved" ? (
+                  <ArrowDown size={13} />
+                ) : null}
+                {status}
+              </span>
+            </header>
+            {change.kind === "moved" ? (
+              <p className="pve:m-0 pve:flex pve:items-center pve:gap-3 pve:p-4 pve:text-sm">
+                <ArrowUp size={16} aria-hidden="true" />
+                {de
+                  ? `Position ${change.from} → ${change.to}`
+                  : `Position ${change.from} → ${change.to}`}
+              </p>
+            ) : (
+              <div className="pve:grid pve:min-w-0 pve:md:grid-cols-2">
+                <div className="pve:min-w-0 pve:p-4">
+                  <h4
+                    className={`pve:mb-3 pve:mt-0 pve:flex pve:items-center pve:gap-1.5 pve:text-xs pve:font-medium ${chrome.muted}`}
+                  >
+                    <Minus size={13} aria-hidden="true" />
+                    {beforeLabel}
+                  </h4>
+                  <p className="pve:m-0 pve:whitespace-pre-wrap pve:text-sm pve:leading-relaxed pve:[overflow-wrap:anywhere]">
+                    {a ? (
+                      <>
+                        {text.prefix}
+                        {text.removed && (
+                          <del className="pve:rounded-sm pve:bg-[var(--pve-diff-removed-bg,#fef2f2)] pve:text-[var(--pve-diff-removed-text,#912018)]">
+                            {text.removed}
+                          </del>
+                        )}
+                        {text.suffix}
+                      </>
+                    ) : (
+                      <span className={chrome.muted}>{empty}</span>
+                    )}
+                  </p>
+                </div>
+                <div
+                  className={`pve:min-w-0 pve:border-0 pve:border-t pve:border-solid pve:p-4 pve:md:border-l pve:md:border-t-0 ${chrome.border}`}
+                >
+                  <h4
+                    className={`pve:mb-3 pve:mt-0 pve:flex pve:items-center pve:gap-1.5 pve:text-xs pve:font-medium ${chrome.muted}`}
+                  >
+                    <Plus size={13} aria-hidden="true" />
+                    {afterLabel}
+                  </h4>
+                  <p className="pve:m-0 pve:whitespace-pre-wrap pve:text-sm pve:leading-relaxed pve:[overflow-wrap:anywhere]">
+                    {b ? (
+                      <>
+                        {text.prefix}
+                        {text.added && (
+                          <ins className="pve:rounded-sm pve:bg-[var(--pve-diff-added-bg,#ecfdf3)] pve:text-[var(--pve-diff-added-text,#067647)] pve:no-underline">
+                            {text.added}
+                          </ins>
+                        )}
+                        {text.suffix}
+                      </>
+                    ) : (
+                      <span className={chrome.muted}>{empty}</span>
+                    )}
+                  </p>
+                  {a === b && (
+                    <p
+                      className={`pve:mb-0 pve:mt-3 pve:text-xs pve:leading-relaxed ${chrome.muted}`}
+                    >
+                      {de
+                        ? "Formatierung oder eingebettete Inhalte geändert."
+                        : "Formatting or embedded content changed."}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+          </section>
+        );
+      })}
     </div>
   );
 }

@@ -227,6 +227,11 @@ export const editorOptions: VisualEditorOptions = {
     {
       id: "check-content",
       kind: "action",
+      confirmation: {
+        title: "Check saved draft",
+        description: "Run the app-defined read-only section check.",
+        confirmLabel: "Run check",
+      },
       label: { en: "Check saved content", de: "Gespeicherte Inhalte prüfen" },
       run: async ({ document, target }) => {
         const rows =

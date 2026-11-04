@@ -8,17 +8,21 @@ export const SelectValue = SelectPrimitive.Value;
 /** Base UI select with shadcn anatomy, consumer tokens and an editor-local portal. */
 export function SelectTrigger({
   children,
+  iconOnly = false,
   ...props
-}: SelectPrimitive.Trigger.Props) {
+}: SelectPrimitive.Trigger.Props & { iconOnly?: boolean }) {
   return (
     <SelectPrimitive.Trigger
       {...props}
-      className="pve:flex pve:h-10 pve:w-full pve:box-border pve:items-center pve:justify-between pve:gap-2 pve:rounded-lg pve:border pve:border-solid pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:bg-[var(--pve-surface,var(--theme-elevation-0,#fff))] pve:px-3 pve:text-sm pve:font-inherit pve:text-inherit pve:outline-none pve:focus-visible:ring-2 pve:focus-visible:ring-[var(--pve-accent,#3451eb)] pve:disabled:opacity-40"
+      data-icon-only={iconOnly || undefined}
+      className="pve:flex pve:h-10 pve:w-full pve:box-border pve:items-center pve:justify-between pve:data-[icon-only=true]:justify-center pve:gap-2 pve:rounded-lg pve:border pve:border-solid pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:bg-[var(--pve-surface,var(--theme-elevation-0,#fff))] pve:px-3 pve:text-sm pve:font-inherit pve:text-inherit pve:outline-none pve:focus-visible:ring-2 pve:focus-visible:ring-[var(--pve-accent,#3451eb)] pve:disabled:opacity-40"
     >
       <span>{children}</span>
-      <SelectPrimitive.Icon>
-        <ChevronDown size={15} />
-      </SelectPrimitive.Icon>
+      {!iconOnly && (
+        <SelectPrimitive.Icon>
+          <ChevronDown size={15} />
+        </SelectPrimitive.Icon>
+      )}
     </SelectPrimitive.Trigger>
   );
 }

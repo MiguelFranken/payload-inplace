@@ -1,16 +1,22 @@
 "use client";
 import { useModal } from "@payloadcms/ui";
-import { useEffect, useRef } from "react";
+import { useEffect, useEffectEvent, useRef } from "react";
 
 /** Observe native modal state rather than DOM close events: Payload closes the latest modal on Escape. */
 export function useModalDismiss(slug: string, onDismiss: () => void) {
   const { modalState } = useModal();
   const opened = useRef(false);
   const open = modalState[slug]?.isOpen;
+  const dismiss = useEffectEvent(onDismiss);
   useEffect(() => {
     if (open) opened.current = true;
-    else if (open === false && opened.current) onDismiss();
-  }, [open, onDismiss]);
+    else if (open === false && opened.current) {
+      // Consume this close edge once. A subsequent render/request must not dismiss
+      // the next dialog against the previous closed native modal state.
+      opened.current = false;
+      dismiss();
+    }
+  }, [open]);
 }
 
 /** Payload 3.91's selected-upload and select controls omit some accessible names.

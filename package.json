@@ -1,6 +1,6 @@
 {
   "name": "@miguel.franken/payload-visual-editor",
-  "version": "0.1.0-alpha.15",
+  "version": "0.0.1",
   "description": "Native-form visual composition for existing Payload CMS block schemas.",
   "type": "module",
   "license": "MIT",
@@ -109,7 +109,9 @@
     "test:postgres": "node scripts/postgres-test.mjs",
     "build:css": "tailwindcss -i src/admin/tailwind.css -o src/admin/styles.css --minify && tailwindcss -i src/preview/tailwind.css -o src/preview/styles.css --minify && tailwindcss -i dev/tailwind.css -o dev/styles.css --minify && tailwindcss -i dev/protected.tailwind.css -o dev/protected.styles.css --minify && tailwindcss -i src/launcher/tailwind.css -o src/launcher/styles.css --minify && tailwindcss -i src/frontend/inline.tailwind.css -o src/frontend/inline.styles.css --minify && node scripts/build-frontend-styles.mjs",
     "test:installed-consumer": "node scripts/test-installed-consumer.mjs",
-    "release:prepare": "node scripts/prepare-release.mjs"
+    "release:prepare": "node scripts/prepare-release.mjs",
+    "changeset": "changeset",
+    "version:packages": "changeset version"
   },
   "peerDependencies": {
     "@payloadcms/db-postgres": "3.91.0",
@@ -121,6 +123,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",
+    "@changesets/cli": "3.0.3",
     "@payloadcms/db-mongodb": "3.91.0",
     "@payloadcms/db-postgres": "3.91.0",
     "@payloadcms/next": "3.91.0",

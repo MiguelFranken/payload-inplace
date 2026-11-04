@@ -112,7 +112,9 @@ test("installed nested-root native fields, optimistic draft and reviewed publish
     await expect(rich).toBeVisible();
     await rich.fill("Native rich text in the installed app");
     await rich.press("Tab");
-    await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Draft saved", exact: true }),
+    ).toBeVisible();
     await expect(
       page
         .getByText("Native rich text in the installed app", { exact: true })

@@ -91,7 +91,9 @@ test("instant inline edits and appearance survive delayed native saves and newer
     await expect(inline).toHaveText("Instant first edit and newer typing");
     await page.screenshot({ path: "test-results/optimistic-save-pending.png" });
     release();
-    await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Draft saved", exact: true }),
+    ).toBeVisible();
     await expect(inline).toBeFocused();
     await expect(inline).toHaveText("Instant first edit and newer typing");
     await page
@@ -118,7 +120,9 @@ test("instant inline edits and appearance survive delayed native saves and newer
       "background-color",
       "lab(2.75381 0 0)",
     );
-    await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Draft saved", exact: true }),
+    ).toBeVisible();
     const saved = await (
       await page.request.get(`/api/pages/${doc.id}?draft=true&depth=0`)
     ).json();
@@ -161,14 +165,18 @@ test("failed native save retains optimistic text and offers explicit recovery", 
   await expect(
     page.getByRole("button", { name: "Download working copy" }),
   ).toBeVisible();
-  await expect(page.getByText("Draft saved", { exact: true })).toHaveCount(0);
+  await expect(
+    page.getByRole("status", { name: "Draft saved", exact: true }),
+  ).toHaveCount(0);
   const saved = await (
     await page.request.get(`/api/pages/${doc.id}?draft=true&depth=0`)
   ).json();
   expect(saved.layout[0].heading).toBe("Immediate heading");
   await page.unroute(`**/api/pages/${doc.id}?*`);
   await page.getByRole("button", { name: "Retry saving", exact: true }).click();
-  await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("status", { name: "Draft saved", exact: true }),
+  ).toBeVisible();
   await expect
     .poll(
       async () =>
@@ -219,7 +227,9 @@ test("multiple fields edited during a pending save survive and unchanged server 
       .getByRole("textbox", { name: /^Title/ })
       .fill("  Canonical normalized title  ");
     release();
-    await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Draft saved", exact: true }),
+    ).toBeVisible();
     await expect(details.getByRole("textbox", { name: /^Title/ })).toHaveValue(
       "Canonical normalized title",
     );
@@ -292,7 +302,7 @@ for (const outcome of ["unavailable", "denied"] as const)
         ),
       ).toBeVisible();
       await expect(
-        page.getByText("Draft saved", { exact: true }),
+        page.getByRole("status", { name: "Draft saved", exact: true }),
       ).toBeVisible();
       const before = writes;
       await page
@@ -466,7 +476,9 @@ test("sections drag on list and page keeps native order, undo, policy and keyboa
   await expect(rows.nth(1)).toHaveAttribute("data-ve-drop-target", "true");
   await page.mouse.up();
   await expect.poll(order).toEqual([before[0], before[2], before[1]]);
-  await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("status", { name: "Draft saved", exact: true }),
+  ).toBeVisible();
   expect(
     (
       await (
@@ -556,7 +568,9 @@ test("sections drag on list and page keeps native order, undo, policy and keyboa
   await page.keyboard.press("ArrowDown");
   await page.keyboard.press("Escape");
   await expect.poll(order).toEqual(before);
-  await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("status", { name: "Draft saved", exact: true }),
+  ).toBeVisible();
   await page
     .getByRole("combobox", { name: "Add section", exact: true })
     .click();
@@ -735,7 +749,9 @@ test("direct editing stays active across text, panels and section navigation", a
     page.getByRole("option", { name: "Text", exact: true }),
   ).toBeVisible();
   await page.keyboard.press("Escape");
-  await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("status", { name: "Draft saved", exact: true }),
+  ).toBeVisible();
   const saved = await (
     await page.request.get(`/api/pages/${doc.id}?draft=true&depth=0`)
   ).json();
@@ -749,7 +765,7 @@ test("direct editing stays active across text, panels and section navigation", a
   await expect(
     page
       .getByRole("navigation", { name: "Editing toolbar" })
-      .getByText("Select", { exact: true }),
+      .getByRole("button", { name: "Select content", exact: true }),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Sections", exact: true }),
@@ -774,7 +790,7 @@ test("direct editing stays active across text, panels and section navigation", a
       settingsSeparate: true,
       invalidAddOptionsHidden: true,
       allThreeFieldsPersisted: true,
-      mobileLabelsVisible: true,
+      mobileIconNamesAccessible: true,
     }),
     contentType: "application/json",
   });
@@ -817,7 +833,9 @@ test("keyboard save keeps the caret and newer text, Escape closes settings witho
     await inline.pressSequentially(" and keep typing");
     release();
     await expect(inline).toBeFocused();
-    await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Draft saved", exact: true }),
+    ).toBeVisible();
     await expect
       .poll(
         async () =>
@@ -1104,6 +1122,10 @@ test("large documents keep native inline input within the active interaction bud
   await page
     .getByRole("button", { name: "Start editing", exact: true })
     .click();
+  // The website heading exists in the server shell before the editor hydrates.
+  await expect(
+    page.getByRole("navigation", { name: "Editing toolbar" }),
+  ).toBeVisible();
   await page
     .getByRole("heading", { name: "Large document heading", exact: true })
     .click();
@@ -1193,7 +1215,9 @@ test("native save errors reveal an unmounted field and retry the same form", asy
   await correction
     .getByRole("button", { name: "Retry saving", exact: true })
     .click();
-  await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("status", { name: "Draft saved", exact: true }),
+  ).toBeVisible();
   await expect(correction).toHaveCount(0);
   await expect(
     page.getByRole("button", { name: "More tools", exact: true }),
@@ -1211,7 +1235,9 @@ test("native custom fields inside named tabs stay editable after background save
   const inline = await selectHeading(page);
   await inline.fill("A saved native heading");
   await page.keyboard.press("ControlOrMeta+s");
-  await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("status", { name: "Draft saved", exact: true }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "More tools", exact: true }).click();
   await page
     .getByRole("menuitem", { name: "Search appearance", exact: true })
@@ -1227,7 +1253,9 @@ test("native custom fields inside named tabs stay editable after background save
   await expect(title).toBeVisible();
   await title.fill("Native named tab title");
   await page.keyboard.press("ControlOrMeta+s");
-  await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("status", { name: "Draft saved", exact: true }),
+  ).toBeVisible();
   await expect(title).toHaveValue("Native named tab title");
   const saved = await page.request.get(
     `/api/pages/${doc.id}?draft=true&depth=0`,
@@ -1497,7 +1525,9 @@ test("the selected field retains its label and tint through a delayed save witho
       ),
     ).toBe(tint);
     release();
-    await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Draft saved", exact: true }),
+    ).toBeVisible();
     await expect(caption).toBeVisible();
     await expect(inline).toBeFocused();
     expect(
@@ -1580,7 +1610,9 @@ test("native field panels resize from the top and left, retain fields and match 
     ),
   ).toBe(true);
   await field.fill("Resize keeps the field mounted");
-  await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("status", { name: "Draft saved", exact: true }),
+  ).toBeVisible();
   await expect(field).toBeFocused();
   await width.focus();
   await width.press("ArrowRight");
@@ -1690,7 +1722,9 @@ test("streamed saved previews keep the native editor mounted throughout structur
         return saved.layout.map((block: { id: string }) => block.id);
       })
       .toEqual([doc.layout[0].id, doc.layout[2].id, doc.layout[1].id]);
-    await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Draft saved", exact: true }),
+    ).toBeVisible();
     await expect
       .poll(async () =>
         Number(
@@ -1710,7 +1744,9 @@ test("streamed saved previews keep the native editor mounted throughout structur
       .click();
     const inline = await selectHeading(page);
     await inline.fill("Streamed inline update");
-    await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Draft saved", exact: true }),
+    ).toBeVisible();
     await page.getByRole("button", { name: "Sections", exact: true }).click();
     await expect
       .poll(async () =>
@@ -1821,4 +1857,311 @@ test("show on page locates fragment blocks without selecting or changing native 
     settings.getByRole("button", { name: "Show section on page", exact: true }),
   ).toBeInViewport();
   await page.screenshot({ path: "test-results/locate-section-320.png" });
+});
+
+test("review and toolbar actions reopen after every dismissal", async ({
+  page,
+}) => {
+  await createEditor(page);
+  const trigger = page.getByRole("button", {
+    name: "Review changes",
+    exact: true,
+  });
+  for (const dismissal of ["button", "escape", "button"]) {
+    await expect(trigger).toBeEnabled();
+    await trigger.click();
+    const review = page.getByRole("dialog", { name: "Document changes" });
+    await expect(review).toBeVisible();
+    if (dismissal === "escape") await review.press("Escape");
+    else
+      await review
+        .getByRole("button", { name: "Close review", exact: true })
+        .click();
+    await expect(review).toHaveCount(0);
+  }
+  for (let pass = 0; pass < 3; pass++) {
+    await page.getByRole("button", { name: "Sections", exact: true }).click();
+    await expect(
+      page.getByRole("complementary", { name: "Sections", exact: true }),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "Close Sections panel", exact: true })
+      .click();
+    await page.getByRole("button", { name: "More tools", exact: true }).click();
+    await expect(
+      page.getByRole("menuitem", { name: "Exit editing", exact: true }),
+    ).toBeVisible();
+    await page
+      .getByRole("menuitem", { name: "Exit editing", exact: true })
+      .press("Escape");
+    await page
+      .getByRole("button", { name: "Minimize editor", exact: true })
+      .click();
+    await page.getByRole("button", { name: "Edit page", exact: true }).click();
+  }
+});
+
+test("typing bursts save once after idle and composition never saves partial input", async ({
+  page,
+}) => {
+  const doc = await createEditor(page);
+  let writes = 0;
+  page.on("request", (request) => {
+    if (
+      request.method() === "PATCH" &&
+      request.url().includes(`/api/pages/${doc.id}?`)
+    )
+      writes++;
+  });
+  const inline = await selectHeading(page);
+  await inline.press("End");
+  await inline.pressSequentially("AB", { delay: 250 });
+  await expect(inline).toHaveText("Immediate headingAB");
+  expect(writes).toBe(0);
+  await expect.poll(() => writes).toBe(1);
+  await expect(
+    page.getByRole("status", { name: "Draft saved", exact: true }),
+  ).toBeVisible();
+  await inline.press("Tab");
+  await page.waitForTimeout(1800);
+  expect(writes).toBe(1);
+  await inline.focus();
+  await inline.dispatchEvent("compositionstart");
+  await inline.fill("Composing text");
+  await page.waitForTimeout(1800);
+  expect(writes).toBe(1);
+  await inline.dispatchEvent("compositionend", { data: "Composing text" });
+  await expect(inline).toHaveText("Composing text");
+  await expect.poll(() => writes).toBe(2);
+  await expect(
+    page.getByRole("status", { name: "Draft saved", exact: true }),
+  ).toBeVisible();
+  await page.waitForTimeout(1800);
+  expect(writes).toBe(2);
+  const saved = await (
+    await page.request.get(`/api/pages/${doc.id}?draft=true&depth=0`)
+  ).json();
+  expect(saved.layout[0].heading).toBe("Composing text");
+});
+
+test("compact dock has delayed accessible tooltips and resizes diagonally with active accent", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await createEditor(page);
+  const dock = page.getByRole("navigation", { name: "Editing toolbar" });
+  expect((await dock.boundingBox())!.width).toBeLessThan(310);
+  const select = dock.getByRole("button", {
+    name: "Select content",
+    exact: true,
+  });
+  await page.mouse.move(1, 1);
+  await select.hover();
+  await page.waitForTimeout(200);
+  await expect(page.getByRole("tooltip")).toHaveCount(0);
+  await expect(
+    page.getByRole("tooltip", { name: "Select content", exact: true }),
+  ).toBeVisible();
+  await page.mouse.move(1, 1);
+  await select.focus();
+  await expect(select).toBeFocused();
+  await select.press("Enter");
+  await page
+    .getByRole("heading", { name: "Immediate heading", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Options for Heading", exact: true })
+    .click();
+  const panel = page.getByRole("complementary", {
+    name: "Edit content",
+    exact: true,
+  });
+  const before = (await panel.boundingBox())!;
+  const corner = panel.getByRole("button", {
+    name: "Resize panel width and height",
+    exact: true,
+  });
+  const box = (await corner.boundingBox())!;
+  await page.mouse.move(box.x + 5, box.y + 5);
+  await page.mouse.down();
+  await page.mouse.move(box.x - 90, box.y - 90, { steps: 8 });
+  await expect(panel).toHaveAttribute("data-resizing", "both");
+  await page.screenshot({ path: "test-results/compact-corner-active.png" });
+  await page.mouse.up();
+  await expect(panel).not.toHaveAttribute("data-resizing", "both");
+  const enlarged = (await panel.boundingBox())!;
+  expect(enlarged.width).toBeGreaterThan(before.width + 80);
+  expect(enlarged.height).toBeGreaterThan(before.height + 80);
+  const active = (await corner.boundingBox())!;
+  await page.mouse.move(active.x + 5, active.y + 5);
+  await page.mouse.down();
+  await page.mouse.move(active.x - 30, active.y - 30);
+  await corner.press("Escape");
+  await page.mouse.up();
+  await expect(panel).toBeVisible();
+  expect((await panel.boundingBox())!.width).toBeCloseTo(enlarged.width, 0);
+  await page.setViewportSize({ width: 320, height: 720 });
+  expect((await dock.boundingBox())!.width).toBeLessThanOrEqual(296);
+  await expect(
+    dock.getByRole("button", { name: "Minimize editor", exact: true }),
+  ).toBeInViewport();
+  await page.screenshot({ path: "test-results/compact-dock-320.png" });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const results = await new AxeBuilder({ page })
+    .include("[data-ve-ui]")
+    .analyze();
+  expect(results.violations).toEqual([]);
+  expect(errors).toEqual([]);
+});
+
+test("review shows only changed fields, preserves the opening baseline and recovers from request failure", async ({
+  page,
+}) => {
+  const doc = await createEditor(
+    page,
+    "pages",
+    "Immediate heading",
+    false,
+    true,
+  );
+  const reviewed = await page.request.post("/api/visual-editor/review", {
+    headers: { Origin: new URL(page.url()).origin },
+    data: {
+      target: { collection: "pages", id: doc.id, root: "layout" },
+      candidate: doc,
+    },
+  });
+  expect(reviewed.ok()).toBeTruthy();
+  const publication = await page.request.patch(`/api/pages/${doc.id}`, {
+    data: {
+      ...doc,
+      _status: "published",
+      _veReviewToken: (await reviewed.json()).token,
+    },
+  });
+  expect(publication.ok()).toBeTruthy();
+  const live = (await publication.json()).doc;
+  const draft = await page.request.patch(`/api/pages/${doc.id}?draft=true`, {
+    data: {
+      _veRevision: live._veRevision,
+      layout: live.layout.map((row: any, index: number) =>
+        index === 0 ? { ...row, caption: "Earlier unpublished change" } : row,
+      ),
+    },
+  });
+  expect(draft.ok()).toBeTruthy();
+  await page.goto(`/visual-editor/start?collection=pages&id=${doc.id}`);
+  await page
+    .getByRole("button", { name: "Start editing", exact: true })
+    .click();
+  const inline = await selectHeading(page);
+  await inline.fill("A focused headline change");
+  await expect(
+    page.getByRole("status", { name: "Draft saved", exact: true }),
+  ).toBeVisible();
+  let fail = true;
+  await page.route("**/api/visual-editor/review", async (route) => {
+    if (fail) {
+      fail = false;
+      await route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({ error: "Synthetic review unavailable" }),
+      });
+    } else await route.continue();
+  });
+  const trigger = page.getByRole("button", {
+    name: "Review changes",
+    exact: true,
+  });
+  await trigger.click();
+  await expect(
+    page.getByRole("alert").filter({ hasText: "Synthetic review unavailable" }),
+  ).toBeVisible();
+  await trigger.click();
+  const review = page.getByRole("dialog", { name: "Document changes" });
+  await expect(review).toBeVisible();
+  await expect(review.locator("[data-ve-diff-path]")).toHaveCount(2);
+  await expect(review.getByText("Keep caption", { exact: true })).toBeVisible();
+  await expect(review.getByText("Retain private", { exact: true })).toHaveCount(
+    0,
+  );
+  await review.getByRole("button", { name: /^Since opening/ }).click();
+  await expect(review.locator("[data-ve-diff-path]")).toHaveCount(1);
+  await expect(
+    review.getByText("Earlier unpublished change", { exact: true }),
+  ).toHaveCount(0);
+  await page.screenshot({ path: "test-results/focused-session-review.png" });
+  await review.getByRole("button", { name: /^Published/ }).click();
+  await page.screenshot({ path: "test-results/focused-published-review.png" });
+  await page.setViewportSize({ width: 320, height: 720 });
+  await expect(
+    review.getByRole("button", { name: "Keep editing", exact: true }),
+  ).toBeInViewport();
+  const audit = await new AxeBuilder({ page })
+    .include("[data-ve-ui]")
+    .analyze();
+  expect(audit.violations).toEqual([]);
+  await page.screenshot({ path: "test-results/focused-review-320.png" });
+  await review
+    .getByRole("button", { name: "Keep editing", exact: true })
+    .click();
+  await expect(trigger).toBeFocused();
+  await page
+    .getByRole("button", { name: "Minimize editor", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Edit page", exact: true }).click();
+  await trigger.click();
+  await review.getByRole("button", { name: /^Since opening/ }).click();
+  await expect(review.locator("[data-ve-diff-path]")).toHaveCount(1);
+  await review
+    .getByRole("button", { name: "Close review", exact: true })
+    .click();
+});
+
+test("confirmed custom actions can cancel, reopen and retry after failure", async ({
+  page,
+}) => {
+  await createEditor(page);
+  await page.getByRole("button", { name: "More tools", exact: true }).click();
+  await page
+    .getByRole("menuitem", { name: "Check saved content", exact: true })
+    .click();
+  const action = page.getByRole("button", {
+    name: "Check saved content",
+    exact: true,
+  });
+  const dialog = page.getByRole("dialog", {
+    name: "Check saved draft",
+    exact: true,
+  });
+  for (let cycle = 0; cycle < 3; cycle++) {
+    await action.click();
+    await expect(dialog).toBeVisible();
+    if (cycle === 1) await dialog.press("Escape");
+    else
+      await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
+    await expect(dialog).toHaveCount(0);
+  }
+  let fail = true;
+  await page.route("**/api/visual-editor/action", async (route) => {
+    if (fail) {
+      fail = false;
+      await route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({ error: "Synthetic action unavailable" }),
+      });
+    } else await route.continue();
+  });
+  await action.click();
+  await dialog.getByRole("button", { name: "Run check", exact: true }).click();
+  await expect(dialog.getByRole("alert")).toBeVisible();
+  await dialog.getByRole("button", { name: "Run check", exact: true }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByText(/3 sections in the saved draft/)).toBeVisible();
+  await action.click();
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
 });

@@ -3,6 +3,7 @@
 import { clsx } from "clsx";
 import { buttonVariants } from "./button.js";
 import { Menu } from "@base-ui/react/menu";
+import { ChromeTooltip } from "./tooltip.js";
 import { useChromePortal } from "./portal.js";
 export const DropdownMenu = Menu.Root;
 /** Menu.Trigger owns button behavior and refs; reuse button styling without nesting a second Base UI button adapter. */
@@ -11,10 +12,13 @@ export function DropdownMenuTrigger({
   ...props
 }: Omit<Menu.Trigger.Props, "className"> & { className?: string }) {
   return (
-    <Menu.Trigger
-      {...props}
-      className={clsx(buttonVariants({ size: "icon" }), className)}
-    />
+    <ChromeTooltip label={String(props["aria-label"] || "More tools")}>
+      <Menu.Trigger
+        {...props}
+        title={undefined}
+        className={clsx(buttonVariants({ size: "icon" }), className)}
+      />
+    </ChromeTooltip>
   );
 }
 /** One keyboard navigable menu contains secondary editor commands. */
