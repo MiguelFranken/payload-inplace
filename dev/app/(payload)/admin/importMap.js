@@ -25,6 +25,7 @@ import { VisualBlocksField as VisualBlocksField_17aa5d2ac5daf310e890be4072c39834
 import { RevisionField as RevisionField_17aa5d2ac5daf310e890be4072c39834 } from 'payload-inplace/client'
 import { ReviewPublishButton as ReviewPublishButton_17aa5d2ac5daf310e890be4072c39834 } from 'payload-inplace/client'
 import { GuardedVersionView as GuardedVersionView_b5aada0cafed6696b2f8bb8fcbd5ff4e } from 'payload-inplace/rsc'
+import { NativeSuspensionProbe as NativeSuspensionProbe_64fc9eb714592c0c597bb8eb4bd4021f } from '../../../components/NativeSuspensionProbe'
 import { NativeSearchTitle as NativeSearchTitle_d92f48d00ffa582f1cd2bddd5ca2344f } from '../../../components/NativeSearchTitle'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 import { DemoPageDetails as DemoPageDetails_743174ed3366105df44127ddc7c174a9 } from '../../../components/DemoPageTools'
@@ -59,6 +60,7 @@ export const importMap = {
   "payload-inplace/client#RevisionField": RevisionField_17aa5d2ac5daf310e890be4072c39834,
   "payload-inplace/client#ReviewPublishButton": ReviewPublishButton_17aa5d2ac5daf310e890be4072c39834,
   "payload-inplace/rsc#GuardedVersionView": GuardedVersionView_b5aada0cafed6696b2f8bb8fcbd5ff4e,
+  "/components/NativeSuspensionProbe#NativeSuspensionProbe": NativeSuspensionProbe_64fc9eb714592c0c597bb8eb4bd4021f,
   "./components/NativeSearchTitle#NativeSearchTitle": NativeSearchTitle_d92f48d00ffa582f1cd2bddd5ca2344f,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1,
   "./components/DemoPageTools#DemoPageDetails": DemoPageDetails_743174ed3366105df44127ddc7c174a9,

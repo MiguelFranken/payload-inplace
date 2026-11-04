@@ -99,8 +99,18 @@
     "injectedLeakRejected": true
   },
   "bootstrap": {
-    "status": "publication pending",
-    "method": "owner authenticated first publication; trusted CI publisher requires the package to exist"
+    "status": "publicly available",
+    "method": "owner authenticated first publication through npm CLI and Firefox passkey; no CI provenance claimed",
+    "registryVersion": "0.0.1",
+    "registryTag": "latest",
+    "anonymousArchiveSHA256": "26f644e351c8c7b125cadf6d19144bb0087ac88582523bd70e841a088c2d8a97",
+    "trustedPublisher": {
+      "configured": true,
+      "repository": "MiguelFranken/payload-inplace",
+      "workflow": "release.yml",
+      "environment": "npm",
+      "oidcReleaseVerified": false
+    }
   },
   "previousReceipt": "2026-11-04-scoped-0.0.1-release.json"
 }

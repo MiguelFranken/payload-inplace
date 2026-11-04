@@ -538,3 +538,81 @@ test("array leaves edit inline and an item opens only its own native fields", as
     page.locator('main [data-ve-field$=".label"]').first(),
   ).toHaveText("Scoped row draft");
 });
+
+test("native field ownership survives a suspended custom field with its media drawer open", async ({
+  page,
+}) => {
+  await login(page);
+  const response = await page.request.post("/api/pages", {
+    data: {
+      title: "Suspense ownership",
+      slug: `owner-suspense-${Date.now()}`,
+      unrelated: "Retain unmounted data",
+      _status: "draft",
+      layout: [
+        {
+          blockType: "hero",
+          heading: "Suspense ownership proof",
+          caption: "Native control continuity",
+        },
+      ],
+    },
+  });
+  expect(response.ok()).toBeTruthy();
+  const doc = (await response.json()).doc;
+  await open(page, "pages", doc.id);
+  const editor = await inspect(page, "Suspense ownership proof");
+  const choose = editor.getByRole("button", {
+    name: "Choose from existing",
+    exact: true,
+  });
+  await choose.evaluate((element: HTMLElement) => {
+    (window as any).__nativeUploadBeforeSuspend = element;
+  });
+  await choose.click();
+  const drawer = page.locator("dialog[open]");
+  await expect(
+    drawer.getByText("studio.png", { exact: true }).first(),
+  ).toBeVisible();
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(
+          () => reject(new Error("Native suspension fixture did not respond")),
+          3000,
+        );
+        window.addEventListener(
+          "pve-test-native-resumed",
+          () => {
+            clearTimeout(timeout);
+            resolve();
+          },
+          { once: true },
+        );
+        window.dispatchEvent(new Event("pve-test-native-suspend"));
+      }),
+  );
+  await expect(
+    drawer.getByText("studio.png", { exact: true }).first(),
+  ).toBeVisible();
+  expect(
+    await choose.evaluate(
+      (element: HTMLElement) =>
+        element === (window as any).__nativeUploadBeforeSuspend,
+    ),
+  ).toBe(true);
+  await drawer
+    .getByRole("button", { name: "Close", exact: true })
+    .last()
+    .click();
+  await expect(drawer).toHaveCount(0);
+  await choose.click();
+  await expect(
+    drawer.getByText("studio.png", { exact: true }).first(),
+  ).toBeVisible();
+  const retained = await (
+    await page.request.get(`/api/pages/${doc.id}?draft=true&depth=0`)
+  ).json();
+  expect(retained._veRevision).toBe(doc._veRevision);
+  expect(retained.unrelated).toBe("Retain unmounted data");
+});

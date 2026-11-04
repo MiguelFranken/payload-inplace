@@ -31,7 +31,21 @@ const blocks: Block[] = [
     labels: { singular: "Hero", plural: "Heroes" },
     fields: [
       { name: "heading", type: "text", required: true },
-      { name: "caption", type: "text" },
+      {
+        name: "caption",
+        type: "text",
+        admin: {
+          components: {
+            beforeInput: [
+              {
+                path: "/components/NativeSuspensionProbe",
+                exportName: "NativeSuspensionProbe",
+                clientProps: { enabled: process.env.VE_TEST_SCHEMA === "1" },
+              },
+            ],
+          },
+        },
+      },
       { name: "image", type: "upload", relationTo: "media" },
       {
         name: "appearance",

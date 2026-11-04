@@ -4,6 +4,7 @@ import {
   use,
   useCallback,
   useId,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -21,6 +22,8 @@ import { useVisualEditor } from "./tools-context.js";
 import { collectSections } from "../schema/tree.js";
 import { resolveRoot } from "../schema/resolve.js";
 import type { ClientBlock, ClientField } from "payload";
+
+import { claimNativeFields } from "../state/field-claims.js";
 
 type Claim = {
   id: string;
@@ -40,20 +43,16 @@ export function FieldOwnershipProvider({ children }: { children: ReactNode }) {
   const [claims, setClaims] = useState<Claim[]>([]);
   const claim = useCallback(
     (candidate: Claim) =>
-      setClaims((current) =>
-        current.some(
-          (owner) =>
-            owner.id === candidate.id ||
-            owner.paths.some((a) => candidate.paths.some((b) => overlap(a, b))),
-        )
-          ? current
-          : [...current, candidate],
-      ),
+      setClaims((current) => claimNativeFields(current, candidate)),
     [],
   );
   const release = useCallback(
     (id: string) =>
-      setClaims((current) => current.filter((claim) => claim.id !== id)),
+      setClaims((current) =>
+        current.some((claim) => claim.id === id)
+          ? current.filter((claim) => claim.id !== id)
+          : current,
+      ),
     [],
   );
   return (
@@ -91,8 +90,11 @@ export function NativeFieldsOwner({
   );
   useLayoutEffect(() => {
     registry.claim({ id, paths: ownedPaths, element, activate });
-    return () => registry.release(id);
   }, [id, ownedPaths, registry.claim, registry.release]);
+  // React cleans up layout effects while a mounted subtree is hidden by Suspense.
+  // Releasing there unmounts the native inputs and orphans their open drawer state.
+  // Passive cleanup runs on actual unmount, preserving this sole owner while hidden.
+  useEffect(() => () => registry.release(id), [id, registry.release]);
   useLayoutEffect(() => {
     if (!owner) registry.claim({ id, paths: ownedPaths, element, activate });
   }, [owner, ownedPaths, id, registry.claim]);
