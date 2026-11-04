@@ -105,6 +105,10 @@ test("installed nested-root native fields, optimistic draft and reviewed publish
       name: "Edit content",
       exact: true,
     });
+    await expect(
+      panel.getByText("Consumer native summary", { exact: true }),
+    ).toBeVisible();
+    await expect(panel.getByText("Release At", { exact: true })).toHaveCount(0);
     await panel.getByLabel("Tone", { exact: true }).click();
     await page.getByText("Quiet", { exact: true }).last().click();
     await expect(panel.getByText("Image", { exact: true })).toBeVisible();
@@ -166,6 +170,35 @@ test("installed nested-root native fields, optimistic draft and reviewed publish
       page.getByRole("spinbutton", { name: "Reading Time", exact: true }),
     ).toHaveValue("13");
     await page.getByRole("button", { name: /^Close .+ panel$/ }).click();
+    await page.locator('[data-ve-field="releaseAt"]').click();
+    await page.getByLabel("Schedule", { exact: true }).fill("2027-01-15T10:30");
+    await expect
+      .poll(async () => (await readStory()).article.sections[0].releaseAt)
+      .toBe("2027-01-15T10:30:00.000Z");
+    await page
+      .getByRole("button", { name: "Native schedule options", exact: true })
+      .click();
+    await expect(panel.getByLabel("Release At", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: /^Close .+ panel$/ }).click();
+    // Native validation is independently enforced on the very same strategy field.
+    const invalid = await page.request.post("/api/stories", {
+      headers: { Origin: process.env.CONSUMER_ORIGIN! },
+      data: {
+        name: "Invalid native strategy",
+        slug: `invalid-${Date.now()}`,
+        _status: "published",
+        article: {
+          sections: [
+            { blockType: "callout", headline: "Invalid", readingTime: 0 },
+          ],
+        },
+      },
+    });
+    expect(invalid.status()).toBe(400);
+    expect(JSON.stringify(await invalid.json())).toMatch(
+      /readingTime|Reading Time/i,
+    );
+    expect((await readStory()).article.sections[0].readingTime).toBe(13);
     // The same structured native value can hand from Payload controls to the lazy
     // inline runtime in an independently installed archive, then publish normally.
     await page.locator('[data-ve-field="body"]').first().click();
@@ -242,5 +275,200 @@ test("installed nested-root native fields, optimistic draft and reviewed publish
     await page.screenshot({ path: "test-results/installed-mobile.png" });
   } finally {
     await anonymous.close().catch(() => {});
+  }
+});
+
+test("installed media adapter uploads, retries and replaces image/video references without editing shared metadata", async ({
+  page,
+  browser,
+}) => {
+  test.skip(
+    process.env.CONSUMER_DISABLED === "1",
+    "Disabled baseline does not mount authoring",
+  );
+  const origin = process.env.CONSUMER_ORIGIN!;
+  const headers = { Origin: origin };
+  expect(
+    (
+      await page.request.post("/api/users/login", {
+        data: {
+          email: "author@consumer.test",
+          password: "synthetic-consumer-password",
+        },
+      })
+    ).ok(),
+  ).toBe(true);
+  const sharp = (await import("sharp")).default;
+  const image = await sharp({
+    create: { width: 32, height: 32, channels: 3, background: "#abc6a9" },
+  })
+    .png()
+    .toBuffer();
+  const original = await page.request.post("/api/assets", {
+    headers,
+    multipart: {
+      _payload: JSON.stringify({ alt: "Keep shared metadata" }),
+      file: { name: "native-image.png", mimeType: "image/png", buffer: image },
+    },
+  });
+  expect(original.ok()).toBe(true);
+  const asset = (await original.json()).doc;
+  // A format-signature fixture proves upload/reference handling only, not media decoding or playback.
+  const video = await page.request.post("/api/assets", {
+    headers,
+    multipart: {
+      _payload: JSON.stringify({ alt: "Native video reference" }),
+      file: {
+        name: "native-video.mp4",
+        mimeType: "video/mp4",
+        buffer: Buffer.from(
+          "00000018667479706d703432000000006d70343269736f6d",
+          "hex",
+        ),
+      },
+    },
+  });
+  expect(video.ok()).toBe(true);
+  const videoAsset = (await video.json()).doc;
+  expect(videoAsset.mimeType).toBe("video/mp4");
+  const slug = `media-proof-${Date.now()}`;
+  const created = await page.request.post("/api/stories", {
+    headers,
+    data: {
+      name: "Media proof",
+      slug,
+      _status: "published",
+      article: {
+        sections: [
+          {
+            blockType: "callout",
+            headline: "Media reference proof",
+            summary: "Native references",
+            image: asset.id,
+            readingTime: 12,
+          },
+        ],
+      },
+    },
+  });
+  expect(created.ok()).toBe(true);
+  const doc = (await created.json()).doc;
+  const read = async () => {
+    const res = await page.request.get(
+      `/api/stories/${doc.id}?draft=true&depth=0`,
+      { headers },
+    );
+    expect(res.ok()).toBe(true);
+    return res.json();
+  };
+  await page.goto(`/stories/${slug}`);
+  await page.getByRole("button", { name: "Edit page", exact: true }).click();
+  await expect(
+    page.getByRole("navigation", { name: "Editing toolbar" }),
+  ).toBeVisible();
+  await page.locator('[data-ve-field="image"]').click();
+  const search = page.getByLabel("Search media", { exact: true });
+  await expect(search).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /native-image.png/ }),
+  ).toHaveAttribute("aria-pressed", "true");
+  const before = (await read())._veRevision;
+  // A real native upload is intercepted once to exercise the public custom adapter's failure contract.
+  let attempts = 0;
+  await page.route("**/api/assets", async (route) => {
+    if (route.request().method() === "POST" && ++attempts === 1)
+      await route.fulfill({
+        status: 503,
+        json: { errors: [{ message: "Synthetic transient upload failure" }] },
+      });
+    else await route.continue();
+  });
+  await page.getByLabel("Upload media", { exact: true }).setInputFiles({
+    name: "retry-image.png",
+    mimeType: "image/png",
+    buffer: image,
+  });
+  await expect(page.getByRole("alert")).toContainText("Upload failed");
+  expect((await read())._veRevision).toBe(before);
+  await page.getByRole("button", { name: "Retry upload", exact: true }).click();
+  await expect
+    .poll(async () => (await read()).article.sections[0].image)
+    .not.toBe(asset.id);
+  expect(attempts).toBe(2);
+  const uploaded = (await read()).article.sections[0].image;
+  await search.fill("native-video");
+  await page.getByRole("button", { name: /native-video.mp4/ }).click();
+  await expect
+    .poll(async () => (await read()).article.sections[0].image)
+    .toBe(videoAsset.id);
+  expect(videoAsset.id).not.toBe(uploaded);
+  // A denied list never clears the currently selected document reference.
+  await page.route("**/api/assets?*", (route) =>
+    route.fulfill({
+      status: 403,
+      json: { errors: [{ message: "Synthetic denied search" }] },
+    }),
+  );
+  await search.fill("denied");
+  await expect(page.getByRole("alert")).toContainText(
+    "Media could not be loaded",
+  );
+  expect((await read()).article.sections[0].image).toBe(videoAsset.id);
+  await page.unroute("**/api/assets?*");
+  await page.getByRole("button", { name: "Retry search", exact: true }).click();
+  await expect(
+    page.getByText("No media found.", { exact: true }),
+  ).toBeVisible();
+  await search.fill("missing");
+  await expect(
+    page.getByText("No media found.", { exact: true }),
+  ).toBeVisible();
+  await search.fill("native-image");
+  const originalButton = page.getByRole("button", { name: /native-image.png/ });
+  await expect(originalButton).toBeVisible();
+  await expect(originalButton.locator("img")).toBeVisible();
+  await page.screenshot({ path: "test-results/installed-media.png" });
+  await page
+    .getByRole("button", { name: "Open native media editor", exact: true })
+    .click();
+  await expect(search).toHaveCount(0);
+  await expect(
+    page
+      .getByRole("complementary", { name: "Edit content", exact: true })
+      .getByText("Image", { exact: true }),
+  ).toBeVisible();
+  const unchanged = await page.request.get(`/api/assets/${asset.id}`, {
+    headers,
+  });
+  expect((await unchanged.json()).alt).toBe("Keep shared metadata");
+  const reader = await browser.newContext();
+  try {
+    const denied = await reader.newPage();
+    expect(
+      (
+        await denied.request.post(`${origin}/api/users/login`, {
+          data: {
+            email: "reader@consumer.test",
+            password: "synthetic-consumer-password",
+          },
+        })
+      ).ok(),
+    ).toBe(true);
+    expect(
+      (
+        await denied.request.post(`${origin}/api/assets`, {
+          headers,
+          multipart: {
+            file: { name: "denied.png", mimeType: "image/png", buffer: image },
+          },
+        })
+      ).status(),
+    ).toBe(403);
+    await denied.goto(`${origin}/stories/${slug}`);
+    await expect(
+      denied.getByRole("button", { name: "Edit page", exact: true }),
+    ).toHaveCount(0);
+  } finally {
+    await reader.close();
   }
 });

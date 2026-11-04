@@ -61,6 +61,39 @@ export function StoryView({
                 {section.readingTime} minutes
               </p>
             )}
+            {section.blockType === "callout" && (
+              <>
+                {section.tone === "quiet" && (
+                  <time
+                    {...getFieldAttributes(
+                      { ...identity, field: "releaseAt" },
+                      active,
+                    )}
+                  >
+                    {section.releaseAt || "Set schedule"}
+                  </time>
+                )}
+                <div
+                  {...getFieldAttributes(
+                    { ...identity, field: "image" },
+                    active,
+                  )}
+                  className="site:mt-4 site:min-h-16 site:rounded site:border site:border-stone-200 site:p-4"
+                >
+                  {section.image?.mimeType?.startsWith("image/") ? (
+                    <img
+                      src={section.image.url}
+                      alt={section.image.alt || ""}
+                      width={160}
+                    />
+                  ) : section.image?.mimeType?.startsWith("video/") ? (
+                    <p>Video reference: {section.image.filename}</p>
+                  ) : (
+                    <p>Choose story media</p>
+                  )}
+                </div>
+              </>
+            )}
             {section.body?.root && (
               <div
                 {...getFieldAttributes({ ...identity, field: "body" }, active)}

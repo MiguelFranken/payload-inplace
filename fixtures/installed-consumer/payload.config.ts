@@ -133,7 +133,23 @@ export default buildConfig({
                   slug: "callout",
                   fields: [
                     { name: "headline", type: "text", required: true },
-                    { name: "summary", type: "textarea" },
+                    {
+                      name: "summary",
+                      type: "textarea",
+                      admin: {
+                        components: {
+                          Field: "./components/SummaryField#SummaryField",
+                        },
+                      },
+                    },
+                    {
+                      name: "releaseAt",
+                      type: "date",
+                      admin: {
+                        condition: (_data, siblings) =>
+                          siblings?.tone === "quiet",
+                      },
+                    },
                     {
                       name: "readingTime",
                       type: "number",

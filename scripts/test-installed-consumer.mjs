@@ -177,7 +177,7 @@ function reports() {
     for (const child of suite.suites || []) visit(child);
   }
   visit(report);
-  if (cases.length !== 4 || resources.length !== 3)
+  if (cases.length !== 5 || resources.length !== 3)
     throw Error("Missing installed consumer cases or public resource evidence");
   return { cases, resources };
 }
@@ -210,11 +210,16 @@ async function check(disabled) {
   if (!ready) throw Error("Installed consumer readiness timed out");
   await run(["exec", "playwright", "test"]);
   const result = { disabled, publicGraph, ...reports() };
-  if (!disabled)
+  if (!disabled) {
+    fs.copyFileSync(
+      path.join(directory, "test-results/installed-media.png"),
+      path.join(repo, "test-results/installed-consumer-media.png"),
+    );
     fs.copyFileSync(
       path.join(directory, "test-results/installed-mobile.png"),
       path.join(repo, "test-results/installed-consumer-mobile.png"),
     );
+  }
   await stopServer();
   return result;
 }
@@ -329,7 +334,9 @@ try {
     JSON.stringify(
       {
         package: {
-          version: JSON.parse(fs.readFileSync("packages/payload-inplace/package.json", "utf8")).version,
+          version: JSON.parse(
+            fs.readFileSync("packages/payload-inplace/package.json", "utf8"),
+          ).version,
           sha256: receipt.sha256,
         },
         packageSourceSHA: receipt.sourceSHA,
