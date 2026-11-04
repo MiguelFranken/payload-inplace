@@ -28,13 +28,13 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
   for (const extension of [
     ...(options.extensions || []),
     ...(options.fieldPanels || []),
+    ...(options.strategyProviders || []),
   ]) {
     if (!/^[a-z][a-z0-9-]{0,63}$/.test(extension.id) || ids.has(extension.id))
       throw new Error("Editor extensions need unique lowercase IDs");
     ids.add(extension.id);
     if (
-      "kind" in extension &&
-      extension.kind === "panel" &&
+      "width" in extension &&
       extension.width !== undefined &&
       (!Number.isFinite(extension.width) ||
         extension.width < 240 ||
@@ -154,8 +154,7 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
           access: { read: ({ req }) => Boolean(req.user) },
           admin: {
             components: {
-              Field:
-                "payload-inplace/client#RevisionField",
+              Field: "payload-inplace/client#RevisionField",
             },
           },
         });
@@ -181,8 +180,7 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
                 edit: {
                   ...collection.admin?.components?.views?.edit,
                   version: {
-                    Component:
-                      "payload-inplace/rsc#GuardedVersionView",
+                    Component: "payload-inplace/rsc#GuardedVersionView",
                   },
                 } as EditConfig,
               },
@@ -237,6 +235,21 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
         ...config.admin,
         dependencies: {
           ...config.admin?.dependencies,
+          ...Object.fromEntries(
+            (options.strategyProviders || []).map((provider) => {
+              const component = provider.Component;
+              if (!component)
+                throw new Error("A strategy provider needs a component");
+              const path =
+                typeof component === "string"
+                  ? component
+                  : `${component.path}#${component.exportName || "default"}`;
+              return [
+                `visual-editor.strategy.${provider.id}`,
+                { type: "component" as const, path },
+              ];
+            }),
+          ),
           ...Object.fromEntries(
             (options.extensions || [])
               .filter(

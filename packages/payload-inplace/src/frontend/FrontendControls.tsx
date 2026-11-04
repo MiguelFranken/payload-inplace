@@ -64,6 +64,7 @@ import {
 } from "../schema/project-fields.js";
 import { CatalogueLauncher as SectionCatalogue } from "./CatalogueLauncher.js";
 import { useTransientPreview } from "./transient-preview.js";
+import { ContextualFieldEditor, useFieldStrategy } from "./field-strategies.js";
 import { InsertionPoints } from "./InsertionPoints.js";
 import { resolveEditorStrategy } from "../schema/editor-strategy.js";
 import { InlineText } from "./InlineText.js";
@@ -705,8 +706,23 @@ export function FrontendControls({
             !selection.element.closest("a,button,input,textarea,select"),
         })
       : { kind: "native" as const };
+  const contextualMatch =
+    candidate && binding && selected && inlinePath
+      ? {
+          field: candidate,
+          path: inlinePath,
+          schemaPath: `${selected.schemaPath}.${binding.schemaPath}`,
+          blockType: selected.block?.slug,
+        }
+      : undefined;
+  const contextual = useFieldStrategy(
+    selection?.edit !== "panel" && !binding?.row ? contextualMatch : undefined,
+    inlineState,
+    !disabled && strategy.kind !== "unavailable",
+  );
   const quickField = candidate;
-  const canInline = strategy.kind === "text" || strategy.kind === "richText";
+  const canInline =
+    !contextual && (strategy.kind === "text" || strategy.kind === "richText");
   const inlinePending = strategy.kind === "pending";
   useEffect(() => {
     if (selection && !canInline && !inlinePending && !disabled)
@@ -1024,15 +1040,34 @@ export function FrontendControls({
                     key={`${panelPath}:${selection?.field || "all"}`}
                     paths={fieldOwnershipPaths(fields, panelPath)}
                   >
-                    <RenderFields
-                      fields={fields}
-                      parentPath={panelPath}
-                      parentSchemaPath={panelSchemaPath}
-                      parentIndexPath=""
-                      permissions={panelPermissions}
-                      readOnly={disabled || scope?.readOnly}
-                      forceRender
-                    />
+                    {contextual && contextualMatch ? (
+                      <ContextualFieldEditor
+                        definition={contextual}
+                        context={contextualMatch}
+                        disabled={disabled}
+                        fallback={
+                          <RenderFields
+                            fields={fields}
+                            parentPath={panelPath}
+                            parentSchemaPath={panelSchemaPath}
+                            parentIndexPath=""
+                            permissions={panelPermissions}
+                            readOnly={disabled || scope?.readOnly}
+                            forceRender
+                          />
+                        }
+                      />
+                    ) : (
+                      <RenderFields
+                        fields={fields}
+                        parentPath={panelPath}
+                        parentSchemaPath={panelSchemaPath}
+                        parentIndexPath=""
+                        permissions={panelPermissions}
+                        readOnly={disabled || scope?.readOnly}
+                        forceRender
+                      />
+                    )}
                   </NativeFieldsOwner>
                 ) : (
                   <p>

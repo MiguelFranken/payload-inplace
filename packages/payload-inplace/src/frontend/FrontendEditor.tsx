@@ -193,6 +193,14 @@ export async function FrontendEditor({
         context.target.collection,
         req.payload.config,
       )}
+      strategyProviders={(options.strategyProviders || []).map((provider) =>
+        RenderServerComponent({
+          Component: provider.Component,
+          importMap,
+          clientProps: {},
+          serverProps: { req, payload: req.payload, user: req.user },
+        }),
+      )}
       catalogue={projectCatalogue(
         options.catalogue,
         field as import("payload").BlocksFieldClientProps["field"],

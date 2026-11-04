@@ -48,6 +48,8 @@ export interface VisualEditorOptions {
   extensions?: EditorExtension[];
   /** Native field panels need no custom React component. Native field ACL remains the write authority. */
   fieldPanels?: EditorFieldPanel[];
+  /** Import-map components that register typed contextual field strategies inside the native Form. */
+  strategyProviders?: {id:string;Component:PayloadComponent}[];
   /** Presentation policy for selected native block fields; it never widens Payload access. */
   blockControls?: Record<string, EditorBlockControls>;
 }

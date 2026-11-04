@@ -292,3 +292,50 @@ test("catalogue search and delayed canvas previews cancel without a native save 
     page.getByRole("navigation", { name: "Editing toolbar" }),
   ).toBeVisible();
 });
+
+test("a consumer scalar strategy saves through native Form and can hand back to the native field", async ({
+  page,
+}) => {
+  const { createShopEditor } = await import("./testing/editor-fixtures");
+  const { doc } = await createShopEditor(page);
+  const select = page.getByRole("button", {
+    name: "Select content",
+    exact: true,
+  });
+  if ((await select.getAttribute("aria-pressed")) !== "true")
+    await select.click();
+  // Consumer-controlled annotation fixture: this real coloured surface addresses one select instead of its whole group.
+  const surface = page.locator('[data-ve-field="promo"]');
+  await surface.evaluate((element) => {
+    element.setAttribute("data-ve-field", "promo.background");
+    element.setAttribute("data-ve-edit", "auto");
+    element.setAttribute("data-test-strategy-surface", "");
+  });
+  const target = page.locator("[data-test-strategy-surface]");
+  await target.scrollIntoViewIfNeeded();
+  await target.click({ position: { x: 8, y: 8 } });
+  const presets = page.getByRole("group", { name: "Background presets" });
+  await expect(presets).toBeVisible();
+  await presets.getByRole("button", { name: "Sand", exact: true }).click();
+  await expect
+    .poll(
+      async () =>
+        (
+          await (
+            await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+          ).json()
+        ).layout.find((block: any) => block.blockType === "productGrid").promo
+          .background,
+    )
+    .toBe("sand");
+  await presets
+    .getByRole("button", { name: "Open native field", exact: true })
+    .click();
+  await expect(presets).toHaveCount(0);
+  await expect(
+    page.getByRole("combobox", { name: "Background", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: "Editing toolbar" }),
+  ).toBeVisible();
+});

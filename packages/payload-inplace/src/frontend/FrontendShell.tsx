@@ -47,10 +47,12 @@ import {
 } from "../state/acknowledgement.js";
 import { PreviewStatusContext } from "./preview-status.js";
 import type { EditorPreviewSnapshot, EditorPreviewResponse } from "../types.js";
+import { FieldStrategiesProvider } from "./field-strategies.js";
 import { TransientPreviewProvider } from "./transient-preview.js";
 import { FrontendControls } from "./FrontendControls.js";
 
 type ShellProps = {
+  strategyProviders?: ReactNode;
   catalogue?: import("../types.js").VisualEditorOptions["catalogue"];
   richTextCapabilities?: import("../adapters/richtext-capabilities.js").RichTextCapabilities;
   blockControls?: import("../types.js").VisualEditorOptions["blockControls"];
@@ -405,30 +407,35 @@ function NativeDocumentForm(
               tools={props.tools}
               extensions={props.extensions}
             >
-              <FieldOwnershipProvider><TransientPreviewProvider capable={Boolean(props.preview)}>
-                {props.preview && props.previewTarget && (
-                  <PreviewPortal
-                    target={props.previewTarget}
-                    ready={props.previewReady}
-                    onReady={props.onPreviewReady}
-                  >
-                    <PreviewBoundary fallback={props.children}>
-                      {props.preview}
-                    </PreviewBoundary>
-                  </PreviewPortal>
-                )}
-                <FrontendControls
-                  context={props.context}
-                  richTextCapabilities={props.richTextCapabilities}
-                  field={props.field}
-                  blockControls={props.blockControls}
-                  catalogue={props.catalogue}
-                  permissions={props.fieldPermissions}
-                  policy={props.policy}
-                  exitURL={props.exitURL}
-                  renderedRevision={props.renderedRevision}
-                />
-              </TransientPreviewProvider></FieldOwnershipProvider>
+              <FieldOwnershipProvider>
+                <FieldStrategiesProvider>
+                  {props.strategyProviders}
+                  <TransientPreviewProvider capable={Boolean(props.preview)}>
+                    {props.preview && props.previewTarget && (
+                      <PreviewPortal
+                        target={props.previewTarget}
+                        ready={props.previewReady}
+                        onReady={props.onPreviewReady}
+                      >
+                        <PreviewBoundary fallback={props.children}>
+                          {props.preview}
+                        </PreviewBoundary>
+                      </PreviewPortal>
+                    )}
+                    <FrontendControls
+                      context={props.context}
+                      richTextCapabilities={props.richTextCapabilities}
+                      field={props.field}
+                      blockControls={props.blockControls}
+                      catalogue={props.catalogue}
+                      permissions={props.fieldPermissions}
+                      policy={props.policy}
+                      exitURL={props.exitURL}
+                      renderedRevision={props.renderedRevision}
+                    />
+                  </TransientPreviewProvider>
+                </FieldStrategiesProvider>
+              </FieldOwnershipProvider>
             </EditorToolsProvider>
           </PreviewStatusContext>
           <NativeAutosaveTrigger />

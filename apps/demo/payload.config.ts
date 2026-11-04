@@ -231,6 +231,12 @@ export const editorOptions: VisualEditorOptions = {
       blockTypes: ["hero"],
     },
   ],
+  strategyProviders: [
+    {
+      id: "commerce-strategies",
+      Component: "./components/CommerceStrategies#CommerceStrategies",
+    },
+  ],
   catalogue: {
     editorial: {
       description: "An image-led story with editable rich text.",
