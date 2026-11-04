@@ -761,13 +761,19 @@ export function FrontendControls({
       binding?.permissionPath || "",
     ) &&
     quickField?.admin?.readOnly !== true;
+  // Payload ADD_ROW first exposes the new row, then asynchronously prepares its
+  // leaf field state. Preserve inline intent across that gap instead of opening
+  // settings, which would claim the field before the inline owner can mount.
+  const inlinePending = inlineEligible && !inlineState;
   useEffect(() => {
-    if (selection && !canInline && !disabled) setSettingsOpen(true);
+    if (selection && !canInline && !inlinePending && !disabled)
+      setSettingsOpen(true);
   }, [
     selection?.element,
     selection?.field,
     selection?.fields,
     canInline,
+    inlinePending,
     disabled,
   ]);
   const grouped = selection?.fields?.map((path) =>

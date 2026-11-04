@@ -365,36 +365,65 @@ test("an empty native layout can add its first section and edit its empty headin
   await page
     .getByRole("button", { name: "Start editing", exact: true })
     .click();
-  await page.getByRole("button", { name: "Sections", exact: true }).click();
-  await page
-    .getByRole("combobox", { name: "Add section", exact: true })
-    .click();
-  await page.getByRole("option", { name: "Hero", exact: true }).click();
-  await expect(
-    page.getByRole("heading", { name: "Add a heading", exact: true }),
-  ).toBeVisible();
-  await page
-    .getByRole("button", { name: "Close Sections panel", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Select content", exact: true })
-    .click();
-  await page
-    .getByRole("heading", { name: "Add a heading", exact: true })
-    .click();
-  await page
-    .locator('main [contenteditable="plaintext-only"]')
-    .fill("First section, created inline");
-  await expect
-    .poll(
-      async () =>
-        (
-          await (
-            await page.request.get(`/api/pages/${doc.id}?draft=true&depth=0`)
-          ).json()
-        ).layout?.[0]?.heading,
-    )
-    .toBe("First section, created inline");
+  let releaseMetadata!: () => void, metadataStarted!: () => void;
+  const metadataHeld = new Promise<void>((resolve) => {
+    releaseMetadata = resolve;
+  });
+  const metadataRequest = new Promise<void>((resolve) => {
+    metadataStarted = resolve;
+  });
+  let held = false;
+  await page.route("**/visual-editor?*", async (route) => {
+    if (
+      !held &&
+      route.request().method() === "POST" &&
+      route.request().postData()?.includes("hero")
+    ) {
+      held = true;
+      metadataStarted();
+      await metadataHeld;
+    }
+    await route.continue();
+  });
+  try {
+    await page.getByRole("button", { name: "Sections", exact: true }).click();
+    await page
+      .getByRole("combobox", { name: "Add section", exact: true })
+      .click();
+    await page.getByRole("option", { name: "Hero", exact: true }).click();
+    await expect(
+      page.getByRole("heading", { name: "Add a heading", exact: true }),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "Close Sections panel", exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "Select content", exact: true })
+      .click();
+    await page
+      .getByRole("heading", { name: "Add a heading", exact: true })
+      .click();
+    await metadataRequest;
+    await expect(
+      page.getByRole("complementary", { name: "Edit content", exact: true }),
+    ).toHaveCount(0);
+    releaseMetadata();
+    await page
+      .locator('main [contenteditable="plaintext-only"]')
+      .fill("First section, created inline");
+    await expect
+      .poll(
+        async () =>
+          (
+            await (
+              await page.request.get(`/api/pages/${doc.id}?draft=true&depth=0`)
+            ).json()
+          ).layout?.[0]?.heading,
+      )
+      .toBe("First section, created inline");
+  } finally {
+    releaseMetadata();
+  }
 });
 
 test("sections drag on list and page keeps native order, undo, policy and keyboard cancellation", async ({
