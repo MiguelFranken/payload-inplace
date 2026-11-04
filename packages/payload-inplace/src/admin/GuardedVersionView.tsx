@@ -1,4 +1,4 @@
-import { useEditorMessages } from "../frontend/messages.js";
+import { createEditorMessages } from "../i18n/messages.js";
 import type { DocumentViewServerProps } from "payload";
 import { GuardedRestore } from "./NativeGuardedRestore.js";
 /** Keep the native restore endpoint while explicitly reviewing the current and historical revision. */
@@ -6,7 +6,7 @@ export async function GuardedVersionView({
   initPageResult,
   routeSegments,
 }: DocumentViewServerProps) {
-  const { t } = useEditorMessages();
+  const { t } = createEditorMessages({}, initPageResult.req.i18n.language);
 
   const { collectionConfig, docID, req } = initPageResult;
   if (!collectionConfig || docID === undefined)
