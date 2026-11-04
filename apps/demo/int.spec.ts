@@ -824,3 +824,268 @@ it("keeps localized native leaves separate while array structure stays shared an
   ).rejects.toThrow("expired");
   expect((await read(enReq)).title).toBe("English page");
 });
+
+it.skipIf(process.env.VE_DATABASE !== "postgres")(
+  "isolates draft globals, rejects stale/cross-document writes and restores through the native draft intent",
+  async () => {
+    const { createContext, signContext } = await import(
+      "../../packages/payload-inplace/src/server/context.js"
+    );
+    const { signDocumentReview } = await import(
+      "../../packages/payload-inplace/src/server/review.js"
+    );
+    const options = (await import("./payload.config.js")).editorOptions;
+    const user = (
+      await payload.find({
+        collection: "users",
+        where: { role: { equals: "admin" } },
+        overrideAccess: true,
+      })
+    ).docs[0];
+    const request = () =>
+      createLocalReq(
+        {
+          user: Object.assign(
+            { ...user, collection: "users" as const },
+            { _sid: "global-fixture" },
+          ),
+          locale: "en",
+          fallbackLocale: false,
+        },
+        payload,
+      );
+    const req = await request();
+    const target = {
+      kind: "global" as const,
+      global: "siteHeader",
+      root: "layout",
+    };
+    const original: any = await payload.findGlobal({
+      slug: "siteHeader",
+      req,
+      overrideAccess: false,
+      draft: true,
+      depth: 0,
+    });
+    const proof = signContext(createContext(req, target), payload.secret);
+    const authenticated = await authorizeTarget(req, target, options);
+    expect(authenticated.layout[0].heading).toBe(original.layout[0].heading);
+    const changed: any = await payload.updateGlobal({
+      slug: "siteHeader",
+      req,
+      overrideAccess: false,
+      draft: true,
+      data: {
+        _veActivation: proof,
+        _veRevision: original._veRevision,
+        _status: "draft",
+        layout: [{ ...original.layout[0], heading: "Private global heading" }],
+      } as any,
+    });
+    expect(changed._veRevision).toBe(original._veRevision + 1);
+    const published: any = await payload.findGlobal({
+      slug: "siteHeader",
+      req,
+      overrideAccess: false,
+      draft: false,
+      depth: 0,
+    });
+    expect(published.layout[0].heading).toBe(original.layout[0].heading);
+    await expect(
+      payload.updateGlobal({
+        slug: "siteHeader",
+        req: await request(),
+        overrideAccess: false,
+        draft: true,
+        data: {
+          _veRevision: original._veRevision,
+          _status: "draft",
+          layout: original.layout,
+        } as any,
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    const foreign = signContext(
+      createContext(req, { collection: "pages", id: 1, root: "layout" }),
+      payload.secret,
+    );
+    await expect(
+      payload.updateGlobal({
+        slug: "siteHeader",
+        req: await request(),
+        overrideAccess: false,
+        draft: true,
+        data: {
+          _veRevision: changed._veRevision,
+          _veActivation: foreign,
+          _status: "draft",
+          layout: original.layout,
+        } as any,
+      }),
+    ).rejects.toMatchObject({ status: 403 });
+    const versions = await payload.findGlobalVersions({
+      slug: "siteHeader",
+      sort: "createdAt",
+      limit: 1,
+      req,
+      overrideAccess: false,
+    });
+    await expect(
+      payload.restoreGlobalVersion({
+        slug: "siteHeader",
+        id: versions.docs[0]!.id,
+        req,
+        overrideAccess: false,
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    const restored: any = await payload.updateGlobal({
+      slug: "siteHeader",
+      req: await request(),
+      overrideAccess: false,
+      draft: true,
+      data: {
+        _veActivation: proof,
+        _veRevision: changed._veRevision,
+        _veRestoreVersion: String(versions.docs[0]!.id),
+        _status: "draft",
+      } as any,
+    });
+    expect(restored._veRevision).toBe(changed._veRevision + 1);
+    expect(restored._status).toBe("draft");
+    expect(restored.layout[0].heading).toBe(original.layout[0].heading);
+    const review = signDocumentReview(
+      req,
+      target,
+      restored._veRevision,
+      restored,
+    );
+    const live: any = await payload.updateGlobal({
+      slug: "siteHeader",
+      req: await request(),
+      overrideAccess: false,
+      data: {
+        ...restored,
+        _status: "published",
+        _veReviewToken: review,
+      } as any,
+    });
+    expect(live._veRevision).toBe(restored._veRevision + 1);
+    expect(live._status).toBe("published");
+    const reader = (
+      await payload.find({
+        collection: "users",
+        where: { role: { equals: "reader" } },
+        overrideAccess: true,
+      })
+    ).docs[0];
+    const denied = await createLocalReq(
+      {
+        user: Object.assign(
+          { ...reader, collection: "users" as const },
+          { _sid: "reader-global" },
+        ),
+      },
+      payload,
+    );
+    await expect(authorizeTarget(denied, target, options)).rejects.toThrow();
+    expect(
+      (
+        await payload.findByID({
+          collection: "pages",
+          id: 1,
+          draft: true,
+          req,
+          overrideAccess: false,
+        })
+      ).layout,
+    ).toBeDefined();
+  },
+);
+
+it.runIf(process.env.VE_DATABASE === "postgres")(
+  "serializes global writers and leases without conflating collection identities",
+  async () => {
+    const { createContext, signContext } = await import(
+      "../../packages/payload-inplace/src/server/context.js"
+    );
+    const { manageAdvisoryLock } = await import(
+      "../../packages/payload-inplace/src/server/advisory-lock.js"
+    );
+    const options = (await import("./payload.config.js")).editorOptions;
+    const users = (
+      await payload.find({ collection: "users", overrideAccess: true })
+    ).docs;
+    const makeReq = (role: string) =>
+      createLocalReq(
+        {
+          user: Object.assign(
+            {
+              ...users.find((user) => user.role === role)!,
+              collection: "users" as const,
+            },
+            { _sid: `global-race-${role}` },
+          ),
+          locale: "en",
+          fallbackLocale: false,
+        },
+        payload,
+      );
+    const target = {
+      kind: "global" as const,
+      global: "siteHeader",
+      root: "layout",
+    };
+    const read = async () =>
+      payload.findGlobal({
+        slug: "siteHeader",
+        req: await makeReq("admin"),
+        overrideAccess: false,
+        draft: true,
+        depth: 0,
+      }) as Promise<any>;
+    for (const second of ["admin", "editor"]) {
+      const base = await read();
+      const writes = await Promise.allSettled(
+        ["admin", second].map(async (role, index) =>
+          payload.updateGlobal({
+            slug: "siteHeader",
+            req: await makeReq(role),
+            overrideAccess: false,
+            draft: true,
+            data: {
+              _status: "draft",
+              _veRevision: base._veRevision,
+              layout: [{ ...base.layout[0], heading: `Race ${index}` }],
+            } as any,
+          }),
+        ),
+      );
+      expect(
+        writes.filter((result) => result.status === "fulfilled"),
+      ).toHaveLength(1);
+      expect(
+        writes.find((result) => result.status === "rejected"),
+      ).toMatchObject({ reason: { status: 409 } });
+      expect((await read())._veRevision).toBe(base._veRevision + 1);
+    }
+    const a = await makeReq("admin"),
+      b = await makeReq("editor");
+    const proofA = signContext(createContext(a, target), payload.secret),
+      proofB = signContext(createContext(b, target), payload.secret);
+    const owned = await manageAdvisoryLock(a, proofA, options, "acquire");
+    expect(owned.status).toBe("owned");
+    expect(
+      (await manageAdvisoryLock(b, proofB, options, "acquire")).status,
+    ).toBe("other");
+    const row = await payload.find({
+      collection: "payload-locked-documents",
+      where: { globalSlug: { equals: "siteHeader" } },
+      overrideAccess: true,
+    });
+    expect(row.docs).toHaveLength(1);
+    expect(row.docs[0]!.document == null).toBe(true);
+    await manageAdvisoryLock(a, proofA, options, "release", owned.lease);
+    const next = await manageAdvisoryLock(b, proofB, options, "acquire");
+    expect(next.status).toBe("owned");
+    await manageAdvisoryLock(b, proofB, options, "release", next.lease);
+  },
+);

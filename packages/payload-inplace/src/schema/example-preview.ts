@@ -71,12 +71,10 @@ export function previewExample(
         id,
       );
     else if (field.type === "array" && Array.isArray(value))
-      result[field.name] = value
-        .slice(0, field.maxRows ?? 100)
-        .map((row) => ({
-          ...previewExample(field.fields, row, children(own), blocksMap, id),
-          id: id(),
-        }));
+      result[field.name] = value.slice(0, field.maxRows ?? 100).map((row) => ({
+        ...previewExample(field.fields, row, children(own), blocksMap, id),
+        id: id(),
+      }));
     else if (field.type === "blocks" && Array.isArray(value))
       result[field.name] = value.flatMap((row) => {
         if (

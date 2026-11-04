@@ -75,6 +75,7 @@ export function InspectionLayer({
   onPick,
   describe,
   hint,
+  accept,
 }: {
   inspecting: boolean;
   /** Hover feedback is opt-in; direct text selection can remain enabled independently. */
@@ -83,10 +84,15 @@ export function InspectionLayer({
   onPick: (target: InspectionTarget) => void;
   describe: (target: InspectionTarget) => string;
   hint?: (target: InspectionTarget) => string;
+  accept?: (target: InspectionTarget) => boolean;
 }) {
   const hover = useRef<HTMLDivElement>(null),
     caption = useRef<HTMLSpanElement>(null),
     hoverTarget = useRef<InspectionTarget | undefined>(undefined);
+  const read = useEffectEvent((element: Element | null) => {
+    const target = readTarget(element);
+    return target && (!accept || accept(target)) ? target : undefined;
+  });
   // Native form/save renders change callbacks, not the pointer or selected target.
   const currentSelection = useEffectEvent(() => selected);
   const label = useEffectEvent(
@@ -162,7 +168,7 @@ export function InspectionLayer({
         leave();
         return;
       }
-      const target = readTarget(
+      const target = read(
         event.target instanceof Element ? event.target : null,
       );
       if (hoverTarget.current?.element === target?.element) return;
@@ -177,7 +183,7 @@ export function InspectionLayer({
       )
         return;
       if (!inspecting) return;
-      const target = readTarget(
+      const target = read(
         event.target instanceof Element ? event.target : null,
       );
       if (!target) return;

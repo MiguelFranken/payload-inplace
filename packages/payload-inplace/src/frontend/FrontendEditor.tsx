@@ -1,8 +1,16 @@
+import { availablePageScopes } from "../server/scopes.js";
+import { nativeDocumentConfig } from "../server/document.js";
+import {
+  nativeDocumentArgs,
+  targetSlug,
+  targetPolicy,
+} from "../state/document-target.js";
 import { createEditorMessages } from "../i18n/messages.js";
 import type { ImportMap, PayloadRequest, ServerFunctionClient } from "payload";
 import {
   createClientConfig,
   docAccessOperation,
+  docAccessOperationGlobal,
   getAccessResults,
 } from "payload";
 import { buildFormState } from "@payloadcms/ui/utilities/buildFormState";
@@ -53,7 +61,11 @@ export async function FrontendEditor({
   exitURL: string;
   theme?: "light" | "dark";
 }) {
-  const { context, document } = await readEditContext(req, token, options);
+  const { context, document, pageDocument } = await readEditContext(
+    req,
+    token,
+    options,
+  );
   req = withFrontendImportMap(req, importMap);
   const uiLanguage = createEditorMessages(options.ui, req.i18n.language).locale;
   const available = await resolveTools(options, {
@@ -118,22 +130,35 @@ export async function FrontendEditor({
       ),
     })),
   );
-  const collection =
-    req.payload.collections[
-      context.target.collection as keyof typeof req.payload.collections
-    ];
-  const docPermissions = await docAccessOperation({
-    id: context.target.id,
-    collection,
-    data: { ...document, _status: "draft" },
-    req,
-  });
-  const publication = await docAccessOperation({
-    id: context.target.id,
-    collection,
-    data: { ...document, _status: "published" },
-    req,
-  });
+  const entity = nativeDocumentConfig(req, context.target);
+  const docPermissions =
+    context.target.kind === "global"
+      ? await docAccessOperationGlobal({
+          globalConfig: entity as import("payload").SanitizedGlobalConfig,
+          data: { ...document, _status: "draft" },
+          req,
+        })
+      : await docAccessOperation({
+          id: context.target.id,
+          collection:
+            req.payload.collections[context.target.collection as never],
+          data: { ...document, _status: "draft" },
+          req,
+        });
+  const publication =
+    context.target.kind === "global"
+      ? await docAccessOperationGlobal({
+          globalConfig: entity as import("payload").SanitizedGlobalConfig,
+          data: { ...document, _status: "published" },
+          req,
+        })
+      : await docAccessOperation({
+          id: context.target.id,
+          collection:
+            req.payload.collections[context.target.collection as never],
+          data: { ...document, _status: "published" },
+          req,
+        });
   const permissions = await getAccessResults({ req });
   // Payload's getClientConfig cache is keyed only by language. A frontend projection must not
   // reuse or replace an admin request's component graph; build this explicitly authorized projection locally.
@@ -156,23 +181,25 @@ export async function FrontendEditor({
       theme,
     },
   };
-  const clientCollection = clientConfig.collections.find(
-    (c) => c.slug === context.target.collection,
-  )!;
+  const clientCollection =
+    context.target.kind === "global"
+      ? clientConfig.globals.find((g) => g.slug === targetSlug(context.target))!
+      : clientConfig.collections.find(
+          (c) => c.slug === targetSlug(context.target),
+        )!;
   const field = resolveRoot(
     clientCollection.fields as any,
     context.target.root,
   );
   const { state } = await buildFormState({
-    id: context.target.id,
-    collectionSlug: context.target.collection,
+    ...(nativeDocumentArgs(context.target) as any),
     data: document,
     docPermissions,
     docPreferences: { fields: {} },
     operation: "update",
     renderAllFields: true,
     req,
-    schemaPath: context.target.collection,
+    schemaPath: targetSlug(context.target),
     skipValidation: true,
     user: req.user!,
   });
@@ -182,10 +209,15 @@ export async function FrontendEditor({
     <FrontendShell
       key={JSON.stringify([context.target, context.locale, context.nonce])}
       ui={options.ui}
+      pageScopes={await availablePageScopes(
+        req,
+        context,
+        pageDocument,
+        options,
+      )}
       sharedStructure={Boolean(
         req.payload.config.localization &&
-          !resolveRootScope(collection.config.fields, context.target.root)
-            .localized,
+          !resolveRootScope(entity.fields, context.target.root).localized,
       )}
       context={{
         target: context.target,
@@ -195,8 +227,8 @@ export async function FrontendEditor({
         ...(context.pagePath ? { pagePath: context.pagePath } : {}),
       }}
       richTextCapabilities={richTextCapabilities(
-        collection.config.fields,
-        context.target.collection,
+        entity.fields,
+        targetSlug(context.target),
         req.payload.config,
       )}
       strategyProviders={[
@@ -245,9 +277,7 @@ export async function FrontendEditor({
       hasPublishPermission={Boolean(publication.update)}
       statusURL={`${options.editorPath ?? "/visual-editor"}/status?context=${encodeURIComponent(context.nonce)}${context.locale ? `&locale=${encodeURIComponent(context.locale)}` : ""}`}
       exitURL={exitURL}
-      policy={
-        options.policies?.[context.target.collection]?.[context.target.root]
-      }
+      policy={targetPolicy(options, context.target)}
       css={frontendStyles}
       theme={theme}
       rootProps={{

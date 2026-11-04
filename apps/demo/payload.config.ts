@@ -196,9 +196,53 @@ const content = (
   ],
 });
 export const editorOptions: VisualEditorOptions = {
+  globals:
+    process.env.VE_DATABASE === "postgres"
+      ? { siteHeader: { roots: ["layout"] } }
+      : undefined,
+  pageScopes: ({ target, document, pagePath }) => {
+    if (
+      target.kind === "global" ||
+      target.collection !== "pages" ||
+      !String(document.slug).startsWith("scope-") ||
+      pagePath !== `/scope-demo/${document.slug}`
+    )
+      return [];
+    const product = /^scope-product:(.+)$/.exec(String(document.unrelated));
+    return [
+      { target, label: "Page content" },
+      ...(product
+        ? [
+            {
+              target: {
+                collection: "products",
+                id: product[1]!,
+                root: "presentation.layout",
+              },
+              label: "Featured product",
+            },
+          ]
+        : []),
+      {
+        target: {
+          kind: "global" as const,
+          global: "siteHeader",
+          root: "layout",
+        },
+        label: "Shared header",
+      },
+    ];
+  },
   resolvePagePath: ({ target, document }) =>
-    commercePath(target.collection, String(document.slug)) ||
-    (document.slug?.startsWith("inplace-")
+    (target.kind !== "global" &&
+    target.collection === "pages" &&
+    String(document.slug).startsWith("scope-")
+      ? `/scope-demo/${document.slug}`
+      : undefined) ||
+    (target.kind === "global"
+      ? undefined
+      : commercePath(target.collection, String(document.slug))) ||
+    (target.kind !== "global" && document.slug?.startsWith("inplace-")
       ? `/${target.collection}/${document.slug}`
       : undefined),
   operationalWrites: {
@@ -211,6 +255,7 @@ export const editorOptions: VisualEditorOptions = {
     {
       id: "search-appearance",
       canUse: ({ target }) =>
+        target.kind !== "global" &&
         ["pages", "offers", "validatedPages"].includes(target.collection),
       label: { en: "Search appearance", de: "Suchdarstellung" },
       fields: ["meta.title", "meta.description"],
@@ -221,7 +266,8 @@ export const editorOptions: VisualEditorOptions = {
       label: "Search appearance",
       scope: "document",
       fields: ["search.title", "search.description"],
-      canUse: ({ target }) => target.collection === "products",
+      canUse: ({ target }) =>
+        target.kind !== "global" && target.collection === "products",
     },
     {
       id: "appearance",
@@ -362,6 +408,53 @@ export default buildConfig({
       importMapFile: path.join(dirname, "app/(payload)/admin/importMap.js"),
     },
   },
+  globals: [
+    {
+      slug: "siteHeader",
+      label: "Shared site header",
+      versions: { drafts: { autosave: { interval: 900 } } },
+      access: {
+        read: ({ req }) => Boolean(req.user),
+        update: editor,
+        readVersions: editor,
+      },
+      fields: [
+        {
+          name: "layout",
+          type: "blocks",
+          blocks: [
+            {
+              slug: "siteHeaderBlock",
+              labels: { singular: "Header", plural: "Headers" },
+              fields: [
+                {
+                  name: "heading",
+                  label: "Brand name",
+                  type: "text",
+                  required: true,
+                },
+                { name: "caption", label: "Announcement", type: "text" },
+                {
+                  name: "items",
+                  label: "Navigation links",
+                  type: "array",
+                  fields: [
+                    { name: "label", type: "text", required: true },
+                    {
+                      name: "note",
+                      label: "URL",
+                      type: "text",
+                      required: true,
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ],
   collections: [
     {
       slug: "users",

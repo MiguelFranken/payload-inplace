@@ -9,6 +9,10 @@ import {
 } from "@payloadcms/ui";
 import type { EditorTarget } from "../../types.js";
 
+import {
+  nativeDocumentMethod,
+  targetDocumentKey,
+} from "../../state/document-target.js";
 import { nativeDraftAction } from "../../adapters/native-request.js";
 /** Manual draft submission delegates to native Form's single-flight guard. */
 export function useNativeDraftSave(target: EditorTarget, disabled: boolean) {
@@ -17,17 +21,14 @@ export function useNativeDraftSave(target: EditorTarget, disabled: boolean) {
     locale = useLocale();
   const modified = useFormModified(),
     background = useFormBackgroundProcessing();
+  const documentScope = targetDocumentKey(target);
   return useCallback(async () => {
     if (disabled || !modified || background) return;
     form.setBackgroundProcessing(true);
     try {
       await form.submit({
-        action: nativeDraftAction(
-          config.routes.api,
-          { collection: target.collection, id: target.id },
-          locale.code,
-        ),
-        method: "PATCH",
+        action: nativeDraftAction(config.routes.api, target, locale.code),
+        method: nativeDocumentMethod(target),
         overrides: { _status: "draft" },
         acceptValues: true,
         disableFormWhileProcessing: false,
@@ -43,8 +44,7 @@ export function useNativeDraftSave(target: EditorTarget, disabled: boolean) {
     background,
     form,
     config.routes.api,
-    target.collection,
-    target.id,
+    documentScope,
     locale.code,
   ]);
 }

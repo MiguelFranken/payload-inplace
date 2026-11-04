@@ -1,4 +1,10 @@
 "use client";
+import {
+  documentReference,
+  targetDocumentKey,
+  targetSlug,
+} from "../state/document-target.js";
+import { useDocumentScopes } from "./document-scope.js";
 import { useEditorMessages } from "./messages.js";
 import { useEditorPageTransition } from "../launcher/EditorPageTransition.js";
 import {
@@ -136,6 +142,7 @@ export function FrontendControls({
   exitURL: string;
   renderedRevision: string | number;
 }) {
+  const documentScopes = useDocumentScopes();
   const transient = useTransientPreview();
   const recovery = useEditorRecovery();
   const advisory = useAdvisoryLock();
@@ -232,7 +239,7 @@ export function FrontendControls({
     rootRows,
   } = useNativeStructure({
     root: context.target.root,
-    collection: context.target.collection,
+    collection: targetSlug(context.target),
     nonce: `${context.nonce}:${historyEpoch}`,
     field,
     permissions,
@@ -258,7 +265,9 @@ export function FrontendControls({
               JSON.stringify(identity.ancestors || []),
         );
       if (!section) return true;
-      const element = sectionElement(section) || document.body;
+      const element =
+        sectionElement(section, documentReference(context.target)) ||
+        document.body;
       pick({
         identity,
         element,
@@ -292,11 +301,10 @@ export function FrontendControls({
     (target: InspectionTarget) => {
       if (
         target.document &&
-        (target.document.kind !== "collection" ||
-          target.document.collection !== context.target.collection ||
-          String(target.document.id) !== String(context.target.id))
+        targetDocumentKey(target.document) !== targetDocumentKey(context.target)
       ) {
-        setError(t("thisContentBelongsToAnotherDocumentEnableThatDocument"));
+        if (!documentScopes.request(target.document, target.identity.root))
+          setError(t("thisContentBelongsToAnotherDocumentEnableThatDocument"));
         return;
       }
       if (target.identity.root !== context.target.root) return;
@@ -309,6 +317,7 @@ export function FrontendControls({
     },
     [
       context.target,
+      documentScopes.request,
       closeTools,
       closeView,
       t,
@@ -398,11 +407,11 @@ export function FrontendControls({
     if (!error && type === "remove") setSelection(undefined);
   }
   function locateSection(section: NativeSection) {
-    if (!showSectionOnPage(section))
+    if (!showSectionOnPage(section, documentReference(context.target)))
       setError(t("thisSectionIsNotVisibleOnThePage"));
   }
   function pickSection(section: NativeSection, settings = false) {
-    const element = sectionElement(section);
+    const element = sectionElement(section, documentReference(context.target));
     if (!element) {
       closeTools();
       setOutline(false);
@@ -410,7 +419,7 @@ export function FrontendControls({
       setSettingsOpen(true);
       return;
     }
-    showSectionOnPage(section);
+    showSectionOnPage(section, documentReference(context.target));
     if (!settings) {
       const profile = blockControls?.[section.block?.slug || ""];
       const fields = section.block
@@ -545,7 +554,7 @@ export function FrontendControls({
     );
     const link = document.createElement("a");
     link.href = url;
-    link.download = `${context.target.collection}-${context.target.id}-working-copy.json`;
+    link.download = `${targetDocumentKey(context.target).replace(/[^a-zA-Z0-9_-]/g, "-")}-working-copy.json`;
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
@@ -591,6 +600,17 @@ export function FrontendControls({
   }, []);
   const describe = useCallback(
     (target: InspectionTarget) => {
+      if (
+        target.document &&
+        targetDocumentKey(target.document) !== targetDocumentKey(context.target)
+      )
+        return (
+          documentScopes.scopes.find(
+            (scope) =>
+              targetDocumentKey(scope.target) ===
+              targetDocumentKey(target.document!),
+          )?.label || t("content")
+        );
       const section = sections.find(
         (s) =>
           s.identity.blockId === target.identity.blockId &&
@@ -624,6 +644,11 @@ export function FrontendControls({
   );
   const describeAction = useCallback(
     (target: InspectionTarget) => {
+      if (
+        target.document &&
+        targetDocumentKey(target.document) !== targetDocumentKey(context.target)
+      )
+        return t("editContent");
       const section = sections.find(
         (section) =>
           section.identity.blockId === target.identity.blockId &&
@@ -904,11 +929,7 @@ export function FrontendControls({
                   )
               : undefined
           }
-          document={{
-            kind: "collection",
-            collection: context.target.collection,
-            id: context.target.id,
-          }}
+          document={documentReference(context.target)}
           root={context.target.root}
           enabled={expanded && !hasPanel && !selection?.field && !disabled}
           options={insertionOptions}
@@ -917,10 +938,21 @@ export function FrontendControls({
         />
         {expanded && (
           <InspectionLayer
-            inspecting={inspecting && !recovery.failure}
+            inspecting={inspecting && !recovery.failure && !form.disabled}
             highlighting={highlighting && !hasPanel}
             selected={hasPanel ? undefined : selection}
             onPick={pick}
+            accept={(target) =>
+              !target.document ||
+              targetDocumentKey(target.document) ===
+                targetDocumentKey(context.target) ||
+              documentScopes.scopes.some(
+                (scope) =>
+                  targetDocumentKey(scope.target) ===
+                    targetDocumentKey(target.document!) &&
+                  scope.target.root === target.identity.root,
+              )
+            }
             describe={describe}
             hint={describeAction}
           />
@@ -973,6 +1005,7 @@ export function FrontendControls({
           )}
         {expanded && outline && (
           <BlockReorder
+            scope={documentReference(context.target)}
             sections={sections}
             getHeading={(section) => sectionHeading(section, form.getFields())}
             disabled={disabled}
@@ -1047,7 +1080,13 @@ export function FrontendControls({
                             path.startsWith(entry.stable + ".")),
                       )
                       .sort((a, b) => b.stable!.length - a.stable!.length)[0];
-                    if (!match || !showSectionOnPage(match.section))
+                    if (
+                      !match ||
+                      !showSectionOnPage(
+                        match.section,
+                        documentReference(context.target),
+                      )
+                    )
                       setError(t("thisChangeIsNotVisibleOnTheCurrentPage"));
                   }}
                 />
@@ -1251,6 +1290,7 @@ export function FrontendControls({
               </p>
               <div className="pve:grid pve:gap-2">
                 <BlockReorder
+                  scope={documentReference(context.target)}
                   sections={sections}
                   getHeading={(section) =>
                     sectionHeading(section, form.getFields())
@@ -1338,12 +1378,34 @@ export function FrontendControls({
           className="pve:fixed pve:right-3 pve:bottom-3 pve:z-80 pve:max-w-[calc(100vw-24px)] pve:sm:right-5 pve:sm:bottom-4"
         >
           {(advisory.status === "other" ||
+            documentScopes.error ||
+            documentScopes.phase !== "idle" ||
             error ||
             (recovery.failure && !validationPath) ||
             serverPreview.error ||
             actionResult) &&
             expanded && (
               <div className="pve:pointer-events-auto pve:mb-2 pve:box-border pve:max-h-[min(50dvh,360px)] pve:overflow-auto pve:overscroll-contain pve:max-w-[min(520px,calc(100vw-24px))] pve:rounded-xl pve:border pve:border-solid pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:bg-[var(--pve-surface,var(--theme-elevation-0,#fff))] pve:p-3 pve:text-sm pve:leading-relaxed pve:shadow-lg">
+                {(documentScopes.error || documentScopes.phase !== "idle") && (
+                  <div
+                    role={documentScopes.error ? "alert" : "status"}
+                    className="pve:mb-2 pve:flex pve:items-center pve:gap-2"
+                  >
+                    <span>
+                      {documentScopes.error
+                        ? t(documentScopes.error)
+                        : documentScopes.phase === "waiting"
+                          ? t("saveBeforeDocumentSwitch")
+                          : t("switchingDocument")}
+                    </span>
+                    {(documentScopes.phase === "waiting" ||
+                      documentScopes.error) && (
+                      <ChromeButton size="sm" onClick={documentScopes.cancel}>
+                        {t("cancel")}
+                      </ChromeButton>
+                    )}
+                  </div>
+                )}
                 {error && (
                   <p role="alert" className="pve:m-0">
                     {error}
@@ -1541,6 +1603,36 @@ export function FrontendControls({
                     <MoreHorizontal size={18} />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
+                    {documentScopes.scopes.length > 1 && (
+                      <>
+                        {documentScopes.scopes.map((scope) => (
+                          <DropdownMenuItem
+                            key={targetDocumentKey(scope.target)}
+                            aria-current={
+                              targetDocumentKey(scope.target) ===
+                              targetDocumentKey(context.target)
+                                ? "true"
+                                : undefined
+                            }
+                            disabled={documentScopes.phase !== "idle"}
+                            onClick={() =>
+                              documentScopes.request(
+                                documentReference(scope.target),
+                              )
+                            }
+                          >
+                            {targetDocumentKey(scope.target) ===
+                            targetDocumentKey(context.target) ? (
+                              <Check size={16} />
+                            ) : (
+                              <PanelsTopLeft size={16} />
+                            )}
+                            <span>{scope.label}</span>
+                          </DropdownMenuItem>
+                        ))}
+                        <DropdownMenuSeparator />
+                      </>
+                    )}
                     {editorTools.extensions
                       .filter((e) => e.showInDock !== false)
                       .map((e) => (

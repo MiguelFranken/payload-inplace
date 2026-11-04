@@ -110,8 +110,12 @@ export interface Config {
     | null
     | ("en" | "de")
     | ("en" | "de")[];
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    siteHeader: SiteHeader;
+  };
+  globalsSelect: {
+    siteHeader: SiteHeaderSelect<false> | SiteHeaderSelect<true>;
+  };
   locale: "en" | "de";
   widgets: {
     collections: CollectionsWidget;
@@ -1377,6 +1381,67 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "siteHeader".
+ */
+export interface SiteHeader {
+  id: number;
+  layout?:
+    | {
+        heading: string;
+        caption?: string | null;
+        items?:
+          | {
+              label: string;
+              note: string;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: "siteHeaderBlock";
+      }[]
+    | null;
+  _veActivation?: string | null;
+  _veRestoreVersion?: string | null;
+  _veRevision?: number | null;
+  _status?: ("draft" | "published") | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "siteHeader_select".
+ */
+export interface SiteHeaderSelect<T extends boolean = true> {
+  layout?:
+    | T
+    | {
+        siteHeaderBlock?:
+          | T
+          | {
+              heading?: T;
+              caption?: T;
+              items?:
+                | T
+                | {
+                    label?: T;
+                    note?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+      };
+  _veActivation?: T;
+  _veRestoreVersion?: T;
+  _veRevision?: T;
+  _status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

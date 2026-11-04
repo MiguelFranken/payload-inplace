@@ -25,22 +25,32 @@ export async function readSavedVersions(
   });
   if (!tools.tools.includes("history"))
     throw new Error("Version history is unavailable");
-  const result = await req.payload.findVersions({
-    collection: context.target.collection as CollectionSlug,
-    where: {
-      and: [
-        { parent: { equals: context.target.id } },
-        ...(versionID ? [{ id: { equals: versionID } }] : []),
-      ],
-    },
+  const query = {
+    ...(versionID ? { where: { id: { equals: versionID } } } : {}),
     limit: versionID ? 1 : 20,
     page,
     sort: "-updatedAt",
     depth: 0,
-    fallbackLocale: false,
+    fallbackLocale: false as const,
     req,
     overrideAccess: false,
-  });
+  };
+  const result =
+    context.target.kind === "global"
+      ? await req.payload.findGlobalVersions({
+          ...query,
+          slug: context.target.global as never,
+        })
+      : await req.payload.findVersions({
+          ...query,
+          collection: context.target.collection as CollectionSlug,
+          where: {
+            and: [
+              { parent: { equals: context.target.id } },
+              ...(versionID ? [{ id: { equals: versionID } }] : []),
+            ],
+          },
+        });
   const docs = result.docs as unknown as VersionRow[];
   return {
     context,
@@ -79,7 +89,8 @@ export async function prepareVersionRestore(
       : version?.parent;
   if (
     !version ||
-    String(parent) !== String(context.target.id) ||
+    (context.target.kind !== "global" &&
+      String(parent) !== String(context.target.id)) ||
     expected !== (document._veRevision ?? 0)
   )
     throw new Error(

@@ -1,6 +1,11 @@
 "use client";
 import type { EditorStaticMessageKey } from "../i18n/catalogue.js";
 import { EditorMessageError, editorErrorKey } from "../i18n/failure.js";
+import {
+  nativeDocumentArgs,
+  targetFromNativeInfo,
+  targetSlug,
+} from "../state/document-target.js";
 import { useEditorMessages } from "./messages.js";
 
 import { Radio } from "@base-ui/react/radio";
@@ -109,14 +114,13 @@ export function ConflictReview({ onApplied }: { onApplied: () => void }) {
       data._veActivation = form.getData()._veActivation;
       data._status = "draft";
       const result = await getFormState({
-        id: info.id,
-        collectionSlug: info.collectionSlug,
+        ...(nativeDocumentArgs(targetFromNativeInfo(info)) as any),
         data,
         docPermissions: info.docPermissions,
         docPreferences: { fields: {} },
         operation: "update",
         renderAllFields: true,
-        schemaPath: info.collectionSlug!,
+        schemaPath: targetSlug(targetFromNativeInfo(info)),
         skipValidation: true,
         signal: request.current?.signal,
       });

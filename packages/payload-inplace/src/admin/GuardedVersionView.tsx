@@ -8,7 +8,43 @@ export async function GuardedVersionView({
 }: DocumentViewServerProps) {
   const { t } = createEditorMessages({}, initPageResult.req.i18n.language);
 
-  const { collectionConfig, docID, req } = initPageResult;
+  const { collectionConfig, globalConfig, docID, req } = initPageResult;
+  if (globalConfig) {
+    const selected = routeSegments.at(-1);
+    if (!selected) return <p>{t("versionUnavailable")}</p>;
+    const versions = await req.payload.findGlobalVersions({
+      slug: globalConfig.slug as never,
+      where: { id: { equals: selected } },
+      limit: 1,
+      depth: 0,
+      req,
+      overrideAccess: false,
+      fallbackLocale: false,
+    });
+    const version = versions.docs[0];
+    if (!version) return <p>{t("versionUnavailable")}</p>;
+    const current = await req.payload.findGlobal({
+      slug: globalConfig.slug as never,
+      draft: true,
+      depth: 0,
+      req,
+      overrideAccess: false,
+      fallbackLocale: false,
+    });
+    return (
+      <GuardedRestore
+        editorPath={
+          globalConfig.admin?.custom?.visualEditorPath as string | undefined
+        }
+        global={globalConfig.slug}
+        root={(globalConfig.admin?.custom?.visualEditorRoots as string[])?.[0]}
+        versionID={String(version.id)}
+        revision={(current as any)._veRevision || 0}
+        current={current}
+        historical={version.version}
+      />
+    );
+  }
   if (!collectionConfig || docID === undefined)
     return <p>{t("versionUnavailable")}</p>;
   const result = await req.payload.findVersions({

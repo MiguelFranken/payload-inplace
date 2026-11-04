@@ -1,3 +1,4 @@
+import { readDemoDocument } from "../../../lib/read-demo-document";
 import { commercePath } from "../../../commerce/paths";
 import { cookies } from "next/headers";
 import { unstable_rethrow } from "next/navigation";
@@ -36,16 +37,7 @@ export async function DocumentEditor({ identifier }: { identifier: string }) {
     "use server";
     try {
       const { req, context } = await authorizedEditor(identifier, true);
-      const document = await req.payload.findByID({
-        collection: context.target.collection as any,
-        id: context.target.id,
-        draft: true,
-        depth: ["shops", "products"].includes(context.target.collection)
-          ? 3
-          : 1,
-        req,
-        overrideAccess: false,
-      });
+      const document = await readDemoDocument(req, context.target);
       return {
         revision: document._veRevision ?? document.updatedAt,
         content: (
@@ -71,15 +63,7 @@ export async function DocumentEditor({ identifier }: { identifier: string }) {
       };
     }
   };
-  const document = await req.payload.findByID({
-    collection: context.target.collection as any,
-    id: context.target.id,
-    draft: true,
-    fallbackLocale: false,
-    depth: ["shops", "products"].includes(context.target.collection) ? 3 : 1,
-    req,
-    overrideAccess: false,
-  });
+  const document = await readDemoDocument(req, context.target);
   const demoUILocale =
     process.env.VE_TEST_SCHEMA === "1"
       ? (await cookies()).get("demo-editor-ui")?.value
@@ -126,8 +110,10 @@ export async function DocumentEditor({ identifier }: { identifier: string }) {
         />
       }
       exitURL={
-        commercePath(context.target.collection, String(document.slug)) ||
-        `/${context.target.collection}/${document.slug}`
+        context.target.kind === "global"
+          ? "/shop"
+          : commercePath(context.target.collection, String(document.slug)) ||
+            `/${context.target.collection}/${document.slug}`
       }
     >
       <RenderPage document={document} root={context.target.root} active />

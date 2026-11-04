@@ -1,3 +1,8 @@
+import type { EditorDocument } from "../types.js";
+import {
+  documentReference,
+  targetDocumentKey,
+} from "../state/document-target.js";
 import { contentLocale } from "./content-locale.js";
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import type { PayloadRequest } from "payload";
@@ -90,18 +95,16 @@ function mac(value: string, secret: string) {
   return createHmac("sha256", secret).update(value).digest("base64url");
 }
 /** Sign the exact saved revision and submitted native snapshot after displaying document-wide review. */
-export function signReview(
+export function signDocumentReview(
   req: PayloadRequest,
-  collection: string,
-  id: string | number,
+  target: EditorDocument,
   revision: number,
   candidate: Record<string, unknown>,
 ): string {
   const value = Buffer.from(
     JSON.stringify({
-      collection,
+      document: documentReference(target),
       locale: contentLocale(req),
-      id: String(id),
       revision,
       hash: contentHash(candidate),
       user: `${req.user?.collection}:${req.user?.id}`,
@@ -112,11 +115,10 @@ export function signReview(
   return `${value}.${mac(value, req.payload.secret)}`;
 }
 /** The native write authority verifies both saved revision and unchanged reviewed form input. */
-export function validateReview(
+export function validateDocumentReview(
   req: PayloadRequest,
   token: unknown,
-  collection: string,
-  id: string | number,
+  target: EditorDocument,
   revision: number,
   candidate: Record<string, unknown>,
 ): boolean {
@@ -133,9 +135,8 @@ export function validateReview(
     const review = JSON.parse(Buffer.from(value, "base64url").toString());
     return (
       review.expires > Date.now() &&
-      review.collection === collection &&
+      targetDocumentKey(review.document) === targetDocumentKey(target) &&
       review.locale === contentLocale(req) &&
-      review.id === String(id) &&
       review.revision === revision &&
       review.hash === contentHash(candidate) &&
       review.user === `${req.user?.collection}:${req.user?.id}` &&
@@ -144,4 +145,32 @@ export function validateReview(
   } catch {
     return false;
   }
+}
+
+/** Backward-compatible collection review signer. @see signDocumentReview also supports explicit globals. */
+export function signReview(
+  req: PayloadRequest,
+  collection: string,
+  id: string | number,
+  revision: number,
+  candidate: Record<string, unknown>,
+): string {
+  return signDocumentReview(req, { collection, id }, revision, candidate);
+}
+/** Backward-compatible collection authority; review tokens remain kind/document/locale/revision/content/session-bound. */
+export function validateReview(
+  req: PayloadRequest,
+  token: unknown,
+  collection: string,
+  id: string | number,
+  revision: number,
+  candidate: Record<string, unknown>,
+): boolean {
+  return validateDocumentReview(
+    req,
+    token,
+    { collection, id },
+    revision,
+    candidate,
+  );
 }

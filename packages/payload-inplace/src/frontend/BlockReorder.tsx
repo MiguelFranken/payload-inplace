@@ -1,4 +1,6 @@
 "use client";
+import { findBoundBlock } from "../preview/dom-target.js";
+import type { DocumentReference } from "../../../core/src/document-ref.js";
 import { useEditorMessages } from "./messages.js";
 
 import {
@@ -61,22 +63,15 @@ export function sectionLabel(s: NativeSection) {
     : s.block?.slug || "Unavailable section";
 }
 /** Finds the renderer-owned binding without depending on a framework wrapper or transient array index. */
-export function sectionElement(s: NativeSection) {
-  return [
-    ...document.querySelectorAll<HTMLElement>(
-      "[data-ve-block]:not([data-ve-field])",
-    ),
-  ].find(
-    (e) =>
-      e.getAttribute("data-ve-root") === s.identity.root &&
-      e.getAttribute("data-ve-block") === s.identity.blockId &&
-      e.getAttribute("data-ve-ancestors") ===
-        JSON.stringify(s.identity.ancestors || []),
-  );
+export function sectionElement(s: NativeSection, scope?: DocumentReference) {
+  return findBoundBlock(document, s.identity, scope);
 }
 /** Locate a renderer-owned block, including fragment roots, without selecting fields or mutating the native Form. */
-export function showSectionOnPage(section: NativeSection): boolean {
-  const element = sectionElement(section);
+export function showSectionOnPage(
+  section: NativeSection,
+  scope?: DocumentReference,
+): boolean {
+  const element = sectionElement(section, scope);
   const rect = element && elementRect(element);
   if (!rect) return false;
   const headers = [...document.querySelectorAll("header")].filter((header) => {
@@ -109,6 +104,7 @@ export function showSectionOnPage(section: NativeSection): boolean {
 }
 /** Both surfaces dispatch exactly one native identity-based move on drop. Drag state never changes document data. */
 export function BlockReorder({
+  scope,
   sections,
   disabled,
   canvas = false,
@@ -119,6 +115,7 @@ export function BlockReorder({
   lockedReason,
   getHeading,
 }: {
+  scope?: DocumentReference;
   sections: NativeSection[];
   getHeading: (section: NativeSection) => string | undefined;
   disabled: boolean;
@@ -243,6 +240,7 @@ export function BlockReorder({
           <ReorderItem
             key={key(s)}
             section={s}
+            scope={scope}
             heading={getHeading(s)}
             disabled={disabled || s.readOnly}
             lock={lockedReason?.(s)}
@@ -271,6 +269,7 @@ export function BlockReorder({
   );
 }
 function ReorderItem({
+  scope,
   section: s,
   disabled,
   canvas,
@@ -283,6 +282,7 @@ function ReorderItem({
   lock,
   heading,
 }: {
+  scope?: DocumentReference;
   section: NativeSection;
   heading?: string;
   disabled: boolean;
@@ -324,7 +324,7 @@ function ReorderItem({
     if (bar.current) observer.observe(bar.current);
     function draw(timestamp: number) {
       frame = 0;
-      const next = sectionElement(s);
+      const next = sectionElement(s, scope);
       if (next !== element) {
         element = next;
         setNodeRef(element || null);

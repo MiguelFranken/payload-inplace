@@ -1,16 +1,26 @@
 import type { PayloadComponent, PayloadRequest } from "payload";
 
 /** Exact document scope for authoring. Root paths are validated against configured block schemas. */
-export interface EditorTarget {
+export type CollectionEditorDocument = {
+  kind?: "collection";
   collection: string;
   id: string | number;
-  root: string;
-}
+};
+export type GlobalEditorDocument = { kind: "global"; global: string };
+/** Explicit provenance is never authorization; globals require native drafts just like collections. */
+export type EditorDocument = CollectionEditorDocument | GlobalEditorDocument;
+export type EditorTarget = EditorDocument & { root: string };
 /** Serializable identity survives reordering; numeric data paths are resolved immediately before commands. */
 export type { BlockIdentity } from "../../core/src/types.js";
 /** Host permission is additional to native collection/document/field access. Never serialize this callback. */
 export interface VisualEditorOptions {
   collections: Record<string, { roots: string[] }>;
+  /** Opt-in native globals. Non-draft globals are deliberately unsupported. */
+  globals?: Record<string, { roots: string[] }>;
+  globalPolicies?: Record<
+    string,
+    Record<string, import("./state/policy.js").StructuralPolicy>
+  >;
   previewOrigin: string;
   /** Typed UI messages/formatting, independent of native Payload content localization. */
   ui?: import("./i18n/messages.js").EditorUIOptions;
@@ -25,6 +35,10 @@ export interface VisualEditorOptions {
   resolvePagePath?: (
     context: EditorCapabilityContext,
   ) => string | undefined | Promise<string | undefined>;
+  /** Explicit finite page scope catalogue. Every target is independently reauthorized; relationships and annotations never grant access. */
+  pageScopes?: (
+    context: EditorCapabilityContext & { pagePath: string },
+  ) => EditorPageScope[] | Promise<EditorPageScope[]>;
   disabled?: boolean;
   canEdit: (args: {
     req: PayloadRequest;
@@ -58,7 +72,15 @@ export interface VisualEditorOptions {
   blockControls?: Record<string, EditorBlockControls>;
 }
 /** Authenticated activation is short lived and bound to the current Payload session and exact target. */
+export interface EditorPageScope {
+  target: EditorTarget;
+  label: EditorLabel;
+}
 export interface EditContext {
+  /** Server-monotonic page selection hint; it grants no permission and never changes a revision. */
+  activatedAt?: number;
+  /** Original page authority is retained while editing a related document/global. */
+  pageOwner?: EditorTarget;
   /** Exact native content locale authorized at activation, independent of UI language. */
   locale?: string;
   target: EditorTarget;

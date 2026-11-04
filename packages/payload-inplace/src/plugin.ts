@@ -1,3 +1,7 @@
+import { scopeEndpoint } from "./server/scopes.js";
+import { configureGlobals } from "./server/globals.js";
+import { readNativeDocument } from "./server/document.js";
+import { parseEditorTarget } from "./state/document-target.js";
 import { advisoryLockEndpoint } from "./server/advisory-lock.js";
 import { latestDraftEndpoint } from "./server/reconcile.js";
 import { prepareVersionRestore, versionEndpoint } from "./server/versions.js";
@@ -14,10 +18,11 @@ import { resolveTools } from "./server/tools.js";
 import { cloneFields } from "./schema/clone.js";
 import { resolveRoot } from "./schema/resolve.js";
 import { structureError } from "./state/policy.js";
-import { candidateMatches, signReview } from "./server/review.js";
+import { candidateMatches, signDocumentReview } from "./server/review.js";
 import { revisionGuard, assignRevision, REVISION } from "./server/revision.js";
 import {
   authorizeTarget,
+  currentSession,
   createContext,
   signContext,
   verifyContext,
@@ -153,6 +158,7 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
           if (proof && operation === "update") {
             const { context } = await readEditContext(req, proof, options);
             if (
+              context.target.kind === "global" ||
               context.target.collection !== collection.slug ||
               String(context.target.id) !== String((args as any).id)
             )
@@ -269,6 +275,7 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
     return {
       ...config,
       collections,
+      globals: configureGlobals(config.globals || [], options),
       admin: {
         ...config.admin,
         dependencies: {
@@ -315,6 +322,16 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
       },
       endpoints: [
         ...(config.endpoints ?? []),
+        ...(options.pageScopes && !options.disabled
+          ? [
+              {
+                path: "/visual-editor/scope",
+                method: "post" as const,
+                handler: (req: import("payload").PayloadRequest) =>
+                  scopeEndpoint(req, options, trustedOrigins),
+              },
+            ]
+          : []),
         {
           path: "/visual-editor/lock",
           method: "post",
@@ -432,19 +449,19 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
                 .get("content-type")
                 ?.startsWith("application/x-www-form-urlencoded");
               const values = nativeForm ? await req.formData?.() : undefined;
-              const target = nativeForm
+              const rawTarget = nativeForm
                 ? {
-                    collection: values?.get("collection"),
-                    id: values?.get("id"),
+                    ...(values?.get("kind") === "global"
+                      ? { kind: "global", global: values.get("global") }
+                      : {
+                          collection: values?.get("collection"),
+                          id: values?.get("id"),
+                        }),
                     root: values?.get("root"),
                   }
                 : await req.json?.();
-              if (
-                !target ||
-                typeof target.collection !== "string" ||
-                !["string", "number"].includes(typeof target.id) ||
-                typeof target.root !== "string"
-              )
+              const target = parseEditorTarget(rawTarget);
+              if (!target)
                 return Response.json(
                   { error: "Invalid target" },
                   { status: 400, headers },
@@ -551,13 +568,43 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
               readEditorCookie(req, input.nonce),
               req.payload.secret,
             );
-            return new Response(null, {
+            const response = new Response(null, {
               status: 204,
               headers: {
                 ...headers,
                 "Set-Cookie": `payload-ve-${input.nonce}=; HttpOnly; SameSite=Strict; Path=${active?.pagePath ? "/" : editorPath}; Max-Age=0${req.headers.get("origin")?.startsWith("https:") ? "; Secure" : ""}`,
               },
             });
+            if (
+              active?.pagePath &&
+              active.user === `${req.user.collection}:${req.user.id}` &&
+              active.session === currentSession(req)
+            ) {
+              for (const item of (req.headers.get("cookie") || "")
+                .split(";")
+                .slice(0, 64)) {
+                const [name, ...parts] = item.trim().split("=");
+                if (
+                  !/^payload-ve-[a-zA-Z0-9_-]{32}$/.test(name || "") ||
+                  name === `payload-ve-${input.nonce}`
+                )
+                  continue;
+                const other = verifyContext(
+                  parts.join("="),
+                  req.payload.secret,
+                );
+                if (
+                  other?.pagePath === active.pagePath &&
+                  other.user === active.user &&
+                  other.session === active.session
+                )
+                  response.headers.append(
+                    "Set-Cookie",
+                    `${name}=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0${req.headers.get("origin")?.startsWith("https:") ? "; Secure" : ""}`,
+                  );
+              }
+            }
+            return response;
           },
         },
         {
@@ -584,7 +631,9 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
                   { error: "Invalid review" },
                   { status: 400, headers },
                 );
-              const draft = await authorizeTarget(req, input.target, options, {
+              const target = parseEditorTarget(input.target);
+              if (!target) throw Error("Invalid target");
+              const draft = await authorizeTarget(req, target, options, {
                 requireVisualCapability: false,
               });
               if (!candidateMatches(input.candidate, draft))
@@ -594,24 +643,15 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
                 );
               let published = null;
               try {
-                published = await req.payload.findByID({
-                  collection: input.target.collection,
-                  id: input.target.id,
-                  draft: false,
-                  fallbackLocale: false,
-                  depth: 0,
-                  overrideAccess: false,
-                  req,
-                });
+                published = await readNativeDocument(req, target, false);
                 if ((published as any)?._status !== "published")
                   published = null;
               } catch (error) {
                 if ((error as { status?: number }).status !== 404) throw error;
               }
-              const token = signReview(
+              const token = signDocumentReview(
                 req,
-                input.target.collection,
-                input.target.id,
+                target,
                 draft._veRevision ?? 0,
                 input.candidate,
               );

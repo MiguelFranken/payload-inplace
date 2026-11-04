@@ -25,6 +25,10 @@ import {
 } from "lucide-react";
 import { Button } from "./ui/button.js";
 import { DocumentReview } from "../admin/DocumentReview.js";
+import {
+  targetFromNativeInfo,
+  nativeDocumentMethod,
+} from "../state/document-target.js";
 import { nativeDraftAction } from "../adapters/native-request.js";
 import { chrome } from "../admin/chrome.js";
 interface SavedVersion {
@@ -148,10 +152,10 @@ export function VersionBrowser({
       const result = await form.submit({
         action: nativeDraftAction(
           config.routes.api,
-          { collection: info.collectionSlug!, id: info.id! },
+          targetFromNativeInfo(info),
           locale.code,
         ),
-        method: "PATCH",
+        method: nativeDocumentMethod(targetFromNativeInfo(info)),
         overrides: { _status: "draft", _veRestoreVersion: selected },
         acceptValues: true,
         disableFormWhileProcessing: true,

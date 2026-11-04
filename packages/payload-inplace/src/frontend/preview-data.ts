@@ -19,7 +19,7 @@ export function useEditorPreviewData<T extends Record<string, any>>(
 ): T {
   const form = useForm(),
     guard = useInlinePreviewGuard();
-  const transient=useTransientPreview();
+  const transient = useTransientPreview();
   const fields = useFormFields(([fields]) => (guard.active ? null : fields));
   const data = useRef(initialDocument);
   return useMemo(() => {
@@ -28,6 +28,16 @@ export function useEditorPreviewData<T extends Record<string, any>>(
         mergePreviewData(initialDocument, form.getData()) as T,
         form.getFields(),
       ) as T;
-    return projectInsertion(data.current, transient.capable ? transient.projection : undefined);
-  }, [fields, guard.active, initialDocument, form, transient.capable, transient.projection]);
+    return projectInsertion(
+      data.current,
+      transient.capable ? transient.projection : undefined,
+    );
+  }, [
+    fields,
+    guard.active,
+    initialDocument,
+    form,
+    transient.capable,
+    transient.projection,
+  ]);
 }

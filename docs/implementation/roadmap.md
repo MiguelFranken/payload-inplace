@@ -119,3 +119,9 @@ Signed activations and review tokens now include the content locale; native draf
 187 unit/component assertions in 59 files and nine real Postgres cases pass at this slice. Localized inline/native browser acceptance passes (7.5s), as do English/German/RTL desktop/320px and reduced-motion checks (10.9s; RTL spacing follow-up 5.9s). Codex browser inspection confirms the compact panel overlays the unchanged storefront. The full archive/production acceptance and remaining untranslated domain failure codes are still required before COURSE-247 is complete.
 
 See localization.md for the contract and its boundaries.
+
+## Native globals and finite document scopes
+
+Added explicit draft-global configuration and native collection/global adapters, independent per-document revision/review/version/lock authority, server-declared page scope metadata and a native-queue-draining switch coordinator. Document provenance now participates in canvas geometry and foreign selection. See document-scopes.md for configuration, cookie lifecycle and the deliberate raw-global-restore restriction in Payload v3.
+
+Validation: 202 unit/component assertions, TypeScript, lint and 11 Postgres cases pass, including actual competing global writers and leases. The real page/product/global browser sequence passes (9.0s). It found and fixed two integration bugs: global save acknowledgements use `result`, and Payload's stable command object is not a reactive disabled-state subscription. Malformed acknowledgements now preserve native state; scope switching observes the native watch snapshot. Final production/installed-consumer validation remains pending.

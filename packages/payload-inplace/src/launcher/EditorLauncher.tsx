@@ -49,8 +49,17 @@ export async function EditorLauncher({
         : undefined;
   const fields = (
     <>
-      <input type="hidden" name="collection" value={target.collection} />
-      <input type="hidden" name="id" value={target.id} />
+      {target.kind === "global" ? (
+        <>
+          <input type="hidden" name="kind" value="global" />
+          <input type="hidden" name="global" value={target.global} />
+        </>
+      ) : (
+        <>
+          <input type="hidden" name="collection" value={target.collection} />
+          <input type="hidden" name="id" value={target.id} />
+        </>
+      )}
       <input type="hidden" name="root" value={target.root} />
       {tool && <input type="hidden" name="tool" value={tool} />}
       <button

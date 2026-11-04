@@ -1,4 +1,10 @@
 "use client";
+import {
+  nativeDocumentPath,
+  nativeDocumentMethod,
+  targetFromNativeInfo,
+} from "../state/document-target.js";
+import { useDocumentScopes } from "../frontend/document-scope.js";
 import { useEditorMessages } from "../frontend/messages.js";
 
 import {
@@ -36,6 +42,7 @@ export function ReviewPublishButton({
   frontend = false,
 }: { compact?: boolean; frontend?: boolean } = {}) {
   const events = useOptionalEditorLifecycle();
+  const scopes = useDocumentScopes();
   const { config } = useConfig(),
     info = useDocumentInfo(),
     form = useForm(),
@@ -100,7 +107,7 @@ export function ReviewPublishButton({
         : [],
     [review, openedWith, fields, blocksMap, uiLocale],
   );
-  const api = `${config.routes.api}/${info.collectionSlug}/${info.id}`;
+  const api = nativeDocumentPath(config.routes.api, targetFromNativeInfo(info));
   async function open() {
     request.current?.abort();
     const controller = new AbortController();
@@ -120,11 +127,7 @@ export function ReviewPublishButton({
           signal: controller.signal,
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            target: {
-              collection: info.collectionSlug,
-              id: info.id,
-              root: roots?.[0],
-            },
+            target: targetFromNativeInfo(info, roots?.[0]),
             candidate: form.getData(),
           }),
         },
@@ -152,6 +155,7 @@ export function ReviewPublishButton({
     setPublishing(true);
     try {
       const result = await form.submit({
+        method: nativeDocumentMethod(targetFromNativeInfo(info)),
         action: `${api}?depth=0&fallback-locale=null${locale.code ? `&locale=${encodeURIComponent(locale.code)}` : ""}`,
         overrides: { _status: "published", _veReviewToken: review.token },
       });
@@ -239,6 +243,14 @@ export function ReviewPublishButton({
                   <h2 className="pve:m-0 pve:text-xl pve:font-semibold pve:leading-snug">
                     {label}
                   </h2>
+                  {scopes.active && (
+                    <p
+                      data-ve-review-document=""
+                      className="pve:mb-0 pve:mt-2 pve:text-sm pve:font-medium"
+                    >
+                      {scopes.active.label}
+                    </p>
+                  )}
                   <p
                     className={`pve:mb-0 pve:mt-2 pve:text-sm pve:leading-relaxed ${chrome.muted}`}
                   >

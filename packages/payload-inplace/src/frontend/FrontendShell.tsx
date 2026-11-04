@@ -1,4 +1,16 @@
 "use client";
+import { nativeSavedDocument } from "../adapters/native-response.js";
+import {
+  nativeDocumentArgs,
+  nativeDocumentPath,
+  nativeDocumentMethod,
+  targetDocumentKey,
+  targetSlug,
+} from "../state/document-target.js";
+import {
+  NativeDocumentScopes,
+  type ResolvedPageScope,
+} from "./document-scope.js";
 import type { EditorStaticMessageKey } from "../i18n/catalogue.js";
 import { useEditorMessages } from "./messages.js";
 import { EditorMessage } from "./messages.js";
@@ -60,6 +72,7 @@ import { AdvisoryLockContext, useNativeAdvisoryLock } from "./advisory-lock.js";
 import { FrontendControls } from "./FrontendControls.js";
 
 type ShellProps = {
+  pageScopes?: ResolvedPageScope[];
   sharedStructure?: boolean;
   ui?: import("../i18n/messages.js").EditorUIOptions;
   strategyProviders?: ReactNode;
@@ -191,6 +204,7 @@ export function FrontendShell(props: ShellProps) {
       <div
         ref={host}
         data-ve-ui=""
+        data-ve-document-scope={targetDocumentKey(bootstrap.context.target)}
         data-theme={bootstrap.theme}
         style={
           {
@@ -206,10 +220,7 @@ export function FrontendShell(props: ShellProps) {
                 <RootProvider {...bootstrap.rootProps}>
                   <NativeEditorMessages options={bootstrap.ui}>
                     <DocumentInfoProvider
-                      collectionSlug={
-                        bootstrap.context.target.collection as any
-                      }
-                      id={bootstrap.context.target.id}
+                      {...(nativeDocumentArgs(bootstrap.context.target) as any)}
                       initialData={bootstrap.initialData}
                       initialState={bootstrap.initialState}
                       docPermissions={bootstrap.docPermissions}
@@ -292,6 +303,7 @@ function NativeDocumentForm(
   }, [recovery.failure]);
   useEffect(() => () => pendingOperation.current?.settle("cancelled"), []);
   const { t } = useEditorMessages();
+  const [switchingDocument, setSwitchingDocument] = useState(false);
   const nativeForm = useRef<ReturnType<typeof useForm> | null>(null);
   const [previewPending, setPreviewPending] = useState(false),
     [previewError, setPreviewError] = useState<EditorStaticMessageKey | null>(
@@ -363,10 +375,11 @@ function NativeDocumentForm(
           <Form
             initialState={props.initialState}
             isDocumentForm
-            method="PATCH"
-            action={`${config.routes.api}/${props.context.target.collection}/${props.context.target.id}?draft=true&depth=0`}
+            method={nativeDocumentMethod(props.context.target)}
+            action={`${nativeDocumentPath(config.routes.api, props.context.target)}?draft=true&depth=0`}
             className="pve:contents"
             disabled={
+              switchingDocument ||
               !info.hasSavePermission ||
               advisory.status === "other" ||
               Boolean(
@@ -394,13 +407,12 @@ function NativeDocumentForm(
                 inFlightChange.current = controller;
                 const before = generation.current;
                 const result = await getFormState({
-                  id: props.context.target.id,
-                  collectionSlug: props.context.target.collection,
+                  ...(nativeDocumentArgs(props.context.target) as any),
                   docPermissions: info.docPermissions,
                   docPreferences: { fields: {} },
                   formState,
                   operation: "update",
-                  schemaPath: props.context.target.collection,
+                  schemaPath: targetSlug(props.context.target),
                   renderAllFields: false,
                   returnLockStatus: false,
                   skipValidation: !submitted,
@@ -421,16 +433,16 @@ function NativeDocumentForm(
               },
             ]}
             onSuccess={async (json: any, ctx) => {
-              const doc = json.doc || json;
+              const doc = nativeSavedDocument(json, props.context.target);
+              if (!doc) throw Error(t("savedFieldsUnavailable"));
               const result = await getFormState({
-                id: props.context.target.id,
-                collectionSlug: props.context.target.collection,
+                ...(nativeDocumentArgs(props.context.target) as any),
                 data: doc,
                 formState: ctx?.formState,
                 docPermissions: info.docPermissions,
                 docPreferences: { fields: {} },
                 operation: "update",
-                schemaPath: props.context.target.collection,
+                schemaPath: targetSlug(props.context.target),
                 renderAllFields: false,
                 skipValidation: true,
               });
@@ -458,42 +470,50 @@ function NativeDocumentForm(
                 retry: () => void refreshSavedPreview(requested.current),
               }}
             >
-              <EditorToolsProvider
+              <NativeDocumentScopes
                 context={props.context}
-                tools={props.tools}
-                extensions={props.extensions}
+                scopes={props.pageScopes}
+                onSwitching={setSwitchingDocument}
               >
-                <FieldOwnershipProvider>
-                  <FieldStrategiesProvider>
-                    {props.strategyProviders}
-                    <TransientPreviewProvider capable={Boolean(props.preview)}>
-                      {props.preview && props.previewTarget && (
-                        <PreviewPortal
-                          target={props.previewTarget}
-                          ready={props.previewReady}
-                          onReady={props.onPreviewReady}
-                        >
-                          <PreviewBoundary fallback={props.children}>
-                            {props.preview}
-                          </PreviewBoundary>
-                        </PreviewPortal>
-                      )}
-                      <FrontendControls
-                        sharedStructure={props.sharedStructure}
-                        context={props.context}
-                        richTextCapabilities={props.richTextCapabilities}
-                        field={props.field}
-                        blockControls={props.blockControls}
-                        catalogue={props.catalogue}
-                        permissions={props.fieldPermissions}
-                        policy={props.policy}
-                        exitURL={props.exitURL}
-                        renderedRevision={props.renderedRevision}
-                      />
-                    </TransientPreviewProvider>
-                  </FieldStrategiesProvider>
-                </FieldOwnershipProvider>
-              </EditorToolsProvider>
+                <EditorToolsProvider
+                  context={props.context}
+                  tools={props.tools}
+                  extensions={props.extensions}
+                >
+                  <FieldOwnershipProvider>
+                    <FieldStrategiesProvider>
+                      {props.strategyProviders}
+                      <TransientPreviewProvider
+                        capable={Boolean(props.preview)}
+                      >
+                        {props.preview && props.previewTarget && (
+                          <PreviewPortal
+                            target={props.previewTarget}
+                            ready={props.previewReady}
+                            onReady={props.onPreviewReady}
+                          >
+                            <PreviewBoundary fallback={props.children}>
+                              {props.preview}
+                            </PreviewBoundary>
+                          </PreviewPortal>
+                        )}
+                        <FrontendControls
+                          sharedStructure={props.sharedStructure}
+                          context={props.context}
+                          richTextCapabilities={props.richTextCapabilities}
+                          field={props.field}
+                          blockControls={props.blockControls}
+                          catalogue={props.catalogue}
+                          permissions={props.fieldPermissions}
+                          policy={props.policy}
+                          exitURL={props.exitURL}
+                          renderedRevision={props.renderedRevision}
+                        />
+                      </TransientPreviewProvider>
+                    </FieldStrategiesProvider>
+                  </FieldOwnershipProvider>
+                </EditorToolsProvider>
+              </NativeDocumentScopes>
             </PreviewStatusContext>
             <NativeAutosaveTrigger />
             <NativeSubmissionMonitor />

@@ -124,24 +124,22 @@ it("uses native same-origin ACL search and never turns external URLs into asset 
   const { createPayloadMediaLibrary } = await import(
     "../../src/frontend/media-library.js"
   );
-  const fetch = vi
-    .spyOn(globalThis, "fetch")
-    .mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          docs: [
-            {
-              id: 4,
-              filename: "bowl.png",
-              mimeType: "image/png",
-              url: "/media/bowl.png",
-            },
-          ],
-          hasNextPage: true,
-          nextPage: 2,
-        }),
-      ),
-    );
+  const fetch = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+    new Response(
+      JSON.stringify({
+        docs: [
+          {
+            id: 4,
+            filename: "bowl.png",
+            mimeType: "image/png",
+            url: "/media/bowl.png",
+          },
+        ],
+        hasNextPage: true,
+        nextPage: 2,
+      }),
+    ),
+  );
   try {
     const library = createPayloadMediaLibrary({ collection: "media" });
     const page = await library.search({

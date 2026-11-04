@@ -6,6 +6,8 @@ import {
   type Where,
 } from "payload";
 import type { VisualEditorOptions } from "../types.js";
+import { nativeDocumentConfig } from "./document.js";
+import { targetDocumentKey } from "../state/document-target.js";
 import { readEditContext } from "./context.js";
 const collection = "payload-locked-documents" as const;
 export type AdvisoryLease = { id: string | number; updatedAt: string };
@@ -25,27 +27,27 @@ export async function manageAdvisoryLock(
 ): Promise<AdvisoryLockState> {
   const { context } = await readEditContext(req, proof, options),
     target = context.target;
-  const locking =
-    req.payload.collections[
-      target.collection as keyof typeof req.payload.collections
-    ]?.config.lockDocuments;
+  const locking = nativeDocumentConfig(req, target).lockDocuments;
   if (locking === false || !req.payload.collections[collection])
     return { status: "disabled" };
   if (!options.concurrency) return { status: "unavailable" };
   const duration =
     (typeof locking === "object" ? locking.duration : 300) * 1000;
-  const scope: Where = {
-    and: [
-      { "document.relationTo": { equals: target.collection } },
-      { "document.value": { equals: target.id } },
-    ],
-  };
+  const scope: Where =
+    target.kind === "global"
+      ? { globalSlug: { equals: target.global } }
+      : {
+          and: [
+            { "document.relationTo": { equals: target.collection } },
+            { "document.value": { equals: target.id } },
+          ],
+        };
   const user = { relationTo: req.user!.collection, value: req.user!.id };
   const initialized = await initTransaction(req);
   try {
     await options.concurrency.lock(
       req,
-      `payload-inplace-presence:${JSON.stringify([target.collection, String(target.id)])}`,
+      `payload-inplace-presence:${targetDocumentKey(target)}`,
     );
     if (action === "release") {
       if (lease)
@@ -111,10 +113,14 @@ export async function manageAdvisoryLock(
           return req.payload.create({
             collection,
             data: {
-              document: {
-                relationTo: target.collection as never,
-                value: target.id as never,
-              },
+              ...(target.kind === "global"
+                ? { globalSlug: target.global }
+                : {
+                    document: {
+                      relationTo: target.collection as never,
+                      value: target.id as never,
+                    },
+                  }),
               user,
             },
             overrideAccess: false,

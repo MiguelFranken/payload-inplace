@@ -96,7 +96,9 @@ it("reviews native form projections without accepting changed/reordered row iden
   ).toBe(false);
 });
 it("duplicates every nested row identity without touching the source row", async () => {
-  const { duplicateRowState } = await import("../../src/adapters/payload-form.js");
+  const { duplicateRowState } = await import(
+    "../../src/adapters/payload-form.js"
+  );
   const fields: any = {
     "layout.1.id": { value: "custom-root", initialValue: "custom-root" },
     "layout.1.blockType": { value: "text" },

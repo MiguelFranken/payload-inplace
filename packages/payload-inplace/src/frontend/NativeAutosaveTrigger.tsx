@@ -11,6 +11,11 @@ import {
   useFormModified,
   useFormProcessing,
 } from "@payloadcms/ui";
+import {
+  targetFromNativeInfo,
+  nativeDocumentMethod,
+  targetDocumentKey,
+} from "../state/document-target.js";
 import { nativeDraftAction } from "../adapters/native-request.js";
 import {
   autosaveDelay,
@@ -63,7 +68,10 @@ export function NativeAutosaveTrigger() {
   );
   useNativeIdleSubmit({
     authoredKey: valueKey,
-    scope: JSON.stringify([info.collectionSlug, info.id, locale.code]),
+    scope: JSON.stringify([
+      targetDocumentKey(targetFromNativeInfo(info)),
+      locale.code,
+    ]),
     enabled,
     delay: info.docConfig
       ? autosaveDelay(getAutosaveInterval(info.docConfig))
@@ -81,11 +89,11 @@ export function NativeAutosaveTrigger() {
         const result = await form.submit({
           action: nativeDraftAction(
             config.routes.api,
-            { collection: info.collectionSlug!, id: info.id! },
+            targetFromNativeInfo(info),
             locale.code,
             true,
           ),
-          method: "PATCH",
+          method: nativeDocumentMethod(targetFromNativeInfo(info)),
           overrides: { _status: "draft" },
           acceptValues: true,
           disableFormWhileProcessing: false,

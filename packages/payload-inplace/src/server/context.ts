@@ -1,3 +1,6 @@
+import { configuredPageScopes } from "./page-scopes.js";
+import { nativeDocumentConfig, readNativeDocument } from "./document.js";
+import { parseEditorTarget, targetScopeKey } from "../state/document-target.js";
 import { contentLocale } from "./content-locale.js";
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import type {
@@ -5,11 +8,15 @@ import type {
   EditorTarget,
   VisualEditorOptions,
 } from "../types.js";
-import type { PayloadRequest } from "payload";
+import {
+  APIError,
+  docAccessOperationGlobal,
+  type PayloadRequest,
+} from "payload";
 
 /** Stable document key includes string/numeric identity semantics and the configured root. */
 export function documentKey(target: EditorTarget): string {
-  return JSON.stringify([target.collection, String(target.id), target.root]);
+  return targetScopeKey(target);
 }
 function signature(value: string, secret: string) {
   return createHmac("sha256", secret).update(value).digest("base64url");
@@ -36,10 +43,17 @@ export function verifyContext(
     return null;
   try {
     const c = JSON.parse(Buffer.from(value, "base64url").toString());
+    const target = parseEditorTarget(c.target);
     if (
-      !c.target ||
-      typeof c.target.collection !== "string" ||
-      !["string", "number"].includes(typeof c.target.id) ||
+      !target ||
+      (c.activatedAt !== undefined &&
+        (!Number.isSafeInteger(c.activatedAt) || c.activatedAt < 0)) ||
+      (c.pageOwner !== undefined &&
+        (!parseEditorTarget(c.pageOwner) || !c.pagePath)) ||
+      (c.target.kind === "global"
+        ? typeof c.target.global !== "string"
+        : typeof c.target.collection !== "string" ||
+          !["string", "number"].includes(typeof c.target.id)) ||
       typeof c.target.root !== "string" ||
       (c.locale !== undefined &&
         (typeof c.locale !== "string" ||
@@ -58,7 +72,11 @@ export function verifyContext(
       c.expires <= now
     )
       return null;
-    return c;
+    return {
+      ...c,
+      target,
+      ...(c.pageOwner ? { pageOwner: parseEditorTarget(c.pageOwner) } : {}),
+    };
   } catch {
     return null;
   }
@@ -72,18 +90,47 @@ export async function authorizeTarget(
 ): Promise<Record<string, any>> {
   if (
     !req.user ||
-    !options.collections[target.collection]?.roots.includes(target.root)
+    !(
+      target.kind === "global"
+        ? options.globals?.[target.global]
+        : options.collections[target.collection]
+    )?.roots.includes(target.root)
   )
-    throw new Error("Editor access denied");
+    throw new APIError("Editor access denied", 403);
+  if (target.kind === "global") {
+    const global = nativeDocumentConfig(
+      req,
+      target,
+    ) as import("payload").SanitizedGlobalConfig;
+    if (typeof global.versions !== "object" || !global.versions.drafts)
+      throw Error("Global editing requires native drafts");
+    const admin =
+      req.payload.collections[req.user.collection]?.config.access.admin;
+    if (admin && !(await admin({ req })))
+      throw new APIError("Editor access denied", 403);
+    const document = await readNativeDocument(req, target, true);
+    const permission = await docAccessOperationGlobal({
+      req,
+      globalConfig: global,
+      data: document,
+    });
+    if (
+      permission.update !== true ||
+      (policy.requireVisualCapability !== false &&
+        !(await options.canEdit({ req, target, document })))
+    )
+      throw new APIError("Editor access denied", 403);
+    return document;
+  }
   const collection =
     req.payload.collections[
       target.collection as keyof typeof req.payload.collections
     ]?.config;
-  if (!collection) throw new Error("Editor target unavailable");
+  if (!collection) throw new APIError("Editor target unavailable", 403);
   const admin = collection.access?.admin
     ? await collection.access.admin({ req })
     : true;
-  if (!admin) throw new Error("Editor access denied");
+  if (!admin) throw new APIError("Editor access denied", 403);
   const document = await req.payload.findByID({
     collection: target.collection as any,
     id: target.id,
@@ -100,7 +147,7 @@ export async function authorizeTarget(
         data: document,
       })
     : Boolean(req.user);
-  if (!update) throw new Error("Editor access denied");
+  if (!update) throw new APIError("Editor access denied", 403);
   if (typeof update === "object") {
     const allowed = await req.payload.find({
       collection: target.collection as any,
@@ -111,13 +158,13 @@ export async function authorizeTarget(
       req,
       overrideAccess: false,
     });
-    if (!allowed.docs.length) throw new Error("Editor access denied");
+    if (!allowed.docs.length) throw new APIError("Editor access denied", 403);
   }
   if (
     policy.requireVisualCapability !== false &&
     !(await options.canEdit({ req, target, document }))
   )
-    throw new Error("Editor access denied");
+    throw new APIError("Editor access denied", 403);
   return document;
 }
 /** Bind to Payload's current session; logout/relogin invalidates activation even for the same account. */
@@ -130,14 +177,17 @@ export function createContext(
   target: EditorTarget,
   ttl = 900000,
   pagePath?: string,
+  pageOwner?: import("../types.js").EditorTarget,
 ): EditContext {
   if (!req.user || !currentSession(req))
     throw new Error("Session-backed authentication required");
   const locale = contentLocale(req);
   return {
     target,
+    activatedAt: Date.now(),
     ...(locale ? { locale } : {}),
     ...(pagePath ? { pagePath } : {}),
+    ...(pageOwner && pagePath ? { pageOwner } : {}),
     user: `${req.user.collection}:${req.user.id}`,
     session: currentSession(req),
     expires: Date.now() + Math.min(ttl, 900000),
@@ -150,7 +200,7 @@ export async function readEditContext(
   token: string,
   options: VisualEditorOptions,
 ) {
-  if (options.disabled) throw new Error("Visual editor is disabled");
+  if (options.disabled) throw new APIError("Visual editor is disabled", 403);
   const context = verifyContext(token, req.payload.secret);
   if (
     !context ||
@@ -159,7 +209,29 @@ export async function readEditContext(
     context.session !== currentSession(req) ||
     context.locale !== contentLocale(req)
   )
-    throw new Error("Editor session expired");
+    throw new APIError("Editor session expired", 403);
   const document = await authorizeTarget(req, context.target, options);
-  return { context, document };
+  const pageDocument =
+    context.pageOwner &&
+    documentKey(context.pageOwner) !== documentKey(context.target)
+      ? await authorizeTarget(req, context.pageOwner, options)
+      : document;
+  if (context.pageOwner) {
+    const scopes = await configuredPageScopes(
+      req,
+      context,
+      pageDocument,
+      options,
+    );
+    if (
+      !scopes.some(
+        (scope) => documentKey(scope.target) === documentKey(context.target),
+      )
+    )
+      throw new APIError(
+        "This document is no longer an allowed page scope",
+        403,
+      );
+  }
+  return { context, document, pageDocument };
 }

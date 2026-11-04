@@ -1,6 +1,12 @@
 import type { Message } from "../../../core/src/messages.js";
 /** Typed source copy. Consumers override messages by key; content and native field labels stay consumer-owned. */
 export const englishMessages = {
+  documentSwitchFailed:
+    "Could not switch documents. Your current working copy is retained. Check access and retry.",
+  saveBeforeDocumentSwitch: "Saving the current document before switching…",
+  switchingDocument: "Switching document…",
+  globalRestoreNativeUnsupported:
+    "Restore this global through the website editor’s saved-version timeline. Native v3 global restore skips the hooks that protect revisions.",
   sharedSectionStructure:
     "Section changes affect all content languages. Translated fields use {locale}.",
   empty: "Empty",
@@ -298,6 +304,13 @@ export type EditorStaticMessageKey = {
     : never;
 }[EditorMessageKey];
 export const germanMessages = {
+  documentSwitchFailed:
+    "Dokument konnte nicht gewechselt werden. Deine Arbeitskopie bleibt erhalten. Prüfe den Zugriff und versuche es erneut.",
+  saveBeforeDocumentSwitch:
+    "Aktuelles Dokument wird vor dem Wechsel gespeichert…",
+  switchingDocument: "Dokument wird gewechselt…",
+  globalRestoreNativeUnsupported:
+    "Stelle dieses globale Dokument über die gespeicherten Versionen im Website-Editor wieder her. Die native Wiederherstellung in v3 überspringt die Hooks zum Schutz der Versionen.",
   sharedSectionStructure:
     "Abschnittsänderungen gelten für alle Inhaltssprachen. Übersetzte Felder verwenden {locale}.",
   empty: "Leer",

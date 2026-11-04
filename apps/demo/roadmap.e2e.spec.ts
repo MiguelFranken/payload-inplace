@@ -1048,3 +1048,233 @@ test("English German and RTL editor chrome stays scoped at desktop and narrow wi
     expect(current.ok()).toBeTruthy();
   }
 });
+
+test("page product and global scopes keep one native owner and independent reviewed publication", async ({
+  page,
+  context,
+}) => {
+  await page.goto("/shop");
+  expect(
+    (
+      await page.request.post("/api/users/login", {
+        data: {
+          email: "admin@example.test",
+          password: "synthetic-demo-password",
+        },
+      })
+    ).ok(),
+  ).toBeTruthy();
+  const source = (
+    await (await page.request.get("/api/products?limit=1&depth=0")).json()
+  ).docs[0];
+  const clone = (value: unknown): any =>
+    Array.isArray(value)
+      ? value.map(clone)
+      : value && typeof value === "object"
+        ? Object.fromEntries(
+            Object.entries(value)
+              .filter(([key]) => key !== "id")
+              .map(([key, item]) => [key, clone(item)]),
+          )
+        : value;
+  const productLayout = clone(source.presentation.layout);
+  productLayout[0].heading = "Product heading";
+  const productResponse = await page.request.post("/api/products", {
+    data: {
+      title: "Scoped product",
+      slug: `scope-product-${Date.now()}`,
+      presentation: { layout: productLayout },
+      _status: "draft",
+    },
+  });
+  expect(productResponse.ok()).toBeTruthy();
+  const product = (await productResponse.json()).doc;
+  const primaryResponse = await page.request.post("/api/pages", {
+    data: {
+      title: "Scoped page",
+      slug: `scope-${Date.now()}`,
+      unrelated: `scope-product:${product.id}`,
+      layout: [
+        { blockType: "hero", heading: "Page heading" },
+        { blockType: "text", heading: "Another page section" },
+      ],
+      _status: "draft",
+    },
+  });
+  expect(primaryResponse.ok()).toBeTruthy();
+  const primary = (await primaryResponse.json()).doc;
+  const originalHeader = await (
+    await page.request.get("/api/globals/siteHeader?draft=false&depth=0")
+  ).json();
+  const headerDraft = await (
+    await page.request.get("/api/globals/siteHeader?draft=true&depth=0")
+  ).json();
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto(`/visual-editor/start?collection=pages&id=${primary.id}`);
+  await page
+    .getByRole("button", { name: "Start editing", exact: true })
+    .click();
+  await expect(page).toHaveURL(new RegExp(`/scope-demo/${primary.slug}$`));
+  const url = page.url();
+  const active = page.locator("[data-ve-ui][data-ve-document-scope]");
+  await expect(active).toHaveAttribute(
+    "data-ve-document-scope",
+    `c:pages:${primary.id}`,
+  );
+  const select = page.getByRole("button", {
+    name: "Select content",
+    exact: true,
+  });
+  const enable = async () => {
+    if ((await select.getAttribute("aria-pressed")) !== "true")
+      await select.click();
+  };
+  const pageHeading = page.locator('[data-test-scope-heading="pages"]');
+  await enable();
+  await pageHeading.click();
+  await expect(pageHeading).toHaveAttribute(
+    "contenteditable",
+    "plaintext-only",
+  );
+  await pageHeading.press("End");
+  await pageHeading.pressSequentially("!");
+  // Request the next scope while the first typing burst is still dirty: the existing native queue must finish first.
+  await page.getByRole("button", { name: "More tools", exact: true }).click();
+  await page
+    .getByRole("menuitem", { name: "Shared header", exact: true })
+    .click();
+  await expect(active).toHaveAttribute(
+    "data-ve-document-scope",
+    "g:siteHeader",
+  );
+  expect(page.url()).toBe(url);
+  const savedPage = await (
+    await page.request.get(`/api/pages/${primary.id}?draft=true&depth=0`)
+  ).json();
+  expect(savedPage.layout[0].heading).toBe("Page heading!");
+  expect(
+    (
+      await (
+        await page.request.get(`/api/products/${product.id}?draft=true&depth=0`)
+      ).json()
+    )._veRevision,
+  ).toBe(product._veRevision);
+  const brand = page.locator('[data-test-scope-heading="global"]');
+  await enable();
+  await brand.click();
+  await expect(brand).toHaveAttribute("contenteditable", "plaintext-only");
+  const savedGlobal = page.waitForResponse(
+    (response) =>
+      response.request().method() === "POST" &&
+      response.url().includes("/api/globals/siteHeader?"),
+  );
+  await brand.press("End");
+  await brand.pressSequentially("!");
+  expect((await savedGlobal).ok()).toBeTruthy();
+  await brand.press("Escape");
+  await expect
+    .poll(
+      async () =>
+        (
+          await (
+            await page.request.get("/api/globals/siteHeader?draft=true&depth=0")
+          ).json()
+        ).layout[0].heading,
+    )
+    .toBe(`${headerDraft.layout[0].heading}!`);
+  expect(
+    (
+      await (
+        await page.request.get("/api/globals/siteHeader?draft=false&depth=0")
+      ).json()
+    ).layout[0].heading,
+  ).toBe(originalHeader.layout[0].heading);
+  await page
+    .getByRole("button", { name: "Review changes", exact: true })
+    .click();
+  await expect(page.locator("[data-ve-review-document]")).toHaveText(
+    "Shared header",
+  );
+  await page
+    .getByRole("button", { name: "Publish reviewed draft", exact: true })
+    .click();
+  await expect
+    .poll(
+      async () =>
+        (
+          await (
+            await page.request.get(
+              "/api/globals/siteHeader?draft=false&depth=0",
+            )
+          ).json()
+        ).layout[0].heading,
+    )
+    .toBe(`${headerDraft.layout[0].heading}!`);
+  expect(
+    (
+      await (
+        await page.request.get(`/api/pages/${primary.id}?draft=true&depth=0`)
+      ).json()
+    )._status,
+  ).toBe("draft");
+  expect(
+    (
+      await (
+        await page.request.get(`/api/products/${product.id}?draft=true&depth=0`)
+      ).json()
+    )._status,
+  ).toBe("draft");
+  await enable();
+  const productHeading = page.locator('[data-test-scope-heading="products"]');
+  await productHeading.click();
+  await expect(active).toHaveAttribute(
+    "data-ve-document-scope",
+    `c:products:${product.id}`,
+  );
+  await enable();
+  await productHeading.click();
+  await expect(productHeading).toHaveAttribute(
+    "contenteditable",
+    "plaintext-only",
+  );
+  await productHeading.press("End");
+  await productHeading.pressSequentially("!");
+  await expect
+    .poll(
+      async () =>
+        (
+          await (
+            await page.request.get(
+              `/api/products/${product.id}?draft=true&depth=0`,
+            )
+          ).json()
+        ).presentation.layout[0].heading,
+    )
+    .toBe("Product heading!");
+  await productHeading.press("Escape");
+  await page.getByRole("button", { name: "More tools", exact: true }).click();
+  await page
+    .getByRole("menuitem", { name: "Page content", exact: true })
+    .click();
+  await expect(active).toHaveAttribute(
+    "data-ve-document-scope",
+    `c:pages:${primary.id}`,
+  );
+  await expect(pageHeading).toHaveText("Page heading!");
+  expect(
+    (await context.cookies()).filter((cookie) =>
+      cookie.name.startsWith("payload-ve-"),
+    ),
+  ).toHaveLength(3);
+  expect(page.url()).toBe(url);
+  expect(errors).toEqual([]);
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.getByRole("button", { name: "More tools", exact: true }).click();
+  await expect(
+    page.getByRole("menuitem", { name: "Shared header", exact: true }),
+  ).toBeInViewport();
+  await page.screenshot({
+    path: "test-results/roadmap-document-scopes-320.png",
+  });
+});

@@ -50,10 +50,16 @@ export async function readPageEditContext(
       const context = verifyContext(token, req.payload.secret);
       return context?.pagePath === pagePath &&
         name === `payload-ve-${context.nonce}`
-        ? [{ token, expires: context.expires }]
+        ? [
+            {
+              token,
+              expires: context.expires,
+              activatedAt: context.activatedAt || 0,
+            },
+          ]
         : [];
     })
-    .sort((a, b) => b.expires - a.expires);
+    .sort((a, b) => b.activatedAt - a.activatedAt || b.expires - a.expires);
   for (const candidate of candidates) {
     try {
       return {

@@ -1,3 +1,4 @@
+import { createLocalReq } from "payload";
 import type { Payload } from "payload";
 import { seedCommerce } from "./commerce/seed";
 /** Deterministic synthetic content only; no consumer services or customer records. */
@@ -17,6 +18,29 @@ export async function seed(payload: Payload) {
         role,
       },
     });
+  const systemReq = await createLocalReq(
+    { context: { visualEditorSystemWrite: true } },
+    payload,
+  );
+  await payload.updateGlobal({
+    slug: "siteHeader" as never,
+    req: systemReq,
+    overrideAccess: true,
+    data: {
+      _status: "published",
+      layout: [
+        {
+          blockType: "siteHeaderBlock",
+          heading: "Still & Form",
+          caption: "Considered everyday things",
+          items: [
+            { label: "Collection", note: "/shop" },
+            { label: "Our story", note: "/shop#studio-story" },
+          ],
+        },
+      ],
+    } as never,
+  });
   await seedCommerce(payload);
   for (const collection of ["pages", "offers"]) {
     const layout = [

@@ -1,4 +1,5 @@
 "use client";
+import { targetSlug } from "../state/document-target.js";
 import { useEditorMessages } from "./messages.js";
 
 import {
@@ -160,7 +161,7 @@ export function NativeFieldSlot({
       field: root as any,
       data: form.getDataByPath(editor.target.root),
       root: editor.target.root,
-      schemaPath: `${editor.target.collection}.${editor.target.root}`,
+      schemaPath: `${targetSlug(editor.target)}.${editor.target.root}`,
       permissions,
       blocksMap: config.blocksMap as any,
     }).find(
@@ -290,7 +291,7 @@ export function NativeFieldSlot({
     info.docConfig?.fields || [],
     parts,
     "",
-    info.collectionSlug || "",
+    info.globalSlug || info.collectionSlug || "",
     info.docPermissions?.fields,
   );
   if (!hit || ("admin" in hit.field && hit.field.admin?.hidden))

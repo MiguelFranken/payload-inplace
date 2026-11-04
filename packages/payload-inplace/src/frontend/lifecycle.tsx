@@ -11,6 +11,10 @@ import {
   createEditorEventChannel,
   type EditorObserver,
 } from "../../../core/src/events.js";
+import {
+  documentReference,
+  targetDocumentKey,
+} from "../state/document-target.js";
 import { useLocale } from "@payloadcms/ui";
 import type { EditorTarget } from "../types.js";
 const Context = createContext<ReturnType<
@@ -28,17 +32,14 @@ export function EditorLifecycleProvider({
 }) {
   const nativeLocale = useLocale();
   locale ??= nativeLocale.code || undefined;
+  const scope = targetDocumentKey(target);
   const channel = useMemo(
     () =>
       createEditorEventChannel({
-        document: {
-          kind: "collection",
-          collection: target.collection,
-          id: target.id,
-        },
+        document: documentReference(target),
         ...(locale ? { locale } : {}),
       }),
-    [target.collection, target.id, locale],
+    [scope, locale],
   );
   useEffect(() => {
     channel.activate();

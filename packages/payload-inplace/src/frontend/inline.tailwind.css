@@ -1,6 +1,7 @@
 @layer pvi-theme, pvi-utilities;
 @import "tailwindcss/theme.css" layer(pvi-theme) prefix(pvi);
-@import "tailwindcss/utilities.css" layer(pvi-utilities) prefix(pvi) source(none);
+@import "tailwindcss/utilities.css" layer(pvi-utilities) prefix(pvi)
+  source(none);
 @source "./InlineText.tsx";
 
 @source "./InlineRichText.tsx";

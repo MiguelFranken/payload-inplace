@@ -6,6 +6,7 @@ const privateFields = new Set([
 ]);
 const metadataFields = new Set([
   "id",
+  "globalType",
   "createdAt",
   "updatedAt",
   "_status",

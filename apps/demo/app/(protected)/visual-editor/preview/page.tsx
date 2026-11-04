@@ -1,3 +1,4 @@
+import { readDemoDocument } from "../../../../lib/read-demo-document";
 import { cookies, headers } from "next/headers";
 import { getPayload, createLocalReq } from "payload";
 import config, { editorOptions } from "@payload-config";
@@ -30,14 +31,7 @@ export default async function Page({
     notFound();
   }
   const { context } = result;
-  const document = await payload.findByID({
-    collection: context.target.collection as any,
-    id: context.target.id,
-    draft: true,
-    depth: 1,
-    req,
-    overrideAccess: false,
-  });
+  const document = await readDemoDocument(req, context.target);
   if (context.nonce !== identifier) notFound();
   return (
     <>
