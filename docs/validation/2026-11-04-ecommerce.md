@@ -12,7 +12,7 @@ Closing a native array-item panel left its target selected. A new pick of that s
 
 The complete demo now backs promotional cards, product-card presentation, link label/target groups, background choices, delivery notes and supporting labels with native fields. A read-only compatibility hook fills newly introduced fixture content without resetting the running demo database or overwriting existing drafts. Foreign product documents remain independently owned.
 
-A second regression reproduces Payload v3's `hidden in undefined` runtime error: after a partial HMR cache reset, the server map includes new fields while the cached client map does not. The plugin now uses Payload's own three native invalidation flags once per sanitized config identity, at initial Form and native server-function boundaries. Repeated requests retain the native caches. The real Next test reproduces the error and confirms successful rendering after synchronization; its route is disabled outside the isolated e2e wrapper and requires an admin session.
+A second regression reproduces Payload v3's `hidden in undefined` runtime error: after a partial HMR cache reset, the server map includes new fields while the cached client map does not. The plugin now uses Payload's own three native invalidation flags once per native schema identity, at initial Form and native server-function boundaries. Repeated requests retain the native caches. The real Next test reproduces the error and confirms successful rendering after synchronization; its route is disabled outside the isolated e2e wrapper and requires an admin session.
 
 ## Local validation
 

@@ -87,9 +87,9 @@ it("preserves the request map when native Local API operations replace a cold pa
   expect(original.importMap).toBeUndefined();
 });
 
-it("invalidates all three native schema caches together only when the sanitized config changes", () => {
+it("invalidates all three native schema caches together only when native fields change, retaining caches for shell projections", () => {
   const cache = globalThis as any;
-  const config = {} as any;
+  const config = { collections: [], globals: [], blocks: [] } as any;
   synchronizeNativeSchemaCaches(config);
   expect([
     cache._payload_doNotCacheClientConfig,
@@ -101,7 +101,14 @@ it("invalidates all three native schema caches together only when the sanitized 
   cache._payload_doNotCacheClientSchemaMap = false;
   synchronizeNativeSchemaCaches(config);
   expect(cache._payload_doNotCacheSchemaMap).toBe(false);
-  synchronizeNativeSchemaCaches({ ...config });
+  synchronizeNativeSchemaCaches(
+    frontendConfig({
+      ...config,
+      admin: { components: {}, dashboard: {}, importMap: {} },
+    }),
+  );
+  expect(cache._payload_doNotCacheSchemaMap).toBe(false);
+  synchronizeNativeSchemaCaches({ ...config, collections: [] });
   expect([
     cache._payload_doNotCacheClientConfig,
     cache._payload_doNotCacheSchemaMap,
