@@ -255,3 +255,47 @@ it("keeps a missing thumbnail selectable and suppresses unsafe thumbnail protoco
   fireEvent.click(missing);
   expect(props.setValue).toHaveBeenCalledExactlyOnceWith(1);
 });
+
+it("distinguishes equal IDs in different polymorphic collections, including populated values", async () => {
+  vi.useFakeTimers();
+  props.setValue.mockClear();
+  render(
+    <MediaLibraryField
+      {...props}
+      field={{
+        type: "relationship",
+        name: "asset",
+        relationTo: ["media", "products"],
+      }}
+      value={{
+        relationTo: "products",
+        value: { id: 2, title: "Shared product" },
+      }}
+      library={{
+        id: "polymorphic",
+        search: async () => ({
+          items: [
+            { id: 2, collection: "media", label: "Image two" },
+            { id: 2, collection: "products", label: "Product two" },
+          ],
+        }),
+      }}
+    />,
+  );
+  await tick();
+  expect(
+    screen
+      .getByRole("button", { name: "Image two" })
+      .getAttribute("aria-pressed"),
+  ).toBe("false");
+  expect(
+    screen
+      .getByRole("button", { name: "Product two" })
+      .getAttribute("aria-pressed"),
+  ).toBe("true");
+  fireEvent.click(screen.getByRole("button", { name: "Image two" }));
+  expect(props.setValue).toHaveBeenCalledExactlyOnceWith({
+    relationTo: "media",
+    value: 2,
+  });
+});

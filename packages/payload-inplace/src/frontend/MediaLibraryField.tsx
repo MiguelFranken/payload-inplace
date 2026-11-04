@@ -171,17 +171,7 @@ export function MediaLibraryField({
           <Button
             key={`${asset.collection}:${asset.id}`}
             variant="outline"
-            aria-pressed={
-              String(
-                value && typeof value === "object"
-                  ? "value" in value
-                    ? value.value
-                    : "id" in value
-                      ? value.id
-                      : undefined
-                  : value,
-              ) === String(asset.id)
-            }
+            aria-pressed={selectedReference(value, asset)}
             disabled={disabled}
             className="pve:h-auto pve:min-h-16 pve:flex-col pve:items-start pve:p-3 pve:text-start pve:whitespace-normal"
             onClick={() => setValue(mediaReference(field, asset))}
@@ -271,5 +261,22 @@ function MediaThumbnail({ url }: { url: string }) {
       onError={() => setFailed(true)}
       className="pve:aspect-video pve:w-full pve:rounded pve:object-cover"
     />
+  );
+}
+
+// IDs are only unique within their collection. Payload may supply either a raw
+// ID or a populated document, including inside a polymorphic relation wrapper.
+function selectedReference(value: unknown, asset: MediaAsset): boolean {
+  let reference = value;
+  if (reference && typeof reference === "object" && "relationTo" in reference) {
+    if (reference.relationTo !== asset.collection || !("value" in reference))
+      return false;
+    reference = reference.value;
+  }
+  if (reference && typeof reference === "object" && "id" in reference)
+    reference = reference.id;
+  return (
+    (typeof reference === "string" || typeof reference === "number") &&
+    String(reference) === String(asset.id)
   );
 }

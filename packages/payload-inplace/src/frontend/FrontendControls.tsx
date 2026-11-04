@@ -745,9 +745,12 @@ export function FrontendControls({
   const candidate = binding?.field;
   const inlinePath =
     binding && selected ? `${selected.path}.${binding.path}` : undefined;
-  const inlineState = useFormFields(([fields]) =>
-    inlinePath ? fields[inlinePath] : undefined,
-  );
+  // Subscribe to this path, but read the current path from the native Form.
+  // Payload's selector hook may retain its previous selected slice for the first
+  // render after the selector path changes. Caching that old field's value or
+  // conditions would incorrectly classify the newly picked terminal.
+  useFormFields(([fields]) => (inlinePath ? fields[inlinePath] : undefined));
+  const inlineState = inlinePath ? form.getField(inlinePath) : undefined;
   const lexicalFeatures =
     binding && selected
       ? richTextCapabilities?.[`${selected.schemaPath}.${binding.schemaPath}`]

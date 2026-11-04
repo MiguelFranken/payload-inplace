@@ -152,10 +152,24 @@ try {
         ?.hash
   )
     throw Error("Changed core source did not invalidate dependent tasks");
+  const facade = changed.tasks.find(
+    (task) => task.task === "payload-inplace#build",
+  );
+  if (
+    !facade ||
+    facade.cache === "HIT" ||
+    facade.hash ===
+      cold.tasks.find((task) => task.task === "payload-inplace#build")?.hash
+  )
+    throw Error(
+      "Changed core source did not invalidate the dependent public facade",
+    );
   fs.writeFileSync(file, before);
   const environment = build("environment-changed", { NODE_ENV: "production" });
-  if (environment.tasks.every((task) => task.cache === "HIT"))
-    throw Error("Declared environment input did not invalidate tasks");
+  if (environment.tasks.some((task) => task.cache === "HIT"))
+    throw Error(
+      "Declared environment input did not invalidate all build tasks",
+    );
   const report = {
     sourceSHA,
     node: process.version,
