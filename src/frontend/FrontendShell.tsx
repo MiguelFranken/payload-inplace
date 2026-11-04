@@ -117,10 +117,13 @@ export function FrontendShell(props: ShellProps) {
     setInlineActive(true);
     setWaitingForInlineSave(true);
   }, []);
-  const end = useCallback(() => setInlineActive(false), []);
+  const end = useCallback(
+    () => startTransition(() => setInlineActive(false)),
+    [],
+  );
   const synchronized = useCallback((revision: string | number) => {
     if (revision >= floor.current) floor.current = revision;
-    setWaitingForInlineSave(false);
+    startTransition(() => setWaitingForInlineSave(false));
   }, []);
   const inlineGuard = useMemo(
     () => ({ active: inlineActive, begin, end, synchronized }),

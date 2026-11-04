@@ -480,6 +480,12 @@ test("sections drag on list and page keeps native order, undo, policy and keyboa
     .click();
   await expect.poll(order).toEqual(before);
   // Keyboard reordering uses real page-bound rectangles, with no framework-specific canvas wrapper.
+  await page
+    .locator("main section")
+    .nth(1)
+    .evaluate((element: HTMLElement) => {
+      element.style.minHeight = "1400px";
+    });
   const canvasText = page
     .locator(`[data-ve-canvas-handle="${doc.layout[1].id}"]`)
     .getByRole("button", { name: "Move Text section", exact: true });
@@ -490,6 +496,9 @@ test("sections drag on list and page keeps native order, undo, policy and keyboa
     page.locator(`[data-ve-canvas-handle="${doc.layout[1].id}"]`),
   ).toHaveAttribute("data-ve-drag-over", "true");
   await page.keyboard.press("ArrowDown");
+  await expect(
+    page.locator(`[data-ve-canvas-handle="${doc.layout[2].id}"]`),
+  ).toHaveAttribute("data-ve-drag-over", "true");
   await expect(page.locator("[data-ve-drop-indicator]")).toBeVisible();
   await page.keyboard.press("Space");
   await expect.poll(order).toEqual([before[0], before[2], before[1]]);
@@ -1662,6 +1671,33 @@ test("streamed saved previews keep the native editor mounted throughout structur
         ),
       )
       .toBeGreaterThan(doc._veRevision);
+    const beforeInlineRevision = Number(
+      await page
+        .locator("main [data-server-revision]")
+        .getAttribute("data-server-revision"),
+    );
+    await page
+      .getByRole("button", { name: "Close Sections panel", exact: true })
+      .click();
+    const inline = await selectHeading(page);
+    await inline.fill("Streamed inline update");
+    await expect(page.getByText("Draft saved", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Sections", exact: true }).click();
+    await expect
+      .poll(async () =>
+        Number(
+          await page
+            .locator("main [data-server-revision]")
+            .getAttribute("data-server-revision"),
+        ),
+      )
+      .toBeGreaterThan(beforeInlineRevision);
+    await expect(
+      page.getByRole("heading", {
+        name: "Streamed inline update",
+        exact: true,
+      }),
+    ).toBeVisible();
     await expect(panel).toBeVisible();
     expect(
       await toolbar.evaluate(

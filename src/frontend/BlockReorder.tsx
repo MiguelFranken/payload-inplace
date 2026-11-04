@@ -88,6 +88,7 @@ export function BlockReorder({
   const [active, setActive] = useState<string | null>(null),
     [over, setOver] = useState<string | null>(null),
     [message, setMessage] = useState("");
+  const keyboardTarget = useRef<string | null>(null);
   const keyboardCoordinates: KeyboardCoordinateGetter = (
     event,
     { active, context },
@@ -101,12 +102,13 @@ export function BlockReorder({
     const parent = sections.find((s) => key(s) === active)?.parent;
     const siblings = sections.filter((s) => s.parent === parent);
     const current = siblings.findIndex(
-      (s) => key(s) === (context.over?.id || active),
+      (s) => key(s) === (keyboardTarget.current || active),
     );
     const next = siblings[current + (event.code === "ArrowDown" ? 1 : -1)];
     if (!next) return;
     const rect = context.droppableRects.get(key(next));
     if (!rect || context.droppableContainers.get(key(next))?.disabled) return;
+    keyboardTarget.current = key(next);
     // Center the overlay in variable-height real blocks; top-edge alignment can collide with the previous block.
     return {
       x: rect.left + (rect.width - context.collisionRect.width) / 2,
@@ -122,6 +124,16 @@ export function BlockReorder({
   );
   const ids = useMemo(() => sections.map(key), [sections]);
   const collision: CollisionDetection = (args) => {
+    // Keyboard intent is ordinal, not geometric. Overlay size, page scrolling and
+    // fragment unions must never turn ArrowDown into a move to an earlier row.
+    if (
+      keyboardTarget.current &&
+      args.droppableContainers.some(
+        (container) =>
+          container.id === keyboardTarget.current && !container.disabled,
+      )
+    )
+      return [{ id: keyboardTarget.current }];
     const scoped = {
       ...args,
       droppableContainers: args.droppableContainers.filter(
@@ -133,6 +145,7 @@ export function BlockReorder({
       : closestCenter(scoped);
   };
   function finish(e: DragEndEvent) {
+    keyboardTarget.current = null;
     const from = sections.find((s) => key(s) === e.active.id),
       to = sections.find((s) => key(s) === e.over?.id);
     setActive(null);
@@ -151,11 +164,14 @@ export function BlockReorder({
       measuring={canvas ? canvasMeasurements : undefined}
       collisionDetection={collision}
       onDragStart={(e) => {
+        keyboardTarget.current =
+          e.activatorEvent.type === "keydown" ? String(e.active.id) : null;
         setActive(String(e.active.id));
         setMessage("");
       }}
       onDragOver={(e) => setOver(e.over ? String(e.over.id) : null)}
       onDragCancel={() => {
+        keyboardTarget.current = null;
         setActive(null);
         setOver(null);
         setMessage("Move cancelled.");
