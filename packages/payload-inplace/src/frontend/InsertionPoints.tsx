@@ -149,6 +149,10 @@ export function InsertionPoints({
     let frame = 0;
     const draw = () => {
       frame = 0;
+      // A temporary insertion before this block moves its DOM. Keep the open
+      // picker anchored to the original gap so it cannot move away from the
+      // pointer and cancel its own hover preview.
+      if (held.current) return;
       if (!hover.element.isConnected) {
         const replacement = hover.section
           ? sectionElement(hover.section)

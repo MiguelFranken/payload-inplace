@@ -4,6 +4,7 @@ import {
   targetDocumentKey,
   targetSlug,
 } from "../state/document-target.js";
+import { focusNativeField } from "./focus-native-field.js";
 import { useBindingDiagnostics } from "./controllers/binding-diagnostics.js";
 import { useSectionPatterns } from "./section-patterns.js";
 import { SaveSectionPattern } from "./SaveSectionPattern.js";
@@ -72,7 +73,6 @@ import { useEditorRecovery } from "./recovery.js";
 import {
   namedField,
   projectFields,
-  excludeFields,
   fieldOwnershipPaths,
 } from "../schema/project-fields.js";
 import { CatalogueLauncher as SectionCatalogue } from "./CatalogueLauncher.js";
@@ -341,14 +341,13 @@ export function FrontendControls({
       return installNativeUploadLabels(rootElement.current, t);
   }, [t]);
   useEffect(() => {
-    if (settingsOpen && selected && inspector.current)
-      requestAnimationFrame(() =>
-        inspector.current
-          ?.querySelector<HTMLElement>(
-            "input:not([type=hidden]),textarea,[contenteditable=true]",
-          )
-          ?.focus({ preventScroll: true }),
-      );
+    if (!settingsOpen || !selected || !inspector.current) return;
+    // Native fields now own this value; focus the exact selected leaf, including
+    // asynchronously mounted Lexical inputs, rather than an unrelated sibling.
+    return focusNativeField(
+      inspector.current,
+      binding && !binding.row ? `${selected.path}.${binding.path}` : undefined,
+    );
   }, [selected?.path, selection?.field, settingsOpen]);
   useEffect(() => {
     if (!expanded) return;
@@ -919,9 +918,7 @@ export function FrontendControls({
     ? binding.row
       ? binding.row.fields
       : canInline
-        ? excludeFields(binding.siblings, [
-            (binding.field as { name: string }).name,
-          ])
+        ? binding.siblings
         : [binding.field]
     : selection?.field
       ? []

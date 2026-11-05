@@ -1182,3 +1182,62 @@ test("canvas insertion keeps its resting border and row actions form a compact n
   expect(second.x - first.x).toBe(32);
   await page.screenshot({ path: "test-results/section-row-actions.png" });
 });
+
+test("native settings retain the selected inline value and focus its owner", async ({
+  page,
+}) => {
+  const { doc } = await createShopEditor(page);
+  const cases = [
+    { field: "description", value: doc.layout[0].description, rich: false },
+    { field: "body", value: "Made with care. Built to last.", rich: true },
+  ];
+  for (const item of cases) {
+    const terminal = page
+      .locator(`[data-ve-field="${item.field}"]`)
+      .filter({ visible: true })
+      .first();
+    await terminal.click();
+    await expect(page.locator("[data-ve-inline-active]")).toBeVisible();
+    await page
+      .locator("[data-ve-selection-caption]")
+      .getByRole("button", { name: /^Options for / })
+      .click();
+    const panel = page.getByRole("complementary").filter({ visible: true });
+    const owner = item.rich
+      ? panel.locator('[data-field-path$=".body"] [contenteditable="true"]')
+      : panel.getByRole("textbox", { name: "Description", exact: true });
+    await expect(owner).toBeFocused();
+    if (item.rich) await expect(owner).toHaveText(item.value);
+    else await expect(owner).toHaveValue(item.value);
+    await panel.getByRole("button", { name: /^Close .* panel$/ }).click();
+  }
+});
+
+test("before-section hover preview keeps the catalogue anchor stable", async ({
+  page,
+}) => {
+  const { doc } = await createShopEditor(page);
+  const story = doc.layout.find((row: any) => row.blockType === "editorial");
+  const block = page.locator(`[data-ve-block="${story.id}"]`);
+  const heading = block.getByRole("heading").first();
+  await heading.scrollIntoViewIfNeeded();
+  await heading.hover();
+  const add = page
+    .locator('[data-ve-insert-boundary="before"]')
+    .getByRole("combobox", { name: "Add section", exact: true });
+  await add.click();
+  const search = page.getByRole("combobox", { name: "Search sections" });
+  await search.fill("storytelling");
+  const anchor = await add.boundingBox();
+  await page.getByRole("option", { name: "Studio story", exact: true }).hover();
+  await expect(
+    page.getByRole("heading", { name: "A story worth sharing.", exact: true }),
+  ).toBeVisible();
+  await expect
+    .poll(async () => Math.abs((await add.boundingBox())!.y - anchor!.y))
+    .toBeLessThan(1);
+  await search.press("Escape");
+  await expect(
+    page.getByRole("heading", { name: "A story worth sharing.", exact: true }),
+  ).toHaveCount(0);
+});
