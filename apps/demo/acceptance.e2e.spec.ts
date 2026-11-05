@@ -772,3 +772,112 @@ test("reviewed publication exits in place only after acknowledgement and can sta
     expect(published.ok()).toBeTruthy();
   }
 });
+
+test("compact rich-text toolbar follows selection and reflects existing formatting", async ({
+  page,
+}) => {
+  const paragraph = (text: string, format = 0) => ({
+    type: "paragraph",
+    version: 1,
+    format: "",
+    indent: 0,
+    direction: null,
+    children: [
+      {
+        type: "text",
+        version: 1,
+        text,
+        format,
+        detail: 0,
+        mode: "normal",
+        style: "",
+      },
+    ],
+  });
+  await createShopEditor(page, {
+    richBody: {
+      root: {
+        type: "root",
+        version: 1,
+        format: "",
+        indent: 0,
+        direction: null,
+        children: [
+          paragraph("Plain opening"),
+          ...Array.from({ length: 6 }, (_, index) =>
+            paragraph(`Paragraph ${index + 1}`),
+          ),
+          paragraph("Already bold", 1),
+        ],
+      },
+    },
+  });
+  await page.locator('[data-ve-field="body"]').first().click();
+  const rich = page.locator('[data-ve-inline-active][data-ve-field="body"]');
+  const toolbar = page.getByRole("toolbar", { name: "Text formatting" });
+  const bold = toolbar.getByRole("button", { name: "Bold", exact: true });
+  const last = rich.locator("p").last();
+  const select = async (paragraph: typeof last) => {
+    await paragraph.scrollIntoViewIfNeeded();
+    await paragraph.evaluate((node) => {
+      const selection = getSelection()!,
+        range = document.createRange();
+      range.selectNodeContents(node);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    });
+  };
+  await select(last);
+  await expect(bold).toHaveAttribute("aria-pressed", "true");
+  expect((await bold.boundingBox())!.width).toBe(28);
+  const activeColor = await bold.evaluate(
+    (node) => getComputedStyle(node).backgroundColor,
+  );
+  await expect
+    .poll(async () => {
+      const rect = await last.evaluate((node) => {
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        return range.getBoundingClientRect().top;
+      });
+      const box = (await toolbar.boundingBox())!;
+      return Math.abs(box.y + box.height + 8 - rect);
+    })
+    .toBeLessThan(2);
+  await bold.click();
+  await expect(bold).toHaveAttribute("aria-pressed", "false");
+  await expect(last.locator("strong, b")).toHaveCount(0);
+  await bold.click();
+  await expect(bold).toHaveAttribute("aria-pressed", "true");
+  await select(rich.locator("p").first());
+  await expect(bold).toHaveAttribute("aria-pressed", "false");
+  expect(
+    await bold.evaluate((node) => getComputedStyle(node).backgroundColor),
+  ).not.toBe(activeColor);
+  await expect
+    .poll(async () => {
+      const firstTop = await rich
+        .locator("p")
+        .first()
+        .evaluate((node) => {
+          const range = document.createRange();
+          range.selectNodeContents(node);
+          return range.getBoundingClientRect().top;
+        });
+      const box = (await toolbar.boundingBox())!;
+      return Math.abs(box.y + box.height + 8 - firstTop);
+    })
+    .toBeLessThan(2);
+  await page.setViewportSize({ width: 320, height: 760 });
+  await select(last);
+  await expect(bold).toHaveAttribute("aria-pressed", "true");
+  await expect
+    .poll(async () => {
+      const box = (await toolbar.boundingBox())!;
+      return box.x >= 7 && box.x + box.width <= 313;
+    })
+    .toBe(true);
+  await page.screenshot({
+    path: "test-results/rich-toolbar-selection-320.png",
+  });
+});

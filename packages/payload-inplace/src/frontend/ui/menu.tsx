@@ -10,15 +10,19 @@ export const DropdownMenu = Menu.Root;
 /** Menu.Trigger owns button behavior and refs; reuse button styling without nesting a second Base UI button adapter. */
 export function DropdownMenuTrigger({
   className,
+  size = "icon",
   ...props
-}: Omit<Menu.Trigger.Props, "className"> & { className?: string }) {
+}: Omit<Menu.Trigger.Props, "className"> & {
+  className?: string;
+  size?: "icon" | "compact-icon";
+}) {
   const { t } = useEditorMessages();
   return (
     <ChromeTooltip label={String(props["aria-label"] || t("moreTools"))}>
       <Menu.Trigger
         {...props}
         title={undefined}
-        className={clsx(buttonVariants({ size: "icon" }), className)}
+        className={clsx(buttonVariants({ size }), className)}
       />
     </ChromeTooltip>
   );

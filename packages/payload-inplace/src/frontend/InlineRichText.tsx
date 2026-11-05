@@ -41,6 +41,7 @@ import {
   DropdownMenuItem,
 } from "./ui/menu.js";
 import { Button } from "./ui/button.js";
+import { richToolbarPosition } from "./rich-toolbar.js";
 import { chrome } from "../admin/chrome.js";
 /** A normal-flow twin owns Lexical DOM while the untouched React subtree waits for native acknowledgement.
  * Opening settings unmounts this owner before native fields mount. The shared native Form is the only save path.
@@ -69,6 +70,7 @@ export function InlineRichText({
   const [error, setError] = useState<EditorStaticMessageKey | null>(null),
     [linkURL, setLinkURL] = useState(""),
     [linkOpen, setLinkOpen] = useState(false);
+  const [formats, setFormats] = useState<readonly RichFormat[]>([]);
   const portal = useChromePortal();
   const current = useEffectEvent(() => ({
     field,
@@ -118,6 +120,10 @@ export function InlineRichText({
         element: surface,
         value: field.value,
         onChange: change,
+        onSelectionChange: (next) =>
+          setFormats((previous) =>
+            previous.join() === next.join() ? previous : next,
+          ),
         onError: () => setError("nativeRichTextRequired"),
         disabled: disabled || field.disabled,
         features,
@@ -128,24 +134,48 @@ export function InlineRichText({
       setError("nativeRichTextRequired");
     }
     let frame = 0;
+    let anchorRange: Range | null = null;
     function draw() {
       frame = 0;
       const rect = elementRect(element);
-      if (!rect || !toolbar.current) return;
-      toolbar.current.style.setProperty(
-        "--pve-rich-x",
-        `${Math.max(8, Math.min(rect.left, innerWidth - 320))}px`,
+      const chrome = toolbar.current;
+      if (!rect || !chrome) return;
+      const selection = surface.ownerDocument.getSelection();
+      let anchor = rect;
+      if (
+        selection?.rangeCount &&
+        surface.contains(selection.anchorNode) &&
+        surface.contains(selection.focusNode)
+      ) {
+        anchorRange = selection.getRangeAt(0).cloneRange();
+      }
+      if (
+        anchorRange &&
+        surface.contains(anchorRange.commonAncestorContainer)
+      ) {
+        const selected = anchorRange.getBoundingClientRect();
+        if (selected.height > 0) anchor = selected;
+      }
+      const position = richToolbarPosition(
+        anchor,
+        chrome.getBoundingClientRect(),
+        { width: innerWidth, height: innerHeight },
       );
-      toolbar.current.style.setProperty(
-        "--pve-rich-y",
-        `${Math.max(8, Math.min(rect.top - 46, innerHeight - 104))}px`,
-      );
+      for (const [property, value] of [
+        ["--pve-rich-x", `${position.left}px`],
+        ["--pve-rich-y", `${position.top}px`],
+      ]) {
+        if (chrome.style.getPropertyValue(property) !== value)
+          chrome.style.setProperty(property, value);
+      }
     }
     function schedule() {
       if (!frame) frame = requestAnimationFrame(draw);
     }
     const resize = new ResizeObserver(schedule);
     resize.observe(surface);
+    if (toolbar.current) resize.observe(toolbar.current);
+    surface.ownerDocument.addEventListener("selectionchange", schedule);
     window.addEventListener("scroll", schedule, true);
     window.addEventListener("resize", schedule);
     schedule();
@@ -156,6 +186,7 @@ export function InlineRichText({
       surface.removeEventListener("click", click);
       cancelAnimationFrame(frame);
       resize.disconnect();
+      surface.ownerDocument.removeEventListener("selectionchange", schedule);
       window.removeEventListener("scroll", schedule, true);
       window.removeEventListener("resize", schedule);
       release();
@@ -257,8 +288,8 @@ export function InlineRichText({
             .map(({ format, label, Icon }) => (
               <Button
                 key={format}
-                size="icon"
-                className="pve:size-8"
+                size="compact-icon"
+                aria-pressed={formats.includes(format)}
                 tooltip={label}
                 aria-label={label}
                 disabled={disabled || field.disabled}
@@ -270,7 +301,7 @@ export function InlineRichText({
         {!error && (
           <DropdownMenu>
             <DropdownMenuTrigger
-              className="pve:size-8"
+              size="compact-icon"
               aria-label={t("textStyle")}
               disabled={disabled || field.disabled}
             >
@@ -302,8 +333,7 @@ export function InlineRichText({
             <Popover.Trigger
               render={
                 <Button
-                  size="icon"
-                  className="pve:size-8"
+                  size="compact-icon"
                   aria-label={t("editLink")}
                   disabled={disabled || field.disabled}
                   tooltip={t("editLink")}
@@ -369,8 +399,7 @@ export function InlineRichText({
           </Popover.Root>
         )}
         <Button
-          size="icon"
-          className="pve:size-8"
+          size="compact-icon"
           tooltip={error ? t(error) : t("moreTextOptions")}
           aria-label={t("moreTextOptions")}
           onClick={onSettings}

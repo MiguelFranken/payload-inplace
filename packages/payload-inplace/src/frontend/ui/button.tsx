@@ -26,6 +26,7 @@ export const buttonVariants = cva(
       size: {
         default: "pve:h-10 pve:px-3",
         icon: "pve:size-10 pve:p-0",
+        "compact-icon": "pve:size-7 pve:p-0",
         sm: "pve:h-9 pve:px-2.5",
       },
     },

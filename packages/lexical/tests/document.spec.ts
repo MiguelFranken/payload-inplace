@@ -169,7 +169,11 @@ it("reports collapsed link selection honestly and blocks commands while native e
   runtime.editor.update(
     () => {
       const first = $getRoot().getFirstDescendant();
-      if ($isTextNode(first)) first.select(0, 5);
+      if ($isTextNode(first)) {
+        // Headless selection has no DOM reconciliation to inherit the selected node's marks.
+        const selection = first.select(0, 5);
+        selection.format = first.getFormat();
+      }
     },
     { discrete: true, tag: SKIP_DOM_SELECTION_TAG },
   );
@@ -184,4 +188,46 @@ it("reports collapsed link selection honestly and blocks commands while native e
   expect(JSON.stringify(runtime.editor.getEditorState().toJSON())).toContain(
     "https://example.test",
   );
+});
+
+it("reports existing marks and selection-only changes without creating persistence writes", () => {
+  const changes: RichDocument[] = [];
+  const updates: string[][] = [];
+  const value = documentValue();
+  value.root.children[0].children![0].format = 1;
+  const runtime = mountRichEditor({
+    autofocus: false,
+    value,
+    onChange: (next) => changes.push(next),
+    onSelectionChange: (next) => updates.push([...next]),
+    onError: (error) => {
+      throw error;
+    },
+  });
+  dispose = runtime.dispose;
+  runtime.editor.update(
+    () => {
+      const first = $getRoot().getFirstDescendant();
+      if ($isTextNode(first)) {
+        // Headless selection has no DOM reconciliation to inherit the selected node's marks.
+        const selection = first.select(0, 5);
+        selection.format = first.getFormat();
+      }
+    },
+    { discrete: true, tag: SKIP_DOM_SELECTION_TAG },
+  );
+  expect(updates.at(-1)).toContain("bold");
+  expect(changes).toHaveLength(0);
+  runtime.editor.update(
+    () => {
+      const plain = $getRoot().getAllTextNodes()[1];
+      if ($isTextNode(plain)) {
+        const selection = plain.select(0, 3);
+        selection.format = plain.getFormat();
+      }
+    },
+    { discrete: true, tag: SKIP_DOM_SELECTION_TAG },
+  );
+  expect(updates.at(-1)).toEqual([]);
+  expect(changes).toHaveLength(0);
 });

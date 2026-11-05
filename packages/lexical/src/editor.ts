@@ -55,6 +55,7 @@ export function mountRichEditor({
   value,
   onChange,
   onError,
+  onSelectionChange,
   features,
   unsupportedNodeLabel,
   autofocus = true,
@@ -65,6 +66,8 @@ export function mountRichEditor({
   value: unknown;
   onChange: (value: RichDocument) => void;
   onError: (error: Error) => void;
+  /** Selection-only notifications drive toolbar marks without emitting a native Form write. */
+  onSelectionChange?: (formats: readonly RichFormat[]) => void;
   disabled?: boolean;
   features?: readonly string[];
   /** Presentation-only label for immutable custom/upload islands; never serialized. */
@@ -157,6 +160,15 @@ export function mountRichEditor({
     disposePlugins,
     editor.registerUpdateListener(
       ({ editorState, dirtyElements, dirtyLeaves, tags }) => {
+        const formats = editorState.read(() => {
+          const selection = $getSelection();
+          return $isRangeSelection(selection)
+            ? (["bold", "italic", "underline"] as const).filter((format) =>
+                selection.hasFormat(format),
+              )
+            : null;
+        });
+        if (formats) onSelectionChange?.(formats);
         if (
           (!dirtyElements.size && !dirtyLeaves.size) ||
           editor.isComposing() ||
@@ -174,6 +186,15 @@ export function mountRichEditor({
       },
     ),
   );
+  editor.getEditorState().read(() => {
+    const selection = $getSelection();
+    if ($isRangeSelection(selection))
+      onSelectionChange?.(
+        (["bold", "italic", "underline"] as const).filter((format) =>
+          selection.hasFormat(format),
+        ),
+      );
+  });
   return {
     editor,
     format: (format: RichFormat) => formatRichText(editor, format),
