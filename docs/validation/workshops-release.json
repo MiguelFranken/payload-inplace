@@ -2,7 +2,7 @@
   "packageName": "payload-inplace",
   "packageVersion": "0.0.9",
   "packageSourceSHA": "ea24e121f8c93d7e13049435ff73d19fdac5688f",
-  "packageSHA256": "312b9b2abf0dac86e25f555e8d2c2536b88558caa7a15efeb9360db286464bd9",
+  "packageSHA256": "efbb7144538eb4772496944b7332980f7f2becdfb5c65f10940b111fb4eaed53",
   "packageValidationRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/42084863609",
   "appSHA": "aa07e41d6dea8ed437787f54bb20a43c5eda1c01",
   "appPullRequest": "https://github.com/MiguelFranken/fluid-bodies/pull/397",
@@ -21,7 +21,15 @@
     "focusedNativeBrowserPassed": 3,
     "typecheck": "passed",
     "lint": "passed",
-    "infrastructureRetry": "Attempt 1 was cancelled during stalled Ubuntu font downloads; attempt 2 uses the same committed source."
+    "infrastructureRetry": "Attempt 1 was cancelled during stalled Ubuntu font downloads; attempt 2 uses the same committed source.",
+    "productionBrowserPassed": 77,
+    "postgresNativePassed": 13,
+    "mongoNativePassed": 5,
+    "mongoNativeSkipped": 8,
+    "mongoReviewBrowserPassed": 1,
+    "independentInstalledPassed": 5,
+    "independentDisabledPassed": 3,
+    "independentDisabledSkipped": 2
   },
   "publication": {
     "status": "pending"
@@ -32,7 +40,7 @@
     "appMainAndProduction": "unchanged"
   },
   "localAcceptance": {
-    "runId": "20261105T183237Z-37737",
+    "runId": "20261105T185745Z-86216",
     "appSHA": "aa07e41d6dea8ed437787f54bb20a43c5eda1c01",
     "dirty": true,
     "dirtyFiles": [
@@ -50,32 +58,23 @@
       {
         "title": "chromium > visual-editor-fields.spec.ts > catalogue hover previews a text section without changing the native draft",
         "status": "passed",
-        "durationMs": 80277,
+        "durationMs": 75971,
         "captures": 2,
         "video": true
       },
       {
         "title": "chromium > visual-editor-fields.spec.ts > accordion settings retain and focus the selected plain or rich answer",
         "status": "passed",
-        "durationMs": 32676,
+        "durationMs": 22760,
         "captures": 2,
         "video": true
       }
     ],
     "scope": "Only two selected editor cases, one worker, disposable isolated database. No full Workshops e2e suite. Temporary exact-archive dependency override is the only tracked diff.",
-    "reporter": "https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/567",
-    "uploads": {
-      "total": 14,
-      "uploaded": 14,
-      "pending": 0,
-      "failed": 0,
-      "reviewCaptures": 4,
-      "reviewCapturesMissing": 0
-    },
+    "reporter": "https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/568",
     "visualReview": {
-      "originalScreenshotsInspected": 4,
-      "originalVideosSampled": 2,
-      "limitations": "Development compile indicators and cold login/compilation waiting appear in local evidence."
+      "status": "pending review of canonical-run originals",
+      "previousCandidate": "All four originals inspected and both videos sampled on byte-identical runtime files."
     }
   },
   "workshopsUnits": {
@@ -88,6 +87,13 @@
     "mode": "editor enabled, Turbopack, isolated output, dedicated developer database",
     "archiveSHA256": "312b9b2abf0dac86e25f555e8d2c2536b88558caa7a15efeb9360db286464bd9",
     "sourceSHA": "ea24e121f8c93d7e13049435ff73d19fdac5688f",
-    "installedArchiveFilesByteIdentical": 229
+    "installedArchiveFilesByteIdentical": 229,
+    "canonicalComparison": {
+      "files": 229,
+      "byteIdenticalRuntimeAndAssets": 228,
+      "packageMetadataEqual": true,
+      "difference": "Only ordering of two devDependency keys in package.json",
+      "canonicalSHA256": "efbb7144538eb4772496944b7332980f7f2becdfb5c65f10940b111fb4eaed53"
+    }
   }
 }
