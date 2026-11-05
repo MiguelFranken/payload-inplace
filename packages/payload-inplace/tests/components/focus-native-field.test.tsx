@@ -75,3 +75,18 @@ for (const selectedPath of [undefined, "layout.0.heading"]) {
     expect(container.querySelector("input")?.value).toBe("");
   });
 }
+
+it("survives panel header focus management before its native field mounts", async () => {
+  document.body.innerHTML =
+    '<div><button>Back to sections</button><div data-field-path="layout.0.body"></div></div>';
+  const container = document.body.firstElementChild as HTMLElement;
+  cleanups.push(focusNativeField(container, "layout.0.body"));
+  container.querySelector("button")!.focus();
+  const initialInput = document.createElement("input");
+  container.prepend(initialInput);
+  initialInput.focus();
+  const editor = document.createElement("div");
+  editor.contentEditable = "true";
+  container.lastElementChild!.append(editor);
+  await waitFor(() => expect(document.activeElement).toBe(editor));
+});

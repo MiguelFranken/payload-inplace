@@ -10,7 +10,6 @@ export function focusNativeField(
   let frame = 0;
   let disposed = false;
   const observer = new MutationObserver(schedule);
-  let lastFocused: HTMLElement | undefined;
   function resolveTarget() {
     const selector =
       "input:not([type=hidden]):not(:disabled),textarea:not(:disabled),[contenteditable=true]";
@@ -31,12 +30,11 @@ export function focusNativeField(
   }
   function focus() {
     frame = 0;
-    if (disposed || !container.isConnected || lastFocused?.isConnected) return;
+    if (disposed || !container.isConnected) return;
     const target = resolveTarget();
     if (!target || target.getAttribute("aria-disabled") === "true") return;
     // Payload may replace a lazy Lexical root during initialization. Keep
     // observing until the user deliberately moves focus or the panel closes.
-    lastFocused = target;
     if (
       (target.getRootNode() as Document | ShadowRoot).activeElement !== target
     )
@@ -55,9 +53,18 @@ export function focusNativeField(
     container.removeEventListener("keydown", navigate, true);
   };
   // Programmatic focus is also deliberate navigation (e.g. native field APIs).
-  // Only reconnect a replaced owner; never pull focus out of another control.
+  // Panel focus management may focus its header; only another editable owner
+  // cancels pending native-field focus during lazy initialization.
   const respectFocus = (event: FocusEvent) => {
-    if (event.target !== resolveTarget()) cancel();
+    const target = event.target;
+    const selected = resolveTarget();
+    if (
+      selected &&
+      target instanceof HTMLElement &&
+      target.matches("input,textarea,[contenteditable=true]") &&
+      target !== selected
+    )
+      cancel();
   };
   const navigate = (event: KeyboardEvent) => {
     if (event.key === "Tab") cancel();
