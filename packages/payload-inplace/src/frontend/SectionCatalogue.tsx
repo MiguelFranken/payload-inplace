@@ -29,6 +29,7 @@ export function SectionCatalogue({
   choices,
   catalogue,
   label: triggerLabel,
+  triggerVariant = "row",
   disabled = false,
   locale = "en",
   onChoose,
@@ -43,6 +44,8 @@ export function SectionCatalogue({
   choices: ClientBlock[];
   catalogue?: Record<string, EditorCatalogueEntry>;
   label: string;
+  /** Canvas insertion keeps a circular trigger; outlines retain the full-width row. */
+  triggerVariant?: "canvas" | "row";
   disabled?: boolean;
   locale?: string;
   onChoose: (slug: string) => void;
@@ -196,7 +199,7 @@ export function SectionCatalogue({
         <Combobox.Trigger
           disabled={disabled || choices.length === 0}
           aria-label={triggerLabel}
-          className={`${buttonVariants({ variant: "outline" })} pve:w-full ${className || ""}`}
+          className={`${buttonVariants({ variant: triggerVariant === "canvas" ? "canvas" : "outline", size: triggerVariant === "canvas" ? "icon" : "default" })} ${triggerVariant === "canvas" ? "pve:size-11" : "pve:w-full"} ${className || ""}`}
         >
           <Plus size={17} />
         </Combobox.Trigger>

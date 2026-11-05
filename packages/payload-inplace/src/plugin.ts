@@ -237,7 +237,13 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
               },
             },
           }
-        : collection.admin;
+        : {
+            ...collection.admin,
+            custom: {
+              ...collection.admin?.custom,
+              visualEditorRoots: setting.roots,
+            },
+          };
       return {
         ...collection,
         admin,

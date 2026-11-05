@@ -53,7 +53,13 @@ type Review = {
 export function ReviewPublishButton({
   compact = false,
   frontend = false,
-}: { compact?: boolean; frontend?: boolean } = {}) {
+  onPublished,
+}: {
+  compact?: boolean;
+  frontend?: boolean;
+  /** Successful publication ends a website authoring session; native admin use remains in its document view. */
+  onPublished?: () => void | Promise<void>;
+} = {}) {
   const events = useOptionalEditorLifecycle();
   const scopes = useDocumentScopes();
   const { config } = useConfig(),
@@ -178,6 +184,7 @@ export function ReviewPublishButton({
       dismiss();
       info.setHasPublishedDoc(true);
       info.setUnpublishedVersionCount(0);
+      await onPublished?.();
     } catch (e) {
       setError((e as Error).message);
     } finally {

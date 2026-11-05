@@ -6,7 +6,7 @@ import {
   type DocumentReference,
 } from "../../../core/src/document-ref.js";
 import type { BlockIdentity } from "../types.js";
-import { elementRect } from "../preview/geometry.js";
+import { elementRect, inlineSurface } from "../preview/geometry.js";
 
 /** Client selection is only provenance. The schema resolver and native server access remain authoritative. */
 export interface InspectionTarget {
@@ -107,6 +107,7 @@ export function InspectionLayer({
     let frame = 0,
       disposed = false;
     const observer = new ResizeObserver(() => schedule(false));
+    const observed = new Set<Element>([document.body]);
     observer.observe(document.body);
     function place(
       box: HTMLElement | null,
@@ -142,6 +143,23 @@ export function InspectionLayer({
       const hovered =
         inspecting && highlighting ? hoverTarget.current : undefined;
       const target = hovered || selected;
+      const measured = target?.element
+        ? inlineSurface(target.element)
+        : undefined;
+      const next = new Set<Element>([
+        document.body,
+        ...(measured?.isConnected ? [measured] : []),
+      ]);
+      for (const element of observed)
+        if (!next.has(element)) {
+          observer.unobserve(element);
+          observed.delete(element);
+        }
+      for (const element of next)
+        if (!observed.has(element)) {
+          observer.observe(element);
+          observed.add(element);
+        }
       const box = hover.current;
       box?.toggleAttribute("data-ve-hover-outline", Boolean(hovered));
       box?.toggleAttribute(
@@ -211,6 +229,7 @@ export function InspectionLayer({
     document.addEventListener("click", click, true);
     document.addEventListener("submit", submit, true);
     document.addEventListener("pointerleave", leave);
+    document.addEventListener("pve:inline-geometry", scroll, true);
     window.addEventListener("scroll", scroll, true);
     window.addEventListener("resize", scroll);
     schedule(false);
@@ -222,6 +241,7 @@ export function InspectionLayer({
       document.removeEventListener("click", click, true);
       document.removeEventListener("submit", submit, true);
       document.removeEventListener("pointerleave", leave);
+      document.removeEventListener("pve:inline-geometry", scroll, true);
       window.removeEventListener("scroll", scroll, true);
       window.removeEventListener("resize", scroll);
     };

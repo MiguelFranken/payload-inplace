@@ -22,7 +22,6 @@ import {
 import {
   RenderFields,
   LeaveWithoutSaving,
-  PublishButton,
   useConfig,
   useDocumentInfo,
   useForm,
@@ -44,8 +43,6 @@ import {
   Pencil,
   PanelsTopLeft,
   MoreHorizontal,
-  LoaderCircle,
-  AlertTriangle,
   Check,
   Minus,
   LogOut,
@@ -68,6 +65,7 @@ import { useNativeDraftSave } from "./controllers/draft-save.js";
 import { ownsTypingOrModal } from "../adapters/payload-form.js";
 
 import type { StructuralPolicy } from "../state/policy.js";
+import { SaveFeedback } from "./SaveFeedback.js";
 import { ReviewPublishButton } from "../admin/ReviewPublishButton.js";
 import { installNativeUploadLabels } from "../admin/native-accessibility.js";
 import { useEditorRecovery } from "./recovery.js";
@@ -93,7 +91,6 @@ import { NativeFieldsOwner, NativeFieldSlot } from "./field-ownership.js";
 import { InspectionLayer, type InspectionTarget } from "./InspectionLayer.js";
 
 import { Button as ChromeButton } from "./ui/button.js";
-import { ChromeTooltip } from "./ui/tooltip.js";
 import { ChromePortalProvider } from "./ui/portal.js";
 import {
   DropdownMenu,
@@ -487,8 +484,9 @@ export function FrontendControls({
     setSettingsOpen(true);
   }
   const refreshPage = useEditorPageTransition();
-  async function exit() {
+  async function exit(published = false) {
     if (
+      !published &&
       modified &&
       !window.confirm(t("leaveTheEditorChangesThatHaveNotFinishedSaving"))
     )
@@ -987,7 +985,7 @@ export function FrontendControls({
           <InspectionLayer
             inspecting={inspecting && !recovery.failure && !form.disabled}
             highlighting={highlighting && !hasPanel}
-            selected={hasPanel ? undefined : selection}
+            selected={hasPanel && !settingsOpen ? undefined : selection}
             onPick={pick}
             accept={(target) =>
               !target.document ||
@@ -1194,6 +1192,7 @@ export function FrontendControls({
               }
               onClose={() => {
                 setSettingsOpen(false);
+                setSelection(undefined);
                 inspectButton.current?.focus();
               }}
             >
@@ -1602,231 +1601,220 @@ export function FrontendControls({
                 )}
               </div>
             )}
-          <nav
-            ref={dock}
-            aria-label={t("editingToolbar")}
-            className={`pve:pointer-events-auto pve:flex pve:max-w-full pve:items-center pve:gap-1 pve:box-border pve:rounded-2xl pve:border pve:border-solid pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:bg-[var(--pve-surface,var(--theme-elevation-0,#fff))] pve:p-1 pve:shadow-[0_4px_24px_#0000001a] pve:[interpolate-size:allow-keywords] pve:motion-safe:transition-[width] pve:motion-safe:duration-200 pve:motion-safe:ease-[cubic-bezier(0.2,0,0,1)] pve:max-sm:gap-0 ${expanded ? "pve:w-max" : "pve:w-auto"}`}
-          >
-            {!expanded ? (
-              <ChromeButton
-                ref={launcherButton}
-                size="icon"
-                variant="default"
-                aria-label={t("editPage")}
-                title={t("editPage")}
-                aria-expanded={false}
-                onClick={() => {
-                  setExpanded(true);
-                  setInspecting(editorTools.tools.includes("content"));
-                  requestAnimationFrame(() =>
-                    (
-                      inspectButton.current ||
-                      sectionsButton.current ||
-                      toolsButton.current
-                    )?.focus(),
-                  );
-                }}
-              >
-                <Pencil size={16} />
-              </ChromeButton>
-            ) : (
-              <>
-                {editorTools.tools.includes("content") && (
-                  <ChromeButton
-                    ref={inspectButton}
-                    disabled={advisory.status === "other"}
-                    size="icon"
-                    aria-label={t("selectContent")}
-                    aria-pressed={highlighting && !outline && !hasPanel}
-                    tooltip={t("selectContent")}
-                    onClick={() => {
-                      closeTools();
-                      setOutline(false);
-                      setSettingsOpen(false);
-                      setInspecting(true);
-                      setHighlighting(
-                        (active) => hasPanel || outline || !active,
-                      );
-                      setSelection(undefined);
-                    }}
-                  >
-                    <MousePointer2 size={18} aria-hidden="true" />
-                  </ChromeButton>
-                )}
-                {editorTools.tools.includes("sections") && (
-                  <ChromeButton
-                    size="icon"
-                    ref={sectionsButton}
-                    aria-label={t("sections")}
-                    aria-pressed={outline}
-                    tooltip={t("sections")}
-                    onClick={() => {
-                      closeTools();
-                      setSettingsOpen(false);
-                      setOutline((v) => !v);
-                    }}
-                  >
-                    <Layers size={18} aria-hidden="true" />
-                  </ChromeButton>
-                )}
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    ref={toolsButton}
-                    aria-label={t("moreTools")}
-                    title={t("moreTools")}
-                  >
-                    <MoreHorizontal size={18} />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    {documentScopes.scopes.length > 1 && (
-                      <>
-                        {documentScopes.scopes.map((scope) => (
+          <div className="pve:relative pve:ml-auto pve:w-max pve:max-w-full">
+            <SaveFeedback
+              expanded={expanded}
+              saving={
+                processing ||
+                background ||
+                recovery.attempt > recovery.acknowledged.current
+              }
+              pending={modified}
+              failed={Boolean(recovery.failure)}
+              label={statusText}
+            />
+            <nav
+              ref={dock}
+              aria-label={t("editingToolbar")}
+              className={`pve:relative pve:z-10 pve:pointer-events-auto pve:flex pve:max-w-full pve:items-center pve:gap-0.5 pve:box-border pve:rounded-xl pve:border pve:border-solid pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:bg-[var(--pve-surface,var(--theme-elevation-0,#fff))] pve:p-0.5 pve:shadow-[0_4px_24px_#0000001a] pve:[interpolate-size:allow-keywords] pve:motion-safe:transition-[width] pve:motion-safe:duration-200 pve:motion-safe:ease-[cubic-bezier(0.2,0,0,1)] pve:max-sm:gap-0 ${expanded ? "pve:w-max" : "pve:w-auto"}`}
+            >
+              {!expanded ? (
+                <ChromeButton
+                  ref={launcherButton}
+                  size="icon"
+                  variant="default"
+                  aria-label={t("editPage")}
+                  title={t("editPage")}
+                  aria-expanded={false}
+                  onClick={() => {
+                    setExpanded(true);
+                    setInspecting(editorTools.tools.includes("content"));
+                    requestAnimationFrame(() =>
+                      (
+                        inspectButton.current ||
+                        sectionsButton.current ||
+                        toolsButton.current
+                      )?.focus(),
+                    );
+                  }}
+                >
+                  <Pencil size={16} />
+                </ChromeButton>
+              ) : (
+                <>
+                  {editorTools.tools.includes("content") && (
+                    <ChromeButton
+                      ref={inspectButton}
+                      disabled={advisory.status === "other"}
+                      size="icon"
+                      aria-label={t("selectContent")}
+                      aria-pressed={highlighting && !outline && !hasPanel}
+                      tooltip={t("selectContent")}
+                      onClick={() => {
+                        closeTools();
+                        setOutline(false);
+                        setSettingsOpen(false);
+                        setInspecting(true);
+                        setHighlighting(
+                          (active) => hasPanel || outline || !active,
+                        );
+                        setSelection(undefined);
+                      }}
+                    >
+                      <MousePointer2 size={18} aria-hidden="true" />
+                    </ChromeButton>
+                  )}
+                  {editorTools.tools.includes("sections") && (
+                    <ChromeButton
+                      size="icon"
+                      ref={sectionsButton}
+                      aria-label={t("sections")}
+                      aria-pressed={outline}
+                      tooltip={t("sections")}
+                      onClick={() => {
+                        closeTools();
+                        setSettingsOpen(false);
+                        setOutline((v) => !v);
+                      }}
+                    >
+                      <Layers size={18} aria-hidden="true" />
+                    </ChromeButton>
+                  )}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      ref={toolsButton}
+                      aria-label={t("moreTools")}
+                      title={t("moreTools")}
+                    >
+                      <MoreHorizontal size={18} />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      {documentScopes.scopes.length > 1 && (
+                        <>
+                          {documentScopes.scopes.map((scope) => (
+                            <DropdownMenuItem
+                              key={targetDocumentKey(scope.target)}
+                              aria-current={
+                                targetDocumentKey(scope.target) ===
+                                targetDocumentKey(context.target)
+                                  ? "true"
+                                  : undefined
+                              }
+                              disabled={documentScopes.phase !== "idle"}
+                              onClick={() =>
+                                documentScopes.request(
+                                  documentReference(scope.target),
+                                )
+                              }
+                            >
+                              {targetDocumentKey(scope.target) ===
+                              targetDocumentKey(context.target) ? (
+                                <Check size={16} />
+                              ) : (
+                                <PanelsTopLeft size={16} />
+                              )}
+                              <span>{scope.label}</span>
+                            </DropdownMenuItem>
+                          ))}
+                          <DropdownMenuSeparator />
+                        </>
+                      )}
+                      {editorTools.extensions
+                        .filter((e) => e.showInDock !== false)
+                        .map((e) => (
                           <DropdownMenuItem
-                            key={targetDocumentKey(scope.target)}
-                            aria-current={
-                              targetDocumentKey(scope.target) ===
-                              targetDocumentKey(context.target)
-                                ? "true"
-                                : undefined
-                            }
-                            disabled={documentScopes.phase !== "idle"}
-                            onClick={() =>
-                              documentScopes.request(
-                                documentReference(scope.target),
-                              )
-                            }
+                            key={e.id}
+                            onClick={() => {
+                              setOutline(false);
+                              setSettingsOpen(false);
+                              if (e.kind === "panel") {
+                                setCustomTool(null);
+                                editorTools.openPanel(e.id);
+                              } else {
+                                closeTools();
+                                setCustomTool(e.id);
+                              }
+                            }}
                           >
-                            {targetDocumentKey(scope.target) ===
-                            targetDocumentKey(context.target) ? (
-                              <Check size={16} />
-                            ) : (
-                              <PanelsTopLeft size={16} />
-                            )}
-                            <span>{scope.label}</span>
+                            <PanelsTopLeft size={16} />
+                            {e.label}
                           </DropdownMenuItem>
                         ))}
-                        <DropdownMenuSeparator />
-                      </>
-                    )}
-                    {editorTools.extensions
-                      .filter((e) => e.showInDock !== false)
-                      .map((e) => (
-                        <DropdownMenuItem
-                          key={e.id}
-                          onClick={() => {
-                            setOutline(false);
-                            setSettingsOpen(false);
-                            if (e.kind === "panel") {
-                              setCustomTool(null);
-                              editorTools.openPanel(e.id);
-                            } else {
+                      <DropdownMenuSeparator />
+                      {editorTools.tools.includes("history") && (
+                        <>
+                          <DropdownMenuItem
+                            disabled={processing || background || modified}
+                            onClick={() => {
+                              (document.activeElement as HTMLElement)?.blur();
                               closeTools();
-                              setCustomTool(e.id);
-                            }
-                          }}
-                        >
-                          <PanelsTopLeft size={16} />
-                          {e.label}
-                        </DropdownMenuItem>
-                      ))}
-                    <DropdownMenuSeparator />
-                    {editorTools.tools.includes("history") && (
-                      <>
-                        <DropdownMenuItem
-                          disabled={processing || background || modified}
-                          onClick={() => {
-                            (document.activeElement as HTMLElement)?.blur();
-                            closeTools();
-                            setSelection(undefined);
-                            openView({ kind: "versions" });
-                          }}
-                        >
-                          <History size={16} />
-                          {t("savedVersions")}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          disabled={disabled || !history.canUndo}
-                          onClick={() => undo()}
-                        >
-                          <Undo2 size={16} />
-                          {t("undoSectionChange")}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          disabled={disabled || !history.canRedo}
-                          onClick={() => undo(true)}
-                        >
-                          <Redo2 size={16} />
-                          {t("redoSectionChange")}
-                        </DropdownMenuItem>
-                      </>
-                    )}
-                    <DropdownMenuItem
-                      disabled={disabled || !modified || background}
-                      onClick={() => void saveDraft()}
-                    >
-                      <Check size={16} />
-                      {t("saveDraftNow")}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="pve:sm:hidden"
-                      onClick={minimize}
-                    >
-                      <Minus size={16} />
-                      {t("minimizeEditor")}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => void exit()}>
-                      <LogOut size={16} />
-                      {t("exitEditing")}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <span
-                  aria-hidden="true"
-                  className="pve:mx-1 pve:h-5 pve:w-px pve:shrink-0 pve:bg-[var(--pve-border,var(--theme-border-color,#e3e4e8))]"
-                />
-                <ChromeTooltip label={statusText}>
-                  <span
-                    role="status"
-                    aria-label={statusText}
-                    tabIndex={0}
-                    data-ve-save-status=""
-                    className="pve:inline-flex pve:size-10 pve:shrink-0 pve:items-center pve:justify-center pve:rounded-lg pve:text-[var(--pve-muted,var(--theme-elevation-700,#646773))] pve:focus-visible:outline-2 pve:focus-visible:outline-[var(--pve-accent,#3451eb)]"
-                  >
-                    <span aria-hidden="true">
-                      {recovery.failure ? (
-                        <AlertTriangle size={17} />
-                      ) : processing || background ? (
-                        <LoaderCircle
-                          size={17}
-                          className="pve:motion-safe:animate-spin"
-                        />
-                      ) : modified ? (
-                        <Pencil size={17} />
-                      ) : (
-                        <Check size={17} />
+                              setSelection(undefined);
+                              openView({ kind: "versions" });
+                            }}
+                          >
+                            <History size={16} />
+                            {t("savedVersions")}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            disabled={disabled || !history.canUndo}
+                            onClick={() => undo()}
+                          >
+                            <Undo2 size={16} />
+                            {t("undoSectionChange")}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            disabled={disabled || !history.canRedo}
+                            onClick={() => undo(true)}
+                          >
+                            <Redo2 size={16} />
+                            {t("redoSectionChange")}
+                          </DropdownMenuItem>
+                        </>
                       )}
-                    </span>
-                    <span className="pve:sr-only">{statusText}</span>
-                  </span>
-                </ChromeTooltip>
-                {editorTools.tools.includes("publish") &&
-                  (info.data?._veRevision !== undefined ? (
-                    <ReviewPublishButton compact frontend />
-                  ) : (
-                    <PublishButton />
-                  ))}
-                <ChromeButton
-                  size="icon"
-                  aria-label={t("minimizeEditor")}
-                  tooltip={t("minimizeEditor")}
-                  onClick={minimize}
-                >
-                  <Minus size={16} />
-                </ChromeButton>
-              </>
-            )}
-          </nav>
+                      <DropdownMenuItem
+                        disabled={disabled || !modified || background}
+                        onClick={() => void saveDraft()}
+                      >
+                        <Check size={16} />
+                        {t("saveDraftNow")}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="pve:sm:hidden"
+                        onClick={minimize}
+                      >
+                        <Minus size={16} />
+                        {t("minimizeEditor")}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => void exit()}>
+                        <LogOut size={16} />
+                        {t("exitEditing")}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <span
+                    aria-hidden="true"
+                    className="pve:mx-1 pve:h-5 pve:w-px pve:shrink-0 pve:bg-[var(--pve-border,var(--theme-border-color,#e3e4e8))]"
+                  />
+                  {editorTools.tools.includes("publish") && (
+                    <ReviewPublishButton
+                      compact
+                      frontend
+                      onPublished={() => exit(true)}
+                    />
+                  )}
+                  <ChromeButton
+                    size="icon"
+                    aria-label={t("minimizeEditor")}
+                    tooltip={t("minimizeEditor")}
+                    onClick={minimize}
+                  >
+                    <Minus size={16} />
+                  </ChromeButton>
+                </>
+              )}
+            </nav>
+          </div>
           {inspecting && expanded && (
             <p className="pve:sr-only" role="status">
               {t("editTextOnThePageOrChooseASection")}

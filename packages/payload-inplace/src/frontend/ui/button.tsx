@@ -16,6 +16,8 @@ export const buttonVariants = cva(
           "pve:bg-transparent pve:text-inherit pve:hover:bg-[var(--pve-hover,var(--theme-elevation-100,#f1f2f5))] pve:aria-pressed:bg-[var(--pve-accent-soft,#edf0ff)] pve:aria-pressed:text-[var(--pve-accent,#3451eb)] pve:aria-expanded:bg-[var(--pve-hover,var(--theme-elevation-100,#f1f2f5))]",
         outline:
           "pve:bg-transparent pve:text-inherit pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:aria-pressed:bg-[var(--pve-accent-soft,#edf0ff)] pve:aria-pressed:text-[var(--pve-accent,#3451eb)] pve:aria-pressed:border-[var(--pve-accent,#3451eb)] pve:hover:bg-[var(--pve-hover,var(--theme-elevation-100,#f1f2f5))]",
+        canvas:
+          "pve:bg-[var(--pve-surface,#fff)] pve:text-[var(--pve-accent,#3451eb)] pve:rounded-full pve:border-[var(--pve-accent-soft,#dce2ff)] pve:shadow-[0_2px_8px_#00000014] pve:hover:bg-[var(--pve-accent,#3451eb)] pve:hover:text-white pve:hover:border-[var(--pve-accent,#3451eb)]",
         destructive:
           "pve:bg-transparent pve:text-[var(--pve-danger,#b42318)] pve:hover:bg-red-50",
       },

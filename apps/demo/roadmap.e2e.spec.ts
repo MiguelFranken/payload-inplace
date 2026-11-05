@@ -103,10 +103,14 @@ test("canvas insertion chooses an exact stable boundary and cancelling writes no
   await hero.hover();
   await page.mouse.wheel(0, 200);
   const after = page.getByRole("combobox", {
-    name: "Add section after",
+    name: "Add section",
     exact: true,
   });
   await expect(after).toBeVisible();
+  await expect(page.locator("[data-ve-insert-boundary]")).toHaveCount(1);
+  const triggerBox = (await after.boundingBox())!;
+  expect(triggerBox.width).toBe(44);
+  expect(triggerBox.height).toBe(44);
   const before = (
     await (
       await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
@@ -272,7 +276,7 @@ test("catalogue search and delayed canvas previews cancel without a native save 
   await hero.hover();
   await page.mouse.wheel(0, 200);
   const add = page.getByRole("combobox", {
-    name: "Add section after",
+    name: "Add section",
     exact: true,
   });
   await add.click();
@@ -1225,6 +1229,18 @@ test("page product and global scopes keep one native owner and independent revie
       ).json()
     )._status,
   ).toBe("draft");
+  // Publication is terminal even for a related document. Re-enter the primary
+  // document explicitly before continuing this multi-document ownership check.
+  await expect(page.locator("[data-ve-ui]")).toHaveCount(0);
+  expect(
+    (await context.cookies()).filter((cookie) =>
+      cookie.name.startsWith("payload-ve-"),
+    ),
+  ).toHaveLength(0);
+  await page.goto(`/visual-editor/start?collection=pages&id=${primary.id}`);
+  await page
+    .getByRole("button", { name: "Start editing", exact: true })
+    .click();
   await enable();
   const productHeading = page.locator('[data-test-scope-heading="products"]');
   await productHeading.click();
@@ -1266,7 +1282,7 @@ test("page product and global scopes keep one native owner and independent revie
     (await context.cookies()).filter((cookie) =>
       cookie.name.startsWith("payload-ve-"),
     ),
-  ).toHaveLength(3);
+  ).toHaveLength(2);
   expect(page.url()).toBe(url);
   expect(errors).toEqual([]);
   await page.setViewportSize({ width: 320, height: 800 });
@@ -1507,8 +1523,17 @@ test("plaintext and rich-text undo stay local while structural undo preserves ne
   await heading.click();
   await heading.press("ControlOrMeta+End");
   await heading.pressSequentially(" local undo");
-  await heading.press("ControlOrMeta+z");
+  // Chromium splits native undo groups around async background acknowledgements.
+  // Each command must remain local; consume those groups without assuming one
+  // OS-specific typing batch covers the complete synthetic character sequence.
+  for (
+    let group = 0;
+    group < 16 && (await heading.textContent()) !== originalHeading;
+    group++
+  )
+    await heading.press("ControlOrMeta+z");
   await expect(heading).toHaveText(originalHeading!);
+  expect(order(await read())).toEqual(moved);
   // Browser undo restores its caret according to the host OS. Retain the user's
   // resulting text without assuming a platform-specific end-of-document chord.
   await heading.pressSequentially(" retained later");

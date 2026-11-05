@@ -20,8 +20,9 @@ export function CatalogueLauncher(
       aria-expanded={false}
       aria-haspopup="listbox"
       aria-controls={pendingPopup}
-      variant="outline"
-      className={`pve:w-full ${props.className || ""}`}
+      variant={props.triggerVariant === "canvas" ? "canvas" : "outline"}
+      size={props.triggerVariant === "canvas" ? "icon" : "default"}
+      className={`${props.triggerVariant === "canvas" ? "pve:size-11" : "pve:w-full"} ${props.className || ""}`}
       aria-label={props.label}
       tooltip={props.label}
       disabled={props.disabled || !props.choices.length}

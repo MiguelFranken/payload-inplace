@@ -18,6 +18,7 @@ import { CatalogueLauncher as SectionCatalogue } from "./CatalogueLauncher.js";
 import type { EditorCatalogueEntry } from "../types.js";
 type Hover = {
   element: HTMLElement;
+  edge: "before" | "after";
   section?: NativeSection;
   list?: InsertionTarget;
 };
@@ -59,53 +60,80 @@ export function InsertionPoints({
   const [hover, setHover] = useState<Hover>();
   const held = useRef(false);
   const box = useRef<HTMLDivElement>(null);
-  const choose = useEffectEvent((element: Element | null) => {
-    if (
-      held.current ||
-      !element ||
-      element.closest("[data-ve-ui],[data-ve-inline-active]")
-    )
-      return;
-    const bound = element.closest<HTMLElement>(
-      "[data-ve-list],[data-ve-block]",
-    );
-    if (!bound || bound.getAttribute("data-ve-root") !== root) return;
-    const provenance = bound.getAttribute("data-ve-document");
-    if (provenance && (!document || provenance !== documentKey(document)))
-      return;
-    let ancestors: string[];
-    try {
-      ancestors = JSON.parse(bound.getAttribute("data-ve-ancestors") || "[]");
-    } catch {
-      return;
-    }
-    const section = sections.find(
-      (s) =>
-        s.identity.blockId === bound.getAttribute("data-ve-block") &&
-        JSON.stringify(s.identity.ancestors || []) ===
-          JSON.stringify(ancestors),
-    );
-    const list = bound.hasAttribute("data-ve-list")
-      ? {
-          kind: "list" as const,
-          root,
-          field: bound.getAttribute("data-ve-list") || "",
-          ...(section ? { identity: section.identity } : {}),
-        }
-      : undefined;
-    if (!section && !list) return;
-    const target = list ? bound : sectionElement(section!);
-    if (!(target instanceof HTMLElement)) return;
-    setHover((previous) =>
-      previous?.element === target
-        ? previous
-        : { element: target, section, list },
-    );
-  });
+  const choose = useEffectEvent(
+    (element: Element | null, pointerY?: number) => {
+      if (
+        held.current ||
+        !element ||
+        element.closest("[data-ve-ui],[data-ve-inline-active]")
+      )
+        return;
+      const bound = element.closest<HTMLElement>(
+        "[data-ve-list],[data-ve-block]",
+      );
+      if (!bound || bound.getAttribute("data-ve-root") !== root) return;
+      const provenance = bound.getAttribute("data-ve-document");
+      if (provenance && (!document || provenance !== documentKey(document)))
+        return;
+      let ancestors: string[];
+      try {
+        ancestors = JSON.parse(bound.getAttribute("data-ve-ancestors") || "[]");
+      } catch {
+        return;
+      }
+      const section = sections.find(
+        (s) =>
+          s.identity.blockId === bound.getAttribute("data-ve-block") &&
+          JSON.stringify(s.identity.ancestors || []) ===
+            JSON.stringify(ancestors),
+      );
+      const list = bound.hasAttribute("data-ve-list")
+        ? {
+            kind: "list" as const,
+            root,
+            field: bound.getAttribute("data-ve-list") || "",
+            ...(section ? { identity: section.identity } : {}),
+          }
+        : undefined;
+      if (!section && !list) return;
+      const target = list ? bound : sectionElement(section!);
+      if (!(target instanceof HTMLElement)) return;
+      const rect = elementRect(target) || target.getBoundingClientRect();
+      let edge: "before" | "after" =
+        pointerY !== undefined && pointerY < rect.top + rect.height / 2
+          ? "before"
+          : "after";
+      // Pending native permissions are not a reason to switch the user's intended gap.
+      const alternate = edge === "before" ? "after" : "before";
+      if (
+        section &&
+        !list &&
+        !options({
+          kind: "adjacent",
+          identity: section.identity,
+          side: edge,
+        }) &&
+        options({
+          kind: "adjacent",
+          identity: section.identity,
+          side: alternate,
+        })
+      )
+        edge = alternate;
+      setHover((previous) =>
+        previous?.element === target && previous.edge === edge
+          ? previous
+          : { element: target, section, list, edge },
+      );
+    },
+  );
   useEffect(() => {
     if (!enabled) return;
     const move = (event: Event) =>
-      choose(event.target instanceof Element ? event.target : null);
+      choose(
+        event.target instanceof Element ? event.target : null,
+        event instanceof PointerEvent ? event.clientY : undefined,
+      );
     window.document.addEventListener("pointermove", move, { passive: true });
     window.document.addEventListener("focusin", move);
     const first = sections[0] && sectionElement(sections[0]);
@@ -115,7 +143,7 @@ export function InsertionPoints({
       window.document.removeEventListener("pointermove", move);
       window.document.removeEventListener("focusin", move);
     };
-  }, [enabled]);
+  }, [enabled, sections.length, root]);
   useEffect(() => {
     if (!enabled || !hover) return;
     let frame = 0;
@@ -187,14 +215,16 @@ export function InsertionPoints({
     hover.list
       ? [{ target: hover.list, side: "after" }]
       : hover.section
-        ? ["before", "after"].map((side) => ({
-            side: side as "before" | "after",
-            target: {
-              kind: "adjacent",
-              identity: hover.section!.identity,
-              side: side as "before" | "after",
+        ? [
+            {
+              side: hover.edge,
+              target: {
+                kind: "adjacent",
+                identity: hover.section.identity,
+                side: hover.edge,
+              },
             },
-          }))
+          ]
         : [];
   return (
     <div
@@ -207,11 +237,7 @@ export function InsertionPoints({
         const allowed = options(target);
         if (!allowed) return null;
         const label =
-          allowed.field.type === "array"
-            ? t("addItem")
-            : side === "before"
-              ? t("addSectionBefore")
-              : t("addSectionAfter");
+          allowed.field.type === "array" ? t("addItem") : t("addSection");
         const classes = `pve:pointer-events-auto pve:fixed pve:z-50 pve:left-[var(--pve-insert-x)] pve:-translate-x-1/2 pve:w-11 ${side === "before" ? "pve:top-[var(--pve-insert-before)] pve:group-data-[before-visible=false]/insert:hidden" : "pve:top-[var(--pve-insert-after)] pve:group-data-[after-visible=false]/insert:hidden"}`;
         return (
           <div className={classes} data-ve-insert-boundary={side} key={side}>
@@ -219,7 +245,8 @@ export function InsertionPoints({
               <ChromeTooltip label={label}>
                 <Button
                   size="icon"
-                  variant="outline"
+                  variant="canvas"
+                  className="pve:size-11 pve:p-0"
                   aria-label={label}
                   onClick={() => insert(target)}
                 >
@@ -228,6 +255,7 @@ export function InsertionPoints({
               </ChromeTooltip>
             ) : (
               <SectionCatalogue
+                triggerVariant="canvas"
                 onOpenChange={(open) => {
                   held.current = open;
                 }}

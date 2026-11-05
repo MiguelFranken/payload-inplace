@@ -54,10 +54,6 @@ async function productEditor(page: Page, role = "admin") {
   await expect(
     page.getByRole("button", { name: "Publish reviewed draft", exact: true }),
   ).toHaveCount(0);
-  await page.getByRole("button", { name: "More tools", exact: true }).click();
-  await page
-    .getByRole("menuitem", { name: "Exit editing", exact: true })
-    .click();
   await expect(
     page.getByRole("button", { name: "Edit page", exact: true }),
   ).toBeVisible();

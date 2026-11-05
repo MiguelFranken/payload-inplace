@@ -35,3 +35,6 @@ packages/payload-inplace/README.md
 packages/payload-inplace/LICENSE
 packages/payload-inplace/NOTICE
 packages/payload-inplace/assets/
+
+# Next writes output-directory-specific route type imports during each build.
+apps/demo/next-env.d.ts

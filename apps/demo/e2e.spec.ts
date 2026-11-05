@@ -111,10 +111,7 @@ for (const collection of ["pages", "offers"])
     ).toHaveCount(0);
     const check = await page.request.get(`/${collection}/demo`);
     expect(await check.text()).toContain(replacement);
-    await page.getByRole("button", { name: "More tools", exact: true }).click();
-    await page
-      .getByRole("menuitem", { name: "Exit editing", exact: true })
-      .click();
+    // Acknowledged publication ends authoring without a second explicit exit.
     await expect(page).toHaveURL(new RegExp(`/${collection}/demo$`));
     await expect(page.locator("[data-ve-ui]")).toHaveCount(0);
   });

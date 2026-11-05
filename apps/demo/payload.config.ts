@@ -406,6 +406,8 @@ export default buildConfig({
     },
     user: "users",
     importMap: {
+      // The committed superset supports PG and the Mongo fallback without concurrent dev servers rewriting each other.
+      autoGenerate: false,
       baseDir: dirname,
       importMapFile: path.join(dirname, "app/(payload)/admin/importMap.js"),
     },
