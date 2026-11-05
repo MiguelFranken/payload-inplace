@@ -83,7 +83,8 @@ import { canAdoptPlainText } from "../adapters/plain-text.js";
 import { resolveEditorStrategy } from "../schema/editor-strategy.js";
 import { InlineText } from "./InlineText.js";
 import { usePreviewStatus } from "./preview-status.js";
-import { SelectionSettings } from "./SelectionSettings.js";
+import { Settings2, X } from "lucide-react";
+import { selectionReset } from "../schema/selection-reset.js";
 import { ExtensionAction } from "./ExtensionAction.js";
 import { Floatable } from "./Floatable.js";
 import { useVisualEditor } from "./tools-context.js";
@@ -239,6 +240,7 @@ export function FrontendControls({
     previewInsertion,
     history,
     commandFor,
+    resetBinding,
     add,
     undo,
     blockChoices,
@@ -745,6 +747,54 @@ export function FrontendControls({
         })
       : undefined;
   const candidate = binding?.field;
+  const resetPath =
+    binding && selected ? `${selected.path}.${binding.path}` : undefined;
+  const resetStatePath = binding?.row
+    ? resetPath?.slice(0, resetPath.lastIndexOf("."))
+    : resetPath;
+  useFormFields(([fields]) =>
+    resetStatePath ? fields[resetStatePath] : undefined,
+  );
+  const reset = selectionReset(
+    binding,
+    resetStatePath ? form.getField(resetStatePath) : undefined,
+    resetPath ? form.getDataByPath(resetPath) : undefined,
+    !disabled &&
+      !selected?.readOnly &&
+      Boolean(
+        binding &&
+          canUpdateInlineField(selected?.permissions, binding.permissionPath),
+      ),
+  );
+  function resetSelection() {
+    if (!reset || !selected || !selection?.field) return;
+    const label = describe(selection);
+    if (
+      !window.confirm(
+        t(
+          reset.kind === "remove"
+            ? "removeNamedItemConfirm"
+            : "clearNamedFieldConfirm",
+          { label },
+        ),
+      )
+    )
+      return;
+    // Finish the inline owner before clearing; its blur commit cannot overwrite the reset.
+    (document.activeElement as HTMLElement)?.blur();
+    const issue = resetBinding(selected, selection.field);
+    if (!issue) {
+      setSelection(undefined);
+      setSettingsOpen(false);
+    }
+  }
+  function openSelectionSettings() {
+    (document.activeElement as HTMLElement)?.blur();
+    closeTools();
+    setOutline(false);
+    setSettingsOpen(true);
+  }
+
   const inlinePath =
     binding && selected ? `${selected.path}.${binding.path}` : undefined;
   // Subscribe to this path, but read the current path from the native Form.
@@ -1004,6 +1054,47 @@ export function FrontendControls({
             }
             describe={describe}
             hint={describeAction}
+            actions={
+              selection && selected ? (
+                <>
+                  <ChromeButton
+                    variant="selection"
+                    size="compact-icon"
+                    disabled={disabled}
+                    aria-label={t("optionsForNamedField", {
+                      label: describe(selection),
+                    })}
+                    tooltip={t("optionsForNamedField", {
+                      label: describe(selection),
+                    })}
+                    onClick={openSelectionSettings}
+                  >
+                    <Settings2 size={15} aria-hidden="true" />
+                  </ChromeButton>
+                  {reset && (
+                    <ChromeButton
+                      variant="selection"
+                      size="compact-icon"
+                      aria-label={t(
+                        reset.kind === "remove"
+                          ? "removeNamedItem"
+                          : "clearNamedField",
+                        { label: describe(selection) },
+                      )}
+                      tooltip={t(
+                        reset.kind === "remove"
+                          ? "removeNamedItem"
+                          : "clearNamedField",
+                        { label: describe(selection) },
+                      )}
+                      onClick={resetSelection}
+                    >
+                      <X size={15} aria-hidden="true" />
+                    </ChromeButton>
+                  )}
+                </>
+              ) : undefined
+            }
           />
         )}
         {expanded && selected && selection && canInline && !hasPanel && (
@@ -1036,22 +1127,6 @@ export function FrontendControls({
             )}
           </NativeFieldsOwner>
         )}
-        {expanded &&
-          selected &&
-          selection &&
-          !hasPanel &&
-          strategy.kind !== "richText" && (
-            <SelectionSettings
-              element={selection.element}
-              label={describe(selection)}
-              onOpen={() => {
-                (document.activeElement as HTMLElement)?.blur();
-                closeTools();
-                setOutline(false);
-                setSettingsOpen(true);
-              }}
-            />
-          )}
         {expanded && outline && (
           <BlockReorder
             scope={documentReference(context.target)}

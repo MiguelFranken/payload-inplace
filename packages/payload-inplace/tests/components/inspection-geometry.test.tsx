@@ -60,7 +60,7 @@ it("follows translation-only host motion and stops measuring when selection clos
   const writes = vi.spyOn(outline.style, "setProperty");
   tick();
   expect(writes).not.toHaveBeenCalled();
-  expect(props.describe).toHaveBeenCalledTimes(1);
+  expect(props.describe).toHaveBeenCalledTimes(2);
   hidden = true;
   act(() => document.dispatchEvent(new Event("visibilitychange")));
   tick();

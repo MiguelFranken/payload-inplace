@@ -21,7 +21,6 @@ import {
   ListOrdered,
   Quote,
   Pilcrow,
-  Settings2,
   Link2,
 } from "lucide-react";
 import {
@@ -41,6 +40,7 @@ import {
   DropdownMenuItem,
 } from "./ui/menu.js";
 import { Button } from "./ui/button.js";
+import { createRichSurface, preserveRichClasses } from "./rich-presentation.js";
 import { richToolbarPosition } from "./rich-toolbar.js";
 import { chrome } from "../admin/chrome.js";
 /** A normal-flow twin owns Lexical DOM while the untouched React subtree waits for native acknowledgement.
@@ -88,13 +88,21 @@ export function InlineRichText({
   });
   useLayoutEffect(() => {
     const { field, guard, disabled, label, features } = current();
-    const surface = element.cloneNode(false) as HTMLElement;
-    surface.removeAttribute("id");
-    surface.setAttribute("data-ve-inline-active", "");
-    surface.setAttribute("role", "textbox");
-    surface.setAttribute("aria-multiline", "true");
-    surface.setAttribute("aria-label", label);
-    surface.classList.add("pvi:focus:outline-none!", "pvi:min-h-[1lh]");
+    const {
+      surface,
+      editor: editable,
+      theme,
+      source,
+    } = createRichSurface(element);
+    editable.setAttribute("data-ve-inline-active", "");
+    editable.setAttribute("role", "textbox");
+    editable.setAttribute("aria-multiline", "true");
+    editable.setAttribute("aria-label", label);
+    editable.classList.add(
+      "pvi:focus:outline-none!",
+      "pvi:min-h-[1lh]",
+      "pvi:[&_[data-lexical-text]]:whitespace-inherit!",
+    );
     const hidden = element.classList.contains("pvi:hidden!");
     element.after(surface);
     element.classList.add("pvi:hidden!");
@@ -115,9 +123,11 @@ export function InlineRichText({
     };
     surface.addEventListener("keydown", key);
     surface.addEventListener("click", click);
+    let releasePresentation = () => {};
     try {
       runtime.current = mountRichEditor({
-        element: surface,
+        element: editable,
+        theme,
         value: field.value,
         onChange: change,
         onSelectionChange: (next) =>
@@ -130,6 +140,7 @@ export function InlineRichText({
         unsupportedNodeLabel: (type) =>
           current().t("unsupportedRichNode", { type }),
       });
+      releasePresentation = preserveRichClasses(runtime.current.editor, source);
     } catch {
       setError("nativeRichTextRequired");
     }
@@ -156,10 +167,16 @@ export function InlineRichText({
         const selected = anchorRange.getBoundingClientRect();
         if (selected.height > 0) anchor = selected;
       }
+      const caption = (chrome.getRootNode() as Document | ShadowRoot)
+        .querySelector<HTMLElement>(
+          "[data-ve-selection-outline] [data-ve-selection-caption]",
+        )
+        ?.getBoundingClientRect();
       const position = richToolbarPosition(
         anchor,
         chrome.getBoundingClientRect(),
         { width: innerWidth, height: innerHeight },
+        caption,
       );
       for (const [property, value] of [
         ["--pve-rich-x", `${position.left}px`],
@@ -180,6 +197,7 @@ export function InlineRichText({
     window.addEventListener("resize", schedule);
     schedule();
     return () => {
+      releasePresentation();
       runtime.current?.dispose();
       runtime.current = null;
       surface.removeEventListener("keydown", key);
@@ -398,14 +416,6 @@ export function InlineRichText({
             </Popover.Portal>
           </Popover.Root>
         )}
-        <Button
-          size="compact-icon"
-          tooltip={error ? t(error) : t("moreTextOptions")}
-          aria-label={t("moreTextOptions")}
-          onClick={onSettings}
-        >
-          <Settings2 size={15} />
-        </Button>
       </div>
     </>
   );

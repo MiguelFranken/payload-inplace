@@ -139,6 +139,9 @@ export function materializeStructuralRestore(
       ...snapshot[scope.path],
       ...current[path],
       value: rows.length,
+      // Match Payload useField({hasRows:true}): non-empty lists serialize their
+      // descendants, never the numeric row-count sentinel (including undo from empty).
+      disableFormData: rows.length > 0,
       rows: rows.map((row) => ({ ...row })),
     },
   };

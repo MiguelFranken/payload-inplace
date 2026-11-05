@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.8
+
+### Patch Changes
+
+- Keep inline rich-text typography and renderer wrapper layouts intact, including prose spacing, grid placement, responsive styles and semantic node classes. Join contextual settings and safe optional-field/array-item reset actions to the selection label. Use neutral editing controls and a clearer section insertion boundary; preserve native array serialization when undoing removal of the last item.
+
 ## 0.0.7
 
 ### Patch Changes

@@ -13,13 +13,15 @@ export const buttonVariants = cva(
         default:
           "pve:bg-[var(--pve-accent,#3451eb)] pve:text-white pve:hover:brightness-95",
         secondary:
-          "pve:bg-[var(--pve-muted-surface,var(--theme-elevation-50,#f4f5f7))] pve:text-inherit pve:hover:bg-[var(--pve-hover,var(--theme-elevation-100,#e9ebef))] pve:aria-pressed:bg-[var(--pve-accent-soft,#edf0ff)] pve:aria-pressed:text-[var(--pve-accent,#3451eb)]",
+          "pve:bg-[var(--pve-muted-surface,var(--theme-elevation-50,#f4f5f7))] pve:text-inherit pve:hover:bg-[var(--pve-hover,var(--theme-elevation-100,#e9ebef))] pve:aria-pressed:bg-[var(--pve-selected-surface,#e4e6ea)] pve:aria-pressed:text-inherit",
         ghost:
-          "pve:bg-transparent pve:text-inherit pve:hover:bg-[var(--pve-hover,var(--theme-elevation-100,#f1f2f5))] pve:aria-pressed:bg-[var(--pve-accent-soft,#edf0ff)] pve:aria-pressed:text-[var(--pve-accent,#3451eb)] pve:aria-expanded:bg-[var(--pve-hover,var(--theme-elevation-100,#f1f2f5))]",
+          "pve:bg-transparent pve:text-inherit pve:hover:bg-[var(--pve-hover,var(--theme-elevation-100,#f1f2f5))] pve:aria-pressed:bg-[var(--pve-selected-surface,#e4e6ea)] pve:aria-pressed:text-inherit pve:aria-expanded:bg-[var(--pve-hover,var(--theme-elevation-100,#f1f2f5))]",
         outline:
-          "pve:bg-[var(--pve-muted-surface,var(--theme-elevation-50,#f4f5f7))] pve:text-inherit pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:aria-pressed:bg-[var(--pve-accent-soft,#edf0ff)] pve:aria-pressed:text-[var(--pve-accent,#3451eb)] pve:aria-pressed:border-[var(--pve-accent,#3451eb)] pve:hover:bg-[var(--pve-hover,var(--theme-elevation-100,#f1f2f5))]",
+          "pve:bg-[var(--pve-muted-surface,var(--theme-elevation-50,#f4f5f7))] pve:text-inherit pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:aria-pressed:bg-[var(--pve-selected-surface,#e4e6ea)] pve:aria-pressed:text-inherit pve:aria-pressed:border-[var(--pve-selected-border,#a8abb4)] pve:hover:bg-[var(--pve-hover,var(--theme-elevation-100,#f1f2f5))]",
         canvas:
-          "pve:bg-[var(--pve-surface,#fff)] pve:text-[var(--pve-accent,#3451eb)] pve:rounded-full pve:border-[var(--pve-accent-soft,#dce2ff)] pve:shadow-[0_2px_8px_#00000014] pve:hover:bg-[var(--pve-accent,#3451eb)] pve:hover:text-white pve:hover:border-[var(--pve-accent,#3451eb)]",
+          "pve:bg-[var(--pve-surface,#fff)] pve:text-[var(--pve-text,#202127)] pve:rounded-full pve:border-[var(--pve-selected-border,#a8abb4)] pve:shadow-[0_2px_10px_#00000026,0_0_0_4px_#ffffffb3] pve:hover:bg-[var(--pve-hover,#e9ebef)] pve:hover:border-[var(--pve-text,#202127)]",
+        selection:
+          "pve:rounded-sm pve:bg-transparent pve:text-white pve:hover:bg-white/20 pve:focus-visible:ring-white pve:focus-visible:ring-offset-0",
         destructive:
           "pve:bg-[var(--pve-danger-soft,#fff1f0)] pve:text-[var(--pve-danger,#b42318)] pve:hover:bg-red-100",
       },
@@ -30,7 +32,7 @@ export const buttonVariants = cva(
         sm: "pve:h-9 pve:px-2.5",
       },
     },
-    defaultVariants: { variant: "secondary", size: "default" },
+    defaultVariants: { variant: "ghost", size: "default" },
   },
 );
 /** Editor chrome button; native Payload field controls keep their own implementation. */

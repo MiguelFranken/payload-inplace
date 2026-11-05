@@ -61,7 +61,7 @@ test("rich-text formatting, safe paste and slow acknowledgements preserve struct
   const { doc } = await createShopEditor(page, { richBody });
   const body = page.locator('[data-ve-field="body"]').first();
   await body.click();
-  const rich = page.locator('[data-ve-inline-active][data-ve-field="body"]');
+  const rich = page.locator('[data-ve-inline-active][contenteditable="true"]');
   await expect(rich).toHaveAttribute("contenteditable", "true");
   await expect(rich.locator('[data-pve-opaque="upload"]')).toHaveAttribute(
     "contenteditable",
@@ -221,7 +221,7 @@ test("rich-text formatting, safe paste and slow acknowledgements preserve struct
       .evaluate((el, original) => el === original, header),
   ).toBe(true);
   await page
-    .getByRole("button", { name: "More text options", exact: true })
+    .getByRole("button", { name: "Options for Body", exact: true })
     .click();
   await expect(
     page.getByRole("button", { name: "Close Body panel", exact: true }),
@@ -234,7 +234,7 @@ test("rich-text composition defers native submission until the composed value is
 }) => {
   const { doc } = await createShopEditor(page);
   await page.locator('[data-ve-field="body"]').first().click();
-  const rich = page.locator('[data-ve-inline-active][data-ve-field="body"]');
+  const rich = page.locator('[data-ve-inline-active][contenteditable="true"]');
   const writes: string[] = [];
   page.on("request", (request) => {
     if (
@@ -603,7 +603,7 @@ test("selection geometry grows and shrinks with wrapping text and the live rich-
   const body = page.locator('#studio-story [data-ve-field="body"]').first();
   await body.scrollIntoViewIfNeeded();
   await body.click();
-  const rich = page.locator('[data-ve-inline-active][data-ve-field="body"]');
+  const rich = page.locator('[data-ve-inline-active][contenteditable="true"]');
   await expect(rich).toHaveAttribute("contenteditable", "true");
   await rich.press("ControlOrMeta+End");
   await rich.press("Enter");
@@ -813,7 +813,7 @@ test("compact rich-text toolbar follows selection and reflects existing formatti
     },
   });
   await page.locator('[data-ve-field="body"]').first().click();
-  const rich = page.locator('[data-ve-inline-active][data-ve-field="body"]');
+  const rich = page.locator('[data-ve-inline-active][contenteditable="true"]');
   const toolbar = page.getByRole("toolbar", { name: "Text formatting" });
   const bold = toolbar.getByRole("button", { name: "Bold", exact: true });
   const last = rich.locator("p").last();
@@ -880,4 +880,222 @@ test("compact rich-text toolbar follows selection and reflects existing formatti
   await page.screenshot({
     path: "test-results/rich-toolbar-selection-320.png",
   });
+});
+
+test("joined selection controls clear optional terminals and remove array rows through the native form", async ({
+  page,
+}) => {
+  const { doc } = await createShopEditor(page);
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  const hero = page.locator('[data-ve-field="description"]').first();
+  await hero.click();
+  const outline = page.locator("[data-ve-selection-outline]");
+  const caption = outline.locator("[data-ve-selection-caption]");
+  await expect(
+    caption.getByRole("button", {
+      name: "Options for Description",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    caption.getByRole("button", { name: "Clear Description", exact: true }),
+  ).toBeVisible();
+  const bounds = await outline.boundingBox();
+  const label = await caption.boundingBox();
+  expect(Math.abs(label!.x - bounds!.x)).toBeLessThanOrEqual(1);
+  expect(
+    await outline.evaluate((el) => getComputedStyle(el).borderTopLeftRadius),
+  ).toBe("0px");
+  await page.screenshot({ path: "test-results/joined-selection-desktop.png" });
+  await page.setViewportSize({ width: 320, height: 760 });
+  await hero.scrollIntoViewIfNeeded();
+  await expect(caption).toBeVisible();
+  const mobile = await caption.boundingBox();
+  expect(mobile!.x).toBeGreaterThanOrEqual(0);
+  expect(mobile!.x + mobile!.width).toBeLessThanOrEqual(320);
+  await page.screenshot({ path: "test-results/joined-selection-mobile.png" });
+  page.once("dialog", (dialog) => dialog.dismiss());
+  await caption
+    .getByRole("button", { name: "Clear Description", exact: true })
+    .click();
+  await expect(hero).not.toHaveText("");
+  page.once("dialog", (dialog) => dialog.accept());
+  await caption
+    .getByRole("button", { name: "Clear Description", exact: true })
+    .click();
+  await expect
+    .poll(
+      async () =>
+        (
+          await (
+            await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+          ).json()
+        ).layout[0].description,
+    )
+    .toBe("");
+  const heading = page.locator('[data-ve-field="heading"]').first();
+  await heading.click();
+  await expect(
+    outline.getByRole("button", { name: "Clear Heading", exact: true }),
+  ).toHaveCount(0);
+  await page.setViewportSize({ width: 1280, height: 900 });
+  // An explicit row binding selects the item, while its child bindings stay terminal.
+  const card = page.locator('article[data-ve-field^="cards.@"]').first();
+  const imageHeight = (await card
+    .locator("[data-ve-field]")
+    .first()
+    .boundingBox())!.height;
+  await card.click({ position: { x: 8, y: imageHeight + 8 } });
+  await expect(
+    outline.getByRole("button", { name: "Remove Cards", exact: true }),
+  ).toBeVisible();
+  page.once("dialog", (dialog) => dialog.accept());
+  await outline
+    .getByRole("button", { name: "Remove Cards", exact: true })
+    .click();
+  await expect
+    .poll(
+      async () =>
+        (
+          await (
+            await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+          ).json()
+        ).layout.find((item: any) => item.blockType === "productGrid").cards
+          .length,
+    )
+    .toBe(0);
+  await page.getByRole("button", { name: "Sections", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Undo section change", exact: true })
+    .click();
+  await expect
+    .poll(
+      async () =>
+        (
+          await (
+            await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+          ).json()
+        ).layout.find((item: any) => item.blockType === "productGrid").cards
+          .length,
+    )
+    .toBe(1);
+  expect(errors).toEqual([]);
+});
+
+test("inline rich text retains renderer typography, grid placement and responsive wrapping", async ({
+  page,
+}) => {
+  const text = (value: string, format = 0) => ({
+    type: "text",
+    version: 1,
+    text: value,
+    format,
+    detail: 0,
+    mode: "normal",
+    style: "",
+  });
+  const block = (type: string, children: any[], extra = {}) => ({
+    type,
+    version: 1,
+    format: "",
+    indent: 0,
+    direction: null,
+    children,
+    ...extra,
+  });
+  const richBody = {
+    root: block("root", [
+      block("heading", [text("Studio news")], { tag: "h4" }),
+      block("paragraph", [
+        text("A carefully styled paragraph with "),
+        text("strong emphasis", 1),
+        text(" and "),
+        text("italic text", 2),
+        text(". Long enough to wrap at small viewports."),
+      ]),
+      block("paragraph", [
+        text("Second paragraph with a "),
+        block("link", [text("studio link")], {
+          version: 3,
+          fields: {
+            linkType: "custom",
+            url: "https://example.test/studio",
+            newTab: false,
+          },
+        }),
+      ]),
+      block(
+        "list",
+        [
+          block("listitem", [text("First item")], { value: 1 }),
+          block("listitem", [text("Second item")], { value: 2 }),
+        ],
+        { tag: "ul", listType: "bullet", start: 1 },
+      ),
+      block("quote", [text("Keep the original presentation.")]),
+    ]),
+  };
+  await createShopEditor(page, { richBody });
+  // A synthetic consumer stylesheet reproduces the wrapper-sensitive prose/grid
+  // contract from real storefronts without making the plugin know their classes.
+  await page.addStyleTag({
+    content: `
+    [data-ve-field="body"] { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .payload-richtext { grid-column:2 / span 2; font-size:18px; line-height:1.75; letter-spacing:.15px; }
+    .payload-richtext p { margin:0 0 18px; }
+    .payload-richtext h4 { font-size:23px; line-height:1.2; margin:0 0 20px; }
+    .payload-richtext strong { font-weight:600; }
+    .payload-richtext a { color:rgb(65,50,40); text-decoration:underline; }
+    @media(max-width:500px) { [data-ve-field="body"] { display:block; } .payload-richtext { font-size:16px; line-height:1.6; } }
+  `,
+  });
+  const metrics = async (selector: string) =>
+    page.locator(selector).evaluate((root) => {
+      const bounds = root.getBoundingClientRect();
+      return [...root.querySelectorAll("h4,p,li,blockquote,strong,em,a")].map(
+        (node) => {
+          const s = getComputedStyle(node),
+            r = node.getBoundingClientRect();
+          return {
+            tag: node.tagName,
+            font: s.fontFamily,
+            size: s.fontSize,
+            line: s.lineHeight,
+            weight: s.fontWeight,
+            letter: s.letterSpacing,
+            color: s.color,
+            margin: s.margin,
+            width: r.width,
+            height: r.height,
+            x: r.left - bounds.left,
+            y: r.top - bounds.top,
+          };
+        },
+      );
+    });
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    const original = page
+      .locator('[data-ve-field="body"]')
+      .filter({ visible: true });
+    await original.scrollIntoViewIfNeeded();
+    const before = await metrics('[data-ve-field="body"]');
+    await original.click();
+    await expect(
+      page.locator("[data-ve-inline-active][contenteditable=true]"),
+    ).toBeVisible();
+    const after = await metrics("[data-ve-inline-active]");
+    // Relative x includes the preserved grid column. Compare against the twin's
+    // outer binding, while the editable itself remains its inner prose wrapper.
+    const outerAfter = await metrics(
+      '[data-ve-field="body"]:not(.pvi\\:hidden\\!)',
+    );
+    expect(after.length).toBe(before.length);
+    expect(outerAfter).toEqual(before);
+    await page.screenshot({
+      path: `test-results/rich-presentation-${width}.png`,
+    });
+    await page.keyboard.press("Escape");
+  }
 });

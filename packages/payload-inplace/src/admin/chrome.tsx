@@ -40,7 +40,7 @@ export function IconAction({
       tooltip={label}
       disabled={disabled}
       onClick={onClick}
-      className={`pve:m-0! pve:inline-flex! pve:min-h-10! pve:min-w-10! pve:items-center! pve:justify-center! pve:rounded-md! pve:p-2! pve:bg-[var(--pve-muted-surface,var(--theme-elevation-50,#f4f5f7))]! pve:hover:bg-[var(--pve-hover,var(--theme-elevation-100,#e9ebef))]! pve:disabled:opacity-40 ${danger ? "pve:text-[var(--theme-error-600)]!" : ""}`}
+      className={`pve:m-0! pve:inline-flex! pve:min-h-10! pve:min-w-10! pve:items-center! pve:justify-center! pve:rounded-md! pve:p-2! pve:bg-transparent! pve:hover:bg-[var(--pve-hover,var(--theme-elevation-100,#e9ebef))]! pve:disabled:opacity-40 ${danger ? "pve:text-[var(--theme-error-600)]!" : ""}`}
     >
       <Icon size={18} strokeWidth={1.5} aria-hidden="true" />
     </Button>

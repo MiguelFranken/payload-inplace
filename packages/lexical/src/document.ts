@@ -7,6 +7,7 @@ import {
   type SerializedLexicalNode,
   type SerializedElementNode,
   type DOMConversionMap,
+  type EditorConfig,
 } from "lexical";
 /** JSON is kept at this boundary; unknown Payload nodes are opaque, never flattened into text. */
 export interface RichNode extends SerializedLexicalNode {
@@ -81,8 +82,10 @@ export class PayloadLinkNode extends ElementNode {
       }),
     };
   }
-  createDOM() {
+  createDOM(config: EditorConfig) {
     const element = document.createElement("a");
+    if (config.theme.link)
+      element.classList.add(...config.theme.link.split(/\s+/).filter(Boolean));
     element.href =
       safeLink((this.__raw.fields as Record<string, unknown>)?.url) || "#";
     return element;

@@ -344,6 +344,10 @@ export const englishMessages = {
   editMedia: "Edit media",
   removeMedia: "Remove media",
   clearSelection: "Clear selection",
+  clearNamedField: "Clear {label}",
+  clearNamedFieldConfirm: "Clear {label}? Its saved draft value will be empty.",
+  removeNamedItem: "Remove {label}",
+  removeNamedItemConfirm: "Remove {label}? You can undo this in Sections.",
   showOptions: "Show options",
   actionUnavailable: "This action is unavailable.",
   actionFailed: "Action failed. Check your access and retry.",
@@ -706,6 +710,12 @@ export const germanMessages = {
   editMedia: "Medium bearbeiten",
   removeMedia: "Medium entfernen",
   clearSelection: "Auswahl löschen",
+  clearNamedField: "{label} leeren",
+  clearNamedFieldConfirm:
+    "{label} leeren? Der Wert im gespeicherten Entwurf wird zurückgesetzt.",
+  removeNamedItem: "{label} entfernen",
+  removeNamedItemConfirm:
+    "{label} entfernen? Du kannst dies unter Abschnitte rückgängig machen.",
   showOptions: "Optionen anzeigen",
   actionUnavailable: "Diese Aktion ist nicht verfügbar.",
   actionFailed:

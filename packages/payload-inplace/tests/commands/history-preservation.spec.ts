@@ -1,5 +1,8 @@
 import { expect, it } from "vitest";
-import { StructuralHistory } from "../../src/state/history.js";
+import {
+  materializeStructuralRestore,
+  StructuralHistory,
+} from "../../src/state/history.js";
 import { restoreRoot } from "../../src/adapters/payload-form.js";
 function fields(rows: { id: string; heading: string }[], root = "layout"): any {
   const result: any = {
@@ -143,4 +146,36 @@ it("a removed parent cannot redirect nested undo onto a different row", () => {
     /removed/,
   );
   expect(form.getFields()["layout.0.children.0.id"].value).toBe("unrelated");
+});
+
+it("restoring the last removed array item excludes the native row-count sentinel from serialization", () => {
+  const history = new StructuralHistory("layout");
+  const before: any = {
+    layout: { value: 1, rows: [{ id: "section" }] },
+    "layout.0.cards": {
+      value: 1,
+      disableFormData: true,
+      rows: [{ id: "card" }],
+    },
+    "layout.0.id": { value: "section" },
+    "layout.0.cards.0.id": { value: "card" },
+    "layout.0.cards.0.heading": { value: "Keep" },
+  };
+  history.checkpoint(before, "layout.0.cards", { kind: "remove", id: "card" });
+  const after: any = {
+    ...before,
+    "layout.0.cards": { value: 0, disableFormData: false, rows: [] },
+  };
+  delete after["layout.0.cards.0.id"];
+  delete after["layout.0.cards.0.heading"];
+  const result = materializeStructuralRestore(
+    after,
+    history.undo(after)!,
+    "layout",
+  );
+  expect(typeof result).toBe("object");
+  if (typeof result !== "string") {
+    expect(result.fields["layout.0.cards"].disableFormData).toBe(true);
+    expect(result.fields["layout.0.cards.0.heading"].value).toBe("Keep");
+  }
 });

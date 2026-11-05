@@ -28,6 +28,7 @@ import {
 import { preparedInsertedRow } from "../../../../core/src/row-preparation.js";
 import { previewExample } from "../../schema/example-preview.js";
 import { resolveBinding } from "../../schema/resolve-binding.js";
+import { selectionReset } from "../../schema/selection-reset.js";
 import { canUpdateInlineField } from "../../schema/inline-access.js";
 import { availableBlocks } from "../../schema/available-blocks.js";
 import { resolveRootSchemaPath } from "../../schema/resolve.js";
@@ -214,6 +215,44 @@ export function useNativeStructure({
       renderIssue,
     ],
   );
+  /** Re-resolve the renderer binding at activation; a prior numeric row path is never reused. */
+  function resetBinding(section: NativeSection, name: string) {
+    if (disabled || section.readOnly || !section.block)
+      return invalidate(renderIssue({ code: "read-only" }));
+    const binding = resolveBinding({
+      fields: section.block.fields,
+      value: form.getDataByPath(section.path),
+      binding: name,
+      permissions: section.permissions,
+    });
+    const path = binding && `${section.path}.${binding.path}`;
+    const parent = path?.slice(0, path.lastIndexOf("."));
+    if (!binding || !path || !parent)
+      return invalidate(renderIssue({ code: "read-only" }));
+    const reset = selectionReset(
+      binding,
+      form.getField(binding?.row ? parent! : path!),
+      path ? form.getDataByPath(path) : undefined,
+      Boolean(
+        binding &&
+          canUpdateInlineField(section.permissions, binding.permissionPath),
+      ),
+    );
+    if (!reset || !path || !parent)
+      return invalidate(renderIssue({ code: "read-only" }));
+    if (reset.kind === "remove") {
+      if (
+        !history.checkpoint(form.getFields(), parent, {
+          kind: "remove",
+          id: reset.id,
+        })
+      )
+        return invalidate(renderIssue({ code: "preparing" }));
+      form.removeFieldRow({ path: parent, rowIndex: reset.index });
+    } else form.dispatchFields({ type: "UPDATE", path, value: reset.value });
+    form.setModified(true);
+    return invalidate();
+  }
   const rows = form.getDataByPath(root);
   const rootRows = Array.isArray(rows) ? rows : [];
   const atStart = (slug: string) =>
@@ -487,6 +526,7 @@ export function useNativeStructure({
     history,
     generation,
     commandFor,
+    resetBinding,
     add,
     undo,
     blockChoices,

@@ -8,6 +8,7 @@ import {
   COMMAND_PRIORITY_HIGH,
   type TextFormatType,
   type LexicalEditor,
+  type EditorThemeClasses,
 } from "lexical";
 import {
   registerRichText,
@@ -57,6 +58,7 @@ export function mountRichEditor({
   onError,
   onSelectionChange,
   features,
+  theme,
   unsupportedNodeLabel,
   autofocus = true,
   disabled = false,
@@ -70,6 +72,8 @@ export function mountRichEditor({
   onSelectionChange?: (formats: readonly RichFormat[]) => void;
   disabled?: boolean;
   features?: readonly string[];
+  /** Renderer presentation classes; no computed font sizes are frozen into editor state. */
+  theme?: EditorThemeClasses;
   /** Presentation-only label for immutable custom/upload islands; never serialized. */
   unsupportedNodeLabel?: (type: string) => string;
   /** Hosts may defer focus to their own click/caret placement; headless state tests disable DOM focus. */
@@ -113,15 +117,16 @@ export function mountRichEditor({
       ),
     ],
     theme: {
+      ...theme,
       text: {
-        bold: "pvi:font-bold",
-        italic: "pvi:italic",
-        underline: "pvi:underline",
+        bold: theme?.text?.bold ?? "pvi:font-bold",
+        italic: theme?.text?.italic ?? "pvi:italic",
+        underline: theme?.text?.underline || "pvi:underline",
         strikethrough: "pvi:line-through",
-        code: "pvi:font-mono",
+        code: theme?.text?.code ?? "pvi:font-mono",
       },
-      link: "pvi:underline",
-      list: { ul: "pvi:list-disc", ol: "pvi:list-decimal" },
+      link: theme?.link || "pvi:underline",
+      list: { ul: "pvi:list-disc", ol: "pvi:list-decimal", ...theme?.list },
     },
     onError,
   });

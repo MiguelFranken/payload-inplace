@@ -25,3 +25,13 @@ it("flips below a selection near the top and stays inside a 320px viewport", () 
     ),
   ).toEqual({ left: 122, top: 694 });
 });
+
+it("keeps formatting above the joined settings caption instead of intercepting its buttons", () => {
+  const position = richToolbarPosition(
+    { left: 100, top: 200, bottom: 224, width: 10 },
+    { width: 190, height: 34 },
+    { width: 1280, height: 720 },
+    { left: 60, right: 270, top: 166, bottom: 198 },
+  );
+  expect(position.top).toBe(124);
+});

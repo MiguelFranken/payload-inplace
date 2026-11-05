@@ -1,6 +1,6 @@
 "use client";
 import { useEditorMessages } from "./messages.js";
-import { useEffect, useEffectEvent, useRef } from "react";
+import { useEffect, useEffectEvent, useRef, type ReactNode } from "react";
 import {
   parseDocumentKey,
   type DocumentReference,
@@ -77,7 +77,10 @@ export function InspectionLayer({
   describe,
   hint,
   accept,
+  actions,
 }: {
+  /** Context controls belong to the selected target, never a different hovered field. */
+  actions?: ReactNode;
   inspecting: boolean;
   /** Hover feedback is opt-in; direct text selection can remain enabled independently. */
   highlighting?: boolean;
@@ -97,9 +100,10 @@ export function InspectionLayer({
   });
   // Native form/save renders change callbacks, not the pointer or selected target.
   const currentSelection = useEffectEvent(() => selected);
-  const label = useEffectEvent(
-    (target: InspectionTarget) =>
-      `${describe(target)} · ${hint?.(target) || t("clickToEdit")}`,
+  const label = useEffectEvent((target: InspectionTarget) =>
+    target.element === selected?.element
+      ? describe(target)
+      : `${describe(target)} · ${hint?.(target) || t("clickToEdit")}`,
   );
   const pick = useEffectEvent((target: InspectionTarget) => onPick(target));
   const selectedElement = selected?.element;
@@ -135,9 +139,12 @@ export function InspectionLayer({
       }
       box.removeAttribute("hidden");
       if (box === hover.current) {
-        const below = String(rect.top < 32);
+        const below = String(rect.top < 40);
         if (box.dataset.labelBelow !== below) box.dataset.labelBelow = below;
-        const offset = `${Math.max(0, 8 - rect.left)}px`;
+        const available = `${Math.max(0, innerWidth - Math.max(0, rect.left) - 4)}px`;
+        if (box.style.getPropertyValue("--pve-caption-width") !== available)
+          box.style.setProperty("--pve-caption-width", available);
+        const offset = `${Math.max(-2, -rect.left)}px`;
         if (box.style.getPropertyValue("--pve-label-offset") !== offset)
           box.style.setProperty("--pve-label-offset", offset);
       }
@@ -268,19 +275,28 @@ export function InspectionLayer({
     };
   }, [inspecting, highlighting, selectedElement]);
   const geometry =
-    "pve:pointer-events-none pve:fixed pve:z-40 pve:box-border pve:left-[var(--pve-left)] pve:top-[var(--pve-top)] pve:w-[var(--pve-width)] pve:h-[var(--pve-height)] pve:rounded-sm pve:border-2 pve:border-solid pve:border-[var(--pve-accent,#3455db)]";
+    "pve:pointer-events-none pve:fixed pve:z-40 pve:box-border pve:left-[var(--pve-left)] pve:top-[var(--pve-top)] pve:w-[var(--pve-width)] pve:h-[var(--pve-height)] pve:rounded-sm pve:rounded-ss-none pve:border-2 pve:border-solid pve:border-[var(--pve-accent,#3455db)]";
   return (
     <>
       <div
         ref={hover}
         hidden
-        aria-hidden="true"
         className={`${geometry} pve:bg-[var(--pve-hover-fill,#3455db0d)] pve:motion-safe:data-[animate=true]:transition-[left,top,width,height,opacity] pve:motion-safe:data-[animate=true]:duration-100 pve:motion-safe:data-[animate=true]:ease-[cubic-bezier(0.2,0,0,1)]`}
       >
-        <span
-          ref={caption}
-          className="pve:absolute pve:bottom-full pve:start-[var(--pve-label-offset,0px)] pve:max-w-[min(240px,calc(100vw-16px))] pve:rounded-t-md pve:bg-[var(--pve-accent,#3455db)] pve:px-2 pve:py-1 pve:font-sans pve:text-xs pve:leading-relaxed pve:text-white pve:in-data-[label-below=true]:bottom-auto pve:in-data-[label-below=true]:top-full"
-        />
+        <div
+          data-ve-ui=""
+          data-ve-selection-caption=""
+          className="pve:pointer-events-auto pve:absolute pve:bottom-full pve:start-[var(--pve-label-offset,-2px)] pve:flex pve:max-w-[min(360px,var(--pve-caption-width,calc(100vw-4px)))] pve:items-center pve:gap-1 pve:rounded-t-md pve:bg-[var(--pve-accent,#3455db)] pve:pe-1 pve:ps-2 pve:py-0.5 pve:font-sans pve:text-xs pve:leading-relaxed pve:text-white pve:in-data-[label-below=true]:bottom-auto pve:in-data-[label-below=true]:top-full pve:in-data-[label-below=true]:rounded-t-none pve:in-data-[label-below=true]:rounded-b-md"
+        >
+          <span ref={caption} className="pve:min-w-0 pve:truncate pve:py-1" />
+          <div
+            role="group"
+            aria-label={selected ? describe(selected) : undefined}
+            className="pve:hidden pve:shrink-0 pve:items-center pve:gap-0.5 pve:in-[[data-ve-selection-outline]]:flex"
+          >
+            {actions}
+          </div>
+        </div>
       </div>
     </>
   );

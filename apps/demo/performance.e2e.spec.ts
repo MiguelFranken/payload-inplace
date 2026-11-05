@@ -244,7 +244,7 @@ test("production active feature transfer and interaction budgets include native 
       page.getByRole("toolbar", { name: "Text formatting", exact: true }),
     ).toBeVisible();
   });
-  const rich = page.locator('[data-ve-inline-active][data-ve-field="body"]');
+  const rich = page.locator('[data-ve-inline-active][contenteditable="true"]');
   await measure("typing", async () => {
     await rich.pressSequentially(" snappy");
     await expect(rich).toContainText("snappy");

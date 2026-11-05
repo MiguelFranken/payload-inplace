@@ -102,7 +102,7 @@ export function Floatable({
         {onBack && (
           <Button
             size="icon"
-            variant="secondary"
+            variant="ghost"
             aria-label={t("backToSections")}
             title={t("backToSections")}
             onClick={onBack}
@@ -120,7 +120,7 @@ export function Floatable({
           {actions}
           <Button
             size="icon"
-            variant="secondary"
+            variant="ghost"
             aria-label={t("closeNamedPanel", { title })}
             title={t("closePanel")}
             onClick={close}

@@ -208,7 +208,7 @@ test("inline Lexical edits structured text through the native queue without repl
     );
   });
   await body.click();
-  const surface = page.locator('[data-ve-inline-active][data-ve-field="body"]');
+  const surface = page.locator('[data-ve-inline-active][contenteditable="true"]');
   await expect(surface).toHaveAttribute("contenteditable", "true");
   await expect(
     page.getByRole("toolbar", { name: "Text formatting" }),
@@ -249,7 +249,7 @@ test("inline Lexical edits structured text through the native queue without repl
   expect(before.root.children.length).toBeGreaterThan(0);
   await page.screenshot({ path: "test-results/roadmap-inline-richtext.png" });
   await page
-    .getByRole("button", { name: "More text options", exact: true })
+    .getByRole("button", { name: "Options for Body", exact: true })
     .click();
   await expect(surface).toHaveCount(0);
   await expect(
@@ -1546,7 +1546,7 @@ test("plaintext and rich-text undo stay local while structural undo preserves ne
   const body = page.locator('[data-ve-field="body"]').first();
   await body.scrollIntoViewIfNeeded();
   await body.click();
-  const rich = page.locator('[data-ve-inline-active][data-ve-field="body"]');
+  const rich = page.locator('[data-ve-inline-active][contenteditable="true"]');
   const originalRich = await rich.textContent();
   await rich.press("ControlOrMeta+End");
   await rich.pressSequentially(" rich undo");
