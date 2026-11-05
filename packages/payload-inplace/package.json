@@ -1,6 +1,6 @@
 {
   "name": "payload-inplace",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Live editing for Payload CMS websites with inline text, native fields, block reordering and reviewed drafts.",
   "type": "module",
   "license": "MIT",

@@ -1187,3 +1187,60 @@ it("keeps consumer-owned pattern storage behind native record ACL without changi
     }),
   ).rejects.toThrow();
 });
+
+it.skipIf(process.env.VE_DATABASE !== "postgres")(
+  "acquires and releases a real native document lease through current-user access",
+  async () => {
+    const { createContext, signContext } = await import(
+      "../../packages/payload-inplace/src/server/context.js"
+    );
+    const { manageAdvisoryLock } = await import(
+      "../../packages/payload-inplace/src/server/advisory-lock.js"
+    );
+    const { editorOptions } = await import("./payload.config.js");
+    const user = (
+      await payload.find({
+        collection: "users",
+        where: { role: { equals: "admin" } },
+        limit: 1,
+      })
+    ).docs[0];
+    const shop = (await payload.find({ collection: "shops", limit: 1 }))
+      .docs[0];
+    const req = await createLocalReq(
+      {
+        user: {
+          ...user,
+          collection: "users",
+          _sid: "synthetic-lease-session",
+        } as any,
+      },
+      payload,
+    );
+    const token = signContext(
+      createContext(req, {
+        collection: "shops",
+        id: String(shop.id),
+        root: "layout",
+      }),
+      payload.secret,
+    );
+    const acquired = await manageAdvisoryLock(
+      req,
+      token,
+      editorOptions,
+      "acquire",
+    );
+    expect(acquired.status).toBe("owned");
+    expect(acquired.lease).toBeDefined();
+    expect(
+      await manageAdvisoryLock(
+        req,
+        token,
+        editorOptions,
+        "release",
+        acquired.lease,
+      ),
+    ).toEqual({ status: "released" });
+  },
+);

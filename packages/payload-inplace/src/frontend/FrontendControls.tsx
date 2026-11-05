@@ -105,7 +105,7 @@ import {
   showSectionOnPage,
 } from "./BlockReorder.js";
 import type { NativeSection } from "../schema/tree.js";
-import { useAdvisoryLock } from "./advisory-lock.js";
+import { prepareAdvisoryExit, useAdvisoryLock } from "./advisory-lock.js";
 const ConflictReview = lazy(() =>
   import("./ConflictReview.js").then((module) => ({
     default: module.ConflictReview,
@@ -491,21 +491,25 @@ export function FrontendControls({
       !window.confirm(t("leaveTheEditorChangesThatHaveNotFinishedSaving"))
     )
       return;
-    const response = await fetch(
-      `${config.routes.api}/visual-editor/deactivate`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nonce: context.nonce }),
-      },
-    );
-    if (!response.ok) {
+    const resumeLeases = await prepareAdvisoryExit();
+    try {
+      const response = await fetch(
+        `${config.routes.api}/visual-editor/deactivate`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nonce: context.nonce }),
+        },
+      );
+      if (!response.ok) throw Error("Deactivation failed");
+      if (context.pagePath && refreshPage) refreshPage();
+      else window.location.assign(exitURL);
+    } catch {
+      resumeLeases();
       setError(t("couldNotLeaveEditingPleaseTryAgain"));
-      return;
     }
-    if (context.pagePath && refreshPage) refreshPage();
-    else window.location.assign(exitURL);
   }
+
   async function reopenEditor() {
     if (
       (modified || background) &&

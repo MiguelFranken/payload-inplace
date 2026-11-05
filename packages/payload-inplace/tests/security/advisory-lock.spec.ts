@@ -22,7 +22,8 @@ import {
 } from "../../src/server/advisory-lock.js";
 it("does not mutate disabled/unsupported locks and never exposes owner data on foreign leases", async () => {
   hooks.authorize.mockResolvedValue({
-    context: { target: { collection: "pages", id: 1, root: "layout" } },
+    context: { target: { collection: "pages", id: "1", root: "layout" } },
+    document: { id: 1 },
   });
   const find = vi.fn(async () => ({
       docs: [

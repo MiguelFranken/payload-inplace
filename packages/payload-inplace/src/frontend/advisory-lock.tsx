@@ -6,6 +6,18 @@ export const AdvisoryLockContext = createContext<
 >({
   status: "disabled",
 });
+type ExitParticipant = { pause: () => Promise<void>; resume: () => void };
+const exitParticipants = new Set<ExitParticipant>();
+
+/** Release mounted page scopes before revoking their activation cookies. Resume leases if deactivation fails. */
+export async function prepareAdvisoryExit(): Promise<() => void> {
+  const participants = [...exitParticipants];
+  await Promise.all(participants.map((participant) => participant.pause()));
+  return () => {
+    for (const participant of participants)
+      if (exitParticipants.has(participant)) participant.resume();
+  };
+}
 /** Active-only bounded native lease heartbeat. Hidden/unmounted scopes release only their exact last stamp; lost cleanup expires natively. It owns no document content. */
 export function useNativeAdvisoryLock(
   api: string,
@@ -20,13 +32,14 @@ export function useNativeAdvisoryLock(
   const held = useRef<AdvisoryLockState["lease"]>(undefined);
   useEffect(() => {
     let disposed = false,
+      paused = false,
       timer: ReturnType<typeof setTimeout> | undefined,
       request: AbortController | undefined;
-    const release = () => {
+    const release = async () => {
       const lease = held.current;
       held.current = undefined;
       if (lease)
-        void fetch(url, {
+        await fetch(url, {
           method: "POST",
           keepalive: true,
           credentials: "same-origin",
@@ -35,7 +48,7 @@ export function useNativeAdvisoryLock(
         }).catch(() => {});
     };
     const acquire = async () => {
-      if (disposed || document.visibilityState === "hidden") return;
+      if (disposed || paused || document.visibilityState === "hidden") return;
       request?.abort();
       const controller = new AbortController();
       request = controller;
@@ -47,7 +60,12 @@ export function useNativeAdvisoryLock(
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ proof, action: "acquire" }),
         });
-        if (!response.ok) throw Error("Unavailable");
+        if (!response.ok) {
+          // A revoked/expired proof cannot authorize a later cleanup either.
+          if (response.status === 401 || response.status === 403)
+            held.current = undefined;
+          throw Error("Unavailable");
+        }
         const next = (await response.json()) as AdvisoryLockState;
         if (disposed || controller.signal.aborted) return;
         held.current = next.lease;
@@ -62,7 +80,21 @@ export function useNativeAdvisoryLock(
           setState({ status: "unavailable" });
       }
     };
+    const participant: ExitParticipant = {
+      pause: async () => {
+        paused = true;
+        clearTimeout(timer);
+        request?.abort();
+        await release();
+      },
+      resume: () => {
+        paused = false;
+        void acquire();
+      },
+    };
+    exitParticipants.add(participant);
     const visibility = () => {
+      if (paused) return;
       clearTimeout(timer);
       request?.abort();
       if (document.visibilityState === "hidden") release();
@@ -73,6 +105,7 @@ export function useNativeAdvisoryLock(
     void acquire();
     return () => {
       disposed = true;
+      exitParticipants.delete(participant);
       clearTimeout(timer);
       request?.abort();
       document.removeEventListener("visibilitychange", visibility);

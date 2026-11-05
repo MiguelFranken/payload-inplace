@@ -1,6 +1,9 @@
 import { expect, it, vi, afterEach } from "vitest";
 import { act, renderHook } from "@testing-library/react";
-import { useNativeAdvisoryLock } from "../../src/frontend/advisory-lock.js";
+import {
+  prepareAdvisoryExit,
+  useNativeAdvisoryLock,
+} from "../../src/frontend/advisory-lock.js";
 afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
@@ -73,5 +76,72 @@ it("does not spin on unavailable presence and retries only on an explicit reques
   });
   expect(request).toHaveBeenCalledOnce();
   await act(async () => view.result.current.retry());
+  expect(request).toHaveBeenCalledTimes(2);
+});
+
+it("releases every mounted scope before revocation, pauses heartbeats and resumes after a failed exit", async () => {
+  vi.useFakeTimers();
+  vi.spyOn(document, "visibilityState", "get").mockReturnValue("visible");
+  let stamp = 0;
+  const request = vi
+    .spyOn(globalThis, "fetch")
+    .mockImplementation(async (_url, options) => {
+      const input = JSON.parse(String(options?.body));
+      return Response.json(
+        input.action === "release"
+          ? { status: "released" }
+          : {
+              status: "owned",
+              lease: { id: ++stamp, updatedAt: "synthetic-stamp" },
+              heartbeatMs: 1000,
+            },
+      );
+    });
+  const first = renderHook(() => useNativeAdvisoryLock("/api", "first-proof"));
+  const second = renderHook(() =>
+    useNativeAdvisoryLock("/api", "second-proof"),
+  );
+  await act(async () => {});
+  let resume!: () => void;
+  await act(async () => {
+    resume = await prepareAdvisoryExit();
+  });
+  expect(
+    request.mock.calls.map(
+      ([, options]) => JSON.parse(String(options?.body)).action,
+    ),
+  ).toEqual(["acquire", "acquire", "release", "release"]);
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(30000);
+  });
+  expect(request).toHaveBeenCalledTimes(4);
+  await act(async () => resume());
+  expect(request).toHaveBeenCalledTimes(6);
+  await act(async () => {
+    await prepareAdvisoryExit();
+  });
+  first.unmount();
+  second.unmount();
+  expect(request).toHaveBeenCalledTimes(8);
+});
+it("does not send cleanup with a proof already rejected by the server", async () => {
+  vi.useFakeTimers();
+  vi.spyOn(document, "visibilityState", "get").mockReturnValue("visible");
+  const request = vi
+    .spyOn(globalThis, "fetch")
+    .mockResolvedValueOnce(
+      Response.json({
+        status: "owned",
+        lease: { id: 1, updatedAt: "synthetic-stamp" },
+        heartbeatMs: 1000,
+      }),
+    )
+    .mockResolvedValue(new Response(null, { status: 403 }));
+  const view = renderHook(() => useNativeAdvisoryLock("/api", "expired-proof"));
+  await act(async () => {});
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(1000);
+  });
+  view.unmount();
   expect(request).toHaveBeenCalledTimes(2);
 });

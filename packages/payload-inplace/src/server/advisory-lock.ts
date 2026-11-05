@@ -25,7 +25,7 @@ export async function manageAdvisoryLock(
   action: "acquire" | "release",
   lease?: AdvisoryLease,
 ): Promise<AdvisoryLockState> {
-  const { context } = await readEditContext(req, proof, options),
+  const { context, document } = await readEditContext(req, proof, options),
     target = context.target;
   const locking = nativeDocumentConfig(req, target).lockDocuments;
   if (locking === false || !req.payload.collections[collection])
@@ -39,7 +39,7 @@ export async function manageAdvisoryLock(
       : {
           and: [
             { "document.relationTo": { equals: target.collection } },
-            { "document.value": { equals: target.id } },
+            { "document.value": { equals: document.id } },
           ],
         };
   const user = { relationTo: req.user!.collection, value: req.user!.id };
@@ -118,7 +118,8 @@ export async function manageAdvisoryLock(
                 : {
                     document: {
                       relationTo: target.collection as never,
-                      value: target.id as never,
+                      // Payload relationship validation requires the authorized document’s native ID type.
+                      value: document.id as never,
                     },
                   }),
               user,

@@ -242,6 +242,10 @@ test("installed nested-root native fields, optimistic draft and reviewed publish
     expect(JSON.stringify(published.article.sections[0].body)).toContain(
       "Packed inline rich text",
     );
+    await expect(
+      page.getByRole("navigation", { name: "Editing toolbar" }),
+    ).toBeHidden();
+    await page.getByRole("button", { name: "Edit page", exact: true }).click();
     await page.setViewportSize({ width: 320, height: 740 });
     await page.getByRole("button", { name: "Sections", exact: true }).click();
     await expect(

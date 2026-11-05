@@ -563,6 +563,14 @@ test("selection geometry grows and shrinks with wrapping text and the live rich-
 test("reviewed publication exits in place only after acknowledgement and can start a fresh session", async ({
   page,
 }) => {
+  const rejectedLeaseRequests: number[] = [];
+  page.on("response", (response) => {
+    if (
+      new URL(response.url()).pathname === "/api/visual-editor/lock" &&
+      response.status() >= 400
+    )
+      rejectedLeaseRequests.push(response.status());
+  });
   await page.goto("/shop");
   expect(
     (
@@ -671,6 +679,7 @@ test("reviewed publication exits in place only after acknowledgement and can sta
     await expect(page.locator('[data-ve-field="heading"]').first()).toHaveText(
       "A published home, ready to browse.",
     );
+    expect(rejectedLeaseRequests).toEqual([]);
   } finally {
     // This scenario exercises the real /shop transition. Restore its shared
     // synthetic seed through the same draft/review/publication contract so the

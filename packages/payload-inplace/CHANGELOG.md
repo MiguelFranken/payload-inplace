@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.5
+
+### Patch Changes
+
+- Preserve native document ID types for advisory locks when DOM routes supply string IDs. Release every mounted advisory lease before ending website editing, pause heartbeats during deactivation and recover leases when exit fails. Keep publication terminal and validate fresh activation in the independent package consumer.
+
 ## 0.0.4
 
 ### Patch Changes
