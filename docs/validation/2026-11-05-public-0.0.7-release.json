@@ -1,0 +1,143 @@
+{
+  "packageName": "payload-inplace",
+  "packageVersion": "0.0.7",
+  "packageSHA256": "a5332a85cad37cd2bcbb5a04dcd716e13cc70b8fc8d9ed25d3fde7972ce31ce8",
+  "packageSourceSHA": "eae84df3c6da57103612007bd7ff570ed1518e67",
+  "packageValidationRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/42036757908",
+  "appSHA": "96b26c9b5da56f998e0e956aba96217a0e094600",
+  "appPullRequest": "https://github.com/MiguelFranken/fluid-bodies/pull/397",
+  "result": "passed",
+  "active": {
+    "method": "Codex browser against byte-identical candidate package contents on the real Workshops homepage; final exact CI archive separately installed and accepted below",
+    "result": "passed",
+    "samePageActivation": true,
+    "inlineRichText": true,
+    "existingBoldSelectionActive": true,
+    "richToolbarButtonSizePx": 28,
+    "richToolbarFollowsSelection": true,
+    "mediaThumbnailsDecoded": true,
+    "mediaActionBackground": "rgb(245, 245, 245)",
+    "sectionInsertionBackground": "rgb(245, 245, 245)",
+    "panelAt320px": {
+      "left": 12,
+      "width": 296,
+      "right": 308,
+      "horizontalOverflow": 0
+    },
+    "keyboardInsertionPicker": "opens with Enter; closes with Escape",
+    "consumerContentPublished": false,
+    "limitation": "The Codex browser viewport-control request stalled; responsive evidence and toolbar state were collected before it. Temporary viewport overrides were cleared."
+  },
+  "productionBuild": {
+    "result": "passed",
+    "mode": "editor enabled, isolated Next output, dedicated local development database",
+    "canonicalComparison": "All 227 regular package files byte-identical to the production-built local archive. Exact canonical archive subsequently installed, frozen and typechecked."
+  },
+  "plugin": {
+    "unitPassed": 238,
+    "unitFiles": 79,
+    "productionBrowserPassed": 72,
+    "postgresNativePassed": 13,
+    "mongoNativePassed": 5,
+    "mongoNativeSkipped": 8,
+    "mongoReviewBrowserPassed": 1,
+    "independentInstalledPassed": 5,
+    "independentDisabledPassed": 3,
+    "independentDisabledSkipped": 2,
+    "focusedLocalProductionPassed": 5
+  },
+  "localAcceptance": {
+    "runId": "20261105T141750Z-41661",
+    "appSHA": "96b26c9b5da56f998e0e956aba96217a0e094600",
+    "dirty": false,
+    "mode": "dev",
+    "totals": {
+      "failed": 0,
+      "passed": 1,
+      "skipped": 0,
+      "total": 1
+    },
+    "tests": [
+      {
+        "title": "chromium > visual-editor-fields.spec.ts > workshops rich-text terminals and media references use the shared inline and picker strategies",
+        "status": "passed",
+        "durationMs": 61605,
+        "captures": 6,
+        "video": true
+      }
+    ],
+    "scope": "Only visual-editor-fields.spec.ts, one worker, disposable dedicated test database; no full Workshops e2e suite. Covers actual unnamed-tab consumer schema, primary/secondary/nested rich text, existing bold state, 28px toolbar, structured save, shared media reference persistence, decoded thumbnails, filled actions, stable footer and overflow."
+  },
+  "publication": {
+    "version": "0.0.7",
+    "distTag": "latest",
+    "sha256": "a5332a85cad37cd2bcbb5a04dcd716e13cc70b8fc8d9ed25d3fde7972ce31ce8",
+    "integrity": "sha512-KsnGeDHvyQsMQIc0hI2vNQhrodiMtdjjTzJ6sClRxPqdVdHWCs8/SsX+aRYrK5NpEQOV9P4KZhfZN6UNq4pSHg==",
+    "provenance": "https://registry.npmjs.org/-/npm/v1/attestations/payload-inplace@0.0.7",
+    "provenanceSubjectMatchesArchive": true,
+    "workflowRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/42043945338",
+    "status": "publicly available",
+    "method": "GitHub Actions trusted publisher OIDC",
+    "publicationCommit": "bf2a5d7eb4d7f53e2583f0a6a5f9b5db02e354e9",
+    "githubRelease": "https://github.com/MiguelFranken/payload-inplace/releases/tag/v0.0.7",
+    "latest": "0.0.7"
+  },
+  "deployment": {
+    "status": "READY",
+    "target": "Workshops feature preview only",
+    "appSHA": "7011ed14123753fb8a6cc6474fee4ea72884e5ae",
+    "registryPin": "0.0.7",
+    "frozenInstall": "passed",
+    "types": "passed",
+    "id": "dpl_C9kKoFEhncDtMstorwTP4FLxM2YJ",
+    "url": "https://feature-payload-visual-editor.workshops.dev.fluid-bodies.com/",
+    "generatedURL": "https://fluid-bodies-workshops-9rmsh3csl-fluid-bodies.vercel.app/",
+    "ci": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/42044618132",
+    "workflow": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/42044617564",
+    "focusedDeployed": {
+      "runId": "payload-inplace-v007-deployed-1793889005190",
+      "failed": 0,
+      "passed": 4,
+      "skipped": 0,
+      "total": 4,
+      "tests": [
+        {
+          "title": "chromium > visual-editor-fields.spec.ts > workshops rich-text terminals and media references use the shared inline and picker strategies",
+          "status": "passed",
+          "durationMs": 32093
+        },
+        {
+          "title": "chromium > visual-editor.spec.ts > website editing uses the installed native Form and keeps drafts private",
+          "status": "passed",
+          "durationMs": 44640
+        },
+        {
+          "title": "chromium > visual-editor.spec.ts > homepage-shaped blocks reorder by pointer without a render loop",
+          "status": "passed",
+          "durationMs": 34902
+        },
+        {
+          "title": "chromium > visual-editor.spec.ts > the configured preview alias activates the editor on the same homepage",
+          "status": "passed",
+          "durationMs": 9939
+        }
+      ],
+      "captures": 14,
+      "videos": 4,
+      "visualReview": "All fourteen original screenshots inspected; all four original videos sampled. The alias activation case has a video and no named screenshots."
+    },
+    "codexBrowser": {
+      "localRealHomepage": "passed",
+      "existingBoldSelection": "active blue state; 28px controls",
+      "mediaAndInsertion": "filled surfaces, decoded thumbnails, stable footer; 320px panel without horizontal overflow",
+      "finalPreview": "four fresh Chrome acceptance cases; final manual Codex preview was not separately exercised"
+    },
+    "disposableLocalDatabase": "deleted; dedicated human development selection/server preserved"
+  },
+  "previousReceipt": "2026-11-05-public-0.0.6-release.json",
+  "workshopsUnits": {
+    "passed": 12,
+    "files": 2,
+    "scope": "media URL storage prefixes, safe rendition URLs and authored binding contracts"
+  }
+}
