@@ -83,12 +83,56 @@
     "latest": "0.0.7"
   },
   "deployment": {
-    "status": "pending",
+    "status": "READY",
     "target": "Workshops feature preview only",
     "appSHA": "7011ed14123753fb8a6cc6474fee4ea72884e5ae",
     "registryPin": "0.0.7",
     "frozenInstall": "passed",
-    "types": "passed"
+    "types": "passed",
+    "id": "dpl_C9kKoFEhncDtMstorwTP4FLxM2YJ",
+    "url": "https://feature-payload-visual-editor.workshops.dev.fluid-bodies.com/",
+    "generatedURL": "https://fluid-bodies-workshops-9rmsh3csl-fluid-bodies.vercel.app/",
+    "ci": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/42044618132",
+    "workflow": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/42044617564",
+    "focusedDeployed": {
+      "runId": "payload-inplace-v007-deployed-1793889005190",
+      "failed": 0,
+      "passed": 4,
+      "skipped": 0,
+      "total": 4,
+      "tests": [
+        {
+          "title": "chromium > visual-editor-fields.spec.ts > workshops rich-text terminals and media references use the shared inline and picker strategies",
+          "status": "passed",
+          "durationMs": 32093
+        },
+        {
+          "title": "chromium > visual-editor.spec.ts > website editing uses the installed native Form and keeps drafts private",
+          "status": "passed",
+          "durationMs": 44640
+        },
+        {
+          "title": "chromium > visual-editor.spec.ts > homepage-shaped blocks reorder by pointer without a render loop",
+          "status": "passed",
+          "durationMs": 34902
+        },
+        {
+          "title": "chromium > visual-editor.spec.ts > the configured preview alias activates the editor on the same homepage",
+          "status": "passed",
+          "durationMs": 9939
+        }
+      ],
+      "captures": 14,
+      "videos": 4,
+      "visualReview": "All fourteen original screenshots inspected; all four original videos sampled. The alias activation case has a video and no named screenshots."
+    },
+    "codexBrowser": {
+      "localRealHomepage": "passed",
+      "existingBoldSelection": "active blue state; 28px controls",
+      "mediaAndInsertion": "filled surfaces, decoded thumbnails, stable footer; 320px panel without horizontal overflow",
+      "finalPreview": "four fresh Chrome acceptance cases; final manual Codex preview was not separately exercised"
+    },
+    "disposableLocalDatabase": "deleted; dedicated human development selection/server preserved"
   },
   "previousReceipt": "2026-11-05-public-0.0.6-release.json",
   "workshopsUnits": {
