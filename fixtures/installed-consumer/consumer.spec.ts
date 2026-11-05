@@ -256,7 +256,7 @@ test("installed nested-root native fields, optimistic draft and reviewed publish
     ).toHaveAttribute("aria-pressed", "true");
     await expect(
       page.getByRole("button", { name: "Sections", exact: true }),
-    ).toHaveCSS("background-color", "rgb(237, 240, 255)");
+    ).toHaveCSS("background-color", "rgb(228, 230, 234)");
     await expect(
       page.getByRole("button", { name: /1\. Packed app draft/ }),
     ).toBeVisible();
