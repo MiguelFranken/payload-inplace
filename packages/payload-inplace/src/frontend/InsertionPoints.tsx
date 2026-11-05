@@ -241,10 +241,6 @@ export function InsertionPoints({
         const classes = `pve:pointer-events-auto pve:fixed pve:z-50 pve:left-[var(--pve-insert-x)] pve:-translate-x-1/2 pve:w-11 ${side === "before" ? "pve:top-[var(--pve-insert-before)] pve:group-data-[before-visible=false]/insert:hidden" : "pve:top-[var(--pve-insert-after)] pve:group-data-[after-visible=false]/insert:hidden"}`;
         return (
           <div className={classes} data-ve-insert-boundary={side} key={side}>
-            <span
-              aria-hidden="true"
-              className="pve:pointer-events-none pve:absolute pve:top-1/2 pve:left-1/2 pve:h-px pve:w-[min(160px,60vw)] pve:-translate-x-1/2 pve:bg-[var(--pve-selected-border,#a8abb4)] pve:shadow-[0_0_0_1px_#ffffffb3]"
-            />
             {allowed.field.type === "array" ? (
               <ChromeTooltip label={label}>
                 <Button

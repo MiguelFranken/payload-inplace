@@ -865,7 +865,20 @@ test("compact rich-text toolbar follows selection and reflects existing formatti
           return range.getBoundingClientRect().top;
         });
       const box = (await toolbar.boundingBox())!;
-      return Math.abs(box.y + box.height + 8 - firstTop);
+      const caption = (await page
+        .locator("[data-ve-selection-caption]")
+        .boundingBox())!;
+      // The first paragraph shares the caption's corner. Keep both controls usable.
+      const overlapsCaption =
+        box.x < caption.x + caption.width &&
+        box.x + box.width > caption.x &&
+        box.y < caption.y + caption.height &&
+        box.y + box.height > caption.y;
+      if (overlapsCaption) return Infinity;
+      return Math.min(
+        Math.abs(box.y + box.height + 8 - firstTop),
+        Math.abs(box.y + box.height + 8 - caption.y),
+      );
     })
     .toBeLessThan(2);
   await page.setViewportSize({ width: 320, height: 760 });
@@ -1111,4 +1124,61 @@ test("inline rich text retains renderer typography, grid placement and responsiv
     });
     await page.keyboard.press("Escape");
   }
+});
+
+test("canvas insertion keeps its resting border and row actions form a compact neutral group", async ({
+  page,
+}) => {
+  await createShopEditor(page);
+  const section = page.locator("main section[data-ve-block]").nth(1);
+  await section.scrollIntoViewIfNeeded();
+  await section.hover({ position: { x: 10, y: 4 } });
+  const add = page
+    .locator("[data-ve-insert-boundary]")
+    .getByRole("combobox", { name: "Add section", exact: true });
+  await expect(add).toBeVisible();
+  await page.mouse.move(0, 0);
+  const resting = await add.evaluate((button) => {
+    const s = getComputedStyle(button);
+    return {
+      border: s.borderTopWidth,
+      color: s.borderTopColor,
+      foreground: s.color,
+      radius: s.borderTopLeftRadius,
+    };
+  });
+  expect(resting.border).toBe("1px");
+  expect(resting.color).not.toBe("rgba(0, 0, 0, 0)");
+  expect(resting.color).not.toBe("transparent");
+  expect(await page.locator("[data-ve-insert-boundary] > span").count()).toBe(
+    0,
+  );
+  await page.screenshot({ path: "test-results/canvas-insertion-resting.png" });
+  await add.hover();
+  expect(await add.evaluate((button) => getComputedStyle(button).color)).toBe(
+    resting.foreground,
+  );
+  await add.click();
+  await expect(
+    page.getByRole("combobox", { name: "Search sections", exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("combobox", { name: "Search sections", exact: true })
+    .press("Escape");
+  await page.getByRole("button", { name: "Sections", exact: true }).click();
+  const panel = page.getByRole("complementary", {
+    name: "Sections",
+    exact: true,
+  });
+  const group = panel
+    .locator("[data-ve-sortable]")
+    .first()
+    .getByRole("group", { name: "Section settings", exact: true });
+  const buttons = group.getByRole("button");
+  expect(await buttons.count()).toBe(2);
+  const first = (await buttons.nth(0).boundingBox())!,
+    second = (await buttons.nth(1).boundingBox())!;
+  expect(first.width).toBe(32);
+  expect(second.x - first.x).toBe(32);
+  await page.screenshot({ path: "test-results/section-row-actions.png" });
 });

@@ -491,25 +491,33 @@ function ReorderItem({
           </span>
         </span>
       </button>
-      {onLocate && (
-        <Button
-          size="icon"
-          aria-label={t("showNamedSection", { label })}
-          title={t("showOnPage")}
-          onClick={onLocate}
+      {(onLocate || onSettings) && (
+        <div
+          role="group"
+          aria-label={t("sectionSettings")}
+          className="pve:flex pve:shrink-0 pve:items-center pve:gap-0 pve:rounded-lg pve:bg-[var(--pve-muted-surface,var(--theme-elevation-50,#f4f5f7))] pve:p-0.5"
         >
-          <LocateFixed size={16} />
-        </Button>
-      )}
-      {onSettings && (
-        <Button
-          size="icon"
-          aria-label={t("settingsForNamedSection", { label })}
-          title={t("sectionSettings")}
-          onClick={onSettings}
-        >
-          <Settings2 size={16} />
-        </Button>
+          {onLocate && (
+            <Button
+              size="small-icon"
+              aria-label={t("showNamedSection", { label })}
+              title={t("showOnPage")}
+              onClick={onLocate}
+            >
+              <LocateFixed size={16} />
+            </Button>
+          )}
+          {onSettings && (
+            <Button
+              size="small-icon"
+              aria-label={t("settingsForNamedSection", { label })}
+              title={t("sectionSettings")}
+              onClick={onSettings}
+            >
+              <Settings2 size={16} />
+            </Button>
+          )}
+        </div>
       )}
     </div>
   );
