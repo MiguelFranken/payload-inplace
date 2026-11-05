@@ -33,7 +33,7 @@ const background = defineFieldStrategy({
           </Button>
         );
       })}
-      <Button type="button" buttonStyle="none" onClick={openNative}>
+      <Button type="button" buttonStyle="secondary" onClick={openNative}>
         Open native field
       </Button>
     </div>
