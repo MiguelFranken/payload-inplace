@@ -204,7 +204,7 @@ test("installed nested-root native fields, optimistic draft and reviewed publish
     // inline runtime in an independently installed archive, then publish normally.
     await page.locator('[data-ve-field="body"]').first().click();
     const inlineRich = page.locator(
-      '[data-ve-inline-active][data-ve-field="body"]',
+      '[data-ve-inline-active][contenteditable="true"]',
     );
     await expect(
       page.getByRole("toolbar", { name: "Text formatting", exact: true }),
