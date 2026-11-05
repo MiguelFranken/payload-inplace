@@ -341,15 +341,6 @@ export function FrontendControls({
       return installNativeUploadLabels(rootElement.current, t);
   }, [t]);
   useEffect(() => {
-    if (!settingsOpen || !selected || !inspector.current) return;
-    // Native fields now own this value; focus the exact selected leaf, including
-    // asynchronously mounted Lexical inputs, rather than an unrelated sibling.
-    return focusNativeField(
-      inspector.current,
-      binding && !binding.row ? `${selected.path}.${binding.path}` : undefined,
-    );
-  }, [selected?.path, selection?.field, settingsOpen]);
-  useEffect(() => {
     if (!expanded) return;
     const keyboard = (event: KeyboardEvent) => {
       const target = event.composedPath()[0] as EventTarget;
@@ -927,6 +918,17 @@ export function FrontendControls({
           ? grouped!.map((item) => item!.field)
           : []
         : configuredFields;
+
+  const settingsSectionPath = selected?.path;
+  const settingsFocusPath =
+    settingsSectionPath && binding && !binding.row
+      ? `${settingsSectionPath}.${binding.path}`
+      : undefined;
+  useEffect(() => {
+    if (!settingsOpen || !settingsSectionPath || !inspector.current) return;
+    // Follow the resolved native path if stable array identities are reindexed.
+    return focusNativeField(inspector.current, settingsFocusPath);
+  }, [settingsOpen, settingsSectionPath, settingsFocusPath]);
 
   const extension = editorTools.extensions.find(
     (e) => e.id === (customTool || editorTools.openPanels.at(-1)),

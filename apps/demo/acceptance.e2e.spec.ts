@@ -1236,6 +1236,13 @@ test("before-section hover preview keeps the catalogue anchor stable", async ({
   await expect
     .poll(async () => Math.abs((await add.boundingBox())!.y - anchor!.y))
     .toBeLessThan(1);
+  await page.setViewportSize({ width: 320, height: 760 });
+  await expect
+    .poll(async () => {
+      const bounds = (await add.boundingBox())!;
+      return bounds.x >= 0 && bounds.x + bounds.width <= 320;
+    })
+    .toBe(true);
   await search.press("Escape");
   await expect(
     page.getByRole("heading", { name: "A story worth sharing.", exact: true }),

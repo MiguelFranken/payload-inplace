@@ -223,6 +223,19 @@ export function InsertionPoints({
           `${Math.max(6, Math.min(maximum, value))}px`,
         );
       }
+      const trigger = el.querySelector<HTMLElement>(
+        "[data-ve-insert-boundary]",
+      );
+      const bounds = trigger?.getBoundingClientRect();
+      if (bounds) {
+        const shift =
+          Math.min(0, innerWidth - 6 - bounds.right) +
+          Math.max(0, 6 - bounds.left);
+        const x = Number.parseFloat(
+          el.style.getPropertyValue("--pve-insert-x"),
+        );
+        el.style.setProperty("--pve-insert-x", `${x + shift}px`);
+      }
     };
     window.addEventListener("resize", resize);
     schedule();
