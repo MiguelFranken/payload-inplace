@@ -17,11 +17,11 @@ export const buttonVariants = cva(
         ghost:
           "pve:bg-transparent pve:text-inherit pve:hover:bg-[var(--pve-hover,var(--theme-elevation-100,#f1f2f5))] pve:aria-pressed:bg-[var(--pve-accent-soft,#edf0ff)] pve:aria-pressed:text-[var(--pve-accent,#3451eb)] pve:aria-expanded:bg-[var(--pve-hover,var(--theme-elevation-100,#f1f2f5))]",
         outline:
-          "pve:bg-transparent pve:text-inherit pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:aria-pressed:bg-[var(--pve-accent-soft,#edf0ff)] pve:aria-pressed:text-[var(--pve-accent,#3451eb)] pve:aria-pressed:border-[var(--pve-accent,#3451eb)] pve:hover:bg-[var(--pve-hover,var(--theme-elevation-100,#f1f2f5))]",
+          "pve:bg-[var(--pve-muted-surface,var(--theme-elevation-50,#f4f5f7))] pve:text-inherit pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:aria-pressed:bg-[var(--pve-accent-soft,#edf0ff)] pve:aria-pressed:text-[var(--pve-accent,#3451eb)] pve:aria-pressed:border-[var(--pve-accent,#3451eb)] pve:hover:bg-[var(--pve-hover,var(--theme-elevation-100,#f1f2f5))]",
         canvas:
           "pve:bg-[var(--pve-surface,#fff)] pve:text-[var(--pve-accent,#3451eb)] pve:rounded-full pve:border-[var(--pve-accent-soft,#dce2ff)] pve:shadow-[0_2px_8px_#00000014] pve:hover:bg-[var(--pve-accent,#3451eb)] pve:hover:text-white pve:hover:border-[var(--pve-accent,#3451eb)]",
         destructive:
-          "pve:bg-transparent pve:text-[var(--pve-danger,#b42318)] pve:hover:bg-red-50",
+          "pve:bg-[var(--pve-danger-soft,#fff1f0)] pve:text-[var(--pve-danger,#b42318)] pve:hover:bg-red-100",
       },
       size: {
         default: "pve:h-10 pve:px-3",
@@ -29,7 +29,7 @@ export const buttonVariants = cva(
         sm: "pve:h-9 pve:px-2.5",
       },
     },
-    defaultVariants: { variant: "ghost", size: "default" },
+    defaultVariants: { variant: "secondary", size: "default" },
   },
 );
 /** Editor chrome button; native Payload field controls keep their own implementation. */

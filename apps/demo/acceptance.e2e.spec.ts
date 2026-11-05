@@ -445,6 +445,53 @@ test("media selection persists through its panel and compact review survives sav
   await expect(
     panel.getByRole("textbox", { name: "Search media" }),
   ).toBeVisible();
+  const nativeMedia = panel.getByRole("button", {
+    name: "Open native media editor",
+    exact: true,
+  });
+  const hasSurface = async (control: typeof nativeMedia) => {
+    const fill = await control.evaluate(
+      (element) => getComputedStyle(element).backgroundColor,
+    );
+    expect(fill).not.toBe("rgba(0, 0, 0, 0)");
+    expect(fill).not.toBe("transparent");
+    expect(fill).not.toBe("rgb(255, 255, 255)");
+    return fill;
+  };
+  await hasSurface(nativeMedia);
+  await panel
+    .getByRole("button", { name: "Back to sections", exact: true })
+    .click();
+  const sectionsPanel = page.getByRole("complementary", {
+    name: "Sections",
+    exact: true,
+  });
+  const addSection = sectionsPanel.getByRole("combobox", {
+    name: "Add section",
+    exact: true,
+  });
+  await page.mouse.move(0, 0);
+  const restingFill = await hasSurface(addSection);
+  await addSection.hover();
+  await expect
+    .poll(() =>
+      addSection.evaluate(
+        (element) => getComputedStyle(element).backgroundColor,
+      ),
+    )
+    .not.toBe(restingFill);
+  await addSection.click();
+  const catalogueSearch = page.getByRole("combobox", {
+    name: "Search sections",
+  });
+  await expect(catalogueSearch).toBeVisible();
+  await catalogueSearch.press("Escape");
+  await page.screenshot({ path: "test-results/panel-action-surfaces.png" });
+  await sectionsPanel
+    .getByRole("button", { name: "Close Sections panel", exact: true })
+    .click();
+  await image.click();
+  await expect(nativeMedia).toBeVisible();
   const outline = page.locator("[data-ve-selection-outline]");
   await expect(outline).toBeVisible();
   await panel.getByRole("textbox", { name: "Search media" }).fill("studio");

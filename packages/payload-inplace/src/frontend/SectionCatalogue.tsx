@@ -10,7 +10,6 @@ import { Plus, Search, Layers } from "lucide-react";
 import type { ClientBlock } from "payload";
 import type { EditorCatalogueEntry, EditorLabel } from "../types.js";
 import { useChromePortal } from "./ui/portal.js";
-import { buttonVariants } from "./ui/button.js";
 import { ChromeTooltip } from "./ui/tooltip.js";
 import { chrome } from "../admin/chrome.js";
 const label = (
@@ -199,7 +198,13 @@ export function SectionCatalogue({
         <Combobox.Trigger
           disabled={disabled || choices.length === 0}
           aria-label={triggerLabel}
-          className={`${buttonVariants({ variant: triggerVariant === "canvas" ? "canvas" : "secondary", size: triggerVariant === "canvas" ? "icon" : "default" })} ${triggerVariant === "canvas" ? "pve:size-11" : "pve:w-full"} ${className || ""}`}
+          render={
+            <Button
+              variant={triggerVariant === "canvas" ? "canvas" : "secondary"}
+              size={triggerVariant === "canvas" ? "icon" : "default"}
+            />
+          }
+          className={`${triggerVariant === "canvas" ? "pve:size-11" : "pve:w-full"} ${className || ""}`}
         >
           <Plus size={17} />
         </Combobox.Trigger>
@@ -338,7 +343,7 @@ export function SectionCatalogue({
             </Combobox.List>
             {mode === "patterns" && hasMore && (
               <Button
-                variant="ghost"
+                variant="secondary"
                 className="pve:w-full"
                 disabled={busy}
                 onClick={() => setPage((value) => value + 1)}
