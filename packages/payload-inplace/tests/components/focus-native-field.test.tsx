@@ -58,3 +58,20 @@ it("retains focus when Payload replaces a lazy editor but respects a user focus 
   await new Promise(requestAnimationFrame);
   expect(document.activeElement).toBe(input);
 });
+
+for (const selectedPath of [undefined, "layout.0.heading"]) {
+  it(`respects another native field taking focus before autofocus settles (${selectedPath ?? "section"})`, async () => {
+    document.body.innerHTML =
+      '<div><input id="field-layout__0__heading"><div data-field-path="layout.0.body"><div contenteditable="true"></div></div></div>';
+    const container = document.body.firstElementChild as HTMLElement;
+    cleanups.push(focusNativeField(container, selectedPath));
+    const richText = container.querySelector(
+      "[contenteditable]",
+    ) as HTMLElement;
+    richText.focus();
+    richText.textContent = "Keep native rich text input";
+    await new Promise(requestAnimationFrame);
+    expect(document.activeElement).toBe(richText);
+    expect(container.querySelector("input")?.value).toBe("");
+  });
+}
