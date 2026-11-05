@@ -40,3 +40,21 @@ it("does not steal focus if the panel is dismissed before the control mounts", a
   await new Promise(requestAnimationFrame);
   expect(document.activeElement).toBe(button);
 });
+
+it("retains focus when Payload replaces a lazy editor but respects a user focus change", async () => {
+  document.body.innerHTML =
+    '<div><div data-field-path="layout.0.body"><div contenteditable="true"></div></div><input></div>';
+  const container = document.body.firstElementChild as HTMLElement;
+  cleanups.push(focusNativeField(container, "layout.0.body"));
+  const original = container.querySelector("[contenteditable]") as HTMLElement;
+  await waitFor(() => expect(document.activeElement).toBe(original));
+  const replacement = original.cloneNode() as HTMLElement;
+  original.replaceWith(replacement);
+  await waitFor(() => expect(document.activeElement).toBe(replacement));
+  const input = container.querySelector("input")!;
+  input.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+  input.focus();
+  replacement.replaceWith(original);
+  await new Promise(requestAnimationFrame);
+  expect(document.activeElement).toBe(input);
+});

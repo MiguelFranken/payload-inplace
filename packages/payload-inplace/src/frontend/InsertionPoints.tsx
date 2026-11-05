@@ -204,14 +204,34 @@ export function InsertionPoints({
     const mutations = new MutationObserver(schedule);
     mutations.observe(window.document.body, { childList: true, subtree: true });
     window.addEventListener("scroll", schedule, true);
-    window.addEventListener("resize", schedule);
+    const resize = () => {
+      if (!held.current || !box.current) {
+        schedule();
+        return;
+      }
+      // Hold the original gap across preview reflows, but keep the trigger in
+      // the viewport after an actual window resize or orientation change.
+      const el = box.current;
+      for (const [name, maximum] of [
+        ["--pve-insert-x", innerWidth - 28],
+        ["--pve-insert-before", innerHeight - 50],
+        ["--pve-insert-after", innerHeight - 50],
+      ] as const) {
+        const value = Number.parseFloat(el.style.getPropertyValue(name));
+        el.style.setProperty(
+          name,
+          `${Math.max(6, Math.min(maximum, value))}px`,
+        );
+      }
+    };
+    window.addEventListener("resize", resize);
     schedule();
     return () => {
       cancelAnimationFrame(frame);
       observer.disconnect();
       mutations.disconnect();
       window.removeEventListener("scroll", schedule, true);
-      window.removeEventListener("resize", schedule);
+      window.removeEventListener("resize", resize);
     };
   }, [enabled, hover]);
   if (!enabled || !hover) return null;

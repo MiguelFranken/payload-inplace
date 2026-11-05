@@ -29,13 +29,30 @@ export function focusNativeField(
       ? field
       : field?.querySelector<HTMLElement>(selector);
     if (!target || target.getAttribute("aria-disabled") === "true") return;
-    target.focus({ preventScroll: true });
-    observer.disconnect();
-    disposed = true;
+    // Payload may replace a lazy Lexical root during initialization. Keep
+    // observing until the user deliberately moves focus or the panel closes.
+    if (
+      (target.getRootNode() as Document | ShadowRoot).activeElement !== target
+    )
+      target.focus({ preventScroll: true });
   }
   function schedule() {
     if (!disposed && !frame) frame = requestAnimationFrame(focus);
   }
+  const cancel = () => {
+    disposed = true;
+    observer.disconnect();
+    cancelAnimationFrame(frame);
+    container.removeEventListener("focusout", schedule);
+    container.ownerDocument.removeEventListener("pointerdown", cancel, true);
+    container.removeEventListener("keydown", navigate, true);
+  };
+  const navigate = (event: KeyboardEvent) => {
+    if (event.key === "Tab") cancel();
+  };
+  container.addEventListener("focusout", schedule);
+  container.ownerDocument.addEventListener("pointerdown", cancel, true);
+  container.addEventListener("keydown", navigate, true);
   observer.observe(container, {
     subtree: true,
     childList: true,
@@ -43,9 +60,5 @@ export function focusNativeField(
     attributeFilter: ["contenteditable", "disabled"],
   });
   schedule();
-  return () => {
-    disposed = true;
-    observer.disconnect();
-    cancelAnimationFrame(frame);
-  };
+  return cancel;
 }
