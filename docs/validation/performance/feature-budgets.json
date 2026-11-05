@@ -104,11 +104,11 @@
       ]
     },
     "richtext": {
-      "decoded": 19914,
-      "gzip": 6134,
-      "brotli": 5354,
-      "modules": 3,
-      "sha256": "aeb352dceb01e08d13df9b728928fcc5aaafc32ef57e2a9b6d6c950d07d106e2",
+      "decoded": 27069,
+      "gzip": 8296,
+      "brotli": 7234,
+      "modules": 5,
+      "sha256": "e0d31a55338148976dfbfd8244613d5d6b5bc91da3f83bfae78b352df9cf8ba4",
       "excludedImports": [
         "@base-ui/react/button",
         "@base-ui/react/menu",
@@ -156,8 +156,8 @@
       "gzip": 3528
     },
     "richtext": {
-      "decoded": 24921,
-      "gzip": 7873
+      "decoded": 33507,
+      "gzip": 10468
     }
   }
 }
