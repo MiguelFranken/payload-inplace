@@ -22,7 +22,10 @@ export function Floatable({
   onBack,
   actions,
   footer,
+  autoFocus = true,
 }: {
+  /** Disable when a native settings surface owns asynchronous selected-field focus. */
+  autoFocus?: boolean;
   title: string;
   label?: string;
   children: ReactNode;
@@ -47,6 +50,7 @@ export function Floatable({
       root instanceof ShadowRoot ? root.activeElement : document.activeElement
     ) as HTMLElement | null;
     const frame = requestAnimationFrame(() => {
+      if (!autoFocus) return;
       const first = body.current?.querySelector<HTMLElement>(
         'input:not([type="hidden"]):not([type="file"]):not([disabled]),textarea:not([disabled]),[role="combobox"]:not([aria-disabled="true"]),button:not([disabled]),[tabindex="0"]:not([disabled]):not([aria-disabled="true"])',
       );
@@ -55,7 +59,7 @@ export function Floatable({
       });
     });
     return () => cancelAnimationFrame(frame);
-  }, []);
+  }, [autoFocus]);
   function close() {
     onClose();
     requestAnimationFrame(() => {

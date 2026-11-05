@@ -40,3 +40,17 @@ it("keeps contextual footer actions outside the field scroll area and restores t
   fireEvent.click(screen.getByRole("button", { name: "Close Image panel" }));
   expect(close).toHaveBeenCalledOnce();
 });
+
+it("leaves asynchronous selected-field focus to its native owner", async () => {
+  render(
+    <Floatable title="Native settings" autoFocus={false} onClose={() => {}}>
+      <input aria-label="First sibling" />
+      <textarea aria-label="Selected answer" />
+    </Floatable>,
+  );
+  const selected = screen.getByRole("textbox", { name: "Selected answer" });
+  await new Promise(requestAnimationFrame);
+  selected.focus();
+  await new Promise(requestAnimationFrame);
+  expect(document.activeElement).toBe(selected);
+});

@@ -1248,6 +1248,7 @@ export function FrontendControls({
           {expanded && selected && settingsOpen && !outline && (
             <Floatable
               title={selection?.field ? describe(selection) : title}
+              autoFocus={false}
               label={t("editContent")}
               actions={
                 <ChromeButton
