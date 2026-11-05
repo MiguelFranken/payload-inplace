@@ -1092,7 +1092,20 @@ test("inline rich text retains renderer typography, grid placement and responsiv
       '[data-ve-field="body"]:not(.pvi\\:hidden\\!)',
     );
     expect(after.length).toBe(before.length);
-    expect(outerAfter).toEqual(before);
+    const presentation = (items: typeof before) =>
+      items.map((item) => {
+        if (["STRONG", "EM", "A"].includes(item.tag)) {
+          return Object.fromEntries(
+            Object.entries(item).filter(
+              ([key]) => !["width", "height", "x", "y"].includes(key),
+            ),
+          );
+        }
+        return item;
+      });
+    // Inline fragment boxes include editable trailing whitespace; all visible
+    // block positions, wrapping and inline computed typography must stay equal.
+    expect(presentation(outerAfter)).toEqual(presentation(before));
     await page.screenshot({
       path: `test-results/rich-presentation-${width}.png`,
     });

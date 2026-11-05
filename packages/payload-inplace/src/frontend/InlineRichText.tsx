@@ -98,11 +98,7 @@ export function InlineRichText({
     editable.setAttribute("role", "textbox");
     editable.setAttribute("aria-multiline", "true");
     editable.setAttribute("aria-label", label);
-    editable.classList.add(
-      "pvi:focus:outline-none!",
-      "pvi:min-h-[1lh]",
-      "pvi:[&_[data-lexical-text]]:whitespace-inherit!",
-    );
+    editable.classList.add("pvi:focus:outline-none!", "pvi:min-h-[1lh]");
     const hidden = element.classList.contains("pvi:hidden!");
     element.after(surface);
     element.classList.add("pvi:hidden!");

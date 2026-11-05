@@ -106,9 +106,6 @@ export function preserveRichClasses(
       }
     });
   const apply = () => {
-    // Lexical installs pre-wrap on its root; retain the renderer cascade instead.
-    // Text-node pre-wrap is overridden by the inline surface's inherit utility.
-    if (root?.style.whiteSpace) root.style.removeProperty("white-space");
     for (const [key, presentation] of classes) {
       const element = editor.getElementByKey(key);
       if (element?.tagName === presentation.tag && presentation.names.length)
