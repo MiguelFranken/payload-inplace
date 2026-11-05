@@ -40,7 +40,7 @@ it("follows translation-only host motion and stops measuring when selection clos
     inspecting: false,
     selected,
     onPick: vi.fn(),
-    describe: () => "Image",
+    describe: vi.fn(() => "Image"),
   };
   const view = render(<InspectionLayer {...props} />);
   const tick = () =>
@@ -60,6 +60,7 @@ it("follows translation-only host motion and stops measuring when selection clos
   const writes = vi.spyOn(outline.style, "setProperty");
   tick();
   expect(writes).not.toHaveBeenCalled();
+  expect(props.describe).toHaveBeenCalledTimes(1);
   hidden = true;
   act(() => document.dispatchEvent(new Event("visibilitychange")));
   tick();

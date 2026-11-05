@@ -142,6 +142,13 @@ export function InspectionLayer({
           box.style.setProperty("--pve-label-offset", offset);
       }
     }
+    function follow(element: Element) {
+      frame = 0;
+      if (disposed) return;
+      place(hover.current, element, false);
+      if (element.isConnected && !document.hidden)
+        frame = requestAnimationFrame(() => follow(element));
+    }
     function draw(animate: boolean) {
       frame = 0;
       if (disposed) return;
@@ -182,7 +189,7 @@ export function InspectionLayer({
       // ResizeObserver cannot see translation-only host motion or smooth-scroll settling.
       // Keep one frame read for the active target; unchanged geometry causes no style writes.
       if (target?.element.isConnected && !document.hidden)
-        frame = requestAnimationFrame(() => draw(false));
+        frame = requestAnimationFrame(() => follow(target.element));
     }
     function schedule(animate = false) {
       if (frame) cancelAnimationFrame(frame);
