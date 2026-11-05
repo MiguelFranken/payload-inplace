@@ -1,0 +1,164 @@
+{
+  "packageName": "payload-inplace",
+  "packageVersion": "0.0.5",
+  "packageSHA256": "19660c81c801cfd37d5a22cc3a8cb0e82eff6e4daea1cf493185f3273423fb4f",
+  "packageSourceSHA": "969c3d369bc41941038d2cc2c7428a3f3030c0ae",
+  "packageValidationRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/41997721566",
+  "appSHA": "46894fd383ce5739446593cb68b2f7866743c636",
+  "appPullRequest": "https://github.com/MiguelFranken/fluid-bodies/pull/397",
+  "result": "passed",
+  "active": {
+    "appSHA": "46894fd383ce5739446593cb68b2f7866743c636",
+    "dirty": false,
+    "sourceTreeSHA256": "7a752f5f393a3e57932bbd0cdb53fe3a7c206aa0be516d0a9d9fce9162472c78",
+    "runId": "20261105T091347Z-85540",
+    "reporterRun": "https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/554",
+    "result": "passed",
+    "totals": {
+      "failed": 0,
+      "passed": 5,
+      "skipped": 0,
+      "total": 5
+    },
+    "scope": "Five selected visual-editor production acceptance cases only; no full Workshops suite. Exact canonical CI archive installed before the production build.",
+    "tests": [
+      {
+        "title": "chromium > visual-editor-public-baseline.spec.ts > published website keeps native editor resources unloaded",
+        "status": "passed",
+        "durationMs": 6212
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > website editing uses the installed native Form and keeps drafts private",
+        "status": "passed",
+        "durationMs": 18025
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > workshop website editing preserves the empty booking state",
+        "status": "passed",
+        "durationMs": 26119
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > homepage-shaped blocks reorder by pointer without a render loop",
+        "status": "passed",
+        "durationMs": 32925
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > the configured preview alias activates the editor on the same homepage",
+        "status": "passed",
+        "durationMs": 4741
+      }
+    ],
+    "captures": 10,
+    "uploads": {
+      "total": 36,
+      "uploaded": 36,
+      "pending": 0,
+      "failed": 0
+    },
+    "visualReview": "All ten originals inspected; byte-identical to the inspected predecessor run. Videos sampled for continuity; recordings include initial fixture/login waits."
+  },
+  "publicGraph": {
+    "routes": [
+      {
+        "route": "(frontend)/(home)",
+        "modules": 121,
+        "inertRegistrations": 1,
+        "inertDeliveredModules": 1,
+        "editorClientModules": 0
+      },
+      {
+        "route": "(frontend)/(content)/[slug]",
+        "modules": 122,
+        "inertRegistrations": 1,
+        "inertDeliveredModules": 1,
+        "editorClientModules": 0
+      },
+      {
+        "route": "(frontend)/(content)/workshops/[slug]",
+        "modules": 115,
+        "inertRegistrations": 1,
+        "inertDeliveredModules": 1,
+        "editorClientModules": 0
+      }
+    ],
+    "activePositiveControl": true,
+    "injectedLeakRejected": true
+  },
+  "additionalResources": {
+    "runId": "20261105T091917Z-94213",
+    "appSHA": "28fd0ddcb4b2c019167b6c6d09ccd8939573b454",
+    "dirty": false,
+    "totals": {
+      "failed": 0,
+      "passed": 1,
+      "skipped": 0,
+      "total": 1
+    },
+    "result": "passed",
+    "scope": "One focused anonymous-resource test over Home, Page and Workshop routes, including soft navigation."
+  },
+  "plugin": {
+    "unitPassed": 231,
+    "productionBrowserPassed": 71,
+    "postgresNativePassed": 13,
+    "mongoNativePassed": 5,
+    "mongoNativeSkipped": 8,
+    "independentInstalledPassed": 5,
+    "independentDisabledPassed": 3,
+    "independentDisabledSkipped": 2
+  },
+  "codexBrowser": {
+    "samePageActivation": true,
+    "nativeImageSelectionPersists": true,
+    "closePanelClearsSelection": true,
+    "nativePanelWidth": 360,
+    "nativePanelHorizontalOverflow": 0,
+    "developmentKeyWarningsFixed": true,
+    "consumerImportMaps": "Prepared before Next starts; automatic request-time generation disabled.",
+    "dataWrites": "No consumer content was published in the manual browser review."
+  },
+  "publication": {
+    "status": "publicly available",
+    "method": "GitHub Actions trusted publisher OIDC",
+    "repository": "MiguelFranken/payload-inplace",
+    "workflow": "release.yml",
+    "environment": "npm",
+    "version": "0.0.5",
+    "distTag": "0.0.5",
+    "sha256": "19660c81c801cfd37d5a22cc3a8cb0e82eff6e4daea1cf493185f3273423fb4f",
+    "integrity": "sha512-B/u2UZnXOxQ7qoIfj6gf3qXvyejQjs8k0UXhOtRJjxnwqoCs84Tc3QXzfTYZly7fZct9D5KcHKOOUzJCmNUxwA==",
+    "provenance": "https://registry.npmjs.org/-/npm/v1/attestations/payload-inplace@0.0.5",
+    "provenanceSubjectMatchesArchive": true,
+    "workflowRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/42001791780",
+    "publicationCommit": "db111dab01027ca23f3c0042e04c7135981fca90",
+    "oidcReleaseVerified": true,
+    "anonymousArchiveSHA256": "19660c81c801cfd37d5a22cc3a8cb0e82eff6e4daea1cf493185f3273423fb4f"
+  },
+  "deployment": {
+    "status": "READY",
+    "target": "Workshops feature preview only",
+    "appSHA": "cc10c7d44f2f1925285d5fdb9ce2f8e08a68f3f4",
+    "id": "dpl_GzxL8f21DVcpxjWtZSCcyxtypQsp",
+    "url": "https://feature-payload-visual-editor.workshops.dev.fluid-bodies.com/",
+    "generatedURL": "https://fluid-bodies-workshops-64ul3tij4-fluid-bodies.vercel.app/",
+    "workflow": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/42003333817",
+    "ci": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/42003333771",
+    "focusedDeployed": {
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "runId": "payload-inplace-v005-deployed-1793871968372"
+    },
+    "codexBrowser": {
+      "samePageActivation": true,
+      "terminalWorkshopHeadline": true,
+      "reviewReopened": true,
+      "persistentNativeImageSelection": true,
+      "nativePanelWidth": 360,
+      "nativePanelOverflow": 0,
+      "consumerContentPublished": false
+    },
+    "followUp": "Translation-only host animation can settle after an event-driven outline measurement; fixed by the following patch release."
+  },
+  "previousReceipt": "2026-11-04-public-0.0.2-release.json"
+}

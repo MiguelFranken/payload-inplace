@@ -544,6 +544,15 @@ test("selection geometry grows and shrinks with wrapping text and the live rich-
   await compare(heading);
   await heading.fill("Less.");
   await compare(heading);
+  // Host transforms move the box without resizing it or emitting a scroll event.
+  await heading.evaluate((element) => {
+    element.style.transform = "translateY(-28px)";
+  });
+  await compare(heading);
+  await heading.evaluate((element) => {
+    element.style.transform = "";
+  });
+  await compare(heading);
   const body = page.locator('#studio-story [data-ve-field="body"]').first();
   await body.scrollIntoViewIfNeeded();
   await body.click();

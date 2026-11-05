@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.6
+
+### Patch Changes
+
+- Keep the active content outline aligned during host transforms and smooth-scroll settling, even when size stays unchanged. Pause measurements in hidden documents and avoid redundant geometry writes.
+
 ## 0.0.5
 
 ### Patch Changes

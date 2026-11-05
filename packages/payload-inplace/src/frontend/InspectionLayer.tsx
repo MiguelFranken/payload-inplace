@@ -67,7 +67,7 @@ function readTarget(element: Element | null): InspectionTarget | undefined {
   }
 }
 /** One coalesced hover box follows bound site elements; UI events and native drawers are ignored.
- * Listeners exist only during activated authoring, hover tracking only while content selection is enabled. Motion is opt-in and geometry updates stay instant on scroll.
+ * Listeners exist only during activated authoring, hover tracking only while content selection is enabled. A live target is measured each visible frame so host transforms stay aligned without requiring ResizeObserver notifications.
  */
 export function InspectionLayer({
   inspecting,
@@ -119,21 +119,27 @@ export function InspectionLayer({
         box?.setAttribute("hidden", "");
         return;
       }
-      box.dataset.animate = String(animate && !box.hasAttribute("hidden"));
-      for (const [key, value] of Object.entries({
+      const values = Object.entries({
         left: rect.left,
         top: rect.top,
         width: rect.width,
         height: rect.height,
-      }))
-        box.style.setProperty(`--pve-${key}`, `${value}px`);
+      }).map(([key, value]) => [`--pve-${key}`, `${value}px`] as const);
+      if (
+        values.some(([key, value]) => box.style.getPropertyValue(key) !== value)
+      ) {
+        box.dataset.animate = String(animate && !box.hasAttribute("hidden"));
+        for (const [key, value] of values)
+          if (box.style.getPropertyValue(key) !== value)
+            box.style.setProperty(key, value);
+      }
       box.removeAttribute("hidden");
       if (box === hover.current) {
-        box.dataset.labelBelow = String(rect.top < 32);
-        box.style.setProperty(
-          "--pve-label-offset",
-          `${Math.max(0, 8 - rect.left)}px`,
-        );
+        const below = String(rect.top < 32);
+        if (box.dataset.labelBelow !== below) box.dataset.labelBelow = below;
+        const offset = `${Math.max(0, 8 - rect.left)}px`;
+        if (box.style.getPropertyValue("--pve-label-offset") !== offset)
+          box.style.setProperty("--pve-label-offset", offset);
       }
     }
     function draw(animate: boolean) {
@@ -168,9 +174,15 @@ export function InspectionLayer({
       );
       if (caption.current) {
         caption.current.hidden = !target;
-        caption.current.textContent = target ? label(target) : "";
+        const text = target ? label(target) : "";
+        if (caption.current.textContent !== text)
+          caption.current.textContent = text;
       }
       place(box, target?.element || null, animate && Boolean(hovered));
+      // ResizeObserver cannot see translation-only host motion or smooth-scroll settling.
+      // Keep one frame read for the active target; unchanged geometry causes no style writes.
+      if (target?.element.isConnected && !document.hidden)
+        frame = requestAnimationFrame(() => draw(false));
     }
     function schedule(animate = false) {
       if (frame) cancelAnimationFrame(frame);
@@ -229,6 +241,7 @@ export function InspectionLayer({
     document.addEventListener("click", click, true);
     document.addEventListener("submit", submit, true);
     document.addEventListener("pointerleave", leave);
+    document.addEventListener("visibilitychange", scroll);
     document.addEventListener("pve:inline-geometry", scroll, true);
     window.addEventListener("scroll", scroll, true);
     window.addEventListener("resize", scroll);
@@ -241,6 +254,7 @@ export function InspectionLayer({
       document.removeEventListener("click", click, true);
       document.removeEventListener("submit", submit, true);
       document.removeEventListener("pointerleave", leave);
+      document.removeEventListener("visibilitychange", scroll);
       document.removeEventListener("pve:inline-geometry", scroll, true);
       window.removeEventListener("scroll", scroll, true);
       window.removeEventListener("resize", scroll);
