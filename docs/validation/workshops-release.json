@@ -69,12 +69,31 @@
     "scope": "Only visual-editor-fields.spec.ts, one worker, disposable dedicated test database; no full Workshops e2e suite. Covers actual unnamed-tab consumer schema, primary/secondary/nested rich text, existing bold state, 28px toolbar, structured save, shared media reference persistence, decoded thumbnails, filled actions, stable footer and overflow."
   },
   "publication": {
-    "status": "pending",
-    "method": "GitHub Actions trusted publisher OIDC"
+    "version": "0.0.7",
+    "distTag": "latest",
+    "sha256": "a5332a85cad37cd2bcbb5a04dcd716e13cc70b8fc8d9ed25d3fde7972ce31ce8",
+    "integrity": "sha512-KsnGeDHvyQsMQIc0hI2vNQhrodiMtdjjTzJ6sClRxPqdVdHWCs8/SsX+aRYrK5NpEQOV9P4KZhfZN6UNq4pSHg==",
+    "provenance": "https://registry.npmjs.org/-/npm/v1/attestations/payload-inplace@0.0.7",
+    "provenanceSubjectMatchesArchive": true,
+    "workflowRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/42043945338",
+    "status": "publicly available",
+    "method": "GitHub Actions trusted publisher OIDC",
+    "publicationCommit": "bf2a5d7eb4d7f53e2583f0a6a5f9b5db02e354e9",
+    "githubRelease": "https://github.com/MiguelFranken/payload-inplace/releases/tag/v0.0.7",
+    "latest": "0.0.7"
   },
   "deployment": {
     "status": "pending",
-    "target": "Workshops feature preview only"
+    "target": "Workshops feature preview only",
+    "appSHA": "7011ed14123753fb8a6cc6474fee4ea72884e5ae",
+    "registryPin": "0.0.7",
+    "frozenInstall": "passed",
+    "types": "passed"
   },
-  "previousReceipt": "2026-11-05-public-0.0.6-release.json"
+  "previousReceipt": "2026-11-05-public-0.0.6-release.json",
+  "workshopsUnits": {
+    "passed": 12,
+    "files": 2,
+    "scope": "media URL storage prefixes, safe rendition URLs and authored binding contracts"
+  }
 }
