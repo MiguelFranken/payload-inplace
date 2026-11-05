@@ -61,7 +61,8 @@ fs.writeFileSync(
   "test-results/package.json",
   JSON.stringify(
     {
-      archive,
+      // pnpm --dir prints an absolute path; receipts travel between CI and release runners.
+      archive: path.basename(archive),
       sourceSHA: execFileSync("git", ["rev-parse", "HEAD"], {
         encoding: "utf8",
       }).trim(),
