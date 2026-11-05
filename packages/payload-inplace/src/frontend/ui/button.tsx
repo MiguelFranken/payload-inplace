@@ -12,6 +12,8 @@ export const buttonVariants = cva(
       variant: {
         default:
           "pve:bg-[var(--pve-accent,#3451eb)] pve:text-white pve:hover:brightness-95",
+        secondary:
+          "pve:bg-[var(--pve-muted-surface,var(--theme-elevation-50,#f4f5f7))] pve:text-inherit pve:hover:bg-[var(--pve-hover,var(--theme-elevation-100,#e9ebef))] pve:aria-pressed:bg-[var(--pve-accent-soft,#edf0ff)] pve:aria-pressed:text-[var(--pve-accent,#3451eb)]",
         ghost:
           "pve:bg-transparent pve:text-inherit pve:hover:bg-[var(--pve-hover,var(--theme-elevation-100,#f1f2f5))] pve:aria-pressed:bg-[var(--pve-accent-soft,#edf0ff)] pve:aria-pressed:text-[var(--pve-accent,#3451eb)] pve:aria-expanded:bg-[var(--pve-hover,var(--theme-elevation-100,#f1f2f5))]",
         outline:

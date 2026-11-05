@@ -1,4 +1,5 @@
 import type { BlocksFieldClientProps, ClientBlock, ClientField } from "payload";
+import { getFieldPaths } from "payload/shared";
 import type { BlockIdentity } from "../types.js";
 
 /** A schema-resolved section: numeric data paths are transient, schema paths contain block slugs instead of indices. */
@@ -39,7 +40,7 @@ export function collectSections({
 }): NativeSection[] {
   const result: NativeSection[] = [];
   const references = (f: any): ClientBlock[] =>
-    (f.blockReferences || f.blocks || [])
+    (f.blockReferences?.length ? f.blockReferences : f.blocks || [])
       .map((b: ClientBlock | string) =>
         typeof b === "string" ? blocksMap[b] : b,
       )
@@ -56,10 +57,25 @@ export function collectSections({
     ancestors: string[],
     p: any,
     locked: boolean,
+    parentIndexPath = "",
   ) {
-    for (const f of fields) {
+    for (const [index, f] of fields.entries()) {
+      const paths = getFieldPaths({
+        field: f,
+        index,
+        parentPath: path,
+        parentSchemaPath: schema,
+        parentIndexPath,
+      });
       if (f.type === "tabs") {
-        for (const tab of f.tabs) {
+        for (const [index, tab] of f.tabs.entries()) {
+          const tabPaths = getFieldPaths({
+            field: tab,
+            index,
+            parentPath: paths.path,
+            parentSchemaPath: paths.schemaPath,
+            parentIndexPath: paths.indexPath,
+          });
           const name = "name" in tab ? tab.name : undefined;
           const tp = name ? fieldPermissions(p, name) : p;
           if (!denied(tp))
@@ -67,20 +83,30 @@ export function collectSections({
               tab.fields,
               name ? value?.[name] : value,
               name ? `${path}.${name}` : path,
-              name ? `${schema}.${name}` : schema,
+              tabPaths.schemaPath,
               ancestors,
               name && tp !== true ? tp?.fields : tp,
               locked || readonly(tp),
+              tabPaths.indexPath,
             );
         }
       } else if (!("name" in f)) {
         if ("fields" in f)
-          visitFields(f.fields, value, path, schema, ancestors, p, locked);
+          visitFields(
+            f.fields,
+            value,
+            path,
+            paths.schemaPath,
+            ancestors,
+            p,
+            locked,
+            paths.indexPath,
+          );
       } else {
         const fp = fieldPermissions(p, f.name);
         if (f.admin?.hidden || denied(fp)) continue;
         const nextPath = `${path}.${f.name}`,
-          nextSchema = `${schema}.${f.name}`;
+          nextSchema = paths.schemaPath;
         const nextLock = locked || Boolean(f.admin?.readOnly) || readonly(fp);
         if (f.type === "blocks")
           visitBlocks(

@@ -30,6 +30,7 @@ import { previewExample } from "../../schema/example-preview.js";
 import { resolveBinding } from "../../schema/resolve-binding.js";
 import { canUpdateInlineField } from "../../schema/inline-access.js";
 import { availableBlocks } from "../../schema/available-blocks.js";
+import { resolveRootSchemaPath } from "../../schema/resolve.js";
 import { collectSections, type NativeSection } from "../../schema/tree.js";
 import {
   applyCommand,
@@ -110,6 +111,11 @@ export function useNativeStructure({
   useEffect(() => {
     pending.current = undefined;
   }, [nonce]);
+  const rootSchemaPath = resolveRootSchemaPath(
+    info.docConfig?.fields || [],
+    root,
+    collection,
+  );
   const rootState = useField({ path: root, hasRows: true });
   const [generation, setGeneration] = useState(0);
   const history = useMemo(() => {
@@ -139,7 +145,7 @@ export function useNativeStructure({
       field,
       data: form.getDataByPath(root),
       root,
-      schemaPath: `${collection}.${root}`,
+      schemaPath: rootSchemaPath,
       permissions,
       blocksMap: config.blocksMap as Record<string, ClientBlock>,
     });
@@ -148,6 +154,7 @@ export function useNativeStructure({
     form,
     root,
     collection,
+    rootSchemaPath,
     permissions,
     config.blocksMap,
     fingerprint,
@@ -260,7 +267,7 @@ export function useNativeStructure({
       field,
       data: form.getDataByPath(root),
       root,
-      schemaPath: `${collection}.${root}`,
+      schemaPath: rootSchemaPath,
       permissions,
       blocksMap: config.blocksMap as Record<string, ClientBlock>,
     });

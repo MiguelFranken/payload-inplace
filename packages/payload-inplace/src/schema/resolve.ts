@@ -1,4 +1,5 @@
-import type { BlocksField, Field } from "payload";
+import type { BlocksField, ClientField, Field } from "payload";
+import { getFieldPaths } from "payload/shared";
 
 const forbidden = new Set(["__proto__", "prototype", "constructor"]);
 /** Reject paths that could become prototype writes; configuration roots contain names, never indices. */
@@ -61,4 +62,62 @@ export function resolveRootScope(
 /** Resolve existing native blocks fields without changing their schemas. @see resolveRootScope also reports inherited localization. */
 export function resolveRoot(fields: Field[], path: string): BlocksField {
   return resolveRootScope(fields, path).field;
+}
+
+/** Resolve Payload's exact schema key for a data root, including unnamed tab/row indexes.
+ * RenderFields and rich-text capability lookups must share these keys with Payload's schema map.
+ */
+export function resolveRootSchemaPath(
+  fields: (Field | ClientField)[],
+  root: string,
+  entity: string,
+): string {
+  pathSegments(root);
+  function find(
+    list: (Field | ClientField)[],
+    dataPath: string,
+    schemaPath: string,
+    indexPath = "",
+  ): string | undefined {
+    for (const [index, field] of list.entries()) {
+      const paths = getFieldPaths({
+        field,
+        index,
+        parentPath: dataPath,
+        parentSchemaPath: schemaPath,
+        parentIndexPath: indexPath,
+      });
+      if (field.type === "blocks" && paths.path === root)
+        return paths.schemaPath;
+      if (field.type === "tabs") {
+        for (const [index, tab] of field.tabs.entries()) {
+          const tabPaths = getFieldPaths({
+            field: tab,
+            index,
+            parentPath: paths.path,
+            parentSchemaPath: paths.schemaPath,
+            parentIndexPath: paths.indexPath,
+          });
+          const hit = find(
+            tab.fields,
+            tabPaths.path,
+            tabPaths.schemaPath,
+            tabPaths.indexPath,
+          );
+          if (hit) return hit;
+        }
+      } else if ("fields" in field && field.type !== "array") {
+        const hit = find(
+          field.fields,
+          paths.path,
+          paths.schemaPath,
+          paths.indexPath,
+        );
+        if (hit) return hit;
+      }
+    }
+  }
+  const result = find(fields, "", entity);
+  if (!result) throw new Error(`Editor root ${root} has no native schema path`);
+  return result;
 }

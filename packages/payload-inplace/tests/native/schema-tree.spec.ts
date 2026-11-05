@@ -64,7 +64,7 @@ it("resolves repeated nested IDs with array/tab ancestry and blockReferences, ex
   ]);
   expect(result[2].path).toBe("page.layout.0.detail.columns.1.content.0");
   expect(result[2].schemaPath).toBe(
-    "page.layout.container.detail.columns.content.copy",
+    "page.layout.container._index-0.detail.columns.content.copy",
   );
   data[0].detail.columns.reverse();
   expect(

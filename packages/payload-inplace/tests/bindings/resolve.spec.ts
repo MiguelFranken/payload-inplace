@@ -1,6 +1,9 @@
 import { expect, it } from "vitest";
 import type { Field } from "payload";
-import { resolveRootScope } from "../../src/schema/resolve.js";
+import {
+  resolveRootSchemaPath,
+  resolveRootScope,
+} from "../../src/schema/resolve.js";
 it("distinguishes translated leaves from shared structure and inherits named group/tab localization", () => {
   const root: Field = {
     name: "layout",
@@ -42,4 +45,24 @@ it("distinguishes translated leaves from shared structure and inherits named gro
       "layout",
     ).localized,
   ).toBe(true);
+});
+
+it("retains unnamed Payload schema indexes while resolving named root data paths", () => {
+  const root: Field = { name: "layout", type: "blocks", blocks: [] };
+  const fields: Field[] = [
+    {
+      type: "tabs",
+      tabs: [
+        { label: "Content", fields: [root] },
+        { name: "detailPage", label: "Details", fields: [root] },
+      ],
+    },
+  ];
+  expect(resolveRootSchemaPath(fields, "layout", "pages")).toBe(
+    "pages._index-0-0.layout",
+  );
+  expect(resolveRootSchemaPath(fields, "detailPage.layout", "workshops")).toBe(
+    "workshops._index-0.detailPage.layout",
+  );
+  expect(() => resolveRootSchemaPath(fields, "missing", "pages")).toThrow();
 });

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.7
+
+### Patch Changes
+
+- Resolve exact Payload schema paths through unnamed tabs and structural wrappers so inline rich text and native field panels work in consumer schemas. Keep contextual actions in a stable floatable footer and give header actions and section insertion clear neutral button surfaces.
+
 ## 0.0.6
 
 ### Patch Changes

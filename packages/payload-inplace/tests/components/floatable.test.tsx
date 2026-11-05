@@ -1,0 +1,42 @@
+import { expect, it, vi } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { Floatable } from "../../src/frontend/Floatable.js";
+vi.mock("@payloadcms/ui", () => ({
+  useTranslation: () => ({ i18n: { language: "en" } }),
+}));
+vi.mock("../../src/frontend/use-panel-resize.js", () => ({
+  usePanelResize: () => ({ id: "test-panel", style: {}, edge: () => ({}) }),
+}));
+it("keeps contextual footer actions outside the field scroll area and restores the section action", () => {
+  const open = vi.fn(),
+    close = vi.fn();
+  render(
+    <Floatable
+      title="Image"
+      onClose={close}
+      actions={<button aria-label="Locate image">Locate</button>}
+      footer={<button onClick={open}>Edit all section fields</button>}
+    >
+      <label>
+        Media
+        <input />
+      </label>
+    </Floatable>,
+  );
+  const panel = screen.getByRole("complementary", { name: "Image" });
+  const footer = panel.querySelector("[data-ve-panel-footer]")!;
+  expect(
+    footer.contains(
+      screen.getByRole("button", { name: "Edit all section fields" }),
+    ),
+  ).toBe(true);
+  expect(panel.querySelector("[data-ve-panel-body]")!.contains(footer)).toBe(
+    false,
+  );
+  fireEvent.click(
+    screen.getByRole("button", { name: "Edit all section fields" }),
+  );
+  expect(open).toHaveBeenCalledOnce();
+  fireEvent.click(screen.getByRole("button", { name: "Close Image panel" }));
+  expect(close).toHaveBeenCalledOnce();
+});

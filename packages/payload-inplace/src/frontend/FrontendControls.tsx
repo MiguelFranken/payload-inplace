@@ -1178,12 +1178,67 @@ export function FrontendControls({
               actions={
                 <ChromeButton
                   size="icon"
+                  variant="secondary"
                   aria-label={t("showSectionOnPage")}
                   title={t("showOnPage")}
                   onClick={() => locateSection(selected)}
                 >
                   <LocateFixed size={16} />
                 </ChromeButton>
+              }
+              footer={
+                selection?.field || selection?.fields ? (
+                  <ChromeButton
+                    variant="secondary"
+                    className="pve:w-full pve:justify-between pve:whitespace-normal pve:text-start"
+                    onClick={() =>
+                      setSelection((s) =>
+                        s ? { ...s, field: undefined, fields: undefined } : s,
+                      )
+                    }
+                  >
+                    {t("editAllSectionFields")}
+                  </ChromeButton>
+                ) : (
+                  <nav
+                    aria-label={t("sectionActions")}
+                    className="pve:flex pve:gap-1"
+                  >
+                    <ChromeButton
+                      size="icon"
+                      aria-label={t("moveSectionUp")}
+                      disabled={disabled || selected.index === 0}
+                      onClick={() => action("up")}
+                    >
+                      <ArrowUp size={16} />
+                    </ChromeButton>
+                    <ChromeButton
+                      size="icon"
+                      aria-label={t("moveSectionDown")}
+                      disabled={disabled || fixedSelected}
+                      onClick={() => action("down")}
+                    >
+                      <ArrowDown size={16} />
+                    </ChromeButton>
+                    <ChromeButton
+                      size="icon"
+                      aria-label={t("duplicateSection")}
+                      disabled={disabled || uniqueSelected}
+                      onClick={() => action("duplicate")}
+                    >
+                      <Copy size={16} />
+                    </ChromeButton>
+                    <ChromeButton
+                      size="icon"
+                      variant="destructive"
+                      aria-label={t("removeSection")}
+                      disabled={disabled || fixedSelected || uniqueSelected}
+                      onClick={() => action("remove")}
+                    >
+                      <Trash2 size={16} />
+                    </ChromeButton>
+                  </nav>
+                )
               }
               returnFocus={inspectButton}
               onBack={
@@ -1257,57 +1312,6 @@ export function FrontendControls({
                       }
                     />
                   )}
-                {selection?.field || selection?.fields ? (
-                  <ChromeButton
-                    variant="outline"
-                    onClick={() =>
-                      setSelection((s) =>
-                        s ? { ...s, field: undefined, fields: undefined } : s,
-                      )
-                    }
-                  >
-                    {t("editAllSectionFields")}
-                  </ChromeButton>
-                ) : (
-                  <nav
-                    aria-label={t("sectionActions")}
-                    className="pve:mt-4 pve:flex pve:gap-1"
-                  >
-                    <ChromeButton
-                      size="icon"
-                      aria-label={t("moveSectionUp")}
-                      disabled={disabled || selected.index === 0}
-                      onClick={() => action("up")}
-                    >
-                      <ArrowUp size={16} />
-                    </ChromeButton>
-                    <ChromeButton
-                      size="icon"
-                      aria-label={t("moveSectionDown")}
-                      disabled={disabled || fixedSelected}
-                      onClick={() => action("down")}
-                    >
-                      <ArrowDown size={16} />
-                    </ChromeButton>
-                    <ChromeButton
-                      size="icon"
-                      aria-label={t("duplicateSection")}
-                      disabled={disabled || uniqueSelected}
-                      onClick={() => action("duplicate")}
-                    >
-                      <Copy size={16} />
-                    </ChromeButton>
-                    <ChromeButton
-                      size="icon"
-                      variant="destructive"
-                      aria-label={t("removeSection")}
-                      disabled={disabled || fixedSelected || uniqueSelected}
-                      onClick={() => action("remove")}
-                    >
-                      <Trash2 size={16} />
-                    </ChromeButton>
-                  </nav>
-                )}
               </div>
             </Floatable>
           )}
@@ -1321,6 +1325,7 @@ export function FrontendControls({
                   <>
                     <ChromeButton
                       size="icon"
+                      variant="secondary"
                       aria-label={t("undoSectionChange")}
                       title={t("undoLastSectionChange")}
                       disabled={disabled || !history.canUndo}
@@ -1330,6 +1335,7 @@ export function FrontendControls({
                     </ChromeButton>
                     <ChromeButton
                       size="icon"
+                      variant="secondary"
                       aria-label={t("redoSectionChange")}
                       title={t("redoSectionChange")}
                       disabled={disabled || !history.canRedo}

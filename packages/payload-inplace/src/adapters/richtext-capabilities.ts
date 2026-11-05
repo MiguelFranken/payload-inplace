@@ -92,7 +92,9 @@ export function richTextCapabilities(
           }
         }
       } else if (field.type === "blocks") {
-        for (const entry of field.blockReferences || field.blocks) {
+        for (const entry of field.blockReferences?.length
+          ? field.blockReferences
+          : field.blocks) {
           const block =
             typeof entry === "string"
               ? config.blocks?.find((block) => block.slug === entry)

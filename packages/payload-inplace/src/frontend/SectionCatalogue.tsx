@@ -199,7 +199,7 @@ export function SectionCatalogue({
         <Combobox.Trigger
           disabled={disabled || choices.length === 0}
           aria-label={triggerLabel}
-          className={`${buttonVariants({ variant: triggerVariant === "canvas" ? "canvas" : "outline", size: triggerVariant === "canvas" ? "icon" : "default" })} ${triggerVariant === "canvas" ? "pve:size-11" : "pve:w-full"} ${className || ""}`}
+          className={`${buttonVariants({ variant: triggerVariant === "canvas" ? "canvas" : "secondary", size: triggerVariant === "canvas" ? "icon" : "default" })} ${triggerVariant === "canvas" ? "pve:size-11" : "pve:w-full"} ${className || ""}`}
         >
           <Plus size={17} />
         </Combobox.Trigger>

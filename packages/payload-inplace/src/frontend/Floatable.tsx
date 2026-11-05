@@ -21,6 +21,7 @@ export function Floatable({
   returnFocus,
   onBack,
   actions,
+  footer,
 }: {
   title: string;
   label?: string;
@@ -30,6 +31,8 @@ export function Floatable({
   returnFocus?: RefObject<HTMLElement | null>;
   onBack?: () => void;
   actions?: ReactNode;
+  /** Stable contextual actions stay outside the native field scroll area. */
+  footer?: ReactNode;
 }) {
   const panel = useRef<HTMLElement>(null),
     body = useRef<HTMLDivElement>(null),
@@ -95,10 +98,11 @@ export function Floatable({
           className="pve:pointer-events-none pve:absolute pve:inset-0 pve:rounded-tl-2xl pve:border-2 pve:border-b-0 pve:border-r-0 pve:border-solid pve:border-transparent pve:group-hover/corner:border-[var(--pve-accent-soft,#edf0ff)] pve:group-data-[resizing=both]/panel:border-[var(--pve-accent,#3451eb)]"
         />
       </div>
-      <header className="pve:shrink-0 pve:flex pve:items-center pve:justify-between pve:gap-3 pve:border-0 pve:border-b pve:border-solid pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:py-2 pve:pl-4 pve:pr-2">
+      <header className="pve:shrink-0 pve:flex pve:items-center pve:gap-2 pve:border-0 pve:border-b pve:border-solid pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:p-2 pve:ps-3">
         {onBack && (
           <Button
             size="icon"
+            variant="secondary"
             aria-label={t("backToSections")}
             title={t("backToSections")}
             onClick={onBack}
@@ -112,23 +116,34 @@ export function Floatable({
         >
           {title}
         </h2>
-        {actions}
-        <Button
-          size="icon"
-          aria-label={t("closeNamedPanel", { title })}
-          title={t("closePanel")}
-          onClick={close}
-        >
-          <X size={16} />
-        </Button>
+        <div className="pve:flex pve:shrink-0 pve:items-center pve:gap-1">
+          {actions}
+          <Button
+            size="icon"
+            variant="secondary"
+            aria-label={t("closeNamedPanel", { title })}
+            title={t("closePanel")}
+            onClick={close}
+          >
+            <X size={16} />
+          </Button>
+        </div>
       </header>
       <div
         ref={body}
         data-ve-panel-body=""
-        className="pve:@container/pve-native pve:min-h-0 pve:min-w-0 pve:flex-auto pve:max-h-[var(--pve-body-limit,60dvh)] pve:overflow-auto pve:overscroll-contain pve:[--gutter-h:var(--pve-panel-padding,var(--base,20px))] pve:p-[var(--pve-panel-padding,var(--base,20px))]"
+        className="pve:@container/pve-native pve:min-h-0 pve:min-w-0 pve:flex-auto pve:max-h-[var(--pve-body-limit,60dvh)] pve:overflow-y-auto pve:overflow-x-hidden pve:overscroll-contain pve:[--gutter-h:var(--pve-panel-padding,var(--base,20px))] pve:p-[var(--pve-panel-padding,var(--base,20px))]"
       >
         {children}
       </div>
+      {footer && (
+        <footer
+          data-ve-panel-footer=""
+          className="pve:shrink-0 pve:flex pve:items-center pve:gap-2 pve:border-0 pve:border-t pve:border-solid pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:p-3"
+        >
+          {footer}
+        </footer>
+      )}
     </aside>
   );
 }
