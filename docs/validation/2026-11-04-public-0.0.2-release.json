@@ -1,0 +1,181 @@
+{
+  "packageName": "payload-inplace",
+  "packageVersion": "0.0.2",
+  "packageSHA256": "2e5ac872d309c82852ce00dfd220fafc55a552abdcfd8374d27abc77f36f7c81",
+  "packageSourceSHA": "d5720140b9e07d073bcd96466bad9c01b6d85bef",
+  "packageValidationRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/41839908051",
+  "appSHA": "21235807843ec414d0b90cf22b52e02e0ee0b19f",
+  "appPullRequest": "https://github.com/MiguelFranken/fluid-bodies/pull/397",
+  "result": "passed",
+  "active": {
+    "appSHA": "21235807843ec414d0b90cf22b52e02e0ee0b19f",
+    "dirty": false,
+    "sourceTreeSHA256": "bfcee2ad29314995c6acf3da7c82b68aa5e96a554bbd0730eb508b112fe9bff3",
+    "runId": "20261104T135414Z-3590",
+    "result": "passed",
+    "totals": {
+      "failed": 0,
+      "passed": 10,
+      "skipped": 0,
+      "total": 10
+    },
+    "tests": [
+      {
+        "title": "chromium > visual-editor-public-baseline.spec.ts > published website keeps native editor resources unloaded",
+        "status": "passed",
+        "durationMs": 6571
+      },
+      {
+        "title": "chromium > visual-editor-public-resources.spec.ts > public resources exclude editor work: anonymous",
+        "status": "passed",
+        "durationMs": 7494
+      },
+      {
+        "title": "chromium > visual-editor-public-resources.spec.ts > public resources exclude editor work: staff inactive",
+        "status": "passed",
+        "durationMs": 10011
+      },
+      {
+        "title": "chromium > visual-editor-security.spec.ts > warm public caches and stale Draft Mode never expose a private page after logout",
+        "status": "passed",
+        "durationMs": 7959
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > website editing uses the installed native Form and keeps drafts private",
+        "status": "passed",
+        "durationMs": 13517
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > workshop website editing preserves the empty booking state",
+        "status": "passed",
+        "durationMs": 25675
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > workshop website editing preserves the upcoming booking state",
+        "status": "passed",
+        "durationMs": 25165
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > workshop website editing preserves the sold-out booking state",
+        "status": "passed",
+        "durationMs": 22638
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > homepage-shaped blocks reorder by pointer without a render loop",
+        "status": "passed",
+        "durationMs": 32510
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > the configured preview alias activates the editor on the same homepage",
+        "status": "passed",
+        "durationMs": 4368
+      }
+    ]
+  },
+  "publicGraph": {
+    "routes": [
+      {
+        "route": "(frontend)/(home)",
+        "modules": 121,
+        "inertRegistrations": 1,
+        "inertDeliveredModules": 1,
+        "editorClientModules": 0
+      },
+      {
+        "route": "(frontend)/(content)/[slug]",
+        "modules": 122,
+        "inertRegistrations": 1,
+        "inertDeliveredModules": 1,
+        "editorClientModules": 0
+      },
+      {
+        "route": "(frontend)/(content)/workshops/[slug]",
+        "modules": 115,
+        "inertRegistrations": 1,
+        "inertDeliveredModules": 1,
+        "editorClientModules": 0
+      }
+    ],
+    "activePositiveControl": true,
+    "injectedLeakRejected": true
+  },
+  "plugin": {
+    "unitPassed": 108,
+    "productionBrowserPassed": 45,
+    "independentInstalledPassed": 4,
+    "independentDisabledPassed": 3,
+    "independentDisabledSkipped": 1
+  },
+  "publication": {
+    "status": "publicly available",
+    "method": "GitHub Actions trusted publisher OIDC",
+    "repository": "MiguelFranken/payload-inplace",
+    "workflow": "release.yml",
+    "environment": "npm",
+    "version": "0.0.2",
+    "distTag": "latest",
+    "workflowRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/41842900822",
+    "publicationCommit": "fa5b14d8c6e1183fb25f2c2c1589cd724c29a21f",
+    "anonymousArchiveSHA256": "2e5ac872d309c82852ce00dfd220fafc55a552abdcfd8374d27abc77f36f7c81",
+    "integrity": "sha512-2CvYYJf6F+Swta9Xz3C5u5PavEUQBelUydhFqH4nfJUe5lrA3WIqwyOTb/r1Pk7mf8ZY2m/TMkW6ANtE7dPQ3g==",
+    "provenance": "https://registry.npmjs.org/-/npm/v1/attestations/payload-inplace@0.0.2",
+    "provenanceSubjectMatchesArchive": true,
+    "oidcReleaseVerified": true
+  },
+  "deployment": {
+    "status": "READY",
+    "target": "Workshops feature preview only",
+    "deploymentID": "dpl_AS7MufN43DQ1htx8Zn4egqpkQvXr",
+    "appSHA": "caeafee11cf3bd2f8fc8c677fdc69dbada970527",
+    "url": "https://feature-payload-visual-editor.workshops.dev.fluid-bodies.com/",
+    "generatedHostname": "fluid-bodies-workshops-2ke669qnv-fluid-bodies.vercel.app",
+    "publicPackage": "payload-inplace@0.0.2",
+    "appCI": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/41844284404",
+    "appCIResult": "passed",
+    "deploymentWorkflow": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/41844284586",
+    "deploymentWorkflowResult": "passed",
+    "acceptance": {
+      "runId": "payload-inplace-v002-deployed-1793801751024",
+      "appSHA": "caeafee11cf3bd2f8fc8c677fdc69dbada970527",
+      "dirty": false,
+      "result": "passed",
+      "totals": {
+        "failed": 0,
+        "passed": 3,
+        "skipped": 0,
+        "total": 3
+      },
+      "tests": [
+        {
+          "title": "chromium > visual-editor.spec.ts > website editing uses the installed native Form and keeps drafts private",
+          "status": "passed",
+          "durationMs": 41710
+        },
+        {
+          "title": "chromium > visual-editor.spec.ts > homepage-shaped blocks reorder by pointer without a render loop",
+          "status": "passed",
+          "durationMs": 32891
+        },
+        {
+          "title": "chromium > visual-editor.spec.ts > the configured preview alias activates the editor on the same homepage",
+          "status": "passed",
+          "durationMs": 8802
+        }
+      ],
+      "captures": 8,
+      "inspected": [
+        "scoped native array fields at desktop",
+        "changed-only review at mobile"
+      ]
+    },
+    "codexBrowser": {
+      "publicHomepageRendered": true,
+      "observedConsoleErrors": 0,
+      "headerFooterPreserved": true
+    },
+    "otherChecks": {
+      "schmuckwerkstatt": "Separate automatic deployment status remains failed; its referenced deployment and build-log endpoints return 404. No all-PR-green claim."
+    }
+  },
+  "previousReceipt": "2026-11-04-unscoped-0.0.1-release.json"
+}
