@@ -574,93 +574,136 @@ test("reviewed publication exits in place only after acknowledgement and can sta
       })
     ).ok(),
   ).toBeTruthy();
-  await page.reload();
-  await page.evaluate(() => {
-    (window as any).__publishedWebsite = {
-      document,
-      header: document.querySelector("header"),
-      footer: document.querySelector("footer"),
-    };
-  });
-  const url = page.url();
-  await page.getByRole("button", { name: "Edit page", exact: true }).click();
-  await expect(
-    page.getByRole("navigation", { name: "Editing toolbar" }),
-  ).toBeVisible();
-  const heading = page.locator('[data-ve-field="heading"]').first();
-  await heading.click();
-  await expect(heading).toHaveAttribute("contenteditable", "plaintext-only");
-  await heading.fill("A published home, ready to browse.");
-  await expect(
-    page.getByRole("status", { name: "Draft saved", exact: true }),
-  ).toBeVisible();
-  await page
-    .getByRole("button", { name: "Review changes", exact: true })
-    .click();
-  let reject = true;
-  await page.route("**/api/shops/*", async (route) => {
-    if (
-      reject &&
-      route.request().method() === "PATCH" &&
-      route.request().postData()?.includes('"_status":"published"')
-    ) {
-      reject = false;
-      await route.fulfill({
-        status: 503,
-        contentType: "application/json",
-        body: JSON.stringify({
-          errors: [{ message: "Synthetic publication unavailable" }],
-        }),
-      });
-    } else await route.continue();
-  });
-  const review = page.getByRole("dialog", { name: "Document changes" });
-  await review
-    .getByRole("button", { name: "Publish reviewed draft", exact: true })
-    .click();
-  await expect(review).toBeVisible();
-  await expect(
-    page.getByRole("navigation", { name: "Editing toolbar" }),
-  ).toBeVisible();
-  await expect(review.getByRole("alert")).toBeVisible();
-  // A failed native submission uses the existing recovery queue. Re-save the
-  // retained draft, then obtain a fresh signed review before publication.
-  await review
-    .getByRole("button", { name: "Keep editing", exact: true })
-    .click();
-  await page.getByRole("button", { name: "Retry saving", exact: true }).click();
-  await expect(
-    page.getByRole("status", { name: "Draft saved", exact: true }),
-  ).toBeVisible();
-  await page
-    .getByRole("button", { name: "Review changes", exact: true })
-    .click();
-  await review
-    .getByRole("button", { name: "Publish reviewed draft", exact: true })
-    .click();
-  await expect(page.locator("[data-ve-ui]")).toHaveCount(0);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-    "A published home, ready to browse.",
-  );
-  await expect(
-    page.getByRole("button", { name: "Edit page", exact: true }),
-  ).toBeVisible();
-  expect(page.url()).toBe(url);
-  expect(
+  const originalShop = (
+    await (
+      await page.request.get("/api/shops?where[slug][equals]=home&depth=0")
+    ).json()
+  ).docs[0];
+  try {
+    await page.reload();
     await page.evaluate(() => {
-      const original = (window as any).__publishedWebsite;
-      return (
-        original?.document === document &&
-        original.header === document.querySelector("header") &&
-        original.footer === document.querySelector("footer")
-      );
-    }),
-  ).toBe(true);
-  await page.getByRole("button", { name: "Edit page", exact: true }).click();
-  await expect(
-    page.getByRole("navigation", { name: "Editing toolbar" }),
-  ).toBeVisible();
-  await expect(page.locator('[data-ve-field="heading"]').first()).toHaveText(
-    "A published home, ready to browse.",
-  );
+      (window as any).__publishedWebsite = {
+        document,
+        header: document.querySelector("header"),
+        footer: document.querySelector("footer"),
+      };
+    });
+    const url = page.url();
+    await page.getByRole("button", { name: "Edit page", exact: true }).click();
+    await expect(
+      page.getByRole("navigation", { name: "Editing toolbar" }),
+    ).toBeVisible();
+    const heading = page.locator('[data-ve-field="heading"]').first();
+    await heading.click();
+    await expect(heading).toHaveAttribute("contenteditable", "plaintext-only");
+    await heading.fill("A published home, ready to browse.");
+    await expect(
+      page.getByRole("status", { name: "Draft saved", exact: true }),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "Review changes", exact: true })
+      .click();
+    let reject = true;
+    await page.route("**/api/shops/*", async (route) => {
+      if (
+        reject &&
+        route.request().method() === "PATCH" &&
+        route.request().postData()?.includes('"_status":"published"')
+      ) {
+        reject = false;
+        await route.fulfill({
+          status: 503,
+          contentType: "application/json",
+          body: JSON.stringify({
+            errors: [{ message: "Synthetic publication unavailable" }],
+          }),
+        });
+      } else await route.continue();
+    });
+    const review = page.getByRole("dialog", { name: "Document changes" });
+    await review
+      .getByRole("button", { name: "Publish reviewed draft", exact: true })
+      .click();
+    await expect(review).toBeVisible();
+    await expect(
+      page.getByRole("navigation", { name: "Editing toolbar" }),
+    ).toBeVisible();
+    await expect(review.getByRole("alert")).toBeVisible();
+    // A failed native submission uses the existing recovery queue. Re-save the
+    // retained draft, then obtain a fresh signed review before publication.
+    await review
+      .getByRole("button", { name: "Keep editing", exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "Retry saving", exact: true })
+      .click();
+    await expect(
+      page.getByRole("status", { name: "Draft saved", exact: true }),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "Review changes", exact: true })
+      .click();
+    await review
+      .getByRole("button", { name: "Publish reviewed draft", exact: true })
+      .click();
+    await expect(page.locator("[data-ve-ui]")).toHaveCount(0);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "A published home, ready to browse.",
+    );
+    await expect(
+      page.getByRole("button", { name: "Edit page", exact: true }),
+    ).toBeVisible();
+    expect(page.url()).toBe(url);
+    expect(
+      await page.evaluate(() => {
+        const original = (window as any).__publishedWebsite;
+        return (
+          original?.document === document &&
+          original.header === document.querySelector("header") &&
+          original.footer === document.querySelector("footer")
+        );
+      }),
+    ).toBe(true);
+    await page.getByRole("button", { name: "Edit page", exact: true }).click();
+    await expect(
+      page.getByRole("navigation", { name: "Editing toolbar" }),
+    ).toBeVisible();
+    await expect(page.locator('[data-ve-field="heading"]').first()).toHaveText(
+      "A published home, ready to browse.",
+    );
+  } finally {
+    // This scenario exercises the real /shop transition. Restore its shared
+    // synthetic seed through the same draft/review/publication contract so the
+    // following anonymous storefront checks remain independent of test order.
+    const current = await (
+      await page.request.get(`/api/shops/${originalShop.id}?draft=true&depth=0`)
+    ).json();
+    const restored = await page.request.patch(
+      `/api/shops/${originalShop.id}?draft=true&depth=0`,
+      {
+        data: { _veRevision: current._veRevision, layout: originalShop.layout },
+      },
+    );
+    expect(restored.ok()).toBeTruthy();
+    const draft = (await restored.json()).doc;
+    const review = await page.request.post("/api/visual-editor/review", {
+      headers: { Origin: new URL(page.url()).origin },
+      data: {
+        target: { collection: "shops", id: originalShop.id, root: "layout" },
+        candidate: draft,
+      },
+    });
+    expect(review.ok()).toBeTruthy();
+    const published = await page.request.patch(
+      `/api/shops/${originalShop.id}?depth=0`,
+      {
+        data: {
+          ...draft,
+          _status: "published",
+          _veReviewToken: (await review.json()).token,
+        },
+      },
+    );
+    expect(published.ok()).toBeTruthy();
+  }
 });
