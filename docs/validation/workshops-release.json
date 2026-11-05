@@ -46,12 +46,62 @@
     "note": "Previous 0.0.5 consumer flow acceptance; not counted as 0.0.6 runs. The patch adds translation-only geometry tracking with a component regression and a production transform assertion."
   },
   "publication": {
-    "status": "pending",
-    "method": "GitHub Actions trusted publisher OIDC"
+    "version": "0.0.6",
+    "distTag": "0.0.6",
+    "sha256": "491a15a27f8065c4f204d54a8f50f7b5961e50ff34b317c566b04ccb3b4f42c4",
+    "integrity": "sha512-+mVB0nO2jSrlFJyv75TQ0N08D4gMFP54lSId6GWqWnKhFWZTOSWcdJ9gyOyXJ1t5PiX/nSqjyrmeUY6ghCYgOQ==",
+    "provenance": "https://registry.npmjs.org/-/npm/v1/attestations/payload-inplace@0.0.6",
+    "provenanceSubjectMatchesArchive": true,
+    "workflowRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/42009986037",
+    "status": "publicly available",
+    "method": "GitHub Actions trusted publisher OIDC",
+    "publicationCommit": "595f6a7d46be11b5f90848fa206f287706389cad",
+    "githubRelease": "https://github.com/MiguelFranken/payload-inplace/releases/tag/v0.0.6"
   },
   "deployment": {
-    "status": "pending",
-    "target": "Workshops feature preview only"
+    "status": "READY",
+    "target": "Workshops feature preview only",
+    "appSHA": "dd70377a9e845cd79cbcb105e5b955255a7eb796",
+    "id": "dpl_6yZw7Fxxk6pYxuuRJ91568zaLoxi",
+    "url": "https://feature-payload-visual-editor.workshops.dev.fluid-bodies.com/",
+    "generatedURL": "https://fluid-bodies-workshops-a3kpomgad-fluid-bodies.vercel.app/",
+    "ci": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/42010706439",
+    "workflow": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/42010706521",
+    "focusedDeployed": {
+      "runId": "payload-inplace-v006-deployed-1793874852669",
+      "failed": 0,
+      "passed": 3,
+      "skipped": 0,
+      "total": 3,
+      "tests": [
+        {
+          "title": "chromium > visual-editor.spec.ts > website editing uses the installed native Form and keeps drafts private",
+          "status": "passed",
+          "durationMs": 53558
+        },
+        {
+          "title": "chromium > visual-editor.spec.ts > homepage-shaped blocks reorder by pointer without a render loop",
+          "status": "passed",
+          "durationMs": 35025
+        },
+        {
+          "title": "chromium > visual-editor.spec.ts > the configured preview alias activates the editor on the same homepage",
+          "status": "passed",
+          "durationMs": 8918
+        }
+      ],
+      "captures": 8,
+      "visualReview": "All eight final screenshots are byte-identical to the inspected 0.0.5 captures. Three final original videos were sampled for native editing, reorder and same-page activation."
+    },
+    "codexBrowser": {
+      "canonicalLocalNativeFields": "passed",
+      "finalPublicPreviewRendered": true,
+      "finalManualActivationVerified": false,
+      "limitation": "Final in-app browser action calls did not actuate after context expiry/recovery; the three fresh real-Chrome deployed acceptance cases passed on the exact final app SHA."
+    },
+    "registryPin": "0.0.6",
+    "frozenInstall": "passed",
+    "types": "passed"
   },
   "previousReceipt": "2026-11-05-public-0.0.5-release.json"
 }
