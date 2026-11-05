@@ -1,0 +1,107 @@
+{
+  "packageName": "payload-inplace",
+  "packageVersion": "0.0.6",
+  "packageSHA256": "491a15a27f8065c4f204d54a8f50f7b5961e50ff34b317c566b04ccb3b4f42c4",
+  "packageSourceSHA": "70278f936e510d077bf3e22f146096f01111d8dc",
+  "packageValidationRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/42006993832",
+  "appSHA": "0d620e52b2447a5e96010d7dfee574dc8de602f9",
+  "appPullRequest": "https://github.com/MiguelFranken/fluid-bodies/pull/397",
+  "result": "passed",
+  "active": {
+    "method": "Codex browser against the exact canonical CI archive",
+    "appSHA": "0d620e52b2447a5e96010d7dfee574dc8de602f9",
+    "dirty": false,
+    "result": "passed",
+    "samePageActivation": true,
+    "nativeImageSelectionPersists": true,
+    "maximumObservedRectangleDifferencePx": 0.31591796875,
+    "nativePanelWidth": 360,
+    "nativePanelHorizontalOverflow": 0,
+    "closePanelClearsSelection": true,
+    "consumerContentPublished": false
+  },
+  "productionBuild": {
+    "result": "passed",
+    "mode": "editor enabled, isolated Next output, dedicated local development database",
+    "localArchiveSHA256": "779cb83dd90c8495b8bb162cf0bd03955fe7d7cbd5655221551035c36a6441c1",
+    "canonicalComparison": "225 regular files byte-identical; package.json differs only in devDependencies key order and parses identically. Exact canonical archive was subsequently installed with frozen lockfile and typechecked before the Codex browser acceptance."
+  },
+  "plugin": {
+    "unitPassed": 232,
+    "unitFiles": 77,
+    "productionBrowserPassed": 71,
+    "postgresNativePassed": 13,
+    "mongoNativePassed": 5,
+    "mongoNativeSkipped": 8,
+    "independentInstalledPassed": 5,
+    "independentDisabledPassed": 3,
+    "independentDisabledSkipped": 2,
+    "focusedLocalProductionPassed": 3
+  },
+  "functionalBaseline": {
+    "receipt": "2026-11-05-public-0.0.5-release.json",
+    "localWorkshopsPassed": 5,
+    "additionalAnonymousResourcesPassed": 1,
+    "deployedWorkshopsPassed": 3,
+    "note": "Previous 0.0.5 consumer flow acceptance; not counted as 0.0.6 runs. The patch adds translation-only geometry tracking with a component regression and a production transform assertion."
+  },
+  "publication": {
+    "version": "0.0.6",
+    "distTag": "0.0.6",
+    "sha256": "491a15a27f8065c4f204d54a8f50f7b5961e50ff34b317c566b04ccb3b4f42c4",
+    "integrity": "sha512-+mVB0nO2jSrlFJyv75TQ0N08D4gMFP54lSId6GWqWnKhFWZTOSWcdJ9gyOyXJ1t5PiX/nSqjyrmeUY6ghCYgOQ==",
+    "provenance": "https://registry.npmjs.org/-/npm/v1/attestations/payload-inplace@0.0.6",
+    "provenanceSubjectMatchesArchive": true,
+    "workflowRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/42009986037",
+    "status": "publicly available",
+    "method": "GitHub Actions trusted publisher OIDC",
+    "publicationCommit": "595f6a7d46be11b5f90848fa206f287706389cad",
+    "githubRelease": "https://github.com/MiguelFranken/payload-inplace/releases/tag/v0.0.6"
+  },
+  "deployment": {
+    "status": "READY",
+    "target": "Workshops feature preview only",
+    "appSHA": "dd70377a9e845cd79cbcb105e5b955255a7eb796",
+    "id": "dpl_6yZw7Fxxk6pYxuuRJ91568zaLoxi",
+    "url": "https://feature-payload-visual-editor.workshops.dev.fluid-bodies.com/",
+    "generatedURL": "https://fluid-bodies-workshops-a3kpomgad-fluid-bodies.vercel.app/",
+    "ci": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/42010706439",
+    "workflow": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/42010706521",
+    "focusedDeployed": {
+      "runId": "payload-inplace-v006-deployed-1793874852669",
+      "failed": 0,
+      "passed": 3,
+      "skipped": 0,
+      "total": 3,
+      "tests": [
+        {
+          "title": "chromium > visual-editor.spec.ts > website editing uses the installed native Form and keeps drafts private",
+          "status": "passed",
+          "durationMs": 53558
+        },
+        {
+          "title": "chromium > visual-editor.spec.ts > homepage-shaped blocks reorder by pointer without a render loop",
+          "status": "passed",
+          "durationMs": 35025
+        },
+        {
+          "title": "chromium > visual-editor.spec.ts > the configured preview alias activates the editor on the same homepage",
+          "status": "passed",
+          "durationMs": 8918
+        }
+      ],
+      "captures": 8,
+      "visualReview": "All eight final screenshots are byte-identical to the inspected 0.0.5 captures. Three final original videos were sampled for native editing, reorder and same-page activation."
+    },
+    "codexBrowser": {
+      "canonicalLocalNativeFields": "passed",
+      "finalPublicPreviewRendered": true,
+      "finalManualActivationVerified": false,
+      "limitation": "Final in-app browser action calls did not actuate after context expiry/recovery; the three fresh real-Chrome deployed acceptance cases passed on the exact final app SHA."
+    },
+    "registryPin": "0.0.6",
+    "frozenInstall": "passed",
+    "types": "passed"
+  },
+  "previousReceipt": "2026-11-05-public-0.0.5-release.json"
+}
