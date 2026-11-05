@@ -4,7 +4,7 @@
   "packageSHA256": "af17afc6b2fdddf7e7c38aab65505ac56d1e54e4916c014e77cb1fdcdcf0e66b",
   "packageSourceSHA": "e052be7b4bedc1c6308d71bb0bbd89f2305566e4",
   "packageValidationRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/42062323290",
-  "appSHA": "ca1d6ac1cf1b6cf73a92c2652c965d937be45800",
+  "appSHA": "d9cbbb499ca1214d686641b87af09d583ea398a0",
   "appPullRequest": "https://github.com/MiguelFranken/fluid-bodies/pull/397",
   "result": "passed",
   "previousReceipt": "2026-11-05-public-0.0.7-release.json",
@@ -66,7 +66,8 @@
         "video": true
       }
     ],
-    "scope": "Only two selected editor cases, one worker, disposable isolated database. No full Workshops e2e suite. Exact rich-text typography and block geometry before/during/after inline editing at 1280px and 320px; desktop/mobile visual checkpoints, structured saves, nested fields and shared media."
+    "scope": "Only two selected editor cases, one worker, disposable isolated database. No full Workshops e2e suite. Exact rich-text typography and block geometry before/during/after inline editing at 1280px and 320px; desktop/mobile visual checkpoints, structured saves, nested fields and shared media.",
+    "visualReview": "Native controls reviewed at both viewports. Initial mobile typography checkpoints retained desktop scroll and were clipped; the final preview acceptance recenters the active editor after resizing."
   },
   "workshopsUnits": {
     "passed": 12,
@@ -78,11 +79,103 @@
     "workshops": "Fresh Chrome acceptance; this release does not claim a separate successful manual Codex authoring pass on Workshops."
   },
   "publication": {
-    "status": "pending",
-    "method": "GitHub Actions trusted publisher OIDC"
+    "version": "0.0.8",
+    "distTag": "latest",
+    "sha256": "af17afc6b2fdddf7e7c38aab65505ac56d1e54e4916c014e77cb1fdcdcf0e66b",
+    "integrity": "sha512-7qSVSJRNAW3AxBHWBdohfSz2qYscqhQrZrStmdWWuvFactCZUu3+aaUkr20NsuqmfFa6S73m6g5uyBJO/yhXVw==",
+    "provenance": "https://registry.npmjs.org/-/npm/v1/attestations/payload-inplace@0.0.8",
+    "provenanceSubjectMatchesArchive": true,
+    "workflowRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/42065592284",
+    "status": "publicly available",
+    "method": "GitHub Actions trusted publisher OIDC",
+    "publicationCommit": "8c90992664b3092ea8702180beb1b38d56ae5f9c",
+    "githubRelease": "https://github.com/MiguelFranken/payload-inplace/releases/tag/v0.0.8",
+    "latest": "0.0.8"
   },
   "deployment": {
-    "status": "pending",
-    "target": "Workshops feature preview only"
+    "status": "READY",
+    "target": "Workshops feature preview only",
+    "appSHA": "d9cbbb499ca1214d686641b87af09d583ea398a0",
+    "registryPin": "0.0.8",
+    "frozenInstall": "passed",
+    "types": "passed",
+    "id": "dpl_Cw36g4qax1shmBr14aGnQZkowWVF",
+    "url": "https://feature-payload-visual-editor.workshops.dev.fluid-bodies.com/",
+    "generatedUrl": "https://fluid-bodies-workshops-k2ia8a3gd-fluid-bodies.vercel.app/",
+    "ci": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/42068727853",
+    "workflow": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/42068728125",
+    "installedCanonicalFilesByteIdentical": 228,
+    "focusedDeployed": {
+      "runId": "payload-inplace-v008-deployed-1793897888180",
+      "appSHA": "d9cbbb499ca1214d686641b87af09d583ea398a0",
+      "dirty": false,
+      "totals": {
+        "failed": 0,
+        "passed": 5,
+        "skipped": 0,
+        "total": 5
+      },
+      "tests": [
+        {
+          "title": "chromium > visual-editor-fields.spec.ts > workshops rich-text terminals and media references use the shared inline and picker strategies",
+          "status": "passed",
+          "durationMs": 29075,
+          "captures": 6,
+          "video": true
+        },
+        {
+          "title": "chromium > visual-editor-fields.spec.ts > coupon and offset news rich text preserve storefront typography and layout while editing",
+          "status": "passed",
+          "durationMs": 12306,
+          "captures": 4,
+          "video": true
+        },
+        {
+          "title": "chromium > visual-editor.spec.ts > website editing uses the installed native Form and keeps drafts private",
+          "status": "passed",
+          "durationMs": 29945,
+          "captures": 6,
+          "video": true
+        },
+        {
+          "title": "chromium > visual-editor.spec.ts > homepage-shaped blocks reorder by pointer without a render loop",
+          "status": "passed",
+          "durationMs": 32009,
+          "captures": 2,
+          "video": true
+        },
+        {
+          "title": "chromium > visual-editor.spec.ts > the configured preview alias activates the editor on the same homepage",
+          "status": "passed",
+          "durationMs": 6463,
+          "captures": 0,
+          "video": true
+        }
+      ],
+      "visualReview": {
+        "originalScreenshotsInspected": 18,
+        "originalVideosSampled": 5,
+        "aliasCase": "video only; no named screenshots"
+      },
+      "scope": "Five selected editor cases with one worker. No full Workshops e2e suite."
+    },
+    "cleanup": {
+      "disposableLocalDatabase": "e2e-local-20261105152704-90850 deleted through the repository wrapper",
+      "humanDevelopmentDatabaseAndServer": "preserved"
+    },
+    "limits": [
+      "physical-device touch",
+      "screen-reader speech",
+      "RTL"
+    ],
+    "appMainAndProduction": "unchanged"
+  },
+  "localPresentationReview": {
+    "runId": "20261105T163909Z-50155",
+    "appSHA": "9670da85b81fc600bfc5b97c6d4e751f9730974f",
+    "passed": 1,
+    "capturesInspected": 4,
+    "videoSampled": true,
+    "scope": "Selected typography case only; corrected mobile recentering. Cold development compilation/login waiting is visible at the start of the video."
   }
 }
