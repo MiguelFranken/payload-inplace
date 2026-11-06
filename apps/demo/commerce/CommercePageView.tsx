@@ -37,7 +37,7 @@ export function CommercePageView({
     root.split(".").reduce((value, key) => value?.[key], document) || [];
   const photo = (image: any, className = "") => (
     <div
-      className={`demo:overflow-hidden demo:bg-photo demo:[&_img]:block demo:[&_img]:h-full demo:[&_img]:w-full demo:[&_img]:object-cover ${className}`}
+      className={`demo:overflow-hidden demo:bg-photo demo:outline demo:outline-1 demo:-outline-offset-1 demo:outline-black/10 demo:[&_img]:block demo:[&_img]:h-full demo:[&_img]:w-full demo:[&_img]:object-cover ${className}`}
     >
       {renderImage ? (
         renderImage(image)
@@ -74,9 +74,9 @@ export function CommercePageView({
             <section
               key={block.id}
               {...attrs}
-              className={`${sectionClass} demo:grid demo:gap-8 demo:py-10 demo:md:grid-cols-[0.85fr_1.15fr] demo:md:items-center demo:md:gap-12 demo:md:py-16 ${tone(block.background)}`}
+              className={`${sectionClass} demo:grid demo:gap-8 demo:py-10 demo:lg:grid-cols-[0.9fr_1.1fr] demo:lg:items-center demo:lg:gap-16 demo:md:py-12 ${tone(block.background)}`}
             >
-              <div className="demo:space-y-7">
+              <div className="demo:flex demo:flex-col demo:items-start demo:gap-6">
                 <p
                   {...field(identity, "eyebrow")}
                   className="demo:m-0 demo:text-xs demo:font-medium demo:tracking-widest demo:uppercase demo:text-muted"
@@ -85,7 +85,7 @@ export function CommercePageView({
                 </p>
                 <h1
                   {...field(identity, "heading")}
-                  className={`${titleClass} demo:text-5xl demo:sm:text-6xl demo:lg:text-7xl`}
+                  className={`${titleClass} demo:max-w-[12ch] demo:text-5xl demo:sm:text-6xl demo:lg:text-7xl`}
                 >
                   {block.heading}
                 </h1>
@@ -105,13 +105,16 @@ export function CommercePageView({
                 </a>
                 <p
                   {...field(identity, "note")}
-                  className="demo:m-0 demo:pt-5 demo:text-xs demo:tracking-wide demo:text-muted"
+                  className="demo:m-0 demo:pt-2 demo:text-xs demo:tracking-wide demo:text-muted"
                 >
                   {block.note}
                 </p>
               </div>
               <div {...field(identity, "image")}>
-                {photo(block.image, "demo:aspect-[5/4] demo:rounded-t-[7rem]")}
+                {photo(
+                  block.image,
+                  "demo:aspect-[5/4] demo:rounded-t-[5rem] demo:lg:rounded-t-[7rem]",
+                )}
               </div>
             </section>
           );
@@ -130,10 +133,10 @@ export function CommercePageView({
                 {block.breadcrumb?.label}
               </a>
               <div className="demo:grid demo:gap-9 demo:md:grid-cols-[1.1fr_0.9fr] demo:md:gap-16">
-                <div {...field(identity, "image")}>
+                <div {...field(identity, "image")} className="demo:self-start">
                   {photo(block.image, "demo:aspect-[4/5] demo:rounded-sm")}
                 </div>
-                <div className="demo:min-w-0 demo:space-y-6 demo:md:py-8">
+                <div className="demo:min-w-0 demo:grid demo:gap-6 demo:md:py-2">
                   <p
                     {...field(identity, "eyebrow")}
                     className="demo:m-0 demo:text-xs demo:tracking-widest demo:uppercase demo:text-muted"
@@ -161,7 +164,7 @@ export function CommercePageView({
                   <p {...field(identity, "description")} className={copyClass}>
                     {block.description}
                   </p>
-                  <div id="finishes" className="demo:space-y-3 demo:pt-2">
+                  <div id="finishes" className="demo:grid demo:gap-3 demo:pt-2">
                     <h2
                       {...field(identity, "finishesHeading")}
                       className="demo:m-0 demo:text-sm demo:font-medium"
@@ -190,7 +193,7 @@ export function CommercePageView({
                             className="demo:mt-0.5 demo:shrink-0 demo:text-muted"
                           />
                         )}
-                        <div className="demo:min-w-0 demo:space-y-1">
+                        <div className="demo:min-w-0 demo:grid demo:gap-1">
                           <p
                             {...field(
                               identity,
@@ -305,7 +308,7 @@ export function CommercePageView({
                       >
                         {block.careHeading}
                       </h2>
-                      <ul className="demo:m-0 demo:space-y-3 demo:ps-4 demo:text-sm demo:leading-relaxed demo:text-muted">
+                      <ul className="demo:m-0 demo:grid demo:gap-3 demo:ps-4 demo:text-sm demo:leading-relaxed demo:text-muted">
                         {block.variants[0].details.care.map((care: any) => {
                           const carePath = getArrayItemPath(
                             "variants",
@@ -353,10 +356,10 @@ export function CommercePageView({
               id="collection"
               key={block.id}
               {...attrs}
-              className={`${sectionClass} demo:py-14 demo:md:py-20 ${tone(block.background)}`}
+              className={`${sectionClass} demo:py-12 demo:md:py-16 ${tone(block.background)}`}
             >
-              <div className="demo:mb-9 demo:flex demo:flex-wrap demo:items-end demo:justify-between demo:gap-5">
-                <div className="demo:space-y-4">
+              <div className="demo:mb-8 demo:flex demo:flex-wrap demo:items-end demo:justify-between demo:gap-5">
+                <div className="demo:grid demo:gap-3">
                   <h2
                     {...field(identity, "heading")}
                     className={`${titleClass} demo:text-4xl demo:md:text-5xl`}
@@ -422,7 +425,7 @@ export function CommercePageView({
                       >
                         {card.description}
                       </p>
-                      <div className="demo:mt-3 demo:flex demo:items-center demo:gap-3">
+                      <div className="demo:mt-2 demo:flex demo:items-center demo:gap-1">
                         <span
                           {...field(identity, cardPath("linkLabel"))}
                           className="demo:text-sm"
@@ -437,7 +440,7 @@ export function CommercePageView({
                               : undefined
                           }
                           aria-label={`Open ${card.heading || product?.title || "product"}`}
-                          className="demo:inline-flex demo:size-10 demo:items-center demo:justify-center demo:rounded-full demo:text-accent demo:hover:bg-soft"
+                          className="demo:inline-flex demo:size-10 demo:items-center demo:justify-center demo:rounded-full demo:text-ink demo:hover:bg-soft demo:focus-visible:outline-2 demo:focus-visible:outline-offset-2 demo:focus-visible:outline-accent"
                         >
                           <ArrowRight size={18} aria-hidden="true" />
                         </a>
@@ -479,15 +482,15 @@ export function CommercePageView({
               id="studio-story"
               key={block.id}
               {...attrs}
-              className={`demo:my-8 ${tone(block.background)}`}
+              className={tone(block.background)}
             >
               <div
-                className={`${sectionClass} demo:grid demo:items-center demo:gap-9 demo:py-12 demo:md:grid-cols-2 demo:md:gap-20 demo:md:py-16 ${tone(block.background)}`}
+                className={`${sectionClass} demo:grid demo:items-center demo:gap-9 demo:py-12 demo:md:grid-cols-2 demo:md:gap-12 demo:lg:gap-20 demo:md:py-16 ${tone(block.background)}`}
               >
                 <div {...field(identity, "image")}>
                   {photo(block.image, "demo:aspect-square demo:rounded-sm")}
                 </div>
-                <div className="demo:space-y-6">
+                <div className="demo:grid demo:gap-6">
                   <p
                     {...field(identity, "eyebrow")}
                     className="demo:m-0 demo:text-xs demo:tracking-widest demo:uppercase demo:text-muted"
@@ -517,7 +520,7 @@ export function CommercePageView({
             <section
               key={block.id}
               {...attrs}
-              className={`${sectionClass} demo:py-14 demo:md:grid demo:md:grid-cols-2 demo:md:gap-20 demo:md:py-20 ${tone(block.background)}`}
+              className={`${sectionClass} demo:py-12 demo:md:grid demo:md:grid-cols-2 demo:md:gap-12 demo:lg:gap-20 demo:md:py-16 ${tone(block.background)}`}
             >
               <h2
                 {...field(identity, "heading")}
@@ -527,7 +530,7 @@ export function CommercePageView({
               </h2>
               <div
                 {...list(identity, "items")}
-                className={`demo:space-y-3 ${active && !block.items?.length ? "demo:min-h-20" : ""}`}
+                className={`demo:grid demo:gap-3 ${active && !block.items?.length ? "demo:min-h-20" : ""}`}
               >
                 {(block.items || []).map((item: any) => (
                   <article

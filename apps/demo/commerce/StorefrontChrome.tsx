@@ -14,7 +14,7 @@ export function StorefrontHeader() {
         data-test-site-header=""
         className="demo:border-0 demo:border-b demo:border-solid demo:border-line demo:bg-canvas"
       >
-        <div className="demo:mx-auto demo:flex demo:min-h-20 demo:max-w-7xl demo:items-center demo:justify-between demo:gap-4 demo:px-5 demo:sm:px-8 demo:lg:px-12">
+        <div className="demo:box-border demo:mx-auto demo:flex demo:w-full demo:min-h-20 demo:max-w-7xl demo:items-center demo:justify-between demo:gap-4 demo:px-5 demo:sm:px-8 demo:lg:px-12">
           <a
             href="/shop"
             className="demo:font-display demo:text-2xl demo:tracking-tight demo:text-ink demo:no-underline demo:sm:text-3xl"
@@ -50,8 +50,8 @@ export function StorefrontHeader() {
 export function StorefrontFooter() {
   return (
     <footer id="site-footer" className="demo:bg-ink demo:text-white">
-      <div className="demo:mx-auto demo:flex demo:max-w-7xl demo:flex-wrap demo:items-start demo:justify-between demo:gap-9 demo:px-5 demo:py-12 demo:sm:px-8 demo:lg:px-12">
-        <div className="demo:space-y-3">
+      <div className="demo:box-border demo:mx-auto demo:flex demo:w-full demo:max-w-7xl demo:flex-wrap demo:items-start demo:justify-between demo:gap-9 demo:px-5 demo:py-12 demo:sm:px-8 demo:lg:px-12">
+        <div className="demo:grid demo:gap-3">
           <a
             href="/shop"
             className="demo:font-display demo:text-3xl demo:text-white demo:no-underline"
@@ -62,7 +62,7 @@ export function StorefrontFooter() {
             A few considered things, for the way you live.
           </p>
         </div>
-        <div className="demo:space-y-3 demo:text-sm">
+        <div className="demo:grid demo:gap-3 demo:text-sm">
           <p className="demo:m-0 demo:text-white/75">
             An editable ecommerce demo.
           </p>
