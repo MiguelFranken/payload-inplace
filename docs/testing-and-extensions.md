@@ -4,7 +4,7 @@ Use the public package entrypoints. The clean external fixture under `fixtures/i
 
 ## Isolate a custom control
 
-Import `FieldStrategyHarness` from `payload-inplace/testing` in a test. Pass the same `FieldStrategyDefinition` used by your active registration component, the native field contract and an initial value. Assert visible value changes, disabled/error presentation and native handoff. `components/PriceControls.tsx` and `strategy.unit.test.tsx` are runnable examples. The harness intentionally does not suppress invalid control callbacks: a control that ignores disabled must fail your assertion.
+Import `FieldStrategyHarness` from `payload-inplace/testing` in a test. Pass the same `FieldStrategyDefinition` used by your active registration component, the native field contract and an initial value. Assert visible value changes, disabled/error presentation and native handoff. [PriceControls.tsx](../fixtures/installed-consumer/components/PriceControls.tsx) and [strategy.unit.test.tsx](../fixtures/installed-consumer/strategy.unit.test.tsx) are runnable examples. The harness intentionally does not suppress invalid control callbacks: a control that ignores disabled must fail your assertion.
 
 This is a control unit test, not a fake Payload server. It does not prove access, conditions, validation, schema preparation, concurrent writes or saves. Test those against the real native Form. The external fixture registers that same control through the import map, edits its real `readingTime` number field and hands back to the native number input before reviewed publication. The separate reader/access tests remain mandatory.
 
@@ -14,7 +14,7 @@ The testing entrypoint is optional and forbidden in production package source/ap
 
 ## Annotate nested content
 
-Use the inert `payload-inplace/bindings` helpers in the host's renderer. `examples/nested-bindings.tsx` typechecks named groups, terminal fields, stable nested rows, a list that remains addressable when empty and explicit native rich-text fallback. Keep leaf text markup faithful to its source; CSS casing is presentation. Explicit terminal placement decides where editors click. Attributes never authorize writes.
+Use the inert `payload-inplace/bindings` helpers in the host's renderer. [nested-bindings.tsx](../fixtures/installed-consumer/examples/nested-bindings.tsx) typechecks named groups, terminal fields, stable nested rows, a list that remains addressable when empty and explicit native rich-text fallback. Keep leaf text markup faithful to its source; CSS casing is presentation. Explicit terminal placement decides where editors click. Attributes never authorize writes.
 
 ## Own fields, not copies
 
@@ -24,7 +24,7 @@ The optional [media adapter](implementation/media.md) searches/uploads through t
 
 ## Keep saves and languages scoped
 
-Typing updates native fields immediately, then the one native queue saves after an idle pause. Recovery retains the working copy and requires an explicit retry; a stale acknowledgement never owns newer typing. Only signed saved revisions may publish. [Content locale](implementation/localization.md) and UI language are independent; `examples/ui-messages.ts` verifies typed override/parameter contracts. Shared array structure can affect all locales even when individual leaves are translated.
+Typing updates native fields immediately, then the one native queue saves after an idle pause. Recovery retains the working copy and requires an explicit retry; a stale acknowledgement never owns newer typing. Only signed saved revisions may publish. [Content locale](implementation/localization.md) and UI language are independent; [ui-messages.ts](../fixtures/installed-consumer/examples/ui-messages.ts) verifies typed override/parameter contracts. Shared array structure can affect all locales even when individual leaves are translated.
 
 Globals and related records use [finite document scopes](implementation/document-scopes.md), each with independent access, revision, history and review. [Patterns](implementation/section-patterns.md) are independent copies through optional consumer-owned storage. Neither feature implies shared publication or live synchronization.
 

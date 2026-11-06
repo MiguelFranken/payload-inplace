@@ -1,3 +1,5 @@
+> Historical milestone snapshot. Version, test counts, pending gates and release holds below describe that dated run. See the [current release/consumer receipt](workshops-release.json) and the [documentation index](../README.md) for current status and setup.
+
 # Native field ownership through Suspense
 
 A native upload chooser intermittently disappeared after reopening. Instrumentation showed no unexpected modal-close action, while the upload button itself was replaced. A custom native field can suspend an already mounted tree; React runs layout-effect cleanup while hiding that tree. Releasing the field claim from that cleanup removed the only owner and unmounted the native controls.

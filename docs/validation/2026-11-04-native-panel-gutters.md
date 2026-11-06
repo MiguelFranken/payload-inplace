@@ -1,3 +1,5 @@
+> Historical milestone snapshot. Version, test counts, pending gates and release holds below describe that dated run. See the [current release/consumer receipt](workshops-release.json) and the [documentation index](../README.md) for current status and setup.
+
 # Native field panel gutters
 
 The native Payload 3.91 admin uses a 60px page gutter at desktop widths. Its small-screen collapsible styles use that gutter as row padding. Our isolated field CSS correctly follows the floating panel's container width, but its inherited gutter still followed the website viewport. A narrow panel on a desktop therefore received 60px row padding. Top-level groups also used negative margins derived from that gutter against a 16px panel inset. Codex browser measured a 358px scroll area with 402px of content: 44px unwanted horizontal overflow.

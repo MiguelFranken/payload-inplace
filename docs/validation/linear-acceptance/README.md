@@ -1,3 +1,5 @@
+> Historical milestone snapshot. Version, test counts, pending gates and release holds below describe that dated run. See the [current release/consumer receipt](../workshops-release.json) and the [documentation index](../../README.md) for current status and setup.
+
 # Linear roadmap local acceptance — 5 November 2026
 
 All 21 children of COURSE-233 are implemented and validated locally on `feature/onpage-roadmap`. **Nothing from this milestone is pushed, published or deployed.** The owner explicitly reserved that signal. Earlier published versions and Vercel previews are separate historical milestones.

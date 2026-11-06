@@ -107,4 +107,4 @@
 - Isolate native light/dark styles inside the editor. Keep anonymous and inactive public routes free of editor client resources.
 - Validate separate installed consumers and actual Workshops Pages/Workshop roots. Keep capacity and scheduling in their existing domain commands.
 
-This is an experimental prerelease candidate. Exact compatibility, migration, publication and non-destructive rollback boundaries are in `docs/compatibility.md` and `docs/release.md`. No stable registry publication or production rollout is claimed.
+The alpha entries above are historical. Current normal releases and their compatibility, migration and rollback boundaries are documented in the repository guides.

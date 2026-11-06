@@ -26,140 +26,128 @@
 
 ## What you get
 
-- **Edit on the actual page.** Keep the website URL, header, footer and scroll position when entering edit mode.
-- **Write directly in text.** Bind a headline or paragraph to its native field, including terminal fields inside array rows. Extra settings stay secondary.
-- **Edit in context.** Plain text and compatible Lexical fields edit on the page. Media, relationships, custom fields and compound objects retain scoped native Payload controls in a resizable panel.
-- **Keep the controls close.** An icon dock, optional moving selection outline, section reordering and jump-to-section actions stay out of the content's way.
-- **See changes immediately.** Optimistic rendering and debounced draft saves share one native Form. Review only changed fields before publishing.
-- **Keep your existing app.** You own the schemas, renderers, authorization and business rules. Bindings identify content; Payload access rules still govern reads and writes.
+**Your website is the editing surface.** Keep its URL, header, footer and scroll position. Select a heading and type; use native Payload fields when the content needs more than inline text.
 
-<img src="https://raw.githubusercontent.com/MiguelFranken/payload-inplace/main/docs/images/ecommerce-editor.png" width="1280" alt="Ecommerce product page with a directly editable headline, native storefront layout and compact editing toolbar.">
+- **Inline text and rich text** with native field ownership, preserved styling and compact formatting controls.
+- **Media replacement and scoped settings** for images, relationships, conditional fields and nested array items.
+- **Sections in context:** one insertion point between blocks, searchable previews, drag-and-drop and keyboard reordering.
+- **Immediate feedback, reviewed publishing:** optimistic rendering, debounced draft saves, changed-only comparisons and saved versions.
+- **Your schemas and rules:** explicit bindings, existing Payload permissions/hooks and optional app-owned controls.
 
-_Actual bundled demo. The plugin adds editing controls around your frontend; your application defines the page design._
+<img src="https://raw.githubusercontent.com/MiguelFranken/payload-inplace/main/docs/images/ecommerce-editor.png" width="1440" alt="Inline editing an Arc lounge chair headline on the unchanged commerce website, with joined selection controls and a compact bottom-right dock.">
+
+_Real, synthetic commerce demo. Your application supplies the design; Payload Inplace supplies the editing layer. Open any image for its full-resolution capture._
+
+## See it in action
+
+### Replace media without leaving the page
+
+<img src="https://raw.githubusercontent.com/MiguelFranken/payload-inplace/main/docs/images/ecommerce-media.png" width="1440" alt="Contextual media library showing image thumbnails over the selected storefront image.">
+
+Replace a document's image reference without rewriting shared asset metadata. [Register the media picker →](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/guides/media.md)
+
+### Keep complex fields native
+
+<img src="https://raw.githubusercontent.com/MiguelFranken/payload-inplace/main/docs/images/ecommerce-fields.png" width="1440" alt="Native finish settings with SKU, availability and a conditional lead-time field in the resizable editor panel.">
+
+Select exactly one array item or a related group of fields. Payload retains conditions, validation and access. [Map nested fields →](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/nested-bindings.md)
+
+### Add and organize sections
+
+<img src="https://raw.githubusercontent.com/MiguelFranken/payload-inplace/main/docs/images/ecommerce-sections.png" width="1440" alt="A searchable section catalogue over the commerce page with a temporary section preview.">
+
+Preview an option before inserting it. Cancel without saving; insert with native defaults. [Configure sections and previews →](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/guides/sections.md)
+
+### Review what changed
+
+<img src="https://raw.githubusercontent.com/MiguelFranken/payload-inplace/main/docs/images/ecommerce-review.png" width="1440" alt="Changed-only draft review comparing the edited product heading with its published value before publication.">
+
+Compare against the published document or the draft at session start. Publish the reviewed saved revision, then return to the website. [Drafts, review and history →](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/guides/publishing.md)
 
 <details>
-<summary>Explore the ecommerce demo and native product fields</summary>
+<summary>See the storefront without editing controls</summary>
 
-<img src="https://raw.githubusercontent.com/MiguelFranken/payload-inplace/main/docs/images/ecommerce-fields.png" width="1280" alt="Scoped native finish settings with conditional availability fields over the ecommerce product page.">
+<img src="https://raw.githubusercontent.com/MiguelFranken/payload-inplace/main/docs/images/ecommerce-storefront.png" width="1440" alt="Still and Form storefront with a balanced editorial hero, product photography and a two-column collection grid.">
 
-<img src="https://raw.githubusercontent.com/MiguelFranken/payload-inplace/main/docs/images/ecommerce-storefront.png" width="1280" alt="Still and Form homewares storefront with a simple editorial layout and generated product photography.">
-
-The demo covers a named-tab product blocks root, price groups, related products, conditional fields and two nested arrays. [Demo schema and renderer](https://github.com/MiguelFranken/payload-inplace/tree/main/dev/commerce).
+The demo includes native `shops` and `products` schemas, a named-tab blocks root, price groups, media, conditional finishes and two nested arrays. [Schema and renderer](https://github.com/MiguelFranken/payload-inplace/tree/main/apps/demo/commerce) · [Run locally](https://github.com/MiguelFranken/payload-inplace/blob/main/CONTRIBUTING.md#run-the-demo)
 
 </details>
 
-Previously published as `@miguel.franken/payload-visual-editor`. [Migrate existing imports →](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/migration.md)
-
 ## Quick start
 
-The current release targets **Payload 3 + Next.js App Router with Turbopack**. This is a host integration: configure the plugin, bind your renderer, then connect an authorized website entry. Installing the package alone does not activate editing.
-
-### 1. Install and configure
+Target: **Payload 3.91.0 + Next.js 16.4.2 App Router / Turbopack, React 19.2.x, Node 24+**. This is an integration into your existing website, not an automatic page builder. You do not need Tailwind in your host to consume the package.
 
 ```sh
 pnpm add payload-inplace
 ```
 
-Add the plugin to your existing Payload configuration. This example assumes a `pages` collection with an existing `layout` blocks field and a `hero` block with `heading`, `caption` and `image` fields:
+Configure an existing draft-enabled blocks root:
 
 ```ts
 import { visualEditor } from "payload-inplace";
 import { postgresConcurrency } from "payload-inplace/postgres";
-import { canEditWebsite } from "./access/canEditWebsite"; // Your application's policy.
+import { canEditWebsite } from "./access/canEditWebsite";
 
 const editor = visualEditor({
   collections: { pages: { roots: ["layout"] } },
-  previewOrigin: process.env.SITE_ORIGIN!, // Your configured website origin.
+  previewOrigin: process.env.SITE_ORIGIN!,
   resolvePagePath: ({ document }) =>
     document.slug === "home" ? "/" : `/${document.slug}`,
   canEdit: ({ req, document }) => canEditWebsite(req.user, document),
   concurrency: postgresConcurrency(),
-  blockControls: {
-    hero: {
-      fields: ["heading", "caption", "image"],
-      inlineEdit: ["heading", "caption"],
-    },
-  },
 });
 
-// Include editor in your existing buildConfig({ plugins: [...] }).
+// Add editor to your existing buildConfig({ plugins: [...] }).
 ```
 
-`canEditWebsite` is your own server-side authorization function. Install the plugin's additive revision fields through your normal Payload migration workflow before enabling the Postgres concurrency guard. See [installation and upgrades](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/release.md#install-enable-and-upgrade).
+`canEditWebsite` is your server-side policy, additional to Payload access. Apply the additive revision-field migration through your normal Payload workflow before serving the Postgres guard.
 
-### 2. Bind your rendered content
-
-Use the dependency-free helpers on the elements that correspond to CMS content. Stable block and row IDs keep targets correct after reordering.
+Bind the element that renders the field:
 
 ```tsx
-import {
-  getBlockAttributes,
-  getFieldAttributes,
-} from "payload-inplace/bindings";
+import { getBlockAttributes, getFieldAttributes } from 'payload-inplace/bindings'
 
-// active comes from the authorized editor entry.
-function Hero({
-  block,
-  active,
-}: {
-  block: { id: string; heading: string };
-  active: boolean;
-}) {
-  const identity = { root: "layout", blockId: block.id };
+const identity = { root: 'layout', blockId: block.id }
 
-  return (
-    <section {...getBlockAttributes(identity, active)}>
-      <h2
-        {...getFieldAttributes(
-          { ...identity, field: "heading", edit: "inline" },
-          active,
-        )}
-      >
-        {block.heading}
-      </h2>
-    </section>
-  );
-}
+<section {...getBlockAttributes(identity, active)}>
+  <h1 {...getFieldAttributes({ ...identity, field: 'heading', edit: 'inline' }, active)}>
+    {block.heading}
+  </h1>
+</section>
 ```
 
-Use `getArrayItemPath('chapters', row.id, 'text')` for a nested terminal field. Bind an entire row or several related fields to open just their native settings. [Nested bindings and terminal fields →](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/nested-bindings.md)
-
-### 3. Connect the website entry
-
-The host authenticates the current Payload user, validates the document-scoped editor session and mounts `FrontendEditor` around the same page renderer. Keep the normal website layout, generate a separate frontend component map and connect the authorized refresh/server-function bridge. The launcher uses a soft refresh to enter and leave editing on the current URL.
-
-Follow the [complete integration guide](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/integration.md), including the [same-page architecture](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/adr/0006-same-page-editing.md) and [component-map isolation](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/frontend-component-map.md). The [bundled demo](https://github.com/MiguelFranken/payload-inplace/tree/main/dev) is an executable reference. [Run it locally →](https://github.com/MiguelFranken/payload-inplace/blob/main/CONTRIBUTING.md#run-the-demo)
-
-## Make it fit your application
-
-Choose editable field profiles, enable individual tools, add native field panels or register custom controls and access-checked actions. Custom panels use the same Form and native fields. Theme the editor with `--pve-*` CSS variables; its prefixed Tailwind styles omit Preflight and isolate native field styling from your website.
-
-[Controls and theming →](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/integration.md#consumer-controls-and-theme)
-
-## Compatibility
-
-| Runtime                                     | Current tested versions                                            |
-| ------------------------------------------- | ------------------------------------------------------------------ |
-| Payload, `@payloadcms/ui`, Postgres adapter | **3.91.0**                                                         |
-| Next.js                                     | **16.4.2**, App Router, Turbopack                                  |
-| React / React DOM                           | **19.2.x**, tested with 19.2.4 and 19.2.6                          |
-| Node.js                                     | **24+**, CI on Node 24                                             |
-| Database                                    | Postgres with transactional revision guards; MongoDB demo coverage |
-
-The native handler bridge is version-pinned. This local development branch adds explicit draft globals, finite page document scopes, content localization and compatible inline Lexical fields. Cross-origin frontends and editing embedded custom Lexical nodes remain outside the contract. These additions are not published yet. The normal npm release line starts at **0.0.1**; the [compatibility guide](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/compatibility.md) defines the tested scope.
+`active` comes from your authorized render entry. Helpers are inert when inactive. Connect the server launcher, shared layout, internal active route, dedicated component map and native server-function bridge using the **[step-by-step getting-started guide](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/getting-started.md)**. Every step names the host file, an executable reference and a check.
 
 ## Documentation
 
-| Guide                                                                                                               | What it covers                                                                       |
-| ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| [Integration](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/integration.md)                       | Configuration, same-page routing, authorization, preview and public-route boundaries |
-| [Nested bindings](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/nested-bindings.md)               | Terminal text, dotted paths, stable array rows and compound selections               |
-| [Frontend component map](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/frontend-component-map.md) | Native controls and custom components without loading the whole admin application    |
-| [Compatibility](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/compatibility.md)                   | Exact runtime versions, supported capabilities and validation limits                 |
-| [Releases and rollback](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/release.md)                 | Changesets, immutable CI artifacts, npm provenance and safe upgrades                 |
-| [Changelog](https://github.com/MiguelFranken/payload-inplace/blob/main/CHANGELOG.md)                                | Published package changes                                                            |
-| [Contributing](https://github.com/MiguelFranken/payload-inplace/blob/main/CONTRIBUTING.md)                          | Local demo, synthetic accounts and validation commands                               |
+**[Documentation index →](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/README.md)**
+
+| I want to…                         | Guide                                                                                                                 |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Get a working integration          | [Getting started](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/getting-started.md)                 |
+| Understand the editing flow        | [Screenshot tour](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/tour.md)                            |
+| Select every nested element        | [Bindings and terminal fields](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/nested-bindings.md)    |
+| Edit native Lexical content inline | [Rich text and styling](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/guides/rich-text.md)          |
+| Use the image library              | [Media selection](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/guides/media.md)                    |
+| Configure section hover previews   | [Sections and catalogue](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/guides/sections.md)          |
+| Customize tools or theme           | [Controls and CSS variables](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/guides/customization.md) |
+| Understand saving and publication  | [Drafts and review](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/guides/publishing.md)             |
+| Fix an integration problem         | [Troubleshooting](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/troubleshooting.md)                 |
+
+Developer references: [Host runtime contract](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/integration.md) · [Public API](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/api-reference.md) · [Architecture](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/architecture.md) · [Security/caching](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/guides/security.md) · [Test kit](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/testing-and-extensions.md) · [Release/upgrade](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/release.md) · [Contributing](https://github.com/MiguelFranken/payload-inplace/blob/main/CONTRIBUTING.md).
+
+## Compatibility
+
+| Runtime                                        | Tested contract                                                           |
+| ---------------------------------------------- | ------------------------------------------------------------------------- |
+| Payload / UI / Payload Next / database adapter | **3.91.0**, aligned exact versions                                        |
+| Next.js                                        | **16.4.2**, App Router, Turbopack                                         |
+| React / React DOM                              | **19.2.x**                                                                |
+| Node.js                                        | **24+**, release CI on Node 24                                            |
+| Database                                       | Postgres for transactional concurrency; Mongo single-writer demo fallback |
+
+Draft globals, finite document scopes and content localization are opt-in. Cross-origin frontends and editing custom Lexical node internals are outside the current contract. The native bridge is version-pinned; [check compatibility](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/compatibility.md) before upgrading peers.
 
 ## License
 
-[MIT](https://github.com/MiguelFranken/payload-inplace/blob/main/LICENSE). Built as an independent plugin for Payload CMS. Upstream licenses are listed in [NOTICE](https://github.com/MiguelFranken/payload-inplace/blob/main/NOTICE).
+[MIT](https://github.com/MiguelFranken/payload-inplace/blob/main/LICENSE). Independent of Payload CMS. [Upstream attribution](https://github.com/MiguelFranken/payload-inplace/blob/main/NOTICE).

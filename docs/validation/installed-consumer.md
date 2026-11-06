@@ -1,3 +1,5 @@
+> Historical milestone snapshot. Version, test counts, pending gates and release holds below describe that dated run. See the [current release/consumer receipt](workshops-release.json) and the [documentation index](../README.md) for current status and setup.
+
 > Historical iteration report. The final alpha.5 candidate and current acceptance are recorded in [the final validation report](2026-11-03-final.md).
 
 # Installed-artifact acceptance

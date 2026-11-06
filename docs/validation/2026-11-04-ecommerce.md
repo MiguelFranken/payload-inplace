@@ -1,3 +1,5 @@
+> Historical milestone snapshot. Version, test counts, pending gates and release holds below describe that dated run. See the [current release/consumer receipt](workshops-release.json) and the [documentation index](../README.md) for current status and setup.
+
 # Ecommerce demo and unscoped package migration — 4 November 2026
 
 ## Scope

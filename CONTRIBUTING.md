@@ -22,6 +22,7 @@ The launcher creates a temporary Mongo replica set, initializes fixtures once, s
 ```sh
 corepack pnpm typecheck
 corepack pnpm lint
+corepack pnpm docs:check
 corepack pnpm test:unit
 corepack pnpm test:int
 VE_PORT=3137 corepack pnpm exec node scripts/postgres-test.mjs e2e
@@ -33,6 +34,18 @@ corepack pnpm release:check
 ```
 
 Postgres integration and installed-consumer commands need local Docker and use disposable containers with random localhost database ports. The installed consumer uses an empty temporary app directory, anonymous public-npm peers and the exact checked tarball; commit source before `pack:check` so its receipt has immutable provenance. It cleans up in `finally`.
+
+## Refresh documentation screenshots
+
+After building the package, run the opt-in capture workflow:
+
+```sh
+corepack pnpm docs:media
+```
+
+It builds the synthetic demo with Turbopack, owns a disposable Mongo database and captures a real Chromium session at **1440 × 1000 CSS pixels / 2× density**. It also checks the storefront and product at 820px and 320px with Axe and horizontal-overflow assertions. This is a focused documentation flow, not the full acceptance suite. No external account, publication or customer data is involved.
+
+Review all images under `test-results/docs-media` before replacing the six `ecommerce-*.png` files in `docs/images`. Copy the original PNGs unchanged; do not upscale, retouch or include loading/error states. See [image provenance](docs/images/README.md). Normal CI acceptance does not run this opt-in config or rewrite README assets. Run `corepack pnpm docs:check` after updating Markdown; it checks generated API freshness and local file/heading links, including repository URLs used by npm's README.
 
 ## Change and release workflow
 

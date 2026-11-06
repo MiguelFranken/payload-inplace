@@ -1,12 +1,12 @@
 # Changesets releases and non-destructive rollback
 
-Public source: [MiguelFranken/payload-inplace](https://github.com/MiguelFranken/payload-inplace). Distribution policy: public npm, package `payload-inplace`, anonymous installation. The [delivery receipt](validation/workshops-release.json) records the current validated archive, consumer acceptance and publication/deployment status. The new unscoped name needs an owner-authenticated first publication before npm can configure its trusted CI publisher. Subsequent releases use OIDC provenance. Package publication and application production deployment remain separate steps.
+Public source: [MiguelFranken/payload-inplace](https://github.com/MiguelFranken/payload-inplace). Distribution policy: public npm, package `payload-inplace`, anonymous installation. The [delivery receipt](validation/workshops-release.json) records the current validated archive, consumer acceptance and publication/deployment status. The public package is established and routine releases use the configured GitHub trusted publisher with OIDC provenance. First-publication authentication is historical setup, documented in AGENTS.md for maintainer recovery only. Package publication and application production deployment remain separate steps.
 
 ## Versioning with Changesets
 
 Every consumer-visible change includes a `.changeset/*.md` entry. Run `corepack pnpm changeset` to describe the change and bump type. The pinned Changesets action creates or updates a Conventional Commit version PR, using `corepack pnpm version:packages` to generate both `package.json` and `CHANGELOG.md`. It does not publish.
 
-Normal versions use the owner-requested **0.0.x** baseline. The newly named package starts with **0.0.1**; Changesets generates the next normal patch. The old scoped package and its historical releases remain immutable; no new prereleases are planned. New release dispatches target `latest`. Exact-version pins remain supported.
+Normal versions use the owner-requested **0.0.x** baseline. Changesets generates the next normal patch; published versions remain immutable. New release dispatches target `latest`. Exact-version pins remain supported.
 
 Version PR merge → main validation archive → independent installed-consumer and Workshops acceptance → committed receipt → `release.yml` OIDC publication of the same bytes. Versioning never bypasses artifact or consumer gates.
 

@@ -1,3 +1,5 @@
+> Historical milestone snapshot. Version, test counts, pending gates and release holds below describe that dated run. See the [current release/consumer receipt](workshops-release.json) and the [documentation index](../README.md) for current status and setup.
+
 # Selection, persistence feedback and terminal publication
 
 The selected outline was discarded when a native settings panel opened. It now remains attached to that selected target until selection changes or settings close. Geometry previously observed only the page body; a leaf can reflow inside a fixed-height grid without changing the body. The observer now follows the actual selected/hovered leaf or temporary Lexical surface and coalesces inline geometry events through requestAnimationFrame.

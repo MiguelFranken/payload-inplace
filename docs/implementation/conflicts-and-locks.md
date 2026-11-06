@@ -20,6 +20,8 @@ Native locks are advisory and user-based. Two windows belonging to one account d
 
 ## Local evidence
 
+These are the roadmap implementation baseline results, not the current suite count; see [current validation](../validation.md).
+
 Pure/component contracts cover disjoint/same-field changes, reordered/deleted/duplicate IDs, atomic JSON, named groups/tabs, explicit choices, changed input and cancellation. A real native two-writer test rejects the stale save, cancels/reopens comparison, combines separate changes and preserves the other writer's title with exactly the next draft revision. It also checks 320px overflow.
 
 Eight Postgres tests pass, including two users, heartbeat, expiry and exact-stamp cleanup. A real two-user browser test verifies pause, narrow feedback, exit cleanup and immediate resumed selection (5.9s). Visibility and late-abort component tests prove bounded scheduling and cleanup. Mongo remains an explicitly unsupported atomic-presence fallback; the Postgres-specific acceptance is not claimed for it.

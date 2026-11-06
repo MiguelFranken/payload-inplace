@@ -1,3 +1,5 @@
+> Historical milestone snapshot. Version, test counts, pending gates and release holds below describe that dated run. See the [current release/consumer receipt](workshops-release.json) and the [documentation index](../README.md) for current status and setup.
+
 # Selection controls and renderer presentation
 
 Version 0.0.8 joins the selection caption to the outline's leading edge, with a square adjoining corner. Settings and optional reset actions live in that caption; hover targets never receive another selection's actions. The caption clamps to the remaining viewport width. Editing controls use neutral active/hover states; review remains the primary accent action. Canvas insertion uses a neutral outlined button, white separation halo without a decorative boundary line.

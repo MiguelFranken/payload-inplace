@@ -8,4 +8,4 @@ Restoring submits an `_veRestoreVersion` intent through the existing native Form
 
 Restore requires a concurrency adapter and no pending local changes. The native Form processes exactly one update. Success clears structural history and selection, keeps the website URL/chrome mounted and leaves publication to a fresh review. Failed/ambiguous writes never automatically retry. The current working copy remains in the Form and the existing conflict monitor prevents stale follow-up saves.
 
-Local acceptance: server contract tests cover current revision, parent ownership, metadata exclusion, origin and metadata-only listing. A real Postgres/browser test edits, saves, compares, restores one draft, observes one PATCH across the idle deadline, retains header identity/URL and repeatedly closes/reopens the history panel. Further pagination, revoked-access and restore-race acceptance remain part of the broader native matrix.
+For executed package/native/browser coverage, see the [current validation receipt](../validation/workshops-release.json) and [validation method](../validation.md).

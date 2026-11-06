@@ -22,7 +22,7 @@ Activation waits until its shared client bridge hydrates; the disabled server fa
 
 The production Postgres browser suite covers fallback text, delayed acknowledgements, validation/retry, nested arrays, native fields, pointer/keyboard reordering and the same-page transition. The transition test verifies unpublished draft loading, original document/header/footer identity, URL/search/hash, scroll restoration, exit and cancelled navigation during a held save. The actual consumer additionally compares headline computed styles before and during editing and checks page/console errors.
 
-The old dedicated route remains a compatibility path for hosts that omit `resolvePagePath`. Cross-origin frontends, globals and localized editing remain outside this candidate. Drafts are shared CMS drafts, not private editor branches.
+The old dedicated route remains a compatibility path for hosts that omit `resolvePagePath`. Cross-origin frontends remain unsupported. Later releases add explicitly scoped draft globals and content localization; see the current compatibility guide. Drafts are shared CMS drafts, not private editor branches.
 
 ## Reverse-proxy URL preservation
 

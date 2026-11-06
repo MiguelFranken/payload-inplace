@@ -1,3 +1,5 @@
+> Historical milestone snapshot. Version, test counts, pending gates and release holds below describe that dated run. See the [current release/consumer receipt](../validation/workshops-release.json) and the [documentation index](../README.md) for current status and setup.
+
 # Local implementation ledger
 
 Current final acceptance: [21-ticket evidence matrix](../validation/linear-acceptance/README.md), 5 November 2026. All entries below are chronological checkpoints; earlier “pending” statements describe that checkpoint and are superseded by the final matrix. Final counts: 227 unit/component tests, 68 production browser cases, 12 PG and 5 applicable Mongo checks, plus clean installed-archive/cache gates. Local only; release remains held.
@@ -161,7 +163,6 @@ Added own-module compressed-size ceilings, lazy-boundary checks and oversized ne
 The first complete 64-case production run passed 61 cases. Three stale test fixtures prevented their intended checks: an English name for a translated toolbar, and review/action failure interceptors that omitted new locale query parameters. Corrected focused runs passed the toolbar/action checks and reached a real review accessibility failure. Review comparison buttons now derive their accessible names from visible text, with counts explained separately; the native 320px Axe/retry/close/reopen flow passes. The Mongo pattern fixture now uses its supported timestamp revision and checks unchanged source content, rather than comparing two missing numeric revisions.
 
 Current local gates: 218 unit/component assertions; 81% statements / 76.64% branches / 84.15% functions / 83.24% lines in the documented denominator; 12 Postgres cases; five applicable Mongo cases with seven explicitly transaction-specific skips. TypeScript and lint pass. A fresh full production run and the clean installed archive remain the final acceptance gates.
-
 
 ## Final local acceptance
 

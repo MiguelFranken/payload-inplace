@@ -1,3 +1,5 @@
+> Historical milestone snapshot. Version, test counts, pending gates and release holds below describe that dated run. See the [current release/consumer receipt](workshops-release.json) and the [documentation index](../README.md) for current status and setup.
+
 # Compact editor iteration — 4 November 2026
 
 Scope: activated website dock, one native-field panel and complete-draft publication review. The consumer renderer owns actual field placement. No new persistence model, save queue or business command.

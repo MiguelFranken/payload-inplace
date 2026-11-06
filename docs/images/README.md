@@ -1,12 +1,22 @@
-# Demo screenshots
+# Documentation screenshots
 
-These are unedited screenshots of the bundled synthetic demo from [main validation run 41809345628](https://github.com/MiguelFranken/payload-visual-editor/actions/runs/41809345628), the source validation for npm 0.0.1.
+The six `ecommerce-*.png` images are original, unedited **2880 × 2000 PNG** captures of the Still & Form synthetic commerce demo, refreshed on November 6, 2026. Chromium renders at 1440 × 1000 CSS pixels with device scale factor 2; these are native high-density captures, not upscaled older images. The README displays them at up to 1440px and links to the originals.
 
-- `inline-editing.png`: `stable-inline-selection.png` from the browser artifacts; shows the terminal text selection and compact toolbar.
-- `sections.png`: `compact-toolbar-sections-select.png` from the browser artifacts; shows section controls and the add-section picker.
+| File                       | Actual state                                                    |
+| -------------------------- | --------------------------------------------------------------- |
+| `ecommerce-storefront.png` | Published storefront, anonymous browser, no editor              |
+| `ecommerce-editor.png`     | Direct product heading editing and joined selection caption     |
+| `ecommerce-media.png`      | Selected image and reusable contextual media library            |
+| `ecommerce-fields.png`     | Native array-item fields with the conditional lead-time control |
+| `ecommerce-sections.png`   | Searchable section catalogue and unsaved canvas example         |
+| `ecommerce-review.png`     | Loaded, changed-only draft comparison before publication        |
 
-The page appearance belongs to the bundled demo renderer. The plugin supplies editing controls around the consumer's own frontend.
+## Reproduce
 
-## Ecommerce demo
+Follow [Contributing](../../CONTRIBUTING.md#refresh-documentation-screenshots), then run `corepack pnpm docs:media`. The opt-in [Playwright config](../../playwright.docs.config.ts) and [capture flow](../../apps/demo/docs-media.spec.ts) create an isolated production build/database, verify each state and capture its original pixels. The flow never publishes. It also checks public desktop/tablet/mobile layouts and retains review-only images in `test-results/docs-media`; copy only the six reviewed commerce assets here.
 
-`ecommerce-editor.png`, `ecommerce-fields.png` and `ecommerce-storefront.png` are unedited local production-browser captures from `dev/commerce.e2e.spec.ts` at 1280 × 900. They show the renamed package's synthetic Still & Form storefront, two-level nested inline editing and native conditional finish controls. Product photography is generated for the demo; prompts and originals are in `dev/commerce/assets`. See the ecommerce validation note for the complete acceptance result.
+Demo accounts, copy and schema data are synthetic. Product photography is generated; [prompts and original photographs](../../apps/demo/commerce/assets/README.md) are retained. The page appearance belongs to the demo renderer; the plugin supplies the authoring controls around a host's own frontend.
+
+## Historical images
+
+`inline-editing.png` and `sections.png` are retained for historical references. They come from [main validation run 41809345628](https://github.com/MiguelFranken/payload-inplace/actions/runs/41809345628), the source validation for npm 0.0.1. They are not the current README screenshot set.

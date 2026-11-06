@@ -27,7 +27,7 @@ return (
 
 `row().attrs` opens only that row's native fields. `field()` declares a terminal; `group()` opens related native fields. `scope()` descends into a group or named tab. Explicit `edit: 'panel'` keeps a terminal in its native editor. Stable `@` paths escape dots and reserved characters in IDs and remain valid after reordering. Never construct an `@` selector by concatenating raw IDs.
 
-Annotate the root container with `page.list('layout')` to allow insertion when no sections exist. Give empty nested lists a sensible hit area in the consumer. During active editing, restrained plus controls appear at the current section's boundaries or an explicitly bound list. They resolve neighbor IDs again against current native state when chosen. Closing or escaping the picker creates no row, save or history entry. Native permissions, conditions, row limits, available blocks and fixed-section policy still apply.
+Annotate the root container with `page.list('layout')` to allow insertion when no sections exist. Give empty nested lists a sensible hit area in the consumer. During active editing, restrained plus controls appear at one nearest permitted gap between sections or an explicitly bound list. They resolve neighbor IDs again against current native state when chosen. Closing or escaping the picker creates no row, save or history entry. Native permissions, conditions, row limits, available blocks and fixed-section policy still apply.
 
 Disabled helpers emit `{}`. The original `getBlockAttributes`, `getFieldAttributes`, `getFieldGroupAttributes` and `getArrayItemPath` helpers remain supported. Document provenance is validated; another document's annotations are denied until that document is explicitly enabled as an editable scope.
 

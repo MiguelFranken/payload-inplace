@@ -36,10 +36,11 @@
     "test:coverage": "vitest run --project 'unit:*' --project components --coverage --reporter=default --reporter=json --outputFile=test-results/unit-domains.json",
     "test:domain": "vitest run --project",
     "docs:generate": "node scripts/generate-api-docs.mjs",
-    "docs:check": "node scripts/generate-api-docs.mjs --check",
+    "docs:check": "node scripts/generate-api-docs.mjs --check && node scripts/check-doc-links.mjs",
     "test:feature-budgets": "node scripts/check-feature-budgets.mjs",
     "test:package-types": "node scripts/check-package-types.mjs",
-    "test:workspace": "node scripts/check-workspace-cache.mjs"
+    "test:workspace": "node scripts/check-workspace-cache.mjs",
+    "docs:media": "VE_PORT=3167 VE_PRODUCTION=1 VE_NEXT_DIST_DIR=.next-docs-media playwright test -c playwright.docs.config.ts"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",

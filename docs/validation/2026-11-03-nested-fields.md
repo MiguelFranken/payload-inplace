@@ -1,3 +1,5 @@
+> Historical milestone snapshot. Version, test counts, pending gates and release holds below describe that dated run. See the [current release/consumer receipt](workshops-release.json) and the [documentation index](../README.md) for current status and setup.
+
 # Nested field editing follow-up
 
 Scope: activated website selection → terminal plain text → scoped native array-row settings → save/review. This supersedes the earlier statement that all array contents need the whole array editor. It does not certify arbitrary consumer overrides or every field implementation.

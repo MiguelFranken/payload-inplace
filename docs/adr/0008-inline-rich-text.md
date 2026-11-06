@@ -1,6 +1,6 @@
 # 0008: Native-backed inline Lexical ownership
 
-Status: implemented and locally validated; release remains held by the owner.
+Status: implemented and released in the normal 0.0.x line. See the current validation receipt for the exact archive and acceptance.
 
 Payload v3.91 represents its standard Lexical field as `customComponents.Field`. That flag alone cannot distinguish a native rich-text adapter from a consumer replacement. The server walks the actual sanitized fields with Payload's `getFieldPaths`, projecting only native Lexical capabilities without modifying server/client schema cache identity. An explicit consumer Field override retains the native panel.
 
