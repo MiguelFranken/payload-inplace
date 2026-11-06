@@ -1,4 +1,5 @@
 "use client";
+
 import type { EditorMessages } from "../i18n/messages.js";
 import { useModal } from "@payloadcms/ui";
 import { useEffect, useEffectEvent, useRef } from "react";

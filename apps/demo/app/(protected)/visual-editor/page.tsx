@@ -11,10 +11,12 @@ import { importMap } from "../../(payload)/admin/importMap.js";
 import { getServerPageSlots } from "../../../components/ServerPageSlots";
 import { OptimisticPage } from "../../../components/OptimisticPage";
 import { RenderPage } from "../../../components/RenderPage";
+
 export const metadata = {
   robots: { index: false, follow: false },
   title: "Edit website",
 };
+
 export default async function Page({
   searchParams,
 }: {
@@ -23,6 +25,7 @@ export default async function Page({
   const { context: identifier } = await searchParams;
   return <DocumentEditor identifier={identifier!} />;
 }
+
 /** The same document editor can be mounted inside a host website route without replacing its layout. */
 export async function DocumentEditor({ identifier }: { identifier: string }) {
   const { req, context, token } = await authorizedEditor(identifier);

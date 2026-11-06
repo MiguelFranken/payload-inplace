@@ -1,4 +1,5 @@
 "use client";
+
 import { useEditorRecovery } from "./recovery.js";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -28,6 +29,7 @@ import {
   hasDraftValidationEnabled,
 } from "payload/shared";
 import { useNativeIdleSubmit } from "./controllers/idle-submit.js";
+
 /** The idle trigger delegates directly to the sole native Form.submit. An unacknowledged attempt waits for explicit recovery, never another timer. */
 export function NativeAutosaveTrigger() {
   const recovery = useEditorRecovery(),

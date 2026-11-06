@@ -1,4 +1,5 @@
 "use client";
+
 import { useEditorMessages } from "./messages.js";
 
 import { useEffect, useRef, type ReactNode, type RefObject } from "react";
@@ -6,6 +7,7 @@ import { X, ArrowLeft } from "lucide-react";
 import { useTranslation } from "@payloadcms/ui";
 import { usePanelResize } from "./use-panel-resize.js";
 import { Button } from "./ui/button.js";
+
 /**
  * One contextual surface is docked above the toolbar. Native field breakpoints
  * follow this container, so their gutter must follow its padding as well instead

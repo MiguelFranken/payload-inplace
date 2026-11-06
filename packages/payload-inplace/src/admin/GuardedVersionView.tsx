@@ -1,6 +1,7 @@
 import { createEditorMessages } from "../i18n/messages.js";
 import type { DocumentViewServerProps } from "payload";
 import { GuardedRestore } from "./NativeGuardedRestore.js";
+
 /** Keep the native restore endpoint while explicitly reviewing the current and historical revision. */
 export async function GuardedVersionView({
   initPageResult,

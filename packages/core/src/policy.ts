@@ -3,11 +3,13 @@ export interface StructuralPolicy {
   first?: string;
   exactlyOne?: string[];
 }
+
 /** Stable policy reasons can be translated by UI without parsing English error strings. */
 export type StructuralIssue = {
   code: "first-section" | "singleton-section";
   blockType: string;
 };
+
 /** Publication requires a complete structure; drafts may use the separate transition contract. */
 export function structureIssue(
   rows: { blockType?: string }[],
@@ -19,6 +21,7 @@ export function structureIssue(
     if (rows.filter((row) => row.blockType === blockType).length !== 1)
       return { code: "singleton-section", blockType };
 }
+
 /** Drafts may fill missing requirements in separate steps, while preserving requirements already present. */
 export function structureTransitionIssue(
   before: { blockType?: string }[],
@@ -38,12 +41,14 @@ export function structureTransitionIssue(
       return { code: "singleton-section", blockType };
   }
 }
+
 /** Default server text retains the existing policy API; authoring UI formats typed reasons independently. */
 export function structuralIssueText(issue: StructuralIssue): string {
   return issue.code === "first-section"
     ? `The first section must be ${issue.blockType}.`
     : `Exactly one ${issue.blockType} section is required.`;
 }
+
 /** Shared UI/server publication policy, with backwards-compatible default text. @see structureIssue exposes stable reason codes. */
 export function structureError(
   rows: { blockType?: string }[],
@@ -52,6 +57,7 @@ export function structureError(
   const issue = structureIssue(rows, policy);
   return issue && structuralIssueText(issue);
 }
+
 /** Draft transition policy with backwards-compatible default text. @see structureTransitionIssue exposes stable reason codes. */
 export function structureTransitionError(
   before: { blockType?: string }[],

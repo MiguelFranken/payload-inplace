@@ -1,5 +1,6 @@
 import type { ClientField, FormState } from "payload";
 import { editable } from "../../../core/src/editable.js";
+
 /** Synthetic schema/content only. It neither connects to Payload nor emulates access, save acknowledgements or transactions. */
 export function createEditorFixture() {
   const document = {
@@ -39,6 +40,7 @@ export function createEditorFixture() {
   >({ root: "layout", blockId: document.layout[0]!.id });
   return { document, target, fields, binding };
 }
+
 /** Deterministically delay/reject a synthetic transport result. No clocks, global state or persistence backend is installed. */
 export function createDeferredResponse<T>(signal?: AbortSignal) {
   let resolvePromise!: (value: T) => void,
@@ -68,6 +70,7 @@ export function createDeferredResponse<T>(signal?: AbortSignal) {
     reject: (error: unknown) => settle(() => rejectPromise(error)),
   };
 }
+
 /** Snapshot a real native Form supplied by a consumer's mounted harness. Read-only probe: it never prepares fields, changes values or asserts ACL/concurrency on a mock's behalf. */
 export function inspectNativeField(
   form: {

@@ -3,6 +3,7 @@ import type { VisualEditorOptions } from "../types.js";
 import { isDocumentMetadataField } from "../../../core/src/document-metadata.js";
 import { readEditContext } from "./context.js";
 import { resolveTools } from "./tools.js";
+
 interface VersionRow {
   id: string | number;
   parent?: unknown;
@@ -10,6 +11,7 @@ interface VersionRow {
   createdAt?: string;
   updatedAt?: string;
 }
+
 /** Reauthorize every version read through the activated target and native readVersions, including the exact parent. */
 export async function readSavedVersions(
   req: PayloadRequest,
@@ -60,6 +62,7 @@ export async function readSavedVersions(
     page: result.page ?? page,
   };
 }
+
 /** A restore intent is resolved server-side into a normal native draft update. The client cannot supply its historical snapshot.
  * Revision assignment, validation, field access and the sole Form queue remain unchanged.
  */
@@ -107,6 +110,7 @@ export async function prepareVersionRestore(
     _veActivation: proof,
   };
 }
+
 /** Read-only, bounded timeline response; no draft values are sent until a particular authorized version is selected. */
 export async function versionEndpoint(
   req: PayloadRequest,

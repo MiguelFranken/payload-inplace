@@ -11,6 +11,7 @@ import {
 import { configuredPageScopes } from "./page-scopes.js";
 import { editorLabel } from "./tools.js";
 import { createEditorMessages } from "../i18n/messages.js";
+
 /** Client metadata contains only independently authorized targets/labels. It does not activate or read any foreign draft in the browser. */
 export async function availablePageScopes(
   req: PayloadRequest,
@@ -42,6 +43,7 @@ export async function availablePageScopes(
   }
   return result;
 }
+
 /** Switch only within an already signed exact page. Each document keeps its own native Form/revision/review; there is no multi-document write transaction. */
 export async function scopeEndpoint(
   req: PayloadRequest,

@@ -3,6 +3,7 @@ import type { GlobalConfig, PayloadRequest } from "payload";
 import { configureGlobals } from "../../src/server/globals.js";
 import { signDocumentReview } from "../../src/server/review.js";
 import type { VisualEditorOptions } from "../../src/types.js";
+
 const state = vi.hoisted(() => ({
   latest: {
     _veRevision: 4,
@@ -25,6 +26,7 @@ vi.mock("../../src/server/context.js", async (importOriginal) => ({
 vi.mock("../../src/server/versions.js", () => ({
   prepareVersionRestore: (...args: unknown[]) => state.restore(...args),
 }));
+
 function fixture() {
   const original: GlobalConfig = {
     slug: "header",

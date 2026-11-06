@@ -5,7 +5,9 @@ import { getPayload, createLocalReq } from "payload";
 import type { Payload } from "payload";
 import { signReview } from "../../packages/payload-inplace/src/server/review.js";
 import { authorizeTarget } from "../../packages/payload-inplace/src/server/context.js";
+
 let database: MongoMemoryReplSet | undefined, payload: Payload;
+
 beforeAll(async () => {
   if (process.env.VE_DATABASE !== "postgres") {
     database = await MongoMemoryReplSet.create({
@@ -19,10 +21,12 @@ beforeAll(async () => {
   const config = (await import("./payload.config.js")).default;
   payload = await getPayload({ config });
 });
+
 afterAll(async () => {
   await payload?.destroy();
   await database?.stop();
 });
+
 it("persists drafts through native Payload while published content stays unchanged", async () => {
   const pages = await payload.find({
     collection: "pages",
@@ -97,6 +101,7 @@ it("persists drafts through native Payload while published content stays unchang
   });
   expect(final.layout[0].heading).toBe("A saved draft");
 });
+
 it("enforces actual read/update/host capability with a permitted control", async () => {
   const pages = await payload.find({
     collection: "offers",
@@ -242,6 +247,7 @@ it.runIf(process.env.VE_DATABASE === "postgres")(
     expect(current._veRevision).toBe(before);
   },
 );
+
 it.runIf(process.env.VE_DATABASE === "postgres")(
   "guarded native restore advances revision and rejects stale restore",
   async () => {

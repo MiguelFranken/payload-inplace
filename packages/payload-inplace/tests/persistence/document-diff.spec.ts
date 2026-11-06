@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { documentChanges, changedText } from "../../src/state/document-diff.js";
 import type { ClientField } from "payload";
+
 const fields = [
   {
     name: "layout",
@@ -22,6 +23,7 @@ const fields = [
     ],
   },
 ] as ClientField[];
+
 const rows = [
   {
     id: "a",

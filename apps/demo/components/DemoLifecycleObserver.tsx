@@ -1,5 +1,7 @@
 "use client";
+
 import { useEditorObserver } from "payload-inplace/frontend";
+
 /** Synthetic demo instrumentation has no telemetry transport. Browser tests may listen for redacted metadata only. */
 export function DemoLifecycleObserver() {
   useEditorObserver((event) => {

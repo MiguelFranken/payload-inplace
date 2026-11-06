@@ -1,10 +1,12 @@
 import { indexBlocks, resolveIdentity } from "./identity.js";
 import type { InsertionTarget } from "./insertion.js";
+
 /** A disposable presentation delta, never native Form state or a persisted document copy. */
 export interface InsertionProjection {
   target: InsertionTarget;
   row: Readonly<Record<string, unknown>>;
 }
+
 function read(value: unknown, path: string): unknown {
   return path
     .split(".")
@@ -16,6 +18,7 @@ function read(value: unknown, path: string): unknown {
       value,
     );
 }
+
 function update(
   value: unknown,
   parts: readonly string[],
@@ -38,6 +41,7 @@ function update(
   );
   return copy;
 }
+
 /** Resolve IDs on every projection so a picker cannot preview at a stale numeric neighbor position. */
 export function projectInsertion<T extends Record<string, unknown>>(
   document: T,

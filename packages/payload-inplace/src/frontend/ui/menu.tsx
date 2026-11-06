@@ -6,7 +6,9 @@ import { buttonVariants } from "./button.js";
 import { Menu } from "@base-ui/react/menu";
 import { ChromeTooltip } from "./tooltip.js";
 import { useChromePortal } from "./portal.js";
+
 export const DropdownMenu = Menu.Root;
+
 /** Menu.Trigger owns button behavior and refs; reuse button styling without nesting a second Base UI button adapter. */
 export function DropdownMenuTrigger({
   className,
@@ -27,6 +29,7 @@ export function DropdownMenuTrigger({
     </ChromeTooltip>
   );
 }
+
 /** One keyboard navigable menu contains secondary editor commands. */
 export function DropdownMenuContent({ children }: Menu.Popup.Props) {
   const container = useChromePortal();
@@ -62,6 +65,7 @@ export function DropdownMenuContent({ children }: Menu.Popup.Props) {
     </Menu.Portal>
   );
 }
+
 export function DropdownMenuItem({ children, ...props }: Menu.Item.Props) {
   return (
     <Menu.Item
@@ -72,6 +76,7 @@ export function DropdownMenuItem({ children, ...props }: Menu.Item.Props) {
     </Menu.Item>
   );
 }
+
 export function DropdownMenuSeparator() {
   return (
     <Menu.Separator className="pve:my-1 pve:h-px pve:bg-[var(--pve-border,var(--theme-border-color,#e3e4e8))]" />

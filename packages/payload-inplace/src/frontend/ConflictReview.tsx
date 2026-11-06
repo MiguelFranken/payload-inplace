@@ -1,4 +1,5 @@
 "use client";
+
 import type { EditorStaticMessageKey } from "../i18n/catalogue.js";
 import { EditorMessageError, editorErrorKey } from "../i18n/failure.js";
 import {
@@ -29,6 +30,7 @@ import { DocumentReview } from "../admin/DocumentReview.js";
 import { reviewText } from "../state/document-diff.js";
 import { Button } from "./ui/button.js";
 import { useEditorRecovery } from "./recovery.js";
+
 /** This panel owns comparison snapshots only. Cancellation changes no native values; explicit acceptance rehydrates the sole Form and its existing save queue. */
 export function ConflictReview({ onApplied }: { onApplied: () => void }) {
   const { t } = useEditorMessages();

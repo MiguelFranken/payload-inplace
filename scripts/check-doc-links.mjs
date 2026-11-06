@@ -18,14 +18,18 @@ const files = execFileSync(
       !file.startsWith(".changeset/") &&
       !file.endsWith("AGENTS.md"),
   );
+
 const issues = [];
+
 let checked = 0;
+
 const slug = (heading) =>
   heading
     .toLowerCase()
     .replace(/<[^>]*>/g, "")
     .replace(/[^\p{L}\p{N}_\-\s]/gu, "")
     .replace(/ /g, "-");
+
 const headings = (source) => {
   const seen = new Map();
   return new Set(
@@ -37,6 +41,7 @@ const headings = (source) => {
     }),
   );
 };
+
 for (const file of [...new Set(files)]) {
   const text = fs
     .readFileSync(file, "utf8")

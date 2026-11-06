@@ -1,5 +1,7 @@
 import type { BlockIdentity } from "../types.js";
+
 export const PROTOCOL = "payload-visual-editor/v1";
+
 export type BridgeMessage = {
   protocol: typeof PROTOCOL;
   session: string;
@@ -11,6 +13,7 @@ export type BridgeMessage = {
   | { type: "highlight"; identity: BlockIdentity }
   | { type: "refresh" | "stop" }
 );
+
 /** Both ends reject foreign windows, origins, sessions, documents, replayed and oversized envelopes. */
 export function validateMessage(
   event: Pick<MessageEvent, "data" | "source" | "origin">,

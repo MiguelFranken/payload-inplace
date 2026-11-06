@@ -6,12 +6,17 @@ export type CollectionEditorDocument = {
   collection: string;
   id: string | number;
 };
+
 export type GlobalEditorDocument = { kind: "global"; global: string };
+
 /** Explicit provenance is never authorization; globals require native drafts just like collections. */
 export type EditorDocument = CollectionEditorDocument | GlobalEditorDocument;
+
 export type EditorTarget = EditorDocument & { root: string };
+
 /** Serializable identity survives reordering; numeric data paths are resolved immediately before commands. */
 export type { BlockIdentity } from "../../core/src/types.js";
+
 /** Host permission is additional to native collection/document/field access. Never serialize this callback. */
 export interface VisualEditorOptions {
   collections: Record<string, { roots: string[] }>;
@@ -75,11 +80,13 @@ export interface VisualEditorOptions {
   /** Presentation policy for selected native block fields; it never widens Payload access. */
   blockControls?: Record<string, EditorBlockControls>;
 }
+
 /** Authenticated activation is short lived and bound to the current Payload session and exact target. */
 export interface EditorPageScope {
   target: EditorTarget;
   label: EditorLabel;
 }
+
 export interface EditContext {
   /** Server-monotonic page selection hint; it grants no permission and never changes a revision. */
   activatedAt?: number;
@@ -116,16 +123,20 @@ export type Activation = Pick<
 
 /** Built-in tools are independently configurable; draft persistence still uses the single native Form. */
 export type EditorTool = "content" | "sections" | "history" | "publish";
+
 export type EditorLabel = string | ({ en: string } & Record<string, string>);
+
 /** Server-only capability inputs always come from the authenticated, freshly authorized target. */
 export interface EditorCapabilityContext {
   req: PayloadRequest;
   target: EditorTarget;
   document: Record<string, any>;
 }
+
 export type EditorCapability = (
   context: EditorCapabilityContext,
 ) => boolean | Promise<boolean>;
+
 interface ExtensionBase {
   /** Hide the default tools-menu entry when a custom control owns the trigger. This is presentation, not a capability check. */
   showInDock?: boolean;
@@ -133,12 +144,14 @@ interface ExtensionBase {
   label: EditorLabel;
   canUse?: EditorCapability;
 }
+
 /** Panels mount inside the editor's native Form. Consumer components must use NativeFieldSlot for field ownership. */
 export interface EditorPanelExtension extends ExtensionBase {
   kind: "panel";
   Component: PayloadComponent;
   width?: number;
 }
+
 /** Actions are explicit, origin-checked server operations. Delegate writes to existing domain APIs with current req and overrideAccess:false.
  * The plugin authorizes the document and capability again; a client-supplied subject is untrusted host input, never authority.
  */
@@ -156,16 +169,19 @@ export interface EditorActionExtension extends ExtensionBase {
     destructive?: boolean;
   };
 }
+
 /** Consumer controls render inside the contextual surface and can use native fields or invoke capability-checked actions. */
 export interface EditorControlExtension extends ExtensionBase {
   kind: "control";
   Component: PayloadComponent;
   width?: number;
 }
+
 export type EditorExtension =
   | EditorPanelExtension
   | EditorControlExtension
   | EditorActionExtension;
+
 /** Paths are native schema names relative to the document or the stable selected block, never DOM text selectors. */
 export interface EditorFieldPanel extends ExtensionBase {
   scope?: "document" | "selection";
@@ -173,6 +189,7 @@ export interface EditorFieldPanel extends ExtensionBase {
   blockTypes?: string[];
   width?: number;
 }
+
 export interface EditorBlockControls {
   /** Omitted means all native fields; unshown values stay in the native Form. Use native field access for authorization. */
   fields?: string[];
@@ -186,6 +203,7 @@ export interface EditorPreviewSnapshot {
   content: import("react").ReactNode;
   preview?: import("react").ReactNode;
 }
+
 /** Every preview read reauthorizes the exact activated target. Denial must be returned without redirecting/unmounting the working Form. */
 export type EditorPreviewResponse =
   | EditorPreviewSnapshot
@@ -207,6 +225,7 @@ export interface SectionPatternSummary {
   label: string;
   blockType: string;
 }
+
 /** Server-only optional storage contract. Every callback must retain tenant/native ACLs (Local API overrideAccess:false). No collection or migration is installed by the plugin. */
 export interface SectionPatternAdapter {
   allowedBlocks: string[];

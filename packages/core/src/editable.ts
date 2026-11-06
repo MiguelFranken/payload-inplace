@@ -6,7 +6,9 @@ import {
 } from "./annotations.js";
 import { documentKey, type DocumentReference } from "./document-ref.js";
 import type { BlockIdentity } from "./types.js";
+
 type Depth = [never, 0, 1, 2, 3, 4];
+
 /** Bounded path inference keeps consumer typechecking predictable for recursive Payload JSON. */
 export type BindingPath<T, D extends number = 4> = D extends 0
   ? never
@@ -24,6 +26,7 @@ export type BindingPath<T, D extends number = 4> = D extends 0
                 : never);
         }[keyof T & string]
       : never;
+
 type ArrayKey<T> = string extends keyof T
   ? string
   : {
@@ -31,13 +34,17 @@ type ArrayKey<T> = string extends keyof T
         ? K
         : never;
     }[keyof T & string];
+
 type Dynamic<T> = unknown extends T ? Record<string, unknown> : NonNullable<T>;
+
 type Row<T, K extends keyof T> = unknown extends T[K]
   ? Record<string, unknown>
   : NonNullable<T[K]> extends readonly (infer Item)[]
     ? Item
     : never;
+
 export type BindingAttributes = Readonly<Record<string, string>>;
+
 /** A consumer places each terminal/row/list annotation exactly where the CMS value is rendered. */
 export interface BoundBlock<T = Record<string, unknown>> {
   attrs: BindingAttributes;
@@ -53,6 +60,7 @@ export interface BoundBlock<T = Record<string, unknown>> {
   scope: <K extends keyof T & string>(field: K) => BoundBlock<Dynamic<T[K]>>;
   list: (array: ArrayKey<T>, label?: string) => BindingAttributes;
 }
+
 /** Path validation is also applied at runtime for generated/dynamic component schemas. */
 export function isBindingPath(path: string): boolean {
   if (!path || path.length > 1024) return false;
@@ -69,6 +77,7 @@ export function isBindingPath(path: string): boolean {
     return /^[A-Za-z_$][\w$-]*$/.test(part) || /^\d+$/.test(part);
   });
 }
+
 /** Bind provenance once, then annotate typed block fields, stable array rows and empty lists.
  * Disabled helpers emit nothing and import no editor/browser runtime.
  */

@@ -5,7 +5,9 @@ import {
 import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
+
 const root = "apps/demo/.next-prod";
+
 function manifest(route) {
   const context = {};
   vm.runInNewContext(
@@ -17,20 +19,25 @@ function manifest(route) {
   );
   return Object.values(context.__RSC_MANIFEST)[0];
 }
+
 const published = manifest("(public)/[collection]/[slug]"),
   preview = manifest("(protected)/visual-editor");
+
 // The route manifest registers both published and authorized RSC branches. The production
 // browser observation identifies which registered chunks were actually delivered publicly.
 const observation = JSON.parse(
   fs.readFileSync("test-results/public-anonymous.json", "utf8"),
 );
+
 if (!observation.production || observation.samples.length !== 3)
   throw Error("Fresh production anonymous resource observations required");
+
 const delivered = new Set(
   observation.samples.flatMap((sample) =>
     sample.resources.map((resource) => resource.url),
   ),
 );
+
 const deliveredModules = Object.fromEntries(
   Object.entries(published.clientModules).filter(([, module]) =>
     module.chunks.some((chunk) =>
@@ -38,11 +45,16 @@ const deliveredModules = Object.fromEntries(
     ),
   ),
 );
+
 if (!Object.keys(deliveredModules).length)
   throw Error("Empty delivered graph cannot prove isolation");
+
 assertPublicGraph(deliveredModules);
+
 assertActiveGraph(preview.clientModules);
+
 let rejected = false;
+
 try {
   assertPublicGraph({
     ...deliveredModules,
@@ -52,10 +64,12 @@ try {
   rejected = true;
 }
 if (!rejected) throw Error("Leak negative control failed");
+
 const bootstrap = fs.readFileSync(
   "packages/payload-inplace/dist/payload-inplace/src/launcher/DeferredLauncher.js",
   "utf8",
 );
+
 if (
   Buffer.byteLength(bootstrap) > 4096 ||
   /@payloadcms|\.css|useEffect|useLayoutEffect/.test(bootstrap)
@@ -63,7 +77,9 @@ if (
   throw Error(
     "The inert public registration must stay small and free of native UI/styles/effects",
   );
+
 let bytes = 0;
+
 for (const chunk of delivered) {
   const content = fs.readFileSync(
     path.join(root, chunk.replace("/_next/", "")),
@@ -77,6 +93,7 @@ for (const chunk of delivered) {
   )
     throw Error(`Editor implementation delivered in public chunk ${chunk}`);
 }
+
 fs.writeFileSync(
   "test-results/production-graph.json",
   JSON.stringify(
@@ -94,6 +111,7 @@ fs.writeFileSync(
     2,
   ),
 );
+
 console.log(
   `Production delivered graph passed: ${delivered.size} JS/CSS resources, ${bytes} decoded bytes; native editor remains unloaded`,
 );

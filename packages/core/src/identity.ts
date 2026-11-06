@@ -1,4 +1,5 @@
 import type { BlockIdentity } from "./types.js";
+
 export interface IndexedBlock {
   id: string;
   path: string;
@@ -7,6 +8,7 @@ export interface IndexedBlock {
   blockType: string;
   ancestors: string[];
 }
+
 /** Index all block/array descendants without turning positions into identities. Ambiguity fails closed. */
 export function indexBlocks(data: unknown, root: string): IndexedBlock[] {
   const result: IndexedBlock[] = [];
@@ -45,6 +47,7 @@ export function indexBlocks(data: unknown, root: string): IndexedBlock[] {
   visit(data, root, []);
   return result;
 }
+
 /** Resolve scoped ancestry on the latest content, never on a cached numeric path. */
 export function resolveIdentity(
   index: IndexedBlock[],

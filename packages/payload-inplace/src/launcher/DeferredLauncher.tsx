@@ -1,17 +1,21 @@
 "use client";
+
 import { lazy, Suspense, type ComponentProps } from "react";
 import type { EditorPageTransition as TransitionProps } from "./EditorPageTransition.js";
 import type { InPlaceLauncher as LauncherProps } from "./InPlaceLauncher.js";
+
 const Transition = lazy(() =>
   import("./EditorPageTransition.js").then((module) => ({
     default: module.EditorPageTransition,
   })),
 );
+
 const Launcher = lazy(() =>
   import("./InPlaceLauncher.js").then((module) => ({
     default: module.InPlaceLauncher,
   })),
 );
+
 /** Keep the small authenticated bridge in a separate client chunk; anonymous responses never render it. */
 export function DeferredEditorPageTransition(
   props: ComponentProps<typeof TransitionProps>,
@@ -22,6 +26,7 @@ export function DeferredEditorPageTransition(
     </Suspense>
   );
 }
+
 /** Only an authorized launcher requests activation JavaScript; the server-rendered control waits for hydration instead of causing a hard navigation. */
 export function DeferredInPlaceLauncher(
   props: ComponentProps<typeof LauncherProps>,

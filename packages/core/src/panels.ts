@@ -4,9 +4,11 @@ export type PanelState =
   | { kind: "sections" | "settings" | "versions" | "conflict" }
   | { kind: "extension"; id: string }
   | { kind: "validation"; path: string };
+
 export type PanelAction =
   | { type: "open"; panel: Exclude<PanelState, { kind: "closed" }> }
   | { type: "close"; kind?: PanelState["kind"] };
+
 /** Closing a stale panel never closes its replacement; the same view can always reopen. */
 export function panelTransition(
   state: PanelState,

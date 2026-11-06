@@ -7,6 +7,7 @@ import {
 } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { usePanelNavigation } from "../../src/frontend/controllers/panel-navigation.js";
+
 function Harness() {
   const state = usePanelNavigation();
   return (

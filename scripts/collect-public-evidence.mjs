@@ -1,6 +1,9 @@
 import fs from "node:fs";
+
 const report = JSON.parse(fs.readFileSync("test-results/results.json", "utf8"));
+
 const measurements = [];
+
 function visit(suite) {
   for (const spec of suite.specs || [])
     for (const test of spec.tests || [])
@@ -18,13 +21,17 @@ function visit(suite) {
       }
   for (const child of suite.suites || []) visit(child);
 }
+
 visit(report);
+
 if (
   measurements.length !== 3 ||
   measurements.some((m) => m.samples.length !== 3)
 )
   throw Error("Require three passed identity cases with three samples each");
+
 const disabled = measurements.every((m) => m.disabled);
+
 fs.writeFileSync(
   `test-results/public-${disabled ? "baseline" : "installed"}.json`,
   JSON.stringify(
@@ -37,6 +44,7 @@ fs.writeFileSync(
     2,
   ),
 );
+
 console.log(
   `Collected ${disabled ? "disabled baseline" : "installed"} evidence for three identities; no raw activation/cookie data`,
 );

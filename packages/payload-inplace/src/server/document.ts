@@ -4,6 +4,7 @@ import type {
   SanitizedGlobalConfig,
 } from "payload";
 import type { EditorDocument } from "../types.js";
+
 /** Resolve only configured native entities; callers still perform current access checks. */
 export function nativeDocumentConfig(
   req: PayloadRequest,
@@ -18,6 +19,7 @@ export function nativeDocumentConfig(
   if (!config) throw Error("Editor target unavailable");
   return config;
 }
+
 /** Read one native document with ordinary ACL and no translation fallback. Draft selection is explicit and never inferred from authentication. */
 export function readNativeDocument(
   req: PayloadRequest,

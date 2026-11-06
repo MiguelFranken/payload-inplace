@@ -3,9 +3,11 @@ import {
   structureError,
   structureTransitionError,
 } from "../../src/state/policy.js";
+
 const hero = { blockType: "hero" },
   dates = { blockType: "dates" },
   text = { blockType: "text" };
+
 const policy = { first: "hero", exactlyOne: ["hero", "dates"] };
 it("lets an empty draft build two required sections one step at a time", () => {
   expect(structureTransitionError([], [hero], policy)).toBeUndefined();

@@ -1,4 +1,5 @@
 "use client";
+
 import { useCallback } from "react";
 import {
   useConfig,
@@ -14,6 +15,7 @@ import {
   targetDocumentKey,
 } from "../../state/document-target.js";
 import { nativeDraftAction } from "../../adapters/native-request.js";
+
 /** Manual draft submission delegates to native Form's single-flight guard. */
 export function useNativeDraftSave(target: EditorTarget, disabled: boolean) {
   const form = useForm(),

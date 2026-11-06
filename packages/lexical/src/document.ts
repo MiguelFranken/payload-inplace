@@ -9,14 +9,17 @@ import {
   type DOMConversionMap,
   type EditorConfig,
 } from "lexical";
+
 /** JSON is kept at this boundary; unknown Payload nodes are opaque, never flattened into text. */
 export interface RichNode extends SerializedLexicalNode {
   children?: RichNode[];
   [key: string]: unknown;
 }
+
 export interface RichDocument {
   root: RichNode & { children: RichNode[] };
 }
+
 export function isRichDocument(value: unknown): value is RichDocument {
   if (!value || typeof value !== "object" || !("root" in value)) return false;
   const root = value.root;
@@ -29,6 +32,7 @@ export function isRichDocument(value: unknown): value is RichDocument {
       Array.isArray(root.children),
   );
 }
+
 export function safeLink(value: unknown): string | undefined {
   if (typeof value !== "string") return;
   const url = value.trim();
@@ -37,15 +41,19 @@ export function safeLink(value: unknown): string | undefined {
     ? url
     : undefined;
 }
+
 /** Payload's link node stores fields and IDs separately from Lexical's generic URL shape. */
 export class PayloadLinkNode extends ElementNode {
   __raw: RichNode;
+
   static getType() {
     return "link";
   }
+
   static clone(node: PayloadLinkNode) {
     return new PayloadLinkNode(node.__raw, node.__key);
   }
+
   constructor(
     raw: RichNode = {
       type: "link",
@@ -57,11 +65,13 @@ export class PayloadLinkNode extends ElementNode {
     super(key);
     this.__raw = raw;
   }
+
   static importJSON(raw: RichNode) {
     return new PayloadLinkNode(raw).updateFromJSON(
       raw as SerializedElementNode,
     );
   }
+
   static importDOM(): DOMConversionMap {
     return {
       a: () => ({
@@ -82,6 +92,7 @@ export class PayloadLinkNode extends ElementNode {
       }),
     };
   }
+
   createDOM(config: EditorConfig) {
     const element = document.createElement("a");
     if (config.theme.link)
@@ -90,15 +101,18 @@ export class PayloadLinkNode extends ElementNode {
       safeLink((this.__raw.fields as Record<string, unknown>)?.url) || "#";
     return element;
   }
+
   updateDOM(previous: PayloadLinkNode, dom: HTMLElement) {
     if (this.__raw !== previous.__raw)
       (dom as HTMLAnchorElement).href =
         safeLink((this.__raw.fields as Record<string, unknown>)?.url) || "#";
     return false;
   }
+
   isInline() {
     return true;
   }
+
   exportJSON(): SerializedElementNode {
     return {
       ...this.__raw,
@@ -110,6 +124,7 @@ export class PayloadLinkNode extends ElementNode {
     } as SerializedElementNode;
   }
 }
+
 /** Unknown/custom nodes are immutable islands. Their complete JSON survives unrelated edits.
  * Consumers use native settings for the island itself; no arbitrary HTML or upload URL is trusted here.
  */
@@ -119,22 +134,28 @@ export function opaqueNode(
 ): Klass<LexicalNode> {
   return class OpaqueNode extends DecoratorNode<null> {
     __raw: RichNode;
+
     static getType() {
       return type;
     }
+
     static clone(node: OpaqueNode) {
       return new OpaqueNode(node.__raw, node.__key);
     }
+
     static importJSON(raw: RichNode) {
       return new OpaqueNode(raw);
     }
+
     constructor(raw: RichNode, key?: NodeKey) {
       super(key);
       this.__raw = raw;
     }
+
     exportJSON() {
       return this.__raw;
     }
+
     createDOM() {
       const dom = document.createElement("span");
       dom.setAttribute("contenteditable", "false");
@@ -142,20 +163,25 @@ export function opaqueNode(
       dom.textContent = label?.() ?? `[${type} · edit in settings]`;
       return dom;
     }
+
     updateDOM() {
       return false;
     }
+
     decorate() {
       return null;
     }
+
     isInline() {
       return true;
     }
+
     isKeyboardSelectable() {
       return true;
     }
   };
 }
+
 export function unknownNodeTypes(document: RichDocument): string[] {
   const types = new Set<string>();
   const known = new Set([
@@ -180,6 +206,7 @@ export function unknownNodeTypes(document: RichDocument): string[] {
   walk(document.root);
   return [...types];
 }
+
 /** Restore untouched metadata by Lexical node identity, not array position or displayed text. */
 export function rememberMetadata(
   node: LexicalNode,
@@ -193,6 +220,7 @@ export function rememberMetadata(
       if (original) rememberMetadata(child, original, metadata);
     });
 }
+
 export function serializeLosslessly(
   node: LexicalNode,
   metadata: Map<string, RichNode>,

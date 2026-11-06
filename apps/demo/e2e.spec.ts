@@ -1,6 +1,7 @@
 import { writeFile } from "node:fs/promises";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+
 async function login(page: any, role = "admin") {
   await page.goto("/visual-editor/start?collection=pages&slug=demo");
   await page.waitForLoadState("networkidle");
@@ -20,6 +21,7 @@ async function login(page: any, role = "admin") {
       page.getByRole("navigation", { name: "Editing toolbar" }),
     ).toBeVisible();
 }
+
 async function open(page: any, collection: string, id?: string | number) {
   await page.goto(
     `/visual-editor/start?collection=${collection}&${id ? `id=${id}` : "slug=demo"}`,
@@ -31,6 +33,7 @@ async function open(page: any, collection: string, id?: string | number) {
     page.getByRole("navigation", { name: "Editing toolbar" }),
   ).toBeVisible();
 }
+
 async function inspect(page: any, heading: string) {
   await page
     .getByRole("button", { name: "Select content", exact: true })
@@ -41,6 +44,7 @@ async function inspect(page: any, heading: string) {
     .click();
   return page.getByRole("complementary", { name: "Edit content" });
 }
+
 for (const collection of ["pages", "offers"])
   test(`frontend inline editing, native draft and reviewed publication: ${collection}`, async ({
     page,

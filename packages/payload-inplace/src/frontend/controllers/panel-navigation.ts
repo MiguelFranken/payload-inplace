@@ -1,11 +1,14 @@
 "use client";
+
 import { useCallback, useState, type SetStateAction } from "react";
 import {
   panelTransition,
   type PanelState,
 } from "../../../../core/src/panels.js";
+
 const value = <T>(next: SetStateAction<T>, previous: T): T =>
   typeof next === "function" ? (next as (v: T) => T)(previous) : next;
+
 /** One mutually exclusive disclosure state prevents overlapping/stuck floatables. */
 export function usePanelNavigation() {
   const [panel, setPanel] = useState<PanelState>({ kind: "closed" });

@@ -1,6 +1,8 @@
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
+
 const root = fileURLToPath(new URL(".", import.meta.url));
+
 const domains = [
   "bindings",
   "commands",
@@ -11,6 +13,7 @@ const domains = [
   "consumer",
   "packaging",
 ];
+
 export default defineConfig({
   esbuild: { jsx: "automatic" },
   root,

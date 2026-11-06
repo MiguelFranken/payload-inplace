@@ -4,6 +4,7 @@ import {
   NativeDocumentScopes,
   useDocumentScopes,
 } from "../../src/frontend/document-scope.js";
+
 const state = vi.hoisted(() => ({
   modified: false,
   processing: false,
@@ -44,12 +45,15 @@ vi.mock("../../src/frontend/controllers/draft-save.js", () => ({
 vi.mock("../../src/launcher/EditorPageTransition.js", () => ({
   useEditorPageTransition: () => state.refresh,
 }));
+
 const owner = { collection: "pages", id: 1, root: "layout" },
   other = { kind: "global" as const, global: "siteHeader", root: "layout" };
+
 const scopes = [
   { target: owner, label: "Page" },
   { target: other, label: "Header" },
 ];
+
 function Controls() {
   const scope = useDocumentScopes();
   return (
@@ -73,6 +77,7 @@ function Controls() {
     </>
   );
 }
+
 const ui = () => (
   <NativeDocumentScopes
     context={{

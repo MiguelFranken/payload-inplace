@@ -1,4 +1,5 @@
 "use client";
+
 import { EditorMessage } from "./messages.js";
 
 import { lazy, Suspense } from "react";
@@ -7,6 +8,7 @@ import type {
   FieldStrategyDefinition,
 } from "./field-strategies.js";
 import { mediaCollections } from "../schema/media-reference.js";
+
 export type MediaAsset = {
   id: string | number;
   collection: string;
@@ -14,7 +16,9 @@ export type MediaAsset = {
   thumbnailURL?: string;
   mimeType?: string;
 };
+
 export type MediaPage = { items: MediaAsset[]; nextCursor?: string };
+
 /** A consumer-owned library reads/uploads assets under its own authorization. It returns references, never a replacement document or trusted external URL. */
 export interface MediaLibraryAdapter {
   id: string;
@@ -33,11 +37,13 @@ export interface MediaLibraryAdapter {
     onProgress: (percent: number) => void;
   }): Promise<MediaAsset>;
 }
+
 const Library = lazy(() =>
   import("./MediaLibraryField.js").then((module) => ({
     default: module.MediaLibraryField,
   })),
 );
+
 /** Opt into a single-reference contextual picker. Has-many fields and native custom fields retain Payload's native editor. Shared asset metadata is never edited implicitly. */
 export function defineMediaFieldStrategy(
   library: MediaLibraryAdapter,
@@ -63,6 +69,7 @@ export function defineMediaFieldStrategy(
     ),
   };
 }
+
 /** Same-origin native Payload media search. Native ACLs apply to every request. Upload and shared metadata editing deliberately delegate to native controls. */
 export function createPayloadMediaLibrary({
   id = "payload-media",

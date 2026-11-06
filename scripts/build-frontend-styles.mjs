@@ -1,11 +1,14 @@
 import fs from "node:fs";
 import postcss from "postcss";
 import { nativeShadowStyles } from "./native-shadow-styles.mjs";
+
 const native = fs.readFileSync(
   new URL(import.meta.resolve("@payloadcms/next/css")),
   "utf8",
 );
+
 const tree = nativeShadowStyles(postcss.parse(native));
+
 // Lexical's separately bundled feature styles must cross the same shadow boundary.
 // Remove exact rules already present in core UI, preserving upstream cascade and conditional groups.
 const lexical = nativeShadowStyles(
@@ -19,7 +22,9 @@ const lexical = nativeShadowStyles(
     ),
   ),
 );
+
 const seen = new Set();
+
 function ruleKey(rule) {
   const parents = [];
   for (
@@ -31,18 +36,24 @@ function ruleKey(rule) {
       parents.unshift(`@${parent.name} ${parent.params}`);
   return `${parents.join("/")}:${rule.toString()}`;
 }
+
 tree.walkRules((rule) => seen.add(ruleKey(rule)));
+
 lexical.walkRules((rule) => {
   const key = ruleKey(rule);
   if (seen.has(key)) rule.remove();
   else seen.add(key);
 });
+
 const css = `${tree.toString()}\n${lexical.toString()}\n${fs.readFileSync("packages/payload-inplace/src/admin/styles.css", "utf8")}`;
+
 fs.mkdirSync("packages/payload-inplace/src/frontend", { recursive: true });
+
 fs.writeFileSync(
   "packages/payload-inplace/src/frontend/theme.generated.ts",
   `// Generated from the exact Payload peer and Tailwind inputs. Do not edit.\nexport const frontendStyles: string = ${JSON.stringify(css)};\n`,
 );
+
 console.log(
   `Shadow editor styles: ${Buffer.byteLength(css)} bytes (active route only)`,
 );

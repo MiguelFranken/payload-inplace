@@ -1,4 +1,5 @@
 "use client";
+
 import type { EditorStaticMessageKey } from "../i18n/catalogue.js";
 import { createContext, use, useEffect, useRef, useState } from "react";
 import {
@@ -16,6 +17,7 @@ export type EditorFailure = {
   paths?: string[];
   fieldErrors?: Record<string, string>;
 };
+
 type Recovery = {
   failure: EditorFailure | null;
   setFailure: (failure: EditorFailure | null) => void;
@@ -27,8 +29,11 @@ type Recovery = {
   resume: () => void;
   statusURL: string;
 };
+
 export const RecoveryContext = createContext<Recovery>(null!);
+
 export const useEditorRecovery = () => use(RecoveryContext);
+
 /** Keep submission bookkeeping outside the form; this adds no queue, data mirror, persistence or retry loop. */
 export function useRecoveryState(statusURL: string): Recovery {
   const [failure, setFailure] = useState<EditorFailure | null>(null),
@@ -58,6 +63,7 @@ export function useRecoveryState(statusURL: string): Recovery {
     },
   };
 }
+
 /** Stops automatic work after one failed attempt and rechecks authorization on focus plus a bounded active-only interval. */
 export function NativeSubmissionMonitor() {
   const recovery = useEditorRecovery(),

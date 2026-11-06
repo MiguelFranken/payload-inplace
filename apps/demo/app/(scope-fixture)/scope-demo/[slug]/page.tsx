@@ -13,6 +13,7 @@ import { authorizedEditor } from "../../../../lib/authorized-editor";
 import { importMap } from "../../../(payload)/admin/importMap.js";
 import { ScopeFixtureView } from "../../../../components/ScopeFixtureView";
 import { ScopeFixturePreview } from "../../../../components/ScopeFixturePreview";
+
 /** Synthetic multi-document acceptance route. Anonymous requests never request the active client renderer or any draft. */
 export default async function Page({
   params,

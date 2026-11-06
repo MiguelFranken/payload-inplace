@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 
 const action = (label: string, href: string) => ({ label, href });
+
 const defaults: Record<string, Record<string, any>> = {
   collectionHero: {
     background: "canvas",
@@ -28,6 +29,7 @@ const defaults: Record<string, Record<string, any>> = {
   editorial: { background: "sage", eyebrow: "The way we make" },
   faq: { background: "canvas" },
 };
+
 function fill(value: any, fallback: any): any {
   if (value == null) return structuredClone(fallback);
   if (typeof fallback !== "object" || Array.isArray(fallback)) return value;

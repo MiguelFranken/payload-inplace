@@ -1,9 +1,11 @@
 "use client";
+
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { PROTOCOL, validateMessage } from "./protocol.js";
 import { elementRect } from "./geometry.js";
 import "./styles.css";
+
 /** Mount once, exclusively after current authorization and explicit activation on the private preview. */
 export function PreviewBridge({
   session,

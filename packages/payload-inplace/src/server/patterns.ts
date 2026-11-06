@@ -13,6 +13,7 @@ import { nativeDocumentConfig } from "./document.js";
 import { resolveRoot } from "../schema/resolve.js";
 import { collectSections } from "../schema/tree.js";
 import { copyPatternFields } from "../schema/pattern-copy.js";
+
 /** Reauthorize a library operation independently from draft editing; the adapter must enforce its own storage/tenant ACL too. */
 export async function patternOperation(
   req: PayloadRequest,
@@ -164,6 +165,7 @@ export async function patternOperation(
   if (!validSummary(result)) throw Error("Invalid pattern storage response");
   return result;
 }
+
 /** Opt-in, origin-checked library transport; it never saves the edited document. */
 export async function patternEndpoint(
   req: PayloadRequest,

@@ -10,12 +10,16 @@ import {
 } from "../../../packages/payload-inplace/dist/exports/bindings.js";
 
 type Identity = { root: string; blockId: string };
+
 const sectionClass =
   "demo:box-border demo:mx-auto demo:min-w-0 demo:w-full demo:max-w-7xl demo:px-5 demo:sm:px-8 demo:lg:px-12";
+
 const titleClass =
   "demo:m-0 demo:font-display demo:font-normal demo:leading-[1.08] demo:tracking-tight demo:text-balance demo:whitespace-pre-line";
+
 const copyClass =
   "demo:m-0 demo:max-w-prose demo:text-base demo:leading-relaxed demo:text-muted demo:text-pretty";
+
 const linkClass =
   "demo:inline-flex demo:min-h-11 demo:items-center demo:justify-center demo:gap-3 demo:rounded-full demo:bg-accent demo:px-6 demo:py-3 demo:text-sm demo:font-medium demo:text-white demo:no-underline demo:hover:bg-ink demo:focus-visible:outline-2 demo:focus-visible:outline-offset-4 demo:focus-visible:outline-accent";
 
@@ -586,6 +590,7 @@ function tone(value: string) {
       ? "demo:bg-photo"
       : "demo:bg-canvas";
 }
+
 function href(value: unknown) {
   return typeof value === "string" && /^(?:#|\/(?!\/))/.test(value)
     ? value

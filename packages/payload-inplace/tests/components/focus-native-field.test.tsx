@@ -1,6 +1,7 @@
 import { afterEach, expect, it } from "vitest";
 import { waitFor } from "@testing-library/react";
 import { focusNativeField } from "../../src/frontend/focus-native-field.js";
+
 const cleanups: (() => void)[] = [];
 afterEach(() => {
   cleanups.splice(0).forEach((cleanup) => cleanup());

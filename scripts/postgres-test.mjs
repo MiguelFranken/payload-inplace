@@ -3,16 +3,23 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { randomBytes } from "node:crypto";
+
 const name = `payload-visual-editor-${process.pid}`;
+
 const stateFile = path.join(os.tmpdir(), `${name}.server.json`);
+
 let child;
+
 let signal;
+
 for (const name of ["SIGINT", "SIGTERM"])
   process.on(name, () => {
     signal = name;
     child?.kill(name);
   });
+
 const password = randomBytes(16).toString("hex");
+
 try {
   execFileSync(
     "docker",

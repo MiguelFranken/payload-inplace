@@ -8,6 +8,7 @@ import {
   readEditContext,
   verifyContext,
 } from "../../../packages/payload-inplace/dist/exports/server.js";
+
 /** Every frontend render and native server-function call checks the current session and activation again. */
 export async function authorizedEditor(
   identifier: string | undefined,

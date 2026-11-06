@@ -1,4 +1,5 @@
 "use client";
+
 import { useEditorMessages } from "../frontend/messages.js";
 
 import type { BlocksFieldClientProps } from "payload";
@@ -10,6 +11,7 @@ import {
   useFormModified,
   useTranslation,
 } from "@payloadcms/ui";
+
 /** Native CMS fallback plus an optional link; the editing experience lives on the website frontend. */
 export function VisualBlocksField(
   props: BlocksFieldClientProps & { root: string; editorPath?: string },

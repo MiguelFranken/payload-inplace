@@ -1,4 +1,5 @@
 import { contentHash } from "./review.js";
+
 /** Compare a complete live-document snapshot while excluding only the configured operational paths.
  * A sparse patch is rejected: native Payload merges ordinary writes with the latest draft, so publishing
  * such a patch could otherwise release unrelated editorial changes. Unknown additions also fail closed.

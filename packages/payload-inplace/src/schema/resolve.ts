@@ -2,6 +2,7 @@ import type { BlocksField, ClientField, Field } from "payload";
 import { getFieldPaths } from "payload/shared";
 
 const forbidden = new Set(["__proto__", "prototype", "constructor"]);
+
 /** Reject paths that could become prototype writes; configuration roots contain names, never indices. */
 export function pathSegments(path: string): string[] {
   const parts = path.split(".");
@@ -12,6 +13,7 @@ export function pathSegments(path: string): string[] {
     throw new Error("Invalid editor root path");
   return parts;
 }
+
 /** Resolve a native blocks root and inherited localization through named groups/tabs. Shared root structure affects every content locale even when its leaves are translated. */
 export function resolveRootScope(
   fields: Field[],

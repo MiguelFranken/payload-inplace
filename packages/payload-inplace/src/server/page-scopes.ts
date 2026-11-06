@@ -8,6 +8,7 @@ import {
   parseEditorTarget,
   targetDocumentKey,
 } from "../state/document-target.js";
+
 /** Normalize server-owned scope configuration before it becomes client metadata. An unbounded/ambiguous catalogue fails closed. No content is copied into the returned descriptors. */
 export async function configuredPageScopes(
   req: PayloadRequest,

@@ -1,10 +1,12 @@
 "use client";
+
 import { useEffect, useRef, useState } from "react";
 import { BookmarkPlus, LoaderCircle } from "lucide-react";
 import type { BlockIdentity } from "../types.js";
 import { useSectionPatterns } from "./section-patterns.js";
 import { useEditorMessages } from "./messages.js";
 import { Button } from "./ui/button.js";
+
 /** Explicit saved-section copy; cancelling the name form never changes native fields or history. */
 export function SaveSectionPattern({
   identity,

@@ -1,5 +1,6 @@
 import { expect, it } from "vitest";
 import { createMessages } from "../src/messages.js";
+
 const catalogue = {
   select: "Select content",
   count: { one: "{count} change", other: "{count} changes" },

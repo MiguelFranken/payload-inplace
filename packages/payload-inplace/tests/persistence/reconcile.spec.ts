@@ -3,6 +3,7 @@ import {
   reconcileDocuments,
   resolveReconciliation,
 } from "../../src/state/reconcile.js";
+
 const base = {
   id: 1,
   _veRevision: 1,
@@ -12,6 +13,7 @@ const base = {
     { id: "b", blockType: "text", title: "Two" },
   ],
 };
+
 const clone = () => structuredClone(base);
 it("merges disjoint leaves with stable IDs and latest security/revision metadata", () => {
   const local = clone(),

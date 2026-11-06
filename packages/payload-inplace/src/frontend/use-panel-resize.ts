@@ -1,4 +1,5 @@
 "use client";
+
 import {
   useId,
   useRef,
@@ -8,9 +9,13 @@ import {
   type KeyboardEvent,
   type RefObject,
 } from "react";
+
 type Axis = "width" | "height";
+
 type Handle = Axis | "both";
+
 type Size = { width: number; height?: number };
+
 /** Resize only editor geometry. Native fields stay mounted and the right/bottom dock anchors never move. */
 export function usePanelResize(
   panel: RefObject<HTMLElement | null>,

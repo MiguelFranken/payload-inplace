@@ -2,12 +2,14 @@
 export type DocumentReference =
   | { kind: "collection"; collection: string; id: string | number }
   | { kind: "global"; global: string };
+
 /** Stable encoded keys avoid ambiguous colon/dot delimiters in consumer IDs. */
 export function documentKey(ref: DocumentReference): string {
   return ref.kind === "global"
     ? `g:${encodeURIComponent(ref.global)}`
     : `c:${encodeURIComponent(ref.collection)}:${encodeURIComponent(String(ref.id))}`;
 }
+
 /** Untrusted DOM metadata fails closed; it never becomes a permission grant. */
 export function parseDocumentKey(value: string): DocumentReference | undefined {
   try {

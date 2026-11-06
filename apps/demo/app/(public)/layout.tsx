@@ -8,11 +8,13 @@ import {
   StorefrontFooter,
 } from "../../commerce/StorefrontChrome";
 import type { ReactNode } from "react";
+
 export const metadata = {
   title: "Still & Form — Furniture for everyday living",
   description:
     "A small, editable homewares storefront powered by Payload Inplace.",
 };
+
 export default async function Layout({ children }: { children: ReactNode }) {
   const requestHeaders = await headers();
   let editor = false;

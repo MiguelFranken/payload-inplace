@@ -4,6 +4,7 @@ import { createLocalReq, getPayload } from "payload";
 import config, { editorOptions } from "@payload-config";
 import { importMap } from "../app/(payload)/admin/importMap.js";
 import { readEditContext } from "payload-inplace/server";
+
 /** Every frontend render and native server-function call checks the current session and activation again. */
 export async function authorizedEditor(
   identifier: string | undefined,

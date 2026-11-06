@@ -1,4 +1,5 @@
 "use client";
+
 import { useSectionPatterns } from "./section-patterns.js";
 import type { SectionPatternSummary } from "../types.js";
 import { Button } from "./ui/button.js";
@@ -12,6 +13,7 @@ import type { EditorCatalogueEntry, EditorLabel } from "../types.js";
 import { useChromePortal } from "./ui/portal.js";
 import { ChromeTooltip } from "./ui/tooltip.js";
 import { chrome } from "../admin/chrome.js";
+
 const label = (
   value: EditorLabel | undefined,
   fallback: string,
@@ -23,6 +25,7 @@ const label = (
       value?.[locale.split("-")[0] || "en"] ||
       value?.en ||
       fallback;
+
 /** Searchable native-choice catalogue. Highlighting schedules only a disposable presentation delta; choosing commits once. */
 export function SectionCatalogue({
   choices,

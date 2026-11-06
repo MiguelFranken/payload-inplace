@@ -1,4 +1,5 @@
 import type { VisualEditorOptions } from "../types.js";
+
 /** Validate the finite host-owned origin allowlist once at plugin initialization; never infer trust from forwarded headers. */
 export function trustedEditorOrigins(
   options: Pick<

@@ -1,4 +1,5 @@
 "use client";
+
 import type { EditorStaticMessageKey } from "../i18n/catalogue.js";
 import { useEditorMessages } from "./messages.js";
 
@@ -43,6 +44,7 @@ import { Button } from "./ui/button.js";
 import { createRichSurface, preserveRichClasses } from "./rich-presentation.js";
 import { richToolbarPosition } from "./rich-toolbar.js";
 import { chrome } from "../admin/chrome.js";
+
 /** A normal-flow twin owns Lexical DOM while the untouched React subtree waits for native acknowledgement.
  * Opening settings unmounts this owner before native fields mount. The shared native Form is the only save path.
  */

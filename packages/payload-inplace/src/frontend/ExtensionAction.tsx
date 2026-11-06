@@ -1,4 +1,5 @@
 "use client";
+
 import { useEditorMessages } from "./messages.js";
 
 import { useEffect, useId, useState } from "react";
@@ -16,6 +17,7 @@ import {
 } from "./tools-context.js";
 import { chrome } from "../admin/chrome.js";
 import { useModalDismiss } from "../admin/native-accessibility.js";
+
 /** Explicit consumer action with optional confirmation, native busy state and a recoverable error. Nothing runs merely by opening a panel or visiting a URL. */
 export function ExtensionAction({
   extension,

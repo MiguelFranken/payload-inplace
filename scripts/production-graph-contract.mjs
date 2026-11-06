@@ -1,5 +1,6 @@
 const plugin =
   /(?:\[project\]\/dist\/|\[project\]\/packages\/payload-inplace\/dist\/|(?:^|\/)node_modules\/payload-inplace\/dist\/)/;
+
 /** Demo visitor resources permit only the inert registration, regardless of facade workspace/install layout. Native dependencies are never public. */
 export function assertPublicGraph(modules) {
   for (const source of Object.keys(modules)) {
@@ -16,6 +17,7 @@ export function assertPublicGraph(modules) {
       throw Error(`Public client module leak: ${source}`);
   }
 }
+
 /** The registered active route must contain the real native shell; an empty public graph is not sufficient proof. */
 export function assertActiveGraph(modules) {
   for (const source of Object.keys(modules))

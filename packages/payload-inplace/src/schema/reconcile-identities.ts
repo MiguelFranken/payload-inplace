@@ -1,4 +1,5 @@
 import type { ClientBlock, ClientField } from "payload";
+
 /** Reconciliation never guesses around malformed native row identities. Atomic JSON, relationship and rich-text fields are not traversed as native lists. */
 export function assertReconcileIdentities(
   document: Record<string, unknown>,

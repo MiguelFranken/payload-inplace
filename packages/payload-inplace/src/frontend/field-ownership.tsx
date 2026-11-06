@@ -1,4 +1,5 @@
 "use client";
+
 import { targetSlug } from "../state/document-target.js";
 import { useEditorMessages } from "./messages.js";
 
@@ -35,13 +36,16 @@ type Claim = {
   activate?: () => void;
   element: React.RefObject<HTMLDivElement | null>;
 };
+
 const Context = createContext<{
   claims: Claim[];
   claim: (claim: Claim) => void;
   release: (id: string) => void;
 }>(null!);
+
 const overlap = (a: string, b: string) =>
   a === b || a.startsWith(b + ".") || b.startsWith(a + ".");
+
 /** Native field ownership is scoped to this one form. A second panel waits instead of mounting duplicate controls. */
 export function FieldOwnershipProvider({ children }: { children: ReactNode }) {
   const [claims, setClaims] = useState<Claim[]>([]);
@@ -70,6 +74,7 @@ export function FieldOwnershipProvider({ children }: { children: ReactNode }) {
     </Context>
   );
 }
+
 /** Claims a native form subtree before mounting fields. Ancestor/descendant paths are mutually exclusive. */
 export function NativeFieldsOwner({
   path,
@@ -135,6 +140,7 @@ export function NativeFieldsOwner({
     </div>
   );
 }
+
 /** Mount an existing named native field in a consumer floatable, preserving schema paths, conditions and effective permissions.
  * Full document paths may traverse groups, tabs, arrays and native block rows. Selection-relative paths resolve against the current block identity.
  */

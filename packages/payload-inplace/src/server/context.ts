@@ -18,14 +18,17 @@ import {
 export function documentKey(target: EditorTarget): string {
   return targetScopeKey(target);
 }
+
 function signature(value: string, secret: string) {
   return createHmac("sha256", secret).update(value).digest("base64url");
 }
+
 /** Sign server-verified activation; the token is sent in a private response, never a URL. */
 export function signContext(context: EditContext, secret: string): string {
   const value = Buffer.from(JSON.stringify(context)).toString("base64url");
   return `${value}.${signature(value, secret)}`;
 }
+
 /** Verify integrity/expiry before trusting scope; callers still recheck current user/session/capability. */
 export function verifyContext(
   token: string,
@@ -81,6 +84,7 @@ export function verifyContext(
     return null;
   }
 }
+
 /** Authorize draft editing through host capability and native read/update/admin access,
  * including update Where. Published source data remains visible to host capability;
  * the native update permission receives draft intent, never publish authority.
@@ -170,10 +174,12 @@ export async function authorizeTarget(
     throw new APIError("Editor access denied", 403);
   return document;
 }
+
 /** Bind to Payload's current session; logout/relogin invalidates activation even for the same account. */
 export function currentSession(req: PayloadRequest): string {
   return String((req.user as any)?._sid ?? "");
 }
+
 /** Capture a freshly authorized document and one content locale in a short-lived session credential. Integrity alone never replaces readEditContext reauthorization. */
 export function createContext(
   req: PayloadRequest,
@@ -197,6 +203,7 @@ export function createContext(
     nonce: randomBytes(24).toString("base64url"),
   };
 }
+
 /** Recheck active session and authorization on every protected server read. */
 export async function readEditContext(
   req: PayloadRequest,

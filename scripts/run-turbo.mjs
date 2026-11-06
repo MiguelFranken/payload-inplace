@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+
 // Native build/unit caches must not migrate silently between supported Node runtimes.
 const result = spawnSync(
   "corepack",
@@ -8,5 +9,7 @@ const result = spawnSync(
     env: { ...process.env, INPLACE_NODE_RUNTIME: process.version },
   },
 );
+
 if (result.error) throw result.error;
+
 process.exitCode = result.status ?? (result.signal === "SIGINT" ? 130 : 1);

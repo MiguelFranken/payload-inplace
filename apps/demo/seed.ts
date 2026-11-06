@@ -1,6 +1,7 @@
 import { createLocalReq } from "payload";
 import type { Payload } from "payload";
 import { seedCommerce } from "./commerce/seed";
+
 /** Deterministic synthetic content only; no consumer services or customer records. */
 export async function seed(payload: Payload) {
   if (

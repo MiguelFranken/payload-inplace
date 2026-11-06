@@ -6,11 +6,13 @@ import type {
   MediaLibraryAdapter,
 } from "../../src/frontend/media-library.js";
 import type { ClientField } from "payload";
+
 const field = {
   name: "image",
   type: "upload",
   relationTo: "media",
 } as const satisfies ClientField;
+
 const props = {
   field,
   path: "image",
@@ -21,6 +23,7 @@ const props = {
   openNative: vi.fn(),
 };
 afterEach(() => vi.useRealTimers());
+
 const tick = () =>
   act(async () => {
     await vi.advanceTimersByTimeAsync(251);

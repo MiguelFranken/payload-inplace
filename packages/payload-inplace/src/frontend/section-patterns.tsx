@@ -1,12 +1,15 @@
 "use client";
+
 import { createContext, use, useEffect, useRef, type ReactNode } from "react";
 import { useConfig, useForm } from "@payloadcms/ui";
 import type { BlockIdentity, SectionPatternSummary } from "../types.js";
+
 export interface PatternCapabilities {
   canRead: boolean;
   canSave: boolean;
   allowedBlocks: string[];
 }
+
 interface PatternCommands extends PatternCapabilities {
   list: (
     page: number,
@@ -22,7 +25,9 @@ interface PatternCommands extends PatternCapabilities {
     signal: AbortSignal,
   ) => Promise<SectionPatternSummary>;
 }
+
 const Context = createContext<PatternCommands | null>(null);
+
 /** Optional transport only; no document data, persistence queue or library cache is mirrored here. */
 export function SectionPatterns({
   capabilities,
@@ -80,6 +85,7 @@ export function SectionPatterns({
     </Context>
   );
 }
+
 /** Null when disabled: callers must omit controls and must not fetch a library by default. */
 export function useSectionPatterns() {
   return use(Context);

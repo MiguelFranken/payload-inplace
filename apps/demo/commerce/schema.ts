@@ -10,7 +10,9 @@ import { completeCommerceDocument } from "./defaults";
 
 const canEdit: Access = ({ req }) =>
   Boolean(req.user && ["admin", "editor"].includes(req.user.role));
+
 const heading = { name: "heading", type: "text" as const, required: true };
+
 const image: UploadField = {
   name: "image",
   type: "upload" as const,
@@ -27,6 +29,7 @@ const background: Field = {
     { label: "Sand", value: "sand" },
   ],
 };
+
 const action = (name: string, label: string, href: string): Field => ({
   name,
   type: "group",

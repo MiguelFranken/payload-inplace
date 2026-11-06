@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { test, expect } from "@playwright/test";
+
 async function createEditor(
   page: any,
   collection = "pages",
@@ -52,6 +53,7 @@ async function createEditor(
   ).toBeVisible();
   return doc;
 }
+
 async function selectHeading(page: any) {
   await page
     .getByRole("button", { name: "Select content", exact: true })
@@ -61,6 +63,7 @@ async function selectHeading(page: any) {
     .click();
   return page.locator('main [contenteditable="plaintext-only"]');
 }
+
 test("instant inline edits and appearance survive delayed native saves and newer typing", async ({
   page,
 }, testInfo) => {
@@ -139,6 +142,7 @@ test("instant inline edits and appearance survive delayed native saves and newer
     release();
   }
 });
+
 test("failed native save retains optimistic text and offers explicit recovery", async ({
   page,
 }) => {
@@ -1065,14 +1069,17 @@ test("repeated contextual disclosure releases its document listeners and observe
         super(callback);
         observed.add(this.targets);
       }
+
       observe(target: Element, options?: ResizeObserverOptions) {
         this.targets.add(target);
         super.observe(target, options);
       }
+
       unobserve(target: Element) {
         this.targets.delete(target);
         super.unobserve(target);
       }
+
       disconnect() {
         this.targets.clear();
         super.disconnect();

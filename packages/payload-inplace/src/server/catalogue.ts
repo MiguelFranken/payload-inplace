@@ -1,14 +1,17 @@
 import type { ClientBlock, ClientField, BlocksFieldClientProps } from "payload";
 import type { EditorCatalogueEntry } from "../types.js";
 import { previewExample } from "../schema/example-preview.js";
+
 const child = (permission: unknown, key: string): unknown =>
   permission === true
     ? true
     : permission && typeof permission === "object"
       ? (permission as Record<string, unknown>)[key]
       : undefined;
+
 const denied = (permission: unknown) =>
   permission === false || child(permission, "read") === false;
+
 /** Redact presentation examples before serializing them. The intersection across configured uses prevents a reused block from widening field visibility. */
 export function projectCatalogue(
   catalogue: Record<string, EditorCatalogueEntry> | undefined,

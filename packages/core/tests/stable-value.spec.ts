@@ -1,5 +1,6 @@
 import { expect, it } from "vitest";
 import { readStableValue, writeStableValue } from "../src/stable-value.js";
+
 it("patches encoded stable identities after reordering and rejects ambiguous/prototype paths", () => {
   const document = {
     rows: [

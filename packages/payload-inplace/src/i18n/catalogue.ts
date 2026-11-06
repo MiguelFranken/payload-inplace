@@ -1,4 +1,5 @@
 import type { Message } from "../../../core/src/messages.js";
+
 /** Typed source copy. Consumers override messages by key; content and native field labels stay consumer-owned. */
 export const englishMessages = {
   commandFirstSection: "The first section must be {type}.",
@@ -352,7 +353,9 @@ export const englishMessages = {
   actionUnavailable: "This action is unavailable.",
   actionFailed: "Action failed. Check your access and retry.",
 } as const;
+
 export type EditorMessageKey = keyof typeof englishMessages;
+
 export type EditorStaticMessageKey = {
   [K in EditorMessageKey]: (typeof englishMessages)[K] extends string
     ? (typeof englishMessages)[K] extends `${string}{${string}`
@@ -360,6 +363,7 @@ export type EditorStaticMessageKey = {
       : K
     : never;
 }[EditorMessageKey];
+
 export const germanMessages = {
   commandFirstSection: "Der erste Abschnitt muss {type} sein.",
   commandSingleton: "Genau ein Abschnitt vom Typ {type} ist erforderlich.",

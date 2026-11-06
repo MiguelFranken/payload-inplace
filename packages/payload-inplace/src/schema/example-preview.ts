@@ -1,4 +1,5 @@
 import type { ClientBlock, ClientField } from "payload";
+
 /** Project only declared readable fields for example presentation. Never used as native insertion data.
  * Unknown keys, hidden fields and denied subtrees are omitted; each nested row receives a new preview-only ID.
  */

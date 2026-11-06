@@ -19,13 +19,17 @@ import type {
   CollectionConfig,
   TextFieldSingleValidation,
 } from "payload";
+
 const validateDemoTitle: TextFieldSingleValidation = (value, options) =>
   value === "Rejected title"
     ? "Use a different title."
     : validations.text(value, options);
+
 const dirname = path.dirname(fileURLToPath(import.meta.url));
+
 const editor = ({ req }: any) =>
   Boolean(req.user && ["admin", "editor"].includes(req.user.role));
+
 const blocks: Block[] = [
   {
     slug: "hero",
@@ -108,6 +112,7 @@ const blocks: Block[] = [
     fields: [{ name: "heading", type: "text" }],
   },
 ];
+
 const content = (
   slug: string,
   nested = false,
@@ -196,6 +201,7 @@ const content = (
     },
   ],
 });
+
 export const editorOptions: VisualEditorOptions = {
   patterns: process.env.VE_TEST_SCHEMA === "1" ? patternAdapter : undefined,
   globals:
@@ -394,6 +400,7 @@ export const editorOptions: VisualEditorOptions = {
   canEdit: ({ req }: any) => editor({ req }),
   disabled: process.env.VE_DISABLED === "1",
 };
+
 export default buildConfig({
   sharp,
   localization: { locales: ["en", "de"], defaultLocale: "en", fallback: true },

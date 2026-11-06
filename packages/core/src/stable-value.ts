@@ -1,4 +1,5 @@
 const unsafe = new Set(["__proto__", "prototype", "constructor"]);
+
 function parentOf(
   document: unknown,
   path: string,
@@ -40,11 +41,13 @@ function parentOf(
   }
   throw Error("Invalid stable path");
 }
+
 /** Read a known stable leaf/list in a comparison snapshot. Missing/duplicate row IDs fail closed; no numeric index fallback. */
 export function readStableValue(document: unknown, path: string): unknown {
   const { parent, key } = parentOf(document, path);
   return parent[key];
 }
+
 /** Apply a reviewed patch only to the caller's disposable snapshot. Native Form and server validation remain the write authority. Undefined represents deletion. */
 export function writeStableValue(
   document: unknown,

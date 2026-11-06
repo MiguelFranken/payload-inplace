@@ -1,7 +1,9 @@
 import type { FormState } from "payload";
+
 function sameValue(a: unknown, b: unknown) {
   return Object.is(a, b) || JSON.stringify(a) === JSON.stringify(b);
 }
+
 /** A save acknowledges its submitted snapshot, not subsequent keystrokes. Preserve native local values and reject metadata for rows that moved during the request.
  * Payload 3.91's isModified flag tracks only the most recently updated field, so its autosave merge alone cannot protect multiple newer fields.
  * This is a native FormState merge adapter, not a second document model or persistence queue.

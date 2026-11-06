@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { authorizedEditor } from "../../../../lib/authorized-editor";
+
 /** Active-only session/capability check; the protected route owns its activation cookie. */
 export async function GET(request: NextRequest) {
   const { context, document } = await authorizedEditor(

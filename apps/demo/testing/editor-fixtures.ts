@@ -1,4 +1,5 @@
 import { expect, type Page } from "@playwright/test";
+
 /** Only synthetic records inside the caller's disposable demo database. Uses real native auth/create. */
 export async function createShopEditor(
   page: Page,

@@ -4,7 +4,9 @@ import { getPayload, createLocalReq } from "payload";
 import config, { editorOptions } from "@payload-config";
 import { FrontendEntry } from "../../../../../../packages/payload-inplace/dist/exports/entry.js";
 import { RenderPage } from "../../../../components/RenderPage";
+
 export const metadata = { robots: { index: false, follow: false } };
+
 export default async function Page({
   searchParams,
 }: {

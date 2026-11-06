@@ -1,10 +1,13 @@
 "use client";
+
 import { useDocumentInfo } from "@payloadcms/ui";
 import { NativeFieldSlot } from "../../../packages/payload-inplace/dist/exports/frontend.js";
+
 /** Consumer-defined metadata control renders inside the shared contextual surface. */
 export function DemoPageTools() {
   return <DemoPageDetails />;
 }
+
 /** Consumer-defined panel shares native metadata fields and can present app-specific read models. */
 export function DemoPageDetails() {
   const info = useDocumentInfo();

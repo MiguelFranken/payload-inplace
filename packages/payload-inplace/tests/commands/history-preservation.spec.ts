@@ -4,6 +4,7 @@ import {
   StructuralHistory,
 } from "../../src/state/history.js";
 import { restoreRoot } from "../../src/adapters/payload-form.js";
+
 function fields(rows: { id: string; heading: string }[], root = "layout"): any {
   const result: any = {
     _veRevision: { value: 9 },
@@ -19,6 +20,7 @@ function fields(rows: { id: string; heading: string }[], root = "layout"): any {
   });
   return result;
 }
+
 function native(initial: any) {
   let value = initial;
   return {
@@ -33,6 +35,7 @@ function native(initial: any) {
     },
   } as any;
 }
+
 const row = (id: string, heading = id) => ({ id, heading });
 it("undo and redo a move preserve later typing and rows added by native controls", () => {
   const before = fields([row("a"), row("b"), row("c")]),

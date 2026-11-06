@@ -9,7 +9,9 @@ import {
 } from "../../../../../../packages/payload-inplace/dist/exports/server.js";
 import { PreviewBridge } from "../../../../../../packages/payload-inplace/dist/exports/preview.js";
 import { RenderPage } from "../../../../components/RenderPage";
+
 export const metadata = { robots: { index: false, follow: false } };
+
 export default async function Page({
   searchParams,
 }: {

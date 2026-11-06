@@ -6,6 +6,7 @@ import {
   getArrayItemAttributes,
   getArrayItemPath,
 } from "../../../packages/payload-inplace/dist/exports/bindings.js";
+
 /** The exact same server renderer serves public and authorized preview surfaces. */
 export function RenderPageView({
   document,

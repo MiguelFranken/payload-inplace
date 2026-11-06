@@ -1,4 +1,5 @@
 "use client";
+
 import { createContext, use, useMemo, type ReactNode } from "react";
 import {
   createEditorMessages,
@@ -6,8 +7,11 @@ import {
   type EditorMessages,
 } from "../i18n/messages.js";
 import type { EditorStaticMessageKey } from "../i18n/catalogue.js";
+
 const defaults = createEditorMessages();
+
 const Context = createContext<EditorMessages | null>(null);
+
 /** Keeps copy/direction inside the editor island. It does not alter the host document language or native content locale. */
 export function EditorMessagesProvider({
   options,
@@ -39,6 +43,7 @@ export function EditorMessagesProvider({
     </Context>
   );
 }
+
 /** Consumers may use explicit options outside authoring; active controls normally inherit the current editor catalogue. */
 export function useEditorMessages(
   options?: EditorUIOptions,
@@ -58,6 +63,7 @@ export function useEditorMessages(
     [context, explicit, locale, direction, messages, fallbackLocale],
   );
 }
+
 /** Small text leaf for class-based error boundaries that cannot call hooks. */
 export function EditorMessage({ id }: { id: EditorStaticMessageKey }) {
   return useEditorMessages().t(id);

@@ -1,4 +1,5 @@
 "use client";
+
 import {
   nativeDocumentPath,
   nativeDocumentMethod,
@@ -33,6 +34,7 @@ import {
 import type { ClientBlock, ClientField } from "payload";
 import { FileCheck2, LoaderCircle, X, Globe, History } from "lucide-react";
 import { useModalDismiss } from "./native-accessibility.js";
+
 const DocumentReview = lazy(() =>
   import("./DocumentReview.js").then((module) => ({
     default: module.DocumentReview,
@@ -49,6 +51,7 @@ type Review = {
   published: Record<string, any> | null;
   token: string;
 };
+
 /** Review comparisons are read-only. Publication always submits the complete server-signed saved revision through the sole native Form. */
 export function ReviewPublishButton({
   compact = false,

@@ -4,6 +4,7 @@ import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { cva, type VariantProps } from "class-variance-authority";
 import { clsx } from "clsx";
 import { ChromeTooltip } from "./tooltip.js";
+
 /** Shared chrome presentation for buttons and composite triggers, each using one interactive primitive. */
 export const buttonVariants = cva(
   "pve:inline-flex pve:shrink-0 pve:items-center pve:justify-center pve:gap-2 pve:box-border pve:border pve:border-solid pve:font-inherit pve:text-sm pve:font-medium pve:leading-none pve:no-underline pve:cursor-pointer pve:outline-none pve:focus-visible:ring-2 pve:focus-visible:ring-[var(--pve-accent,#3451eb)] pve:focus-visible:ring-offset-2 pve:disabled:opacity-40 pve:disabled:cursor-not-allowed pve:motion-safe:transition-colors pve:[&_svg]:shrink-0",
@@ -36,6 +37,7 @@ export const buttonVariants = cva(
     defaultVariants: { variant: "ghost", size: "default" },
   },
 );
+
 /** Editor chrome button; native Payload field controls keep their own implementation. */
 export function Button({
   className,

@@ -1,4 +1,5 @@
 "use client";
+
 import {
   EditorFieldStrategy,
   createPayloadMediaLibrary,
@@ -6,6 +7,7 @@ import {
   defineFieldStrategy,
 } from "payload-inplace/frontend";
 import { priceControls } from "./PriceControls";
+
 const media = defineMediaFieldStrategy({
   ...createPayloadMediaLibrary({ collection: "assets" }),
   id: "installed-media",
@@ -31,6 +33,7 @@ const media = defineMediaFieldStrategy({
     };
   },
 });
+
 const date = defineFieldStrategy({
   id: "installed-date",
   types: ["date"],
@@ -55,6 +58,7 @@ const date = defineFieldStrategy({
     </div>
   ),
 });
+
 export function StrategyRegistration() {
   return (
     <>

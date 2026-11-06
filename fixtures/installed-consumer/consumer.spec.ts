@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
+
 for (const role of ["anonymous", "reader", "author"])
   test(`installed public isolation: ${role}`, async ({ page }, testInfo) => {
     if (role !== "anonymous")
@@ -51,6 +52,7 @@ for (const role of ["anonymous", "reader", "author"])
       ),
     ).toBe(false);
   });
+
 test("installed nested-root native fields, optimistic draft and reviewed publish", async ({
   page,
   browser,

@@ -8,6 +8,7 @@ import {
   verifyContext,
 } from "../../src/server/context.js";
 import { scopeEndpoint } from "../../src/server/scopes.js";
+
 function fixture() {
   const owner = { collection: "pages", id: 1, root: "layout" },
     other = { collection: "products", id: 2, root: "presentation.layout" };

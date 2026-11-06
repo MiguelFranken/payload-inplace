@@ -1,11 +1,13 @@
 import { readFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
+
 const nativePins = {
   payload: "3.91.0",
   "@payloadcms/ui": "3.91.0",
   "@payloadcms/next": "3.91.0",
   next: "16.4.2",
 } as const;
+
 /** Private native handlers and schema caches have a narrower contract than semver.
  * Reject a mismatched host during Next configuration, before an opaque field/render failure.
  */
@@ -20,6 +22,7 @@ export function assertNativeVersions(
       );
   }
 }
+
 /** Read package ownership from a resolved public entry. Package.json is not a
  * supported export in Payload v3, so do not assume a package.json subpath works.
  */

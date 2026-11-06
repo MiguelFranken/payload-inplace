@@ -2,15 +2,19 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
+
 const output = execFileSync(
   "corepack",
   ["pnpm", "--dir", "packages/payload-inplace", "pack", "--pack-destination", process.cwd()],
   { encoding: "utf8" },
 );
+
 const archive = output.trim().split("\n").at(-1);
+
 const entries = execFileSync("tar", ["-tzf", archive], {
   encoding: "utf8",
 }).split("\n");
+
 for (const entry of [
   "index.js",
   "index.d.ts",
@@ -36,6 +40,7 @@ if (!entries.includes("package/NOTICE"))
 for (const entry of entries)
   if (/(?:node_modules|dev\/|test-results|\.env|\.git\/)/.test(entry))
     throw Error(`Unexpected private/dev package entry ${entry}`);
+
 const visit = (file, seen = new Set()) => {
   file = path.resolve(file);
   if (seen.has(file)) return seen;
@@ -52,11 +57,15 @@ const visit = (file, seen = new Set()) => {
     throw Error(`Public binding graph leaked client/editor work: ${file}`);
   return seen;
 };
+
 const graph = [...visit("packages/payload-inplace/dist/exports/bindings.js")];
+
 for (const file of ["packages/payload-inplace/dist/exports/client.js", "packages/payload-inplace/dist/exports/preview.js"])
   if (!fs.readFileSync(file, "utf8").startsWith('"use client"'))
     throw Error(`Missing directive ${file}`);
+
 fs.mkdirSync("test-results", { recursive: true });
+
 fs.writeFileSync(
   "test-results/package.json",
   JSON.stringify(
@@ -80,4 +89,5 @@ fs.writeFileSync(
     2,
   ),
 );
+
 console.log(`Packed boundary checks passed: ${archive}`);

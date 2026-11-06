@@ -36,6 +36,7 @@ export function contentHash(data: Record<string, unknown>): string {
     )
     .digest("hex");
 }
+
 /** Review only a saved draft. Candidate is the native Form snapshot, never a second persistence channel. */
 export function candidateMatches(
   candidate: Record<string, unknown>,
@@ -91,9 +92,11 @@ export function candidateMatches(
         : emptyContainer(value),
     );
 }
+
 function mac(value: string, secret: string) {
   return createHmac("sha256", secret).update(value).digest("base64url");
 }
+
 /** Sign the exact saved revision and submitted native snapshot after displaying document-wide review. */
 export function signDocumentReview(
   req: PayloadRequest,
@@ -114,6 +117,7 @@ export function signDocumentReview(
   ).toString("base64url");
   return `${value}.${mac(value, req.payload.secret)}`;
 }
+
 /** The native write authority verifies both saved revision and unchanged reviewed form input. */
 export function validateDocumentReview(
   req: PayloadRequest,
@@ -157,6 +161,7 @@ export function signReview(
 ): string {
   return signDocumentReview(req, { collection, id }, revision, candidate);
 }
+
 /** Backward-compatible collection authority; review tokens remain kind/document/locale/revision/content/session-bound. */
 export function validateReview(
   req: PayloadRequest,

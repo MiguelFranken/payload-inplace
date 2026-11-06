@@ -3,8 +3,11 @@
 import { Select as SelectPrimitive } from "@base-ui/react/select";
 import { Check, ChevronDown, ChevronUp } from "lucide-react";
 import { useChromePortal } from "./portal.js";
+
 export const Select = SelectPrimitive.Root;
+
 export const SelectValue = SelectPrimitive.Value;
+
 /** Base UI select with shadcn anatomy, consumer tokens and an editor-local portal. */
 export function SelectTrigger({
   children,
@@ -26,6 +29,7 @@ export function SelectTrigger({
     </SelectPrimitive.Trigger>
   );
 }
+
 export function SelectContent({
   children,
   className,
@@ -72,6 +76,7 @@ export function SelectContent({
     </SelectPrimitive.Portal>
   );
 }
+
 export function SelectItem({ children, ...props }: SelectPrimitive.Item.Props) {
   return (
     <SelectPrimitive.Item

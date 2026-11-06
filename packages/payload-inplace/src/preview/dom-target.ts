@@ -3,6 +3,7 @@ import {
   documentKey,
   type DocumentReference,
 } from "../../../core/src/document-ref.js";
+
 /** Match renderer-owned identity and provenance together. Equal native row IDs in different documents must never share drag/locate/selection geometry. Legacy unscoped bindings still address only the active document. */
 export function findBoundBlock(
   root: ParentNode,

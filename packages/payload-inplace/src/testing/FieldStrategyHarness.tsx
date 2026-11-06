@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, type ReactNode } from "react";
 import type {
   ContextualFieldKind,
@@ -6,6 +7,7 @@ import type {
   ContextualFieldValue,
   FieldStrategyDefinition,
 } from "../frontend/field-strategies.js";
+
 /** Unit-only control harness. Exercises a consumer Component's value/disabled/error/native-handoff UI without pretending to be Payload Form or a save/access backend. Verify registration, ACL and conditions separately in native integration. */
 export function FieldStrategyHarness<K extends ContextualFieldKind>({
   definition,

@@ -1,4 +1,5 @@
 "use client";
+
 import {
   Component,
   createContext,
@@ -12,6 +13,7 @@ import {
 } from "react";
 import { useField, useForm } from "@payloadcms/ui";
 import type { ClientField, FieldState } from "payload";
+
 export type ContextualFieldKind =
   | "text"
   | "textarea"
@@ -21,7 +23,9 @@ export type ContextualFieldKind =
   | "select"
   | "upload"
   | "relationship";
+
 type FieldOf<K extends ContextualFieldKind> = Extract<ClientField, { type: K }>;
+
 export type ContextualFieldValue<K extends ContextualFieldKind> =
   K extends "number"
     ? number | null
@@ -32,6 +36,7 @@ export type ContextualFieldValue<K extends ContextualFieldKind> =
         : K extends "select"
           ? string | string[] | null
           : string | null;
+
 /** Values and validation belong to useField; strategy components never receive a document snapshot or save callback. */
 export interface ContextualFieldProps<K extends ContextualFieldKind> {
   field: FieldOf<K>;
@@ -43,12 +48,14 @@ export interface ContextualFieldProps<K extends ContextualFieldKind> {
   error?: string;
   openNative: () => void;
 }
+
 export interface StrategyMatch {
   field: ClientField;
   path: string;
   schemaPath: string;
   blockType?: string;
 }
+
 /** Client-only registration. An explicit panel annotation, native custom Field, denied or conditioned field always retains native authority. */
 export interface FieldStrategyDefinition<
   K extends ContextualFieldKind = ContextualFieldKind,
@@ -61,17 +68,21 @@ export interface FieldStrategyDefinition<
   mode?: "contextual" | "native";
   Component?: ComponentType<ContextualFieldProps<K>>;
 }
+
 /** Retain the field-kind generic when defining a consumer component. No React/editor runtime is created here. */
 export function defineFieldStrategy<K extends ContextualFieldKind>(
   definition: FieldStrategyDefinition<K>,
 ): FieldStrategyDefinition<K> {
   return definition;
 }
+
 type Entry = FieldStrategyDefinition;
+
 const Registry = createContext<{
   entries: Entry[];
   register: (entry: Entry) => () => void;
 }>({ entries: [], register: () => () => {} });
+
 /** Registry lives inside one native document Form. It is never shared globally across sites/documents. */
 export function FieldStrategiesProvider({ children }: { children: ReactNode }) {
   const [entries, setEntries] = useState<Entry[]>([]);
@@ -103,6 +114,7 @@ export function FieldStrategiesProvider({ children }: { children: ReactNode }) {
     </Registry>
   );
 }
+
 /** Install a stable, module-level definition from a configured strategy provider. Unmounting releases it. */
 export function EditorFieldStrategy<K extends ContextualFieldKind>({
   definition,
@@ -116,6 +128,7 @@ export function EditorFieldStrategy<K extends ContextualFieldKind>({
   );
   return null;
 }
+
 /** A failing consumer predicate cannot stop editing. Native fallback remains available. */
 export function useFieldStrategy(
   context: StrategyMatch | undefined,
@@ -142,18 +155,22 @@ export function useFieldStrategy(
     }
   });
 }
+
 class StrategyBoundary extends Component<
   { children: ReactNode; fallback: ReactNode },
   { failed: boolean }
 > {
   state = { failed: false };
+
   static getDerivedStateFromError() {
     return { failed: true };
   }
+
   render() {
     return this.state.failed ? this.props.fallback : this.props.children;
   }
 }
+
 /** Already inside NativeFieldsOwner. Native UI replaces a failed/unsupported strategy without mounting a second field owner. */
 export function ContextualFieldEditor<K extends ContextualFieldKind>({
   definition,
@@ -183,6 +200,7 @@ export function ContextualFieldEditor<K extends ContextualFieldKind>({
     </StrategyBoundary>
   );
 }
+
 function StrategyControl<K extends ContextualFieldKind>({
   definition,
   context,

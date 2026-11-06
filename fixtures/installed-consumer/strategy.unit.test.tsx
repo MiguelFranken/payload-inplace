@@ -7,6 +7,7 @@ import {
   inspectNativeField,
 } from "payload-inplace/testing";
 import { priceControls as stepper } from "./components/PriceControls";
+
 it("tests a public control without source aliases or a demo boot", () => {
   const values: number[] = [];
   const view = render(
@@ -44,6 +45,7 @@ it("tests a public control without source aliases or a demo boot", () => {
   expect(screen.getByText("Native handoff")).toBeTruthy();
   cleanup();
 });
+
 it("provides isolated bindings, deterministic failures and read-only native probes", async () => {
   const one = createEditorFixture(),
     two = createEditorFixture();

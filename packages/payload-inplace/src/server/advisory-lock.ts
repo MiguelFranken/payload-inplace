@@ -9,14 +9,18 @@ import type { VisualEditorOptions } from "../types.js";
 import { nativeDocumentConfig } from "./document.js";
 import { targetDocumentKey } from "../state/document-target.js";
 import { readEditContext } from "./context.js";
+
 const collection = "payload-locked-documents" as const;
+
 export type AdvisoryLease = { id: string | number; updatedAt: string };
+
 export type AdvisoryLockState = {
   status: "disabled" | "unavailable" | "owned" | "other" | "released";
   expiresAt?: number;
   heartbeatMs?: number;
   lease?: AdvisoryLease;
 };
+
 /** Native user-based locks are advisory; revision transactions still reject stale content writes. Never take over a live foreign lock or remove a newer lease on cleanup. */
 export async function manageAdvisoryLock(
   req: PayloadRequest,
@@ -141,6 +145,7 @@ export async function manageAdvisoryLock(
     throw error;
   }
 }
+
 /** Origin/proof-bound internal lease endpoint. It exposes no lock-owner profile and grants no takeover capability. */
 export async function advisoryLockEndpoint(
   req: PayloadRequest,

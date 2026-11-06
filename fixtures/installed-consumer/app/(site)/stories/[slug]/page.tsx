@@ -4,6 +4,7 @@ import { createLocalReq, getPayload } from "payload";
 import config, { editorOptions } from "@payload-config";
 import { EditorLauncher } from "payload-inplace/launcher";
 import { StoryView } from "../../../../components/StoryView";
+
 export default async function Page({
   params,
 }: {

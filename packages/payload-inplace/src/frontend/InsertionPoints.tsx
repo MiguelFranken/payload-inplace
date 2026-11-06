@@ -1,4 +1,5 @@
 "use client";
+
 import { useEditorMessages } from "./messages.js";
 
 import { useEffect, useEffectEvent, useRef, useState } from "react";
@@ -16,12 +17,14 @@ import { Button } from "./ui/button.js";
 import { ChromeTooltip } from "./ui/tooltip.js";
 import { CatalogueLauncher as SectionCatalogue } from "./CatalogueLauncher.js";
 import type { EditorCatalogueEntry } from "../types.js";
+
 type Hover = {
   element: HTMLElement;
   edge: "before" | "after";
   section?: NativeSection;
   list?: InsertionTarget;
 };
+
 /** Canvas affordances are overlays; consumer layout nodes are never wrapped or moved.
  * The picker carries stable identity until the shared native command resolves it again.
  */

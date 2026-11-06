@@ -1,15 +1,18 @@
 export type Message =
   | string
   | ({ other: string } & Partial<Record<Intl.LDMLPluralRule, string>>);
+
 type Text<T> = T extends string
   ? T
   : T extends Record<string, unknown>
     ? Extract<T[keyof T], string>
     : never;
+
 type Parameters<S extends string> =
   S extends `${string}{${infer Name}}${infer Rest}`
     ? Name | Parameters<Rest>
     : never;
+
 type Args<T> = T extends string
   ? [Parameters<T>] extends [never]
     ? []
@@ -20,6 +23,7 @@ type Args<T> = T extends string
         string | number
       >,
     ];
+
 /** UI locale/direction are independent of a document's content locale. Native data requests must not derive their locale from this contract. */
 export interface MessageOptions<C extends Record<string, Message>> {
   locale?: string;
@@ -28,6 +32,7 @@ export interface MessageOptions<C extends Record<string, Message>> {
     [K in keyof C]: C[K] extends string ? string : Message & object;
   }>;
 }
+
 /** Stable formatter surface preserves key and parameter inference across package declaration boundaries. */
 export interface MessageTranslator<C extends Record<string, Message>> {
   readonly locale: string;
@@ -39,6 +44,7 @@ export interface MessageTranslator<C extends Record<string, Message>> {
     format?: Intl.DateTimeFormatOptions,
   ) => string;
 }
+
 const validMessage = (value: unknown): value is Message =>
   typeof value === "string" ||
   Boolean(
@@ -52,6 +58,7 @@ const validMessage = (value: unknown): value is Message =>
           typeof text === "string",
       ),
   );
+
 const placeholders = (value: Message) =>
   new Set(
     (typeof value === "string"
@@ -65,6 +72,7 @@ const placeholders = (value: Message) =>
       ),
     ),
   );
+
 /** A framework-free typed formatter. Overrides with missing/extra placeholders fall back to the source definition; interpolation stays plain text, never HTML. */
 export function createMessages<const C extends Record<string, Message>>(
   catalogue: C,

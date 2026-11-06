@@ -1,4 +1,5 @@
 import { renderPageEntry } from "../../../../../lib/page-entry";
+
 export default async function Page({
   params,
 }: {

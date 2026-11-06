@@ -2,10 +2,13 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { writeFileSync, rmSync } from "node:fs";
 import { ESLint } from "eslint";
+
 // Use an existing project file so the type-aware parser uses its real tsconfig.
 const eslint = new ESLint();
+
 const filePath =
   "packages/payload-inplace/src/frontend/controllers/draft-save.ts";
+
 for (const [call, rejected] of [
   ["task();", true],
   ["void task();", false],
@@ -46,6 +49,7 @@ for (const [source, rejected] of [
     rmSync(fixture, { force: true });
   }
 }
+
 console.log(
   "Lint negative and positive controls passed: typed promises and accessible controls",
 );

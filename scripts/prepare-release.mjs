@@ -3,16 +3,23 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { assertReleasePolicy } from "./release-policy.mjs";
+
 const [runID, expectedSHA256, tag = "latest"] = process.argv.slice(2);
+
 if (!/^[1-9][0-9]*$/.test(runID || ""))
   throw new Error("Numeric validation run ID required");
+
 const repository = "MiguelFranken/payload-inplace";
+
 const api = (endpoint) =>
   JSON.parse(execFileSync("gh", ["api", endpoint], { encoding: "utf8" }));
+
 const run = api(`repos/${repository}/actions/runs/${runID}`);
+
 const headSHA = execFileSync("git", ["rev-parse", "HEAD"], {
   encoding: "utf8",
 }).trim();
+
 // Gate provenance before downloading anything, and use argument arrays for all external values.
 if (
   run.event !== "push" ||
@@ -21,8 +28,11 @@ if (
   run.conclusion !== "success"
 )
   throw new Error("Successful main validation at HEAD required");
+
 const sourceSHA = run.head_sha;
+
 execFileSync("git", ["merge-base", "--is-ancestor", sourceSHA, headSHA]);
+
 const changed = execFileSync(
   "git",
   ["diff", "--name-only", sourceSHA, headSHA],
@@ -31,11 +41,14 @@ const changed = execFileSync(
   .trim()
   .split("\n")
   .filter(Boolean);
+
 if (changed.some((file) => !file.startsWith("docs/validation/")))
   throw new Error(
     "Code changed since candidate validation; validate a new candidate",
   );
+
 const directory = fs.mkdtempSync(path.resolve("release-input-"));
+
 try {
   execFileSync(
     "gh",

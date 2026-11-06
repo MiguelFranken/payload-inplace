@@ -1,4 +1,5 @@
 import type { Field } from "payload";
+
 /** Clone only schema containers we modify; editor instances, callbacks, regexes and host metadata retain identity. */
 export function cloneFields(fields: Field[]): Field[] {
   return fields.map((field) => {

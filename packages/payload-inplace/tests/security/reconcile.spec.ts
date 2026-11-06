@@ -1,8 +1,10 @@
 import { expect, it, vi } from "vitest";
 import type { PayloadRequest } from "payload";
 import type { VisualEditorOptions } from "../../src/types.js";
+
 const authorize = vi.hoisted(() => vi.fn());
 vi.mock("../../src/server/context.js", () => ({ readEditContext: authorize }));
+
 import { latestDraftEndpoint } from "../../src/server/reconcile.js";
 it("requires a trusted origin and fresh activation authorization, ignores forged targets and returns only the native authorized draft", async () => {
   const options = {} as VisualEditorOptions,

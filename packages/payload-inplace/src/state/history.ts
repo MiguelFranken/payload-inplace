@@ -1,5 +1,6 @@
 import { commandIssueText, type CommandIssue } from "./command-issue.js";
 import type { FormState } from "payload";
+
 function cloneValue<T>(value: T): T {
   if (Array.isArray(value)) return value.map(cloneValue) as T;
   if (
@@ -13,6 +14,7 @@ function cloneValue<T>(value: T): T {
     ) as T;
   return value;
 }
+
 /** Only the chosen layout subtree enters history. Callbacks/custom component identities stay intact. */
 export function snapshotRoot(fields: FormState, root: string): FormState {
   return Object.fromEntries(
@@ -34,13 +36,17 @@ export interface StructuralMutation {
   kind: "add" | "duplicate" | "remove" | "move" | "up" | "down";
   id?: string;
 }
+
 type ScopeToken = { field: string } | { row: string };
+
 interface Scope {
   path: string;
   tokens: ScopeToken[];
   mutation?: StructuralMutation;
 }
+
 const scopes = new WeakMap<FormState, Scope>();
+
 function tokensFor(fields: FormState, path: string): ScopeToken[] {
   let prefix = "";
   return path.split(".").map((part) => {
@@ -53,6 +59,7 @@ function tokensFor(fields: FormState, path: string): ScopeToken[] {
     return token;
   });
 }
+
 function resolveScope(
   fields: FormState,
   tokens: ScopeToken[],
@@ -70,6 +77,7 @@ function resolveScope(
   }
   return path;
 }
+
 function mirror(fields: FormState, root: string, previous: FormState) {
   const snapshot = snapshotRoot(fields, root),
     scope = scopes.get(previous);
@@ -80,6 +88,7 @@ function mirror(fields: FormState, root: string, previous: FormState) {
     });
   return snapshot;
 }
+
 function insertionIndex(rows: any[], template: any[], id: string) {
   const original = template.findIndex((row) => String(row.id) === id);
   for (const row of template.slice(original + 1)) {
@@ -96,6 +105,7 @@ function insertionIndex(rows: any[], template: any[], id: string) {
   }
   return Math.max(0, Math.min(original, rows.length));
 }
+
 /** Materialize only the affected container and row identity. Existing row subtrees come from the current Form, preserving later text and native nested changes.
  * @see StructuralHistory.captureResult records IDs allocated by native add/duplicate operations.
  */
@@ -162,15 +172,18 @@ export function materializeStructuralRestore(
   });
   return { path, fields: restored };
 }
+
 /** Bounded native-form mementos with operation scope. Payload remains the sole value and persistence authority. */
 export class StructuralHistory {
   private undoStack: FormState[] = [];
   private redoStack: FormState[] = [];
   private pending?: FormState;
+
   constructor(
     readonly root: string,
     readonly limit = 20,
   ) {}
+
   checkpoint(
     fields: FormState,
     container = this.root,
@@ -191,6 +204,7 @@ export class StructuralHistory {
       this.pending = snapshot;
     return true;
   }
+
   /** Seal the single row ID allocated by native addFieldRow after its reducer commit. Never infer an identity from a numeric position. */
   captureResult(fields: FormState): boolean {
     if (!this.pending) return false;
@@ -208,12 +222,15 @@ export class StructuralHistory {
     this.pending = undefined;
     return true;
   }
+
   get canUndo() {
     return this.undoStack.length > 0 && !this.pending;
   }
+
   get canRedo() {
     return this.redoStack.length > 0 && !this.pending;
   }
+
   undo(fields: FormState) {
     this.captureResult(fields);
     if (this.pending) return;
@@ -221,12 +238,14 @@ export class StructuralHistory {
     if (previous) this.redoStack.push(mirror(fields, this.root, previous));
     return previous;
   }
+
   redo(fields: FormState) {
     if (this.pending) return;
     const next = this.redoStack.pop();
     if (next) this.undoStack.push(mirror(fields, this.root, next));
     return next;
   }
+
   clear() {
     this.undoStack = [];
     this.redoStack = [];

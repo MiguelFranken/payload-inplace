@@ -1,5 +1,6 @@
 import { nativeDocumentPath } from "../state/document-target.js";
 import type { EditorDocument } from "../types.js";
+
 /** The same locale-scoped native endpoint is used for manual and automatic drafts. */
 export function nativeDraftAction(
   api: string,

@@ -2,6 +2,7 @@ import {
   structuralIssueText,
   type StructuralIssue,
 } from "../../../core/src/policy.js";
+
 /** Stable command failures carry only structural metadata, never native document values or credentials. */
 export type CommandIssue =
   | StructuralIssue
@@ -21,6 +22,7 @@ export type CommandIssue =
         | "removed-moved-section"
         | "insertion-unavailable";
     };
+
 /** Existing non-UI callers retain English defaults; active controls inject a typed translator. */
 export function commandIssueText(issue: CommandIssue): string {
   if ("blockType" in issue) return structuralIssueText(issue);

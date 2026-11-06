@@ -1,4 +1,5 @@
 import type { ClientField } from "payload";
+
 /** Project an authoring presentation without changing schemas, persisted values, native conditions or access control. */
 export function projectFields(
   fields: ClientField[],
@@ -34,6 +35,7 @@ export function projectFields(
     return [];
   });
 }
+
 /** Resolve named native field provenance through transparent rows/tabs and named groups. Array contents use their native array editor. */
 export function namedField(
   fields: ClientField[],
@@ -87,6 +89,7 @@ export function excludeFields(
     return [field];
   });
 }
+
 /** Native field mount claims follow projected leaf paths; arrays and blocks remain indivisible native controls. */
 export function fieldOwnershipPaths(
   fields: ClientField[],

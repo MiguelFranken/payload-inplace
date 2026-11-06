@@ -1,11 +1,14 @@
 import type { DocumentReference } from "./document-ref.js";
+
 export type EditorOperation =
   | "save"
   | "preview"
   | "review"
   | "publish"
   | "restore";
+
 export type EditorOutcome = "succeeded" | "failed" | "conflict" | "cancelled";
+
 export type EditorFailureCategory =
   | "network"
   | "session"
@@ -13,7 +16,9 @@ export type EditorFailureCategory =
   | "conflict"
   | "preview"
   | "unknown";
+
 type Scope = { document: DocumentReference; locale?: string };
+
 /** Closed event union intentionally excludes values, error messages, raw responses, revisions and all activation/review tokens. */
 export type EditorLifecycleEvent =
   | { type: "activated"; scope: Scope }
@@ -34,13 +39,16 @@ export type EditorLifecycleEvent =
       durationMs: number;
       category?: EditorFailureCategory;
     };
+
 export type EditorObserver = (
   event: EditorLifecycleEvent,
 ) => void | Promise<void>;
+
 export interface EditorOperationHandle {
   readonly id: string;
   settle: (outcome: EditorOutcome, category?: EditorFailureCategory) => void;
 }
+
 /** An active-only metadata channel, not a persistence queue. Observer exceptions/rejections cannot affect native workflows. One handle settles at most once. */
 export function createEditorEventChannel(
   scope: Scope,

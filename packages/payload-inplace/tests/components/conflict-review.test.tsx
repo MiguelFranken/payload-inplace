@@ -1,5 +1,6 @@
 import { expect, it, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+
 const native = vi.hoisted(() => ({
   data: {
     id: 1,
@@ -41,6 +42,7 @@ vi.mock("@payloadcms/ui", () => ({
 vi.mock("../../src/frontend/recovery.js", () => ({
   useEditorRecovery: () => ({ resume: native.resume }),
 }));
+
 import { ConflictReview } from "../../src/frontend/ConflictReview.js";
 beforeEach(() => {
   vi.clearAllMocks();

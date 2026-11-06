@@ -1,6 +1,8 @@
 import path from "node:path";
 import ts from "typescript";
+
 const normalized = (file) => file.split(path.sep).join("/");
+
 /** Parse imports instead of matching source text, including type-only edges and lazy imports. */
 export function importEdges(file, source) {
   const result = [];
@@ -63,6 +65,7 @@ export function importEdges(file, source) {
   visit(tree);
   return result;
 }
+
 /** Enforce dependency direction for framework-free, Lexical and native client sources. Type-only client contracts are allowed; inert bindings have a stricter transitive gate. */
 export function checkSourceBoundary(file, source, root = process.cwd()) {
   const name = normalized(path.relative(root, file));
@@ -137,6 +140,7 @@ export function checkSourceBoundary(file, source, root = process.cwd()) {
     }
   }
 }
+
 /** Even type declarations from the inert bindings API stay independent of native UI/server packages. */
 export function checkBindingsGraph(entry, read, root = process.cwd()) {
   const visited = new Set();

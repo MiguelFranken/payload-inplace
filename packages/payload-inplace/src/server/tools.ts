@@ -5,12 +5,14 @@ import type {
   EditorTool,
   VisualEditorOptions,
 } from "../types.js";
+
 export const defaultTools: EditorTool[] = [
   "content",
   "sections",
   "history",
   "publish",
 ];
+
 /** Compute capability-filtered descriptors only. Server callbacks and component paths never become client authority. */
 export async function resolveTools(
   options: VisualEditorOptions,
@@ -31,6 +33,7 @@ export async function resolveTools(
     if (!panel.canUse || (await panel.canUse(context))) fieldPanels.push(panel);
   return { tools, extensions, fieldPanels };
 }
+
 /** Resolve the supported editor UI locales without serializing host label functions. */
 export function editorLabel(label: EditorLabel, language: string) {
   return localizedLabel(

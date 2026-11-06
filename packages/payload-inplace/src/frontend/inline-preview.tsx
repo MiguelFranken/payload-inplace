@@ -1,4 +1,5 @@
 "use client";
+
 import { createContext, use, useEffect } from "react";
 import {
   useDocumentInfo,
@@ -6,6 +7,7 @@ import {
   useFormProcessing,
   useFormBackgroundProcessing,
 } from "@payloadcms/ui";
+
 /** Preview rendering may pause around a focused native inline field, while persistence continues normally. */
 export interface InlinePreviewGuard {
   active: boolean;
@@ -13,10 +15,13 @@ export interface InlinePreviewGuard {
   end: () => void;
   synchronized: (revision: string | number) => void;
 }
+
 export const InlinePreviewContext = createContext<InlinePreviewGuard>(null!);
+
 export function useInlinePreviewGuard() {
   return use(InlinePreviewContext);
 }
+
 /** Release a focused-field render hold only after the native form acknowledges its current changes. */
 export function NativePreviewSync() {
   const guard = useInlinePreviewGuard(),

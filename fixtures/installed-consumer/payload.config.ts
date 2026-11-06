@@ -4,8 +4,10 @@ import { postgresAdapter } from "@payloadcms/db-postgres";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { visualEditor, type VisualEditorOptions } from "payload-inplace";
 import { postgresConcurrency } from "payload-inplace/postgres";
+
 const write = ({ req }: { req: PayloadRequest }): boolean =>
   req.user?.role === "author";
+
 export const editorOptions: VisualEditorOptions = {
   collections: { stories: { roots: ["article.sections"] } },
   previewOrigin: process.env.CONSUMER_ORIGIN!,
@@ -34,6 +36,7 @@ export const editorOptions: VisualEditorOptions = {
   ],
   fieldPanels: [{ id: "document", label: "Story details", fields: ["name"] }],
 };
+
 async function seed(payload: Payload) {
   if (
     (await payload.count({ collection: "users", overrideAccess: true }))
@@ -76,6 +79,7 @@ async function seed(payload: Payload) {
     },
   });
 }
+
 export default buildConfig({
   serverURL: process.env.CONSUMER_ORIGIN!,
   secret: process.env.PAYLOAD_SECRET!,

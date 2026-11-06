@@ -1,4 +1,5 @@
 const blocks = new Set(["DIV", "P", "LI", "PRE", "BLOCKQUOTE"]);
+
 /** Read authored text rather than CSS-transformed innerText. Browser-created plaintext
  * paragraphs are line breaks; layout wrapping and pseudo-elements are not content.
  * Keep intentional spaces/NBSP; a lone BR is the browser's empty editable placeholder.

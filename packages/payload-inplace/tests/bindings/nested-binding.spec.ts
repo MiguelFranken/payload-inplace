@@ -6,6 +6,7 @@ import {
   getArrayItemPath,
   getFieldAttributes,
 } from "../../src/preview/bindings.js";
+
 const fields = [
   {
     type: "tabs",
@@ -30,10 +31,12 @@ const fields = [
     ],
   },
 ] as ClientField[];
+
 const rows = [
   { id: "first", title: "First" },
   { id: "second", text: "Second", links: [{ id: "a.b", label: "Link" }] },
 ];
+
 const resolve = (
   binding: string,
   value: any = { chapters: rows },

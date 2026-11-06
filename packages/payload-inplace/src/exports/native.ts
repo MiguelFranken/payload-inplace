@@ -12,11 +12,13 @@ import { handleServerFunctions as nativeHandler } from "@payload-visual-editor/n
 import { synchronizeNativeSchemaCaches } from "../server/frontend-config.js";
 import { contentLocale } from "../server/content-locale.js";
 import { scopeNativeFunction } from "../adapters/native-function-scope.js";
+
 /** Standard native admin bridge. Extra client properties can never select an editor request or override its authorization scope. */
 export const handleServerFunctions: ServerFunctionHandler = async (args) => {
   synchronizeNativeSchemaCaches(await args.config);
   return nativeHandler(args);
 };
+
 /** The host freshly reauthorizes its signed editing scope on every invocation and passes the SERVER request as a separate argument, outside client-spread arguments.
  * Scopes native form/field/table preparation and consumer overrides to that request's content locale, rather than the admin's last-used locale preference. Persistence and ACLs remain native.
  * @see withVisualEditorNext installs the required version-locked server-only alias.

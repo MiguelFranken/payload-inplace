@@ -1,4 +1,5 @@
 "use client";
+
 import type { EditorStaticMessageKey } from "../i18n/catalogue.js";
 import { EditorMessageError, editorErrorKey } from "../i18n/failure.js";
 import { useEditorMessages } from "./messages.js";

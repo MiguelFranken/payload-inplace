@@ -1,12 +1,16 @@
 "use client";
+
 import { createContext, use, useEffect, useRef, useState } from "react";
 import type { AdvisoryLockState } from "../server/advisory-lock.js";
+
 export const AdvisoryLockContext = createContext<
   AdvisoryLockState & { retry?: () => void }
 >({
   status: "disabled",
 });
+
 type ExitParticipant = { pause: () => Promise<void>; resume: () => void };
+
 const exitParticipants = new Set<ExitParticipant>();
 
 /** Release mounted page scopes before revoking their activation cookies. Resume leases if deactivation fails. */
@@ -18,6 +22,7 @@ export async function prepareAdvisoryExit(): Promise<() => void> {
       if (exitParticipants.has(participant)) participant.resume();
   };
 }
+
 /** Active-only bounded native lease heartbeat. Hidden/unmounted scopes release only their exact last stamp; lost cleanup expires natively. It owns no document content. */
 export function useNativeAdvisoryLock(
   api: string,
@@ -115,6 +120,7 @@ export function useNativeAdvisoryLock(
   }, [url, proof, retry]);
   return { ...state, retry: () => setRetry((value) => value + 1) };
 }
+
 /** Paused foreign locks are visible without disclosing the other editor's identity. */
 export function useAdvisoryLock() {
   return use(AdvisoryLockContext);

@@ -1,4 +1,5 @@
 "use client";
+
 import { Button } from "@payloadcms/ui";
 import {
   EditorFieldStrategy,
@@ -6,6 +7,7 @@ import {
   defineMediaFieldStrategy,
   createPayloadMediaLibrary,
 } from "payload-inplace/frontend";
+
 const background = defineFieldStrategy({
   id: "commerce-background",
   types: ["select"],
@@ -39,9 +41,11 @@ const background = defineFieldStrategy({
     </div>
   ),
 });
+
 const media = defineMediaFieldStrategy(
   createPayloadMediaLibrary({ collection: "media" }),
 );
+
 /** Registration is active-only and document-local. Options and persistence remain native. */
 export function CommerceStrategies() {
   return (

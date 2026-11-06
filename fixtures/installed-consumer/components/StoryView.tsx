@@ -3,6 +3,7 @@ import {
   getBlockAttributes,
   getFieldAttributes,
 } from "payload-inplace/bindings";
+
 /** The consumer's own view shares markup between its public server page and active client projection. */
 export function StoryView({
   document,

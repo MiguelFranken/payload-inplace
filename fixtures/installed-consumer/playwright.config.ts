@@ -1,4 +1,5 @@
 import { defineConfig } from "@playwright/test";
+
 export default defineConfig({
   testMatch: "consumer.spec.ts",
   workers: 1,

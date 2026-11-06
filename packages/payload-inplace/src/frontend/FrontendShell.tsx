@@ -1,4 +1,5 @@
 "use client";
+
 import {
   SectionPatterns,
   type PatternCapabilities,
@@ -278,6 +279,7 @@ export function FrontendShell(props: ShellProps) {
     </InlinePreviewContext>
   );
 }
+
 function NativeDocumentForm(
   props: ShellProps & {
     renderedRevision: string | number;
@@ -536,15 +538,18 @@ function CaptureNativeForm({
   }, [form, formRef]);
   return null;
 }
+
 /** Consumer preview failures must not unmount the native working copy or persistence/recovery controls. */
 class PreviewBoundary extends Component<
   { children: ReactNode; fallback: ReactNode },
   { failed: boolean }
 > {
   state = { failed: false };
+
   static getDerivedStateFromError() {
     return { failed: true };
   }
+
   render() {
     return this.state.failed ? (
       <>

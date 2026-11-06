@@ -1,4 +1,5 @@
 import { nativeStyleUnits } from "./native-style-units.mjs";
+
 /** Payload 3.91 publishes React Select with a bundled private Emotion context. An external CacheProvider cannot redirect that cache.
  * Copy only its generated class rules actually used inside the editor shadow root, preserving native styling without authored CSS or global resets.
  * CSSOM insertions do not emit DOM mutations; native control mounts/class changes trigger the coalesced read after their insertion effects finish.

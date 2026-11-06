@@ -5,6 +5,7 @@ import {
   checkBindingsGraph,
   importEdges,
 } from "../../../../scripts/import-boundaries.mjs";
+
 const root = "/synthetic-repository";
 it("detects static, lazy and type-only boundary violations without confusing comments with imports", () => {
   const core = path.join(root, "packages/core/src/case.ts");

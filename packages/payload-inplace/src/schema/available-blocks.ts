@@ -1,4 +1,5 @@
 import type { BlocksFieldClientProps, ClientBlock } from "payload";
+
 /** Resolve native blockReferences and dynamic add filters without hiding existing rows. An empty native filter explicitly allows no additions. */
 export function availableBlocks(
   field: BlocksFieldClientProps["field"],

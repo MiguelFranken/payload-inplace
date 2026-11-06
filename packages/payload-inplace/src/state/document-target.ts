@@ -7,20 +7,24 @@ import {
   documentKey as referenceKey,
   type DocumentReference,
 } from "../../../core/src/document-ref.js";
+
 /** Normalize legacy collection targets into discriminated provenance, without widening their authorization. */
 export function documentReference(target: EditorDocument): DocumentReference {
   return target.kind === "global"
     ? { kind: "global", global: target.global }
     : { kind: "collection", collection: target.collection, id: target.id };
 }
+
 /** Native schema paths use a collection/global slug; the kind still participates in every identity/security key. */
 export function targetSlug(target: EditorDocument): string {
   return target.kind === "global" ? target.global : target.collection;
 }
+
 /** Stable identity distinguishes global and collection documents even when names match. */
 export function targetDocumentKey(target: EditorDocument): string {
   return referenceKey(documentReference(target));
 }
+
 /** Native REST URL only; its request still needs origin, session, document and locale authorization. */
 export function nativeDocumentPath(
   api: string,
@@ -31,16 +35,19 @@ export function nativeDocumentPath(
     ? `${base}/globals/${encodeURIComponent(target.global)}`
     : `${base}/${encodeURIComponent(target.collection)}/${encodeURIComponent(String(target.id))}`;
 }
+
 /** Globals update through POST, collections through PATCH. No plugin persistence endpoint is introduced. */
 export function nativeDocumentMethod(target: EditorDocument): "POST" | "PATCH" {
   return target.kind === "global" ? "POST" : "PATCH";
 }
+
 /** Native provider/form preparation discriminates one entity. */
 export function nativeDocumentArgs(target: EditorDocument) {
   return target.kind === "global"
     ? { globalSlug: target.global }
     : { collectionSlug: target.collection, id: target.id };
 }
+
 /** Shared native controls infer their exact document from DocumentInfo; global controls never invent a collection/id pair. */
 export function targetFromNativeInfo(
   info: { collectionSlug?: string; globalSlug?: string; id?: string | number },
@@ -51,6 +58,7 @@ export function targetFromNativeInfo(
     throw Error("Native document scope is unavailable");
   return { collection: info.collectionSlug, id: info.id, root };
 }
+
 /** Native structural policy is selected by document kind, not a colliding slug. */
 export function targetPolicy(
   options: VisualEditorOptions,

@@ -3,6 +3,7 @@ import {
   type LexicalEditor,
   type EditorThemeClasses,
 } from "lexical";
+
 /** Keep renderer-owned wrapper classes in normal flow. Mount Lexical at the
  * innermost single-child presentation wrapper instead of discarding typography,
  * spacing and descendant selectors between the binding and its rich nodes.

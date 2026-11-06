@@ -5,6 +5,7 @@ import {
   patternEndpoint,
   patternOperation,
 } from "../../src/server/patterns.js";
+
 const fixtures = vi.hoisted(() => ({
   access: true,
   doc: {
@@ -31,6 +32,7 @@ vi.mock("payload", () => ({
   }),
   docAccessOperationGlobal: vi.fn(),
 }));
+
 const field = {
   name: "layout",
   type: "blocks",
@@ -48,6 +50,7 @@ const field = {
     },
   ],
 };
+
 const req = {
   user: { id: 1 },
   payload: {
@@ -55,6 +58,7 @@ const req = {
     config: { blocks: [] },
   },
 } as unknown as PayloadRequest;
+
 const setup = () => {
   const list = vi.fn(async () => ({
     docs: [

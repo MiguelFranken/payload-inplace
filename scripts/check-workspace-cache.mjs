@@ -4,20 +4,26 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { execFileSync, spawnSync } from "node:child_process";
 import { performance } from "node:perf_hooks";
+
 const original = process.cwd();
+
 const directory = fs.mkdtempSync(
   path.join(os.tmpdir(), "inplace-clean-workspace-"),
 );
+
 const sourceSHA = execFileSync("git", ["rev-parse", "HEAD"], {
   encoding: "utf8",
 }).trim();
+
 const hash = (data) => createHash("sha256").update(data).digest("hex");
+
 const env = {
   ...process.env,
   NPM_CONFIG_USERCONFIG: path.join(directory, ".npmrc"),
   TURBO_TELEMETRY_DISABLED: "1",
   NEXT_TELEMETRY_DISABLED: "1",
 };
+
 function run(args, extra = {}) {
   const result = spawnSync("corepack", ["pnpm", ...args], {
     cwd: directory,
@@ -27,12 +33,15 @@ function run(args, extra = {}) {
   if (result.status !== 0) throw Error(result.stdout + result.stderr);
   return result.stdout + result.stderr;
 }
+
 const manifests = new Map();
+
 const roots = [
   "packages/core/dist",
   "packages/lexical/dist",
   "packages/payload-inplace/dist",
 ];
+
 function outputs() {
   const files = [];
   for (const root of roots) {
@@ -49,12 +58,14 @@ function outputs() {
   }
   return { hash: hash(JSON.stringify(files)), files };
 }
+
 function summaryFiles() {
   const folder = path.join(directory, ".turbo/runs");
   return fs.existsSync(folder)
     ? fs.readdirSync(folder).filter((file) => file.endsWith(".json"))
     : [];
 }
+
 function summaries(log, summary) {
   const data = JSON.parse(
     fs.readFileSync(path.join(directory, ".turbo/runs", summary), "utf8"),
@@ -68,6 +79,7 @@ function summaries(log, summary) {
     logSHA256: hash(log),
   };
 }
+
 function build(name, extra = {}) {
   const previous = new Set(summaryFiles());
   const start = performance.now();
@@ -97,6 +109,7 @@ function build(name, extra = {}) {
     ...summaries(log, created[0]),
   };
 }
+
 try {
   execFileSync("tar", ["-xf", "-", "-C", directory], {
     input: execFileSync("git", ["archive", sourceSHA], {

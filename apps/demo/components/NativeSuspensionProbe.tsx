@@ -1,4 +1,5 @@
 "use client";
+
 import { use, useEffect, useState } from "react";
 
 /** A silent test fixture for a consumer's lazy native field component.

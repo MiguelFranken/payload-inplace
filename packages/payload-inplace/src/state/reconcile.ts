@@ -5,6 +5,7 @@ import {
 } from "../../../core/src/stable-value.js";
 import { assertReconcileIdentities } from "../schema/reconcile-identities.js";
 import { documentChanges, type DocumentChange } from "./document-diff.js";
+
 export interface ReconciliationConflict {
   labels: string[];
   path: string;
@@ -12,25 +13,30 @@ export interface ReconciliationConflict {
   local: unknown;
   latest: unknown;
 }
+
 export interface DocumentReconciliation {
   merged: Record<string, unknown>;
   conflicts: ReconciliationConflict[];
   localChanges: DocumentChange[];
   remoteChanges: DocumentChange[];
 }
+
 const overlap = (a: string, b: string) =>
   a === b || a.startsWith(b + ".") || b.startsWith(a + ".");
+
 function patch(change: DocumentChange) {
   const parts = change.path.split(".");
   if (parts.at(-1) === "$position") parts.pop();
   if (parts.at(-1)?.startsWith("@")) parts.pop();
   return { path: parts.join("."), structural: parts.join(".") !== change.path };
 }
+
 const roots = (paths: string[]) =>
   [...new Set(paths)].filter(
     (path) =>
       !paths.some((parent) => parent !== path && path.startsWith(parent + ".")),
   );
+
 /** Three-way comparison uses native schema atomicity and stable row identity. Only disjoint authored patches merge automatically; a structural overlap becomes an explicit whole-list choice. Metadata always comes from latest. */
 export function reconcileDocuments(
   base: Record<string, unknown>,
@@ -84,6 +90,7 @@ export function reconcileDocuments(
       writeStableValue(merged, path, readStableValue(local, path));
   return { merged, conflicts, localChanges, remoteChanges };
 }
+
 /** Resolve every overlapping patch explicitly before updating native Form. Missing choices fail closed; the returned snapshot is never persisted directly by this helper. */
 export function resolveReconciliation(
   result: DocumentReconciliation,

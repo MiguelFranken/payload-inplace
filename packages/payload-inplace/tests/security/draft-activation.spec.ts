@@ -2,6 +2,7 @@ import { expect, it, vi } from "vitest";
 import type { PayloadRequest } from "payload";
 import { authorizeTarget } from "../../src/server/context.js";
 import type { EditorTarget, VisualEditorOptions } from "../../src/types.js";
+
 const state = vi.hoisted(() => ({ permission: vi.fn(), read: vi.fn() }));
 vi.mock("payload", async (original) => ({
   ...(await original<typeof import("payload")>()),

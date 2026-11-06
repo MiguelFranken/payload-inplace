@@ -1,5 +1,7 @@
 "use client";
+
 import { useEffect, useEffectEvent, useRef } from "react";
+
 /** Schedules one native submission after authored input becomes idle. Metadata/callback identity never restarts the timer.
  * The caller owns native processing, acknowledgement and retry gates; this hook owns no document values or persistence queue.
  */

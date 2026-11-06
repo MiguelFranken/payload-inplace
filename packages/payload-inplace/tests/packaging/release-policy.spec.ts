@@ -1,7 +1,9 @@
 import { expect, it } from "vitest";
 import { assertReleasePolicy } from "../../../../scripts/release-policy.mjs";
+
 const sha = "a".repeat(40),
   hash = "b".repeat(64);
+
 function proof() {
   return {
     run: {

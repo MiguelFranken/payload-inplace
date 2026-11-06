@@ -1,4 +1,5 @@
 "use client";
+
 import { useEditorMessages } from "./messages.js";
 import { useEffect, useEffectEvent, useRef, type ReactNode } from "react";
 import {
@@ -18,6 +19,7 @@ export interface InspectionTarget {
   fields?: string[];
   element: Element;
 }
+
 function readTarget(element: Element | null): InspectionTarget | undefined {
   const bound = element?.closest(
     "[data-ve-field],[data-ve-fields],[data-ve-block]",
@@ -66,6 +68,7 @@ function readTarget(element: Element | null): InspectionTarget | undefined {
     return;
   }
 }
+
 /** One coalesced hover box follows bound site elements; UI events and native drawers are ignored.
  * Listeners exist only during activated authoring, hover tracking only while content selection is enabled. A live target is measured each visible frame so host transforms stay aligned without requiring ResizeObserver notifications.
  */

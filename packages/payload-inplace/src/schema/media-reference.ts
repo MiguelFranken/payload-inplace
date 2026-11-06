@@ -1,4 +1,5 @@
 import type { ClientField } from "payload";
+
 /** Only explicit single-reference upload/relationship fields can use the contextual library. */
 export function mediaCollections(field: ClientField): string[] {
   if (
@@ -10,6 +11,7 @@ export function mediaCollections(field: ClientField): string[] {
     ? [field.relationTo]
     : [...field.relationTo];
 }
+
 /** Native reference shapes are preserved; a URL or asset from another collection can never masquerade as an upload ID. Server native validation still authorizes the actual reference. */
 export function mediaReference(
   field: ClientField,

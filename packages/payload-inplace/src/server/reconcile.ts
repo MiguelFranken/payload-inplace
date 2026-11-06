@@ -1,6 +1,7 @@
 import type { PayloadRequest } from "payload";
 import type { VisualEditorOptions } from "../types.js";
 import { readEditContext } from "./context.js";
+
 /** Read only: reauthorize the exact active target and return its current native draft. Clients compare locally; eventual writes still require the native revision guard and field ACLs. */
 export async function latestDraftEndpoint(
   req: PayloadRequest,

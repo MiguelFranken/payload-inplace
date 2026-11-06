@@ -2,6 +2,7 @@ import type { ClientField, FieldState } from "payload";
 import { isBindingPath } from "../../../core/src/editable.js";
 import { resolveBinding } from "./resolve-binding.js";
 import { canUpdateInlineField } from "./inline-access.js";
+
 /** Development metadata only. No values, HTML, user/session details or credentials are included. Codes explain mapping/fallback; they never authorize a write. */
 export interface BindingDiagnostic {
   code:
@@ -18,6 +19,7 @@ export interface BindingDiagnostic {
   path: string;
   severity: "warning" | "info";
 }
+
 /** Explain an explicit terminal against the current native schema and metadata. Dynamic annotations use the same resolver as editing; no copied document model is introduced. */
 export function diagnoseBinding({
   fields,

@@ -1,4 +1,5 @@
 "use client";
+
 import {
   createContext,
   use,
@@ -26,10 +27,12 @@ import { useNativeDraftSave } from "./controllers/draft-save.js";
 import { useEditorRecovery } from "./recovery.js";
 import { useAdvisoryLock } from "./advisory-lock.js";
 import type { EditorStaticMessageKey } from "../i18n/catalogue.js";
+
 export interface ResolvedPageScope {
   target: EditorTarget;
   label: string;
 }
+
 const Context = createContext<{
   scopes: ResolvedPageScope[];
   active?: ResolvedPageScope;
@@ -38,6 +41,7 @@ const Context = createContext<{
   request: (document: DocumentReference, root?: string) => boolean;
   cancel: () => void;
 }>({ scopes: [], phase: "idle", request: () => false, cancel: () => {} });
+
 /** Coordinates disclosure/activation only. The existing native Form is the sole value/save owner; a dirty document is saved before leaving, then its controls are disabled before activation. */
 export function NativeDocumentScopes({
   context,
@@ -208,6 +212,7 @@ export function NativeDocumentScopes({
     </Context>
   );
 }
+
 /** Foreign DOM provenance can request only a server-declared scope; the switch endpoint authorizes it again. */
 export function useDocumentScopes() {
   return use(Context);

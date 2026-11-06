@@ -1,10 +1,12 @@
 import { editable } from "../../../packages/payload-inplace/dist/exports/bindings.js";
 import type { EditorTarget } from "../../../packages/payload-inplace/dist/exports/types.js";
+
 export interface ScopeFixtureDocument {
   target: EditorTarget;
   label: string;
   document: Record<string, any>;
 }
+
 /** Same consumer renderer for saved server content and the one active native Form. Provenance is explicit on every terminal field, including the shared global. */
 export function ScopeFixtureView({
   documents,

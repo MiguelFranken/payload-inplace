@@ -1,4 +1,5 @@
 import PublishedPage from "../[collection]/[slug]/page";
+
 export default function Page() {
   return (
     <PublishedPage

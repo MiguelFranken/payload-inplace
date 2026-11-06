@@ -1,10 +1,12 @@
 "use client";
+
 import { useCallback, useRef } from "react";
 import type { useForm } from "@payloadcms/ui";
 import type { InspectionTarget } from "../InspectionLayer.js";
 import type { NativeSection } from "../../schema/tree.js";
 import { resolveBinding } from "../../schema/resolve-binding.js";
 import { diagnoseBinding } from "../../schema/binding-diagnostics.js";
+
 /** Opt-in development diagnostics run only on a selection, not in a document-wide observer or visitor graph. Deduplicated metadata excludes content values. */
 export function useBindingDiagnostics(
   enabled: boolean,

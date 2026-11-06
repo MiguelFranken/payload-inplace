@@ -1,11 +1,13 @@
 import { defineConfig } from "tsdown";
 import { readFileSync } from "node:fs";
+
 const manifest = JSON.parse(
   readFileSync(
     new URL("./packages/payload-inplace/package.json", import.meta.url),
     "utf8",
   ),
 );
+
 const external = Object.keys({
   ...manifest.dependencies,
   ...manifest.peerDependencies,
@@ -13,6 +15,7 @@ const external = Object.keys({
   (name) =>
     new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:/|$)`),
 );
+
 export default defineConfig({
   entry: {
     "core/policy": "packages/core/src/policy.ts",

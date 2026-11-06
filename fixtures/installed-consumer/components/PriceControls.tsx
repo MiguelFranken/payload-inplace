@@ -1,5 +1,7 @@
 "use client";
+
 import type { FieldStrategyDefinition } from "payload-inplace/frontend";
+
 /** Shared between the isolated control test and the actual native integration; registration stays in an active-only module. */
 export const priceControls: FieldStrategyDefinition<"number"> = {
   id: "synthetic-stepper",

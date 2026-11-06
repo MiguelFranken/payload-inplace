@@ -1,8 +1,10 @@
 const inlineSurfaces = new WeakMap<Element, Element>();
+
 /** Resolve the temporary inline surface while keeping original React ownership intact. */
 export function inlineSurface(element: Element): Element {
   return inlineSurfaces.get(element) || element;
 }
+
 /** Register geometry ownership only for the lifetime of a focused editor. */
 export function registerInlineSurface(
   original: Element,
@@ -14,6 +16,7 @@ export function registerInlineSurface(
       inlineSurfaces.delete(original);
   };
 }
+
 /** Fragment/display:contents roots use the union of rendered child boxes, never a zero wrapper box. */
 export function elementRect(element: Element): DOMRect | null {
   element = inlineSurface(element);
@@ -78,7 +81,9 @@ export function pageHandlePosition(
 }
 
 let measuredFrame = -1;
+
 let textRects: DOMRect[] = [];
+
 /** All page handles share one text measurement per animation frame, including neighbouring sections. */
 export function boundTextRects(frame: number): DOMRect[] {
   if (measuredFrame === frame) return textRects;

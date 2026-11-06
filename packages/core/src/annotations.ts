@@ -1,4 +1,5 @@
 import type { BlockIdentity } from "./types.js";
+
 /** Attach only on the authorized preview surface; public rendering gets identical unannotated DOM. */
 export function getBlockAttributes(
   identity: BlockIdentity,
@@ -11,6 +12,7 @@ export function getBlockAttributes(
     "data-ve-ancestors": JSON.stringify(identity.ancestors ?? []),
   };
 }
+
 /** A field binding describes provenance, never server write authority. Repeated occurrences share it. */
 export function getFieldAttributes(
   identity: BlockIdentity & {

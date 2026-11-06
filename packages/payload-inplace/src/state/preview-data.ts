@@ -1,4 +1,5 @@
 import { isPrivateEditorField } from "../../../core/src/document-metadata.js";
+
 /** Project native form values for display only. Array rows match by stable ID, never index; changed relationships never retain a stale object.
  * This result is never submitted. Native form values and Payload remain the only write authority.
  */

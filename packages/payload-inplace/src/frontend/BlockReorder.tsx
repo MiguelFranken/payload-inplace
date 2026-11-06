@@ -1,4 +1,5 @@
 "use client";
+
 import { localizedLabel } from "../i18n/labels.js";
 import { findBoundBlock } from "../preview/dom-target.js";
 import type { DocumentReference } from "../../../core/src/document-ref.js";
@@ -44,7 +45,9 @@ import {
   boundTextRects,
 } from "../preview/geometry.js";
 import { Button } from "./ui/button.js";
+
 const key = (s: NativeSection) => JSON.stringify(s.identity);
+
 // Renderer-owned roots may be fragments/display:contents. dnd-kit must measure the
 // same rendered union as the visible page outline, rather than a zero wrapper box.
 function measureCanvas(node: HTMLElement) {
@@ -54,10 +57,12 @@ function measureCanvas(node: HTMLElement) {
   // coordinates are prototype getters, so return enumerable values explicitly.
   return { top, right, bottom, left, width, height };
 }
+
 const canvasMeasurements = {
   draggable: { measure: measureCanvas },
   droppable: { measure: measureCanvas },
 };
+
 /** Resolve native block labels without importing the server translation bridge. */
 export function sectionLabel(
   s: NativeSection | undefined,
@@ -70,10 +75,12 @@ export function sectionLabel(
     s?.block?.slug || fallback,
   );
 }
+
 /** Finds the renderer-owned binding without depending on a framework wrapper or transient array index. */
 export function sectionElement(s: NativeSection, scope?: DocumentReference) {
   return findBoundBlock(document, s.identity, scope);
 }
+
 /** Locate a renderer-owned block, including fragment roots, without selecting fields or mutating the native Form. */
 export function showSectionOnPage(
   section: NativeSection,
@@ -110,6 +117,7 @@ export function showSectionOnPage(
   });
   return true;
 }
+
 /** Both surfaces dispatch exactly one native identity-based move on drop. Drag state never changes document data. */
 export function BlockReorder({
   scope,
@@ -283,6 +291,7 @@ export function BlockReorder({
     </DndContext>
   );
 }
+
 function ReorderItem({
   scope,
   section: s,

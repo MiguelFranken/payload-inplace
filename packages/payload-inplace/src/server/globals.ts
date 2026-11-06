@@ -13,7 +13,9 @@ import { readEditContext } from "./context.js";
 import { readNativeDocument } from "./document.js";
 import { validateDocumentReview } from "./review.js";
 import { prepareVersionRestore } from "./versions.js";
+
 const revisionState = "payloadInplaceGlobalRevision";
+
 /** Decorate only explicit draft-enabled globals, preserving native hooks/fields. There is no new collection or immediate-live autosave path. */
 export function configureGlobals(
   globals: GlobalConfig[],

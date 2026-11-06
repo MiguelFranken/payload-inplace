@@ -1,5 +1,6 @@
 import "server-only";
 import type { ReactNode } from "react";
+
 /** Example server-only block output stays authoritative until a saved revision refreshes this route. */
 export async function getServerPageSlots(
   document: Record<string, any>,

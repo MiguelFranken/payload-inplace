@@ -1,6 +1,7 @@
 import { expect, it } from "vitest";
 import { sectionHeading } from "../../src/schema/section-heading.js";
 import type { NativeSection } from "../../src/schema/tree.js";
+
 const section = (
   fields: any[],
   value: Record<string, any>,

@@ -1,5 +1,6 @@
 import type { CollectionConfig } from "payload";
 import type { SectionPatternAdapter } from "payload-inplace/types";
+
 /** Synthetic test-only storage demonstrates native record ownership, not an alternative document save backend. */
 export const patternCollection: CollectionConfig = {
   slug: "sectionPatterns",
@@ -27,6 +28,7 @@ export const patternCollection: CollectionConfig = {
     },
   ],
 };
+
 export const patternAdapter: SectionPatternAdapter = {
   allowedBlocks: ["text", "editorial", "productGrid"],
   authorize: ({ req }) =>

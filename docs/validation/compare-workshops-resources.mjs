@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const identities = ["anonymous", "staff inactive"];
+
 const routes = ["/", "/about-us", "/workshops/wax-silver-workshop"];
+
 const sorted = (values) => [...values].sort(([a], [b]) => a.localeCompare(b));
 
 /** Compare a complete public browsing session, retaining per-route differences caused by normal Next prefetch scheduling. */
@@ -82,13 +84,18 @@ const sample = () =>
       })),
     ]),
   );
+
 const pass = sample();
+
 for (const mode of ["enabled", "disabled"])
   pass[mode].forEach((r) =>
     r.cases[2].resources.push({ path: "/workshop.js", bytes: 20 }),
   );
+
 pass.enabled[0].cases[0].resources.push({ path: "/workshop.js", bytes: 20 });
+
 comparePublicResources(pass);
+
 for (const mutate of [
   (x) =>
     x.enabled[0].cases[0].resources.push({
@@ -113,12 +120,14 @@ for (const mutate of [
   mutate(input);
   assert.throws(() => comparePublicResources(input));
 }
+
 const input = JSON.parse(
   fs.readFileSync(
     new URL("./2026-11-03-workshops-public-input.json", import.meta.url),
     "utf8",
   ),
 );
+
 console.log(
   JSON.stringify(
     {

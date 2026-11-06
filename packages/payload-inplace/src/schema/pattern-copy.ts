@@ -1,16 +1,21 @@
 import type { ClientBlock, ClientField } from "payload";
+
 const record = (value: unknown): Record<string, unknown> =>
   value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : {};
+
 const child = (permission: unknown, name: string): unknown =>
   permission === true ? true : record(permission)[name];
+
 const children = (permission: unknown): unknown =>
   permission === true ? true : record(permission).fields;
+
 const denied = (permission: unknown) =>
   permission === false ||
   record(permission).read === false ||
   record(permission).update === false;
+
 const reference = (value: unknown): unknown => {
   if (typeof value === "string" || typeof value === "number" || value === null)
     return value;
@@ -21,6 +26,7 @@ const reference = (value: unknown): unknown => {
     return item.id;
   return undefined;
 };
+
 /** Copy declared, readable and writable native content only. Row identity is new; media/relationship references keep their native IDs. Unknown schema branches are discarded, never linked or synchronized. */
 export function copyPatternFields(
   fields: ClientField[],

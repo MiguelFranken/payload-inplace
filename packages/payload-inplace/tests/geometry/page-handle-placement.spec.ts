@@ -1,5 +1,6 @@
 import { expect, it } from "vitest";
 import { pageHandlePosition } from "../../src/preview/geometry.js";
+
 const box = (left: number, top: number, width: number, height: number) => ({
   left,
   top,
@@ -8,6 +9,7 @@ const box = (left: number, top: number, width: number, height: number) => ({
   right: left + width,
   bottom: top + height,
 });
+
 const intersects = (
   a: { left: number; top: number },
   b: ReturnType<typeof box>,

@@ -1,10 +1,12 @@
 import { editable } from "payload-inplace/bindings";
+
 interface Section {
   id: string;
   heading: string;
   details: { caption: string };
   chapters: { id: string; headline: string; body: { root: object } }[];
 }
+
 /** Typechecked public-API recipe: exact terminals, a named group and stable nested rows. */
 export function AnnotatedSection({ section }: { section: Section }) {
   const page = editable(

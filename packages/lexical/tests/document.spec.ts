@@ -10,10 +10,12 @@ import {
 } from "lexical";
 import { mountRichEditor } from "../src/editor.js";
 import { safeLink, type RichDocument } from "../src/document.js";
+
 let dispose: (() => void) | undefined;
 afterEach(() => {
   dispose?.();
 });
+
 const text = (value: string) => ({
   type: "text",
   version: 1,
@@ -23,6 +25,7 @@ const text = (value: string) => ({
   detail: 0,
   mode: "normal",
 });
+
 const paragraph = (children: unknown[]) => ({
   type: "paragraph",
   version: 1,
@@ -31,6 +34,7 @@ const paragraph = (children: unknown[]) => ({
   direction: null,
   children,
 });
+
 const documentValue = () =>
   ({
     root: {

@@ -3,8 +3,11 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { gzipSync, brotliCompressSync } from "node:zlib";
 import ts from "typescript";
+
 const root = path.resolve("packages/payload-inplace/dist");
+
 const base = "payload-inplace/src/";
+
 const entries = {
   registration: `${base}launcher/DeferredLauncher.js`,
   active: `${base}frontend/FrontendShell.js`,
@@ -14,6 +17,7 @@ const entries = {
   media: `${base}frontend/MediaLibraryField.js`,
   richtext: `${base}frontend/InlineRichText.js`,
 };
+
 function closure(entry) {
   const files = new Map(),
     peers = new Set();
@@ -50,8 +54,11 @@ function closure(entry) {
   visit(entry);
   return { files, peers };
 }
+
 const active = closure(entries.active);
+
 const observations = {};
+
 for (const [name, entry] of Object.entries(entries)) {
   if (!["registration", "active"].includes(name) && active.files.has(entry))
     throw Error(`Optional ${name} UI eagerly enters the active static closure`);
@@ -72,7 +79,9 @@ for (const [name, entry] of Object.entries(entries)) {
     excludedImports: [...graph.peers].sort(),
   };
 }
+
 const baselineFile = "docs/validation/performance/feature-budgets.json";
+
 if (process.argv.includes("--record"))
   fs.writeFileSync(
     baselineFile,
@@ -95,15 +104,20 @@ if (process.argv.includes("--record"))
       2,
     ) + "\n",
   );
+
 const limits = JSON.parse(fs.readFileSync(baselineFile, "utf8")).limits;
+
 function assertFeatureBudgets(sizes, ceilings) {
   for (const [name, item] of Object.entries(sizes))
     for (const metric of ["decoded", "gzip"])
       if (!(item[metric] <= ceilings[name]?.[metric]))
         throw Error(`${name} ${metric} exceeds measured feature budget`);
 }
+
 assertFeatureBudgets(observations, limits);
+
 let rejected = false;
+
 try {
   assertFeatureBudgets(
     {
@@ -116,11 +130,14 @@ try {
   rejected = true;
 }
 if (!rejected) throw Error("Feature regression negative control failed");
+
 fs.mkdirSync("test-results", { recursive: true });
+
 fs.writeFileSync(
   "test-results/feature-budgets.json",
   JSON.stringify({ observations, negativeControl: rejected }, null, 2) + "\n",
 );
+
 console.log(
   "Feature budgets and lazy-boundary contracts passed",
   Object.fromEntries(

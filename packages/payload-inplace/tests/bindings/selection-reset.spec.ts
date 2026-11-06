@@ -2,6 +2,7 @@ import { expect, it } from "vitest";
 import { selectionReset } from "../../src/schema/selection-reset.js";
 import { resolveBinding } from "../../src/schema/resolve-binding.js";
 import type { ClientField, FieldState } from "payload";
+
 const fields: ClientField[] = [
   {
     type: "array",
@@ -10,12 +11,14 @@ const fields: ClientField[] = [
     fields: [{ type: "text", name: "heading" }],
   },
 ];
+
 const value = {
   chapters: [
     { id: "a", heading: "First" },
     { id: "b", heading: "Second" },
   ],
 };
+
 const binding = (name: string) =>
   resolveBinding({ fields, value, binding: name, permissions: true });
 it("clears an optional terminal inside an array without deleting its row", () => {

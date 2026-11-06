@@ -1,4 +1,5 @@
 "use client";
+
 import {
   useCallback,
   useEffect,
@@ -12,6 +13,7 @@ import type {
 } from "../../types.js";
 import type { EditorStaticMessageKey } from "../../i18n/catalogue.js";
 import { useEditorLifecycle } from "../lifecycle.js";
+
 /** Single-flight saved presentation reads, independent from the sole native save queue. Coalesces revision floors, ignores late results after unmount and delegates authorization failure without touching field values. */
 export function useSavedPreview({
   initialRevision,

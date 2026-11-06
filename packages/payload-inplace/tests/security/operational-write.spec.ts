@@ -1,5 +1,6 @@
 import { expect, it } from "vitest";
 import { operationalSnapshotMatches } from "../../src/server/operational-write.js";
+
 const live = {
   id: 1,
   _status: "published",
@@ -8,6 +9,7 @@ const live = {
   layout: [{ id: "hero", blockType: "hero", heading: "Published heading" }],
   scheduling: { capacity: 10, venue: "Studio" },
 };
+
 const paths = ["scheduling.capacity"];
 it("permits only the bounded operational change in a complete live snapshot", () => {
   expect(

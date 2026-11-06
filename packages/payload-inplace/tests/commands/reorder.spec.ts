@@ -1,7 +1,9 @@
 import { expect, it, vi } from "vitest";
 import { applyCommand } from "../../src/adapters/payload-form.js";
 import { StructuralHistory } from "../../src/state/history.js";
+
 const identity = (blockId: string) => ({ root: "layout", blockId });
+
 function fixture() {
   const data = [
     { id: "hero", blockType: "hero" },

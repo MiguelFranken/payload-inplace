@@ -20,7 +20,9 @@ it("follows translation-only host motion and stops measuring when selection clos
     "ResizeObserver",
     class {
       observe() {}
+
       unobserve() {}
+
       disconnect() {}
     },
   );

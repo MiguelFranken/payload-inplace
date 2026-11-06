@@ -4,20 +4,28 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { randomBytes } from "node:crypto";
+
 const temporaryMedia = !process.env.VE_MEDIA_DIR;
+
 const mediaDirectory = temporaryMedia
   ? fs.mkdtempSync(path.join(os.tmpdir(), "payload-ve-media-"))
   : path.resolve(process.env.VE_MEDIA_DIR);
+
 fs.mkdirSync(mediaDirectory, { recursive: true });
+
 const port = process.env.VE_PORT || "3127";
+
 const postgres = process.env.VE_DATABASE === "postgres";
+
 if (postgres && !process.env.DATABASE_URL?.includes("/visual_editor"))
   throw Error("Provide an isolated visual_editor Postgres database");
+
 const database = postgres
   ? null
   : await MongoMemoryReplSet.create({
       replSet: { count: 1, dbName: `visual_editor_${process.pid}` },
     });
+
 const env = {
   ...process.env,
   DATABASE_URL: database?.getUri() || process.env.DATABASE_URL,
@@ -26,14 +34,18 @@ const env = {
   VE_MEDIA_DIR: mediaDirectory,
   NEXT_TELEMETRY_DISABLED: "1",
 };
+
 if (process.env.VE_RUN_STATE && process.env.VE_RUN_ID)
   fs.writeFileSync(
     process.env.VE_RUN_STATE,
     JSON.stringify({ runID: process.env.VE_RUN_ID, pid: process.pid }),
     { mode: 0o600 },
   );
+
 let child;
+
 let stopping = false;
+
 async function stop(signal = "SIGTERM") {
   if (stopping) return;
   stopping = true;
@@ -50,10 +62,12 @@ async function stop(signal = "SIGTERM") {
   if (process.env.VE_RUN_STATE)
     fs.rmSync(process.env.VE_RUN_STATE, { force: true });
 }
+
 for (const signal of ["SIGINT", "SIGTERM"])
   process.on(signal, () => {
     void stop(signal).then(() => process.exit(0));
   });
+
 async function run(
   args,
   executable = "node_modules/next/dist/bin/next",
@@ -70,6 +84,7 @@ async function run(
     );
   });
 }
+
 try {
   const styles = spawn("corepack", ["pnpm", "build:demo:css"], {
     env,

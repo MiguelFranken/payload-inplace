@@ -10,7 +10,9 @@ import { indexBlocks, resolveIdentity } from "../state/identity.js";
 import { structureTransitionIssue } from "../state/policy.js";
 import type { StructuralPolicy } from "../state/policy.js";
 import type { StructuralHistory } from "../state/history.js";
+
 type NativeForm = ReturnType<typeof useForm>;
+
 export type BlockCommand =
   | {
       type: "add";
@@ -23,6 +25,7 @@ export type BlockCommand =
   | { type: "add-array"; at?: "start" | "end" }
   | { type: "move"; identity: BlockIdentity; over: BlockIdentity }
   | { type: "up" | "down" | "remove" | "duplicate"; identity: BlockIdentity };
+
 /** Single structural command service for tree, canvas and keyboard; current identity is resolved at execution. */
 export function applyCommand(
   form: NativeForm,
@@ -149,6 +152,7 @@ export function applyCommand(
     });
   form.setModified(true);
 }
+
 /** Restore only the recorded structural operation; live row content, nested edits and current revision/metadata remain current. */
 export function restoreRoot(
   form: NativeForm,
@@ -169,6 +173,7 @@ export function restoreRoot(
   form.dispatchFields({ type: "UPDATE_MANY", formState: result.fields });
   form.setModified(true);
 }
+
 /** Typing/Lexical and modal owners keep their native undo shortcuts. */
 export function ownsTypingOrModal(target: EventTarget | null): boolean {
   return (

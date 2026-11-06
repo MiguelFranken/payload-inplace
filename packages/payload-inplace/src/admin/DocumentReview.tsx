@@ -1,4 +1,5 @@
 "use client";
+
 import { useEditorMessages } from "../frontend/messages.js";
 
 import type { ClientBlock, ClientField } from "payload";

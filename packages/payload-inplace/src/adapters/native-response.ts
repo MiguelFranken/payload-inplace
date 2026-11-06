@@ -1,6 +1,8 @@
 import type { EditorDocument } from "../types.js";
+
 const record = (value: unknown): value is Record<string, unknown> =>
   Boolean(value && typeof value === "object" && !Array.isArray(value));
+
 /** Native v3 collections acknowledge `doc`, globals `result`. Validate metadata/provenance before asking native Form to reconcile anything; an unexpected envelope must never replace fields with an empty response wrapper. No values are copied or persisted here. */
 export function nativeSavedDocument(
   response: unknown,

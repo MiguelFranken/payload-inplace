@@ -1,6 +1,7 @@
 import { expect, it, vi } from "vitest";
 import type { PayloadRequest } from "payload";
 import type { VisualEditorOptions } from "../../src/types.js";
+
 const hooks = vi.hoisted(() => ({
   authorize: vi.fn(),
   init: vi.fn(async () => true),
@@ -16,6 +17,7 @@ vi.mock("payload", async (original) => ({
 vi.mock("../../src/server/context.js", () => ({
   readEditContext: hooks.authorize,
 }));
+
 import {
   advisoryLockEndpoint,
   manageAdvisoryLock,

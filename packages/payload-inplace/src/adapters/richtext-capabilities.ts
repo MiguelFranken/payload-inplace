@@ -1,7 +1,9 @@
 import type { Field, SanitizedConfig } from "payload";
 import { getFieldPaths } from "payload/shared";
+
 /** Only a native v3 Lexical adapter without a consumer Field override may opt into inline editing. */
 export type RichTextCapabilities = Readonly<Record<string, readonly string[]>>;
+
 export function richTextCapabilities(
   fields: Field[],
   parentSchemaPath: string,

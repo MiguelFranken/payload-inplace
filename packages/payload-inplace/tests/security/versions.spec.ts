@@ -14,12 +14,14 @@ vi.mock("../../src/server/context.js", () => ({
 vi.mock("../../src/server/tools.js", () => ({
   resolveTools: async () => ({ tools: ["history"] }),
 }));
+
 const options = {
   collections: { pages: { roots: ["layout"] } },
   canEdit: () => true,
   previewOrigin: "https://app.test",
   concurrency: { name: "test-only", lock: async () => {} },
 } satisfies VisualEditorOptions;
+
 const historical = {
   id: "p",
   updatedAt: "old",
@@ -30,6 +32,7 @@ const historical = {
   title: "Original",
   layout: [{ id: "row", blockType: "text", heading: "Then" }],
 };
+
 const request = (parent = "p") =>
   ({
     headers: new Headers({ origin: "https://app.test" }),

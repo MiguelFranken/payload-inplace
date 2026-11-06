@@ -1,13 +1,16 @@
 "use client";
+
 import { lazy, Suspense, useState, useId, type ComponentProps } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "./ui/button.js";
 import type { SectionCatalogue } from "./SectionCatalogue.js";
+
 const Catalogue = lazy(() =>
   import("./SectionCatalogue.js").then((module) => ({
     default: module.SectionCatalogue,
   })),
 );
+
 /** Optional catalogue/search UI is fetched only after an explicit opening action. */
 export function CatalogueLauncher(
   props: ComponentProps<typeof SectionCatalogue>,

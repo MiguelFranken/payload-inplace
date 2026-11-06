@@ -39,6 +39,7 @@ import {
   type RichNode,
   type RichDocument,
 } from "./document.js";
+
 export type RichFormat =
   | TextFormatType
   | "paragraph"
@@ -48,6 +49,7 @@ export type RichFormat =
   | "bullet"
   | "number"
   | "unlink";
+
 /** Mount a lazily loaded, non-React Lexical surface. Native Form owns the value and persistence.
  * No server acknowledgement is applied to a focused editor; dispose before changing field ownership.
  */
@@ -262,6 +264,7 @@ export function mountRichEditor({
     },
   };
 }
+
 /** Formatting updates the existing Lexical transaction and its local text history. */
 export function formatRichText(editor: LexicalEditor, format: RichFormat) {
   if (!editor.isEditable()) return;

@@ -8,6 +8,7 @@ import { authorizedEditor } from "../../../lib/authorized-editor";
 import { importMap } from "../../(payload)/admin/importMap.js";
 import { StoryView } from "../../../components/StoryView";
 import { LiveStory } from "../../../components/LiveStory";
+
 /** Renderers own their populated relationships; the plugin's native document
  * protocol intentionally retains raw IDs. Every read keeps the authorized user
  * and native access rather than silently bypassing permissions for a preview.
@@ -24,6 +25,7 @@ async function previewDocument(identifier: string | undefined) {
   });
   return { ...result, document };
 }
+
 export default async function Page({
   searchParams,
 }: {

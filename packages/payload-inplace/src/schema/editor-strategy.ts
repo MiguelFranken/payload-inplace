@@ -1,4 +1,5 @@
 import type { ClientField, FieldState } from "payload";
+
 /** Strategy resolution never authorizes a write. Native access, conditions and Form validation remain authoritative. */
 export type EditorStrategy = {
   kind: "text" | "richText" | "pending" | "native" | "unavailable";
@@ -10,6 +11,7 @@ export type EditorStrategy = {
     | "panel"
     | "unsupported";
 };
+
 export function resolveEditorStrategy({
   field,
   state,

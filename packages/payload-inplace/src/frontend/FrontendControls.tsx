@@ -1,4 +1,5 @@
 "use client";
+
 import {
   documentReference,
   targetDocumentKey,
@@ -107,21 +108,25 @@ import {
 } from "./BlockReorder.js";
 import type { NativeSection } from "../schema/tree.js";
 import { prepareAdvisoryExit, useAdvisoryLock } from "./advisory-lock.js";
+
 const ConflictReview = lazy(() =>
   import("./ConflictReview.js").then((module) => ({
     default: module.ConflictReview,
   })),
 );
+
 const VersionBrowser = lazy(() =>
   import("./VersionBrowser.js").then((module) => ({
     default: module.VersionBrowser,
   })),
 );
+
 const InlineRichText = lazy(() =>
   import("./InlineRichText.js").then((module) => ({
     default: module.InlineRichText,
   })),
 );
+
 /** Floating authoring controls share one native Form. Selecting a field changes its sole mounted owner instead of duplicating inputs. */
 export function FrontendControls({
   diagnostics = false,

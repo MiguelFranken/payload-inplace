@@ -1,4 +1,5 @@
 "use client";
+
 import {
   createContext,
   use,
@@ -28,6 +29,7 @@ export interface ResolvedEditorExtension {
     destructive?: boolean;
   };
 }
+
 interface VisualEditorContext {
   target: Activation["target"];
   tools: EditorTool[];
@@ -43,7 +45,9 @@ interface VisualEditorContext {
     subject?: string,
   ) => Promise<{ message: string; refresh?: boolean }>;
 }
+
 const Context = createContext<VisualEditorContext>(null!);
+
 /** Consumer controls share the current authorized target and native form; server actions recheck their own capability. */
 export function useVisualEditor() {
   const value = use(Context);
@@ -51,6 +55,7 @@ export function useVisualEditor() {
     throw new Error("useVisualEditor requires activated website editing");
   return value;
 }
+
 /** Stores disclosure/selection state only, never another document model or save queue. */
 export function EditorToolsProvider({
   context,

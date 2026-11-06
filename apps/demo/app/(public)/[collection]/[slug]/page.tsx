@@ -6,6 +6,7 @@ import config, { editorOptions } from "@payload-config";
 import { notFound } from "next/navigation";
 import { demoRoot } from "../../../../commerce/paths";
 import { RenderPage } from "../../../../components/RenderPage";
+
 export default async function Page({
   params,
 }: {

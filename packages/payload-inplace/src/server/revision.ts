@@ -6,8 +6,11 @@ import type {
 } from "payload";
 import { operationalSnapshotMatches } from "./operational-write.js";
 import type { ConcurrencyAdapter, OperationalWritePolicy } from "../types.js";
+
 export const REVISION = "_veRevision";
+
 const contextKey = "payloadVisualEditorRevision";
+
 /** Reject stale standard-CMS and visual saves at the write authority, before their latest-document read.
  * Expected revision travels in the native form. Restore uses the same native endpoint with a reviewed header.
  */
@@ -133,6 +136,7 @@ export function revisionGuard(
     return args;
   };
 }
+
 /** Revision is written by the server after host validation; restored historical values cannot roll it back. */
 export const assignRevision: CollectionBeforeChangeHook = ({
   data,

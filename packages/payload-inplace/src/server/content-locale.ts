@@ -1,4 +1,5 @@
 import type { PayloadRequest } from "payload";
+
 /** Editing always addresses one native content locale. `all` is a read projection, never an authoring scope. UI message locale is deliberately unrelated. */
 export function contentLocale(
   req: Pick<PayloadRequest, "locale">,

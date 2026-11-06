@@ -8,6 +8,7 @@ import {
   ContextualFieldEditor,
 } from "../../src/frontend/field-strategies.js";
 import type { ClientField, FieldState } from "payload";
+
 const bridge = vi.hoisted(() => ({
   setValue: vi.fn(),
   condition: true,
@@ -21,6 +22,7 @@ vi.mock("@payloadcms/ui", () => ({
   }),
   useForm: () => ({ getField: () => ({ passesCondition: bridge.condition }) }),
 }));
+
 const definition = defineFieldStrategy({
   id: "number-buttons",
   types: ["number"],
@@ -31,11 +33,13 @@ const definition = defineFieldStrategy({
     </>
   ),
 });
+
 const context = {
   field: { name: "price", type: "number" } as ClientField,
   path: "layout.0.price",
   schemaPath: "pages.layout.product.price",
 };
+
 function Match({
   state,
   permitted = true,

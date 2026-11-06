@@ -1,14 +1,17 @@
 import { expect, it } from "vitest";
 import type { ClientField } from "payload";
 import { diagnoseBinding } from "../../src/schema/binding-diagnostics.js";
+
 const fields = [
   { name: "heading", type: "text" },
   { name: "items", type: "array", fields: [{ name: "label", type: "text" }] },
 ] as ClientField[];
+
 const value = {
   heading: "Private value must never appear",
   items: [{ id: "row", label: "One" }],
 };
+
 const check = (binding: string, options = {}) =>
   diagnoseBinding({ fields, value, binding, permissions: true, ...options });
 it("explains missing/unsafe paths, row/container intent and native ownership without exposing values", () => {

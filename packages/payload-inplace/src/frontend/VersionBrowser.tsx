@@ -1,4 +1,5 @@
 "use client";
+
 import type { EditorStaticMessageKey } from "../i18n/catalogue.js";
 import { EditorMessageError, editorErrorKey } from "../i18n/failure.js";
 import { useEditorMessages } from "./messages.js";
@@ -31,6 +32,7 @@ import {
 } from "../state/document-target.js";
 import { nativeDraftAction } from "../adapters/native-request.js";
 import { chrome } from "../admin/chrome.js";
+
 interface SavedVersion {
   id: string;
   updatedAt?: string;
@@ -38,6 +40,7 @@ interface SavedVersion {
   status?: string;
   revision?: number;
 }
+
 interface Result {
   versions: SavedVersion[];
   page: number;
@@ -46,6 +49,7 @@ interface Result {
   restorable: boolean;
   version?: Record<string, unknown> | null;
 }
+
 /** Read-only paginated history. Restore is a server-resolved intent submitted by the existing native Form queue. */
 export function VersionBrowser({
   onRestored,

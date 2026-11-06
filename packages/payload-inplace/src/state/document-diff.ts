@@ -32,6 +32,7 @@ function equal(a: unknown, b: unknown): boolean {
     keys.every((key) => equal((a as any)[key], (b as any)[key]))
   );
 }
+
 function title(value: unknown, fallback: string, locale: string): string {
   const label = localizedLabel(value, locale, "");
   if (label) return label;
@@ -40,9 +41,11 @@ function title(value: unknown, fallback: string, locale: string): string {
     .replace(/[_-]/g, " ")
     .replace(/^./, (char) => char.toUpperCase());
 }
+
 function isRecord(value: unknown): value is Record<string, any> {
   return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }
+
 function rowIDs(rows: unknown[]): string[] | undefined {
   if (!rows.every((row) => isRecord(row) && row.id != null)) return;
   const ids = rows.map((row) => String((row as any).id));

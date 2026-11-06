@@ -3,6 +3,7 @@ import {
   createEditorEventChannel,
   type EditorLifecycleEvent,
 } from "../src/events.js";
+
 it("emits one ordered correlated completion, preserves scope and isolates observer failures", async () => {
   let clock = 10;
   const events: EditorLifecycleEvent[] = [];

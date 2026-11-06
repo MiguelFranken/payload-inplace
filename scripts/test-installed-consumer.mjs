@@ -5,6 +5,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { execFileSync, spawn, spawnSync } from "node:child_process";
 import vm from "node:vm";
 import { createServer } from "node:net";
+
 // Ask the OS for an unused loopback port; never compete with an interactive demo.
 const port = await new Promise((resolve, reject) => {
   const probe = createServer();
@@ -14,23 +15,35 @@ const port = await new Promise((resolve, reject) => {
     probe.close((error) => (error ? reject(error) : resolve(address.port)));
   });
 });
+
 const origin = `http://127.0.0.1:${port}`;
+
 const repo = process.cwd();
+
 const receipt = JSON.parse(
   fs.readFileSync("test-results/package.json", "utf8"),
 );
+
 if (!receipt.sourceSHA || receipt.sourceDirty)
   throw Error("Commit the package source before installed-artifact acceptance");
+
 const archive = path.resolve(receipt.archive);
+
 const hash = (data) => createHash("sha256").update(data).digest("hex");
+
 if (hash(fs.readFileSync(archive)) !== receipt.sha256)
   throw Error("Packed candidate changed after its integrity check");
+
 const directory = fs.mkdtempSync(
   path.join(os.tmpdir(), "pve-installed-consumer-"),
 );
+
 const container = `pve-consumer-${process.pid}`;
+
 let server, childInFlight;
+
 let interrupted = false;
+
 for (const signal of ["SIGINT", "SIGTERM"])
   process.on(signal, () => {
     interrupted = true;
@@ -43,16 +56,20 @@ for (const signal of ["SIGINT", "SIGTERM"])
         }
       }
   });
+
 const password = randomBytes(16).toString("hex");
+
 const env = Object.fromEntries(
   ["PATH", "HOME", "TMPDIR", "CI", "PLAYWRIGHT_BROWSERS_PATH"].flatMap((key) =>
     process.env[key] ? [[key, process.env[key]]] : [],
   ),
 );
+
 fs.writeFileSync(
   path.join(directory, ".npmrc"),
   "registry=https://registry.npmjs.org\n",
 );
+
 Object.assign(env, {
   PORT: String(port),
   CONSUMER_ORIGIN: origin,
@@ -62,6 +79,7 @@ Object.assign(env, {
   PAYLOAD_SECRET: randomBytes(32).toString("hex"),
   CONSUMER_MEDIA: path.join(directory, "media"),
 });
+
 async function run(args, extra = {}) {
   if (interrupted) throw Error("Installed consumer interrupted");
   const child = spawn("corepack", ["pnpm", ...args], {
@@ -90,6 +108,7 @@ async function run(args, extra = {}) {
     throw Error(`Clean consumer command failed: pnpm ${args.join(" ")}`);
   }
 }
+
 async function stopServer() {
   if (!server || server.exitCode !== null) return;
   const closed = new Promise((resolve) => server.once("exit", resolve));
@@ -105,6 +124,7 @@ async function stopServer() {
   }
   server = undefined;
 }
+
 function graph() {
   const sandbox = {};
   vm.runInNewContext(
@@ -147,6 +167,7 @@ function graph() {
     editorClientModules: 0,
   };
 }
+
 function reports() {
   const report = JSON.parse(
     fs.readFileSync(path.join(directory, "test-results/browser.json"), "utf8"),
@@ -181,6 +202,7 @@ function reports() {
     throw Error("Missing installed consumer cases or public resource evidence");
   return { cases, resources };
 }
+
 async function check(disabled) {
   env.CONSUMER_DISABLED = disabled ? "1" : "0";
   await run(["build"]);
@@ -223,6 +245,7 @@ async function check(disabled) {
   await stopServer();
   return result;
 }
+
 try {
   fs.cpSync("fixtures/installed-consumer", directory, { recursive: true });
   fs.copyFileSync(archive, path.join(directory, "candidate.tgz"));
