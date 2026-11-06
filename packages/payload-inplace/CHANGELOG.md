@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.10
+
+### Patch Changes
+
+- eccb33d: Clarify consumer setup and optional integrations, refresh the screenshot tour, and document current compatibility and release boundaries.
+
 ## 0.0.9
 
 ### Patch Changes
