@@ -33,7 +33,13 @@ Styling remains demo-prefixed Tailwind without Preflight, using existing palette
 - `corepack pnpm typecheck`, `corepack pnpm lint`, `corepack pnpm docs:check` and `git diff --check` passed as the final static gates (typecheck: 6 tasks; API: 16 entrypoints; links: 442 references across 63 Markdown files). Existing hook-dependency warnings remain visible; lint has no errors. The docs checker validates local files/fragments and own-repository GitHub/raw URLs; it does not claim to validate every third-party external URL.
 - Codex browser initially displayed the revised demo but its activation transport stalled/disconnected repeatedly. Final captures and state validation use the repository's isolated production Playwright workflow. Broken-connection/loading screenshots were discarded.
 
-Not verified in this task: Firefox/WebKit, hardware touch/screen reader, RTL/translated layouts, 200% zoom, arbitrary consumer RTE renderers, deployed CDN behavior, a new npm archive, or Workshops routes. Full product and installed-consumer acceptance were not rerun for documentation/demo-only changes; existing release results remain separately linked in [validation](../validation.md). Keyboard evidence here is native control focus and Escape cancellation, not a comprehensive tab-order audit.
+Not verified in this task: Firefox/WebKit, hardware touch/screen reader, RTL/translated layouts, 200% zoom, arbitrary consumer RTE renderers, deployed CDN behavior, a new npm archive, or Workshops routes. The source CI also runs the full plugin acceptance; no full Workshops suite was run. Existing release results remain separately linked in [validation](../validation.md). Keyboard evidence here is native control focus and Escape cancellation, not a comprehensive tab-order audit.
+
+## CI follow-up
+
+The first pushed CI run (42256243029) passed 75 of 77 production browser cases and exposed two layout assumptions in the remaining fixtures. The RTE geometry assertion compared the inner editable rather than the outer bound presentation wrapper; grid-item paragraph margins now make those boxes intentionally different. It now checks the visible bound wrapper with the same less-than-2px tolerance. The insertion test hovered a tall section with its gap clipped at y=0, where the control is intentionally hidden; it now brings that gap to y=96 before checking its resting border. Its subsequent Sections click is scoped to the editing navigation, avoiding a duplicate label in the closing picker.
+
+The two focused cases passed against disposable production PostgreSQL with the strict border/geometry assertions intact. No library runtime code or save/permission behavior was changed for these fixture corrections.
 
 ## Existing Markdown audit
 

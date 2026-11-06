@@ -610,7 +610,12 @@ test("selection geometry grows and shrinks with wrapping text and the live rich-
   await page.keyboard.insertText(
     "A new paragraph changes the actual rich-text surface height while the original React subtree remains mounted.",
   );
-  await compare(rich);
+  // The bound presentation wrapper owns the outline. Its nested editable can
+  // exclude paragraph margins or occupy a narrower grid column.
+  const liveBody = page
+    .locator('#studio-story [data-ve-field="body"]')
+    .filter({ visible: true });
+  await compare(liveBody);
   await page.screenshot({
     path: "test-results/responsive-selection-geometry.png",
   });
@@ -1133,6 +1138,11 @@ test("canvas insertion keeps its resting border and row actions form a compact n
   const section = page.locator("main section[data-ve-block]").nth(1);
   await section.scrollIntoViewIfNeeded();
   await section.hover({ position: { x: 10, y: 4 } });
+  // A tall section can align its top at y=0. Bring the actual gap into view;
+  // insertion controls intentionally remain hidden at clipped viewport edges.
+  await section.evaluate((element) => {
+    window.scrollBy(0, element.getBoundingClientRect().top - 96);
+  });
   const add = page
     .locator("[data-ve-insert-boundary]")
     .getByRole("combobox", { name: "Add section", exact: true });
@@ -1165,7 +1175,10 @@ test("canvas insertion keeps its resting border and row actions form a compact n
   await page
     .getByRole("combobox", { name: "Search sections", exact: true })
     .press("Escape");
-  await page.getByRole("button", { name: "Sections", exact: true }).click();
+  await page
+    .getByRole("navigation", { name: "Editing toolbar" })
+    .getByRole("button", { name: "Sections", exact: true })
+    .click();
   const panel = page.getByRole("complementary", {
     name: "Sections",
     exact: true,
