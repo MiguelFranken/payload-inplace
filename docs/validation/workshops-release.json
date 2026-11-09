@@ -1,108 +1,27 @@
 {
   "packageName": "payload-inplace",
-  "packageVersion": "0.0.9",
-  "packageSourceSHA": "ea24e121f8c93d7e13049435ff73d19fdac5688f",
-  "packageSHA256": "efbb7144538eb4772496944b7332980f7f2becdfb5c65f10940b111fb4eaed53",
-  "packageValidationRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/42084863609",
+  "packageVersion": "0.0.10",
+  "packageSourceSHA": "c24e604693bb7f4316422072bc7725871704bafa",
+  "packageSHA256": "fbd5c5dae596df10fe48da6e43e5bd0ad2c491c92c8f664bcdb8416ffccda0d9",
+  "packageValidationRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/42633940518",
   "appSHA": "f8b1c7d8463b5f84bd787f5b25504f41425fe12f",
   "appPullRequest": "https://github.com/MiguelFranken/fluid-bodies/pull/397",
   "result": "passed",
-  "previousReceipt": "2026-11-05-public-0.0.8-release.json",
-  "changes": [
-    "configure schema-typed, relationship-free block catalogue examples in Workshops",
-    "hold the insertion picker anchor during transient previews and constrain it after viewport changes",
-    "keep the selected inline field in native settings, preserve its value and focus its native owner",
-    "retain focus across lazy Lexical replacement until deliberate pointer or keyboard navigation",
-    "clarify plain-text fallback ownership in accordion answers without converting or migrating stored content"
-  ],
-  "plugin": {
-    "unitPassed": 255,
-    "unitFiles": 82,
-    "focusedNativeBrowserPassed": 3,
-    "typecheck": "passed",
-    "lint": "passed",
-    "infrastructureRetry": "Attempt 1 was cancelled during stalled Ubuntu font downloads; attempt 2 uses the same committed source.",
-    "productionBrowserPassed": 77,
-    "postgresNativePassed": 13,
-    "mongoNativePassed": 5,
-    "mongoNativeSkipped": 8,
-    "mongoReviewBrowserPassed": 1,
-    "independentInstalledPassed": 5,
-    "independentDisabledPassed": 3,
-    "independentDisabledSkipped": 2
+  "previousReceipt": "2026-11-05-public-0.0.9-release.json",
+  "workshopsUnits": {
+    "passed": 3,
+    "files": 2
   },
-  "publication": {
-    "version": "0.0.9",
-    "distTag": "latest",
-    "sha256": "efbb7144538eb4772496944b7332980f7f2becdfb5c65f10940b111fb4eaed53",
-    "integrity": "sha512-vCYRoWqfKiUfdlUo9SwgkcUgWKX0f8KEuchi3jtZuzAd2sQdvN2gbT2EKdZ37IqBpWBDkpJje2UZP91v2Z901A==",
-    "provenance": "https://registry.npmjs.org/-/npm/v1/attestations/payload-inplace@0.0.9",
-    "provenanceSubjectMatchesArchive": true,
-    "workflowRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/42089746843",
-    "status": "publicly available",
-    "method": "GitHub Actions trusted publisher OIDC",
-    "publicationCommit": "2836205b44550ec3d37b6d74e12853b13252a6d9",
-    "githubRelease": "https://github.com/MiguelFranken/payload-inplace/releases/tag/v0.0.9",
-    "latest": "0.0.9"
-  },
-  "deployment": {
-    "status": "READY",
-    "target": "Workshops feature preview only",
-    "appMainAndProduction": "unchanged",
-    "id": "dpl_DfABuiqubtvCMmgyKfsFPRz1z3s6",
-    "appSHA": "f8b1c7d8463b5f84bd787f5b25504f41425fe12f",
-    "url": "https://feature-payload-visual-editor.workshops.dev.fluid-bodies.com/",
-    "generatedUrl": "https://fluid-bodies-workshops-51z2pgqjl-fluid-bodies.vercel.app/",
-    "appCI": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/42090471469",
-    "previewSubmission": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/42090471123",
-    "packagePin": "0.0.9",
-    "frozenInstall": "passed",
-    "typecheck": "passed",
-    "installedArchiveFilesByteIdentical": 229,
-    "focusedAcceptance": {
-      "runId": "payload-inplace-v009-deployed-1793905958612",
-      "appSHA": "f8b1c7d8463b5f84bd787f5b25504f41425fe12f",
-      "dirty": false,
-      "mode": "deployed-preview",
-      "totals": {
-        "failed": 0,
-        "passed": 2,
-        "skipped": 0,
-        "total": 2
-      },
-      "tests": [
-        {
-          "title": "chromium > visual-editor-fields.spec.ts > catalogue hover previews a text section without changing the native draft",
-          "status": "passed",
-          "durationMs": 29220,
-          "captures": 2,
-          "video": true
-        },
-        {
-          "title": "chromium > visual-editor-fields.spec.ts > accordion settings retain and focus the selected plain or rich answer",
-          "status": "passed",
-          "durationMs": 15616,
-          "captures": 2,
-          "video": true
-        }
-      ],
-      "scope": "Two selected cases, one worker; no full Workshops e2e suite. Deployed artifacts retained locally, not uploaded to Reporter.",
-      "visualReview": {
-        "originalScreenshotsInspected": 4,
-        "originalVideosSampled": 2,
-        "limitations": "Videos sampled, not watched frame by frame. Physical-device touch, screen-reader speech and RTL not covered."
-      }
-    }
+  "productionBuild": {
+    "result": "passed",
+    "archiveSHA256": "fbd5c5dae596df10fe48da6e43e5bd0ad2c491c92c8f664bcdb8416ffccda0d9",
+    "installedArchiveFilesByteIdentical": 438
   },
   "localAcceptance": {
-    "runId": "20261105T185745Z-86216",
-    "appSHA": "aa07e41d6dea8ed437787f54bb20a43c5eda1c01",
-    "dirty": true,
-    "dirtyFiles": [
-      "apps/workshops/package.json",
-      "pnpm-lock.yaml"
-    ],
-    "mode": "dev",
+    "runId": "20261109T143824Z-42217",
+    "mode": "prod",
+    "fixtureScope": "editor",
+    "workers": 1,
     "totals": {
       "failed": 0,
       "passed": 2,
@@ -112,57 +31,14 @@
     "tests": [
       {
         "title": "chromium > visual-editor-fields.spec.ts > catalogue hover previews a text section without changing the native draft",
-        "status": "passed",
-        "durationMs": 75971,
-        "captures": 2,
-        "video": true
+        "status": "passed"
       },
       {
         "title": "chromium > visual-editor-fields.spec.ts > accordion settings retain and focus the selected plain or rich answer",
-        "status": "passed",
-        "durationMs": 22760,
-        "captures": 2,
-        "video": true
+        "status": "passed"
       }
     ],
-    "scope": "Only two selected editor cases, one worker, disposable isolated database. No full Workshops e2e suite. Temporary exact-archive dependency override is the only tracked diff.",
-    "reporter": "https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/568",
-    "visualReview": {
-      "originalScreenshotsInspected": 4,
-      "originalVideosSampled": 2,
-      "limitations": "Local development rendering indicators and cold login waiting remain visible."
-    },
-    "uploads": {
-      "total": 14,
-      "uploaded": 14,
-      "pending": 0,
-      "failed": 0,
-      "reviewCaptures": 4,
-      "reviewCapturesMissing": 0
-    }
-  },
-  "workshopsUnits": {
-    "passed": 3,
-    "files": 2,
-    "scope": "authored binding and media projection contract cases"
-  },
-  "productionBuild": {
-    "result": "passed",
-    "mode": "editor enabled, Turbopack, isolated output, dedicated developer database",
-    "archiveSHA256": "312b9b2abf0dac86e25f555e8d2c2536b88558caa7a15efeb9360db286464bd9",
-    "sourceSHA": "ea24e121f8c93d7e13049435ff73d19fdac5688f",
-    "installedArchiveFilesByteIdentical": 229,
-    "canonicalComparison": {
-      "files": 229,
-      "byteIdenticalRuntimeAndAssets": 228,
-      "packageMetadataEqual": true,
-      "difference": "Only ordering of two devDependency keys in package.json",
-      "canonicalSHA256": "efbb7144538eb4772496944b7332980f7f2becdfb5c65f10940b111fb4eaed53"
-    }
-  },
-  "cleanup": {
-    "disposableLocalTestDatabase": "deleted",
-    "humanDevelopmentDatabaseAndServer": "preserved",
-    "cancelledSizingTask": "no typography changes"
+    "reporter": "https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/570",
+    "sourceOverlay": "Local dependency and lockfile override with the exact CI archive. Next generated isolated output paths in tsconfig.json."
   }
 }
