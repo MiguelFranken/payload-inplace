@@ -8,7 +8,6 @@ import type { ContextualFieldProps } from "./field-strategies";
 import type { MediaAsset, MediaLibraryAdapter } from "./media-library";
 import { mediaCollections, mediaReference } from "../schema/media-reference";
 
-/** Cancel outstanding media work when field ownership ends. */
 export function MediaLibraryField({
   library,
   field,

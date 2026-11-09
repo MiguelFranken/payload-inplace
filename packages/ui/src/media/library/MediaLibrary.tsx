@@ -14,7 +14,6 @@ export interface MediaOption {
   mimeType?: string;
 }
 
-/** Displays a controlled media search and emits user actions. */
 export function MediaLibrary({
   busy,
   disabled,
