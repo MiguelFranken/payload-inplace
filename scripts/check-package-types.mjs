@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { resolve } from "node:path";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 
@@ -23,7 +24,7 @@ execFileSync(
     "payload-inplace",
     "exec",
     "attw",
-    receipt.archive,
+    resolve(receipt.archive),
     "--profile",
     "esm-only",
     "--exclude-entrypoints",
