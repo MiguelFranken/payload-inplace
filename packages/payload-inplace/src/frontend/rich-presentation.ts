@@ -2,7 +2,7 @@ import {
   $getNearestNodeFromDOMNode,
   type LexicalEditor,
   type EditorThemeClasses,
-} from "lexical";
+} from "@payloadcms/richtext-lexical/lexical";
 
 /** Keep renderer-owned wrapper classes in normal flow. Mount Lexical at the
  * innermost single-child presentation wrapper instead of discarding typography,

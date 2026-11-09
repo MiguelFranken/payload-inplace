@@ -4,6 +4,7 @@ import path from "node:path";
 import { createHash, randomBytes } from "node:crypto";
 import { execFileSync, spawn, spawnSync } from "node:child_process";
 import vm from "node:vm";
+import { createRequire } from "node:module";
 import { createServer } from "node:net";
 
 // Ask the OS for an unused loopback port; never compete with an interactive demo.
@@ -309,6 +310,30 @@ try {
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
   await run(["install", "--no-frozen-lockfile"]);
+  const consumerRequire = createRequire(path.join(directory, "package.json"));
+  const pluginRequire = createRequire(
+    consumerRequire.resolve("payload-inplace"),
+  );
+  const richText = consumerRequire.resolve(
+    "@payloadcms/richtext-lexical/lexical",
+  );
+  if (
+    pluginRequire.resolve("@payloadcms/richtext-lexical/lexical") !== richText
+  )
+    throw Error(
+      "Inplace and its host resolved different Payload rich-text packages",
+    );
+  const historyRequire = createRequire(
+    pluginRequire.resolve("@lexical/history"),
+  );
+  if (
+    historyRequire.resolve("lexical") !==
+    createRequire(richText).resolve("lexical")
+  )
+    throw Error(
+      "Inplace history and Payload resolved different Lexical runtimes",
+    );
+
   await run(["exec", "tsx", "seed.ts"], { CONSUMER_SEED: "1" });
   await run(["exec", "payload", "generate:importmap"]);
   const importMap = fs.readFileSync(
@@ -321,6 +346,7 @@ try {
     [
       "payload",
       "@payloadcms/ui",
+      "@payloadcms/richtext-lexical",
       "@payloadcms/db-postgres",
       "next",
       "react",

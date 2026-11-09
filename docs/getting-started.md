@@ -7,10 +7,10 @@ You need an existing collection with drafts and a native blocks field, a page re
 ## 1. Install the public package
 
 ```sh
-pnpm add payload-inplace
+pnpm add payload-inplace @payloadcms/richtext-lexical@3.91.0
 ```
 
-The npm package contains its own compiled styles and private workspace code. You do not need Tailwind, Turborepo or a second package in your host just to consume it. Do not import anything from `dist/` or `packages/core`.
+The npm package contains its own compiled styles and private workspace code. You do not need Tailwind or Turborepo in your host. Do not import anything from `dist/` or `packages/core`.
 
 ## 2. Configure one document root
 

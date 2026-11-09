@@ -211,6 +211,7 @@ test("installed nested-root native fields, optimistic draft and reviewed publish
     await expect(
       page.getByRole("toolbar", { name: "Text formatting", exact: true }),
     ).toBeVisible();
+    const originalRichText = await inlineRich.innerText();
     await inlineRich.pressSequentially(" Packed inline rich text");
     await expect
       .poll(async () =>
@@ -218,6 +219,15 @@ test("installed nested-root native fields, optimistic draft and reviewed publish
       )
       .toContain("Packed inline rich text");
     await expect(inlineRich).toBeFocused();
+    await inlineRich.press("ControlOrMeta+z");
+    await expect(inlineRich).toHaveText(originalRichText);
+    await inlineRich.press("ControlOrMeta+Shift+z");
+    await expect(inlineRich).toContainText("Packed inline rich text");
+    await expect
+      .poll(async () =>
+        JSON.stringify((await readStory()).article.sections[0].body),
+      )
+      .toContain("Packed inline rich text");
     await inlineRich.press("Escape");
 
     await page

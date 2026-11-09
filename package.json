@@ -84,12 +84,7 @@
     "typescript": "5.9.3",
     "typescript-eslint": "^8.0.0",
     "vitest": "4.0.18",
-    "lexical": "0.50.0",
-    "@lexical/rich-text": "0.50.0",
-    "@lexical/list": "0.50.0",
-    "@lexical/history": "0.50.0",
-    "@lexical/utils": "0.50.0",
-    "@lexical/selection": "0.50.0"
+    "@lexical/history": "0.50.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

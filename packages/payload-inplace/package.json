@@ -110,6 +110,7 @@
   "peerDependencies": {
     "@payloadcms/db-postgres": "3.91.0",
     "@payloadcms/ui": "3.91.0",
+    "@payloadcms/richtext-lexical": "3.91.0",
     "next": "16.4.2",
     "payload": "3.91.0",
     "react": "~19.2.4",
@@ -128,12 +129,7 @@
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "lucide-react": "1.66.0",
-    "lexical": "0.50.0",
-    "@lexical/rich-text": "0.50.0",
-    "@lexical/list": "0.50.0",
-    "@lexical/history": "0.50.0",
-    "@lexical/utils": "0.50.0",
-    "@lexical/selection": "0.50.0"
+    "@lexical/history": "0.50.0"
   },
   "homepage": "https://github.com/MiguelFranken/payload-inplace#readme",
   "bugs": {

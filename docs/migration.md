@@ -4,7 +4,7 @@ The public npm package and GitHub repository now share the name **payload-inplac
 
 ```sh
 pnpm remove @miguel.franken/payload-visual-editor
-pnpm add payload-inplace
+pnpm add payload-inplace @payloadcms/richtext-lexical@3.91.0
 ```
 
 Replace the old package prefix in every import, including Payload configuration, native component references and Next aliases/configuration:

@@ -8,7 +8,7 @@ import {
   type SerializedElementNode,
   type DOMConversionMap,
   type EditorConfig,
-} from "lexical";
+} from "@payloadcms/richtext-lexical/lexical";
 
 /** JSON is kept at this boundary; unknown Payload nodes are opaque, never flattened into text. */
 export interface RichNode extends SerializedLexicalNode {

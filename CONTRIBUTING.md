@@ -29,6 +29,15 @@ for Core and Lexical. The build resolves both private workspaces into the npm
 artifact. Keep explicit extensions in paths passed to Node for direct file
 loading.
 
+### Navigate to source in Zed
+
+Open the repository root in Zed and run `corepack pnpm build`. Declaration
+maps let Go to Definition on a demo import such as
+`postgresConcurrency` jump to its original TypeScript source. If the
+language server still has an older build open, run
+`editor: restart language server` from Zed’s command palette.
+The maps use source files from this checkout.
+
 ## Validate changes
 
 ```sh

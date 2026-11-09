@@ -7,7 +7,7 @@ import {
   REDO_COMMAND,
   HISTORY_PUSH_TAG,
   SKIP_DOM_SELECTION_TAG,
-} from "lexical";
+} from "@payloadcms/richtext-lexical/lexical";
 import { mountRichEditor } from "../src/editor";
 import { safeLink, type RichDocument } from "../src/document";
 

@@ -145,12 +145,8 @@ export function checkSourceBoundary(file, source, root = process.cwd()) {
       throw Error(`Core import crosses its boundary: ${name}: ${edge.spec}`);
     if (name.startsWith("packages/lexical/src/")) {
       const allowed = [
-        "lexical",
-        "@lexical/rich-text",
+        "@payloadcms/richtext-lexical/lexical",
         "@lexical/history",
-        "@lexical/list",
-        "@lexical/selection",
-        "@lexical/utils",
       ];
       if (
         !edge.spec.startsWith(".") &&

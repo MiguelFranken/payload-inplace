@@ -56,6 +56,6 @@ export default defineConfig({
       /^@payload-visual-editor\/native-handler$/,
     ],
   },
-  dts: { eager: true },
+  dts: { eager: true, sourcemap: true },
   css: { inject: true },
 });

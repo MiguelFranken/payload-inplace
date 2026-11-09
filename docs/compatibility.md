@@ -4,7 +4,7 @@ Payload and Next remain version-pinned. React is limited to the 19.2 patch line,
 
 | Surface                         | Verified scope                                                                                                                           | Boundary                                                                                            |
 | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Payload / UI / Postgres adapter | 3.91.0                                                                                                                                   | All packages must match exactly                                                                     |
+| Payload / UI / Lexical adapter / Postgres | 3.91.0                                                                                                                                   | All packages must match exactly                                                                     |
 | Same-page native handler bridge | Exact Payload Next 3.91.0 internal handler, app-relative Turbopack alias                                                                 | Requires `/next` configuration and `/native` import; other bundlers/peer versions unverified        |
 | Next / React / React DOM        | 16.4.2 / React 19.2 patch line (`~19.2.4`), tested with 19.2.6 in the independent consumer and 19.2.4 in Workshops, production Turbopack | Other versions and bundlers are unverified                                                          |
 | Node / pnpm                     | Node 24 CI, Node 26 local; pnpm 10.28.0                                                                                                  | Node 24 is the release runtime                                                                      |
@@ -16,6 +16,12 @@ Payload and Next remain version-pinned. React is limited to the 19.2 patch line,
 | Deployment                      | Same-origin local production builds, private/no-store editor responses, published public caches                                          | No production CDN/service-worker guarantee is claimed without deployment-specific checks            |
 
 The published 0.0.x line includes the roadmap features. The [current delivery receipt](validation/workshops-release.json) identifies the exact released archive and separately validated consumer preview. A package release does not imply deployment in your own application. The exact installed-consumer and Workshops package hashes live in `docs/validation`; historical reports retain their original candidate identifiers. Source-demo success is not a substitute for installed package acceptance.
+
+The plugin uses the consumer’s matching `@payloadcms/richtext-lexical` peer
+and its public Lexical re-exports. The inline editor mounts Lexical directly and
+retains one pinned dependency on `@lexical/history` for `registerHistory`, which
+Payload 3.91.0 does not re-export. The installed-consumer check verifies that
+history resolves the same Lexical runtime as Payload and exercises undo and redo.
 
 ## Public resources and permissions are different guarantees
 

@@ -9,14 +9,14 @@ import {
   type TextFormatType,
   type LexicalEditor,
   type EditorThemeClasses,
-} from "lexical";
+} from "@payloadcms/richtext-lexical/lexical";
 import {
   registerRichText,
   HeadingNode,
   QuoteNode,
   $createHeadingNode,
   $createQuoteNode,
-} from "@lexical/rich-text";
+} from "@payloadcms/richtext-lexical/lexical/rich-text";
 import {
   ListNode,
   ListItemNode,
@@ -24,10 +24,10 @@ import {
   INSERT_UNORDERED_LIST_COMMAND,
   INSERT_ORDERED_LIST_COMMAND,
   REMOVE_LIST_COMMAND,
-} from "@lexical/list";
+} from "@payloadcms/richtext-lexical/lexical/list";
 import { registerHistory, createEmptyHistoryState } from "@lexical/history";
-import { mergeRegister } from "@lexical/utils";
-import { $setBlocksType } from "@lexical/selection";
+import { mergeRegister } from "@payloadcms/richtext-lexical/lexical/utils";
+import { $setBlocksType } from "@payloadcms/richtext-lexical/lexical/selection";
 import {
   safeLink,
   isRichDocument,
