@@ -1,5 +1,6 @@
 import { test, expect, type CDPSession } from "@playwright/test";
 import fs from "node:fs";
+import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 
@@ -302,6 +303,7 @@ test("production active feature transfer and interaction budgets include native 
       `${name} is really fetched on demand`,
     ).toBeGreaterThan(0);
   const file = "docs/validation/performance/browser-budgets.json";
+  const distDir = process.env.VE_NEXT_DIST_DIR || ".next-prod";
   const report = {
     commit: execFileSync("git", ["rev-parse", "HEAD"], {
       encoding: "utf8",
@@ -310,7 +312,9 @@ test("production active feature transfer and interaction budgets include native 
       execFileSync("git", ["status", "--porcelain"], {
         encoding: "utf8",
       }).trim().length > 0,
-    buildId: fs.readFileSync("apps/demo/.next-prod/BUILD_ID", "utf8").trim(),
+    buildId: fs
+      .readFileSync(path.join("apps/demo", distDir, "BUILD_ID"), "utf8")
+      .trim(),
     node: process.version,
     browser: browser.version(),
     method:

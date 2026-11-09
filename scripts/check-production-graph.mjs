@@ -6,7 +6,10 @@ import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
 
-const root = "apps/demo/.next-prod";
+const root = path.join(
+  "apps/demo",
+  process.env.VE_NEXT_DIST_DIR || ".next-prod",
+);
 
 function manifest(route) {
   const context = {};
