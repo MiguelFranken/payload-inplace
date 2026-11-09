@@ -13,7 +13,7 @@ The six `ecommerce-*.png` images are original, unedited **2880 × 2000 PNG** cap
 
 ## Reproduce
 
-Follow [Contributing](../../CONTRIBUTING.md#refresh-documentation-screenshots), then run `corepack pnpm docs:media`. The opt-in [Playwright config](../../playwright.docs.config.ts) and [capture flow](../../tests/browser/docs-media.spec.ts) create an isolated production build/database, verify each state and capture its original pixels. The flow never publishes. It also checks public desktop/tablet/mobile layouts and retains review-only images in `test-results/docs-media`; copy only the six reviewed commerce assets here.
+Follow [Contributing](../../CONTRIBUTING.md#refresh-documentation-screenshots), then run `corepack pnpm docs:media`. The opt-in [Playwright config](../../tests/playwright.docs.config.ts) and [capture flow](../../tests/browser/docs-media.spec.ts) create an isolated production build/database, verify each state and capture its original pixels. The flow never publishes. It also checks public desktop/tablet/mobile layouts and retains review-only images in `test-results/docs-media`; copy only the six reviewed commerce assets here.
 
 Demo accounts, copy and schema data are synthetic. Product photography is generated; [prompts and original photographs](../../apps/demo/commerce/assets/README.md) are retained. The page appearance belongs to the demo renderer; the plugin supplies the authoring controls around a host's own frontend.
 

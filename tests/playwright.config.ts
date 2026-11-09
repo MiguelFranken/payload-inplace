@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import { defineConfig, devices } from "@playwright/test";
 
 const origin = `http://127.0.0.1:${process.env.VE_PORT || 3127}`;
@@ -29,7 +30,7 @@ export default defineConfig({
       : {
           stdout: "pipe",
           stderr: "pipe",
-          cwd: new URL("..", import.meta.url).pathname,
+          cwd: fileURLToPath(new URL("..", import.meta.url)),
           command: "node apps/demo/start-server.mjs",
           url: `${origin}/admin/login`,
           reuseExistingServer: false,
