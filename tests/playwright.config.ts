@@ -15,7 +15,7 @@ export default defineConfig({
     "performance.e2e.spec.ts",
   ],
   workers: 1,
-  reporter: [["list"], ["json", { outputFile: "test-results/results.json" }]],
+  reporter: [["list"], ["json", { outputFile: "../test-results/results.json" }]],
   timeout: 60000,
   expect: { timeout: 15000 },
   use: {
