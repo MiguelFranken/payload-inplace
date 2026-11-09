@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { test, expect } from "@playwright/test";
+import { moveCaretToEnd } from "./testing/editor-fixtures";
 
 async function createEditor(
   page: any,
@@ -89,7 +90,7 @@ test("instant inline edits and appearance survive delayed native saves and newer
     await expect(inline).toHaveText("Instant first edit");
     await expect(inline).toBeFocused();
     await requestStarted;
-    await inline.press("End");
+    await moveCaretToEnd(inline);
     await inline.pressSequentially(" and newer typing");
     await expect(inline).toHaveText("Instant first edit and newer typing");
     await page.screenshot({ path: "test-results/optimistic-save-pending.png" });
@@ -845,7 +846,7 @@ test("keyboard save keeps the caret and newer text, Escape closes settings witho
     await inline.press("ControlOrMeta+s");
     await pending;
     await expect(inline).toBeFocused();
-    await inline.press("End");
+    await moveCaretToEnd(inline);
     await inline.pressSequentially(" and keep typing");
     release();
     await expect(inline).toBeFocused();
@@ -1157,7 +1158,7 @@ test("large documents keep native inline input within the active interaction bud
       requestAnimationFrame(() => samples.push(performance.now() - start));
     });
   });
-  await inline.press("End");
+  await moveCaretToEnd(inline);
   await inline.pressSequentially(" feels immediate");
   await expect
     .poll(() => page.evaluate(() => (window as any).__inlineFrames.length))
@@ -1338,7 +1339,7 @@ test("inline adoption preserves rendered fallbacks until the user changes them",
     page.getByRole("status", { name: "Draft saved", exact: true }),
   ).toBeVisible();
   await heading.click();
-  await heading.press("End");
+  await moveCaretToEnd(heading);
   await heading.pressSequentially(" with an explicit override");
   await page.keyboard.press("ControlOrMeta+s");
   await expect
@@ -1931,7 +1932,7 @@ test("typing bursts save once after idle and composition never saves partial inp
       writes++;
   });
   const inline = await selectHeading(page);
-  await inline.press("End");
+  await moveCaretToEnd(inline);
   await inline.pressSequentially("AB", { delay: 250 });
   await expect(inline).toHaveText("Immediate headingAB");
   expect(writes).toBe(0);

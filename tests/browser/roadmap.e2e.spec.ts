@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { moveCaretToEnd } from "./testing/editor-fixtures";
 
 test("inline edits preserve mixed-case source under uppercase CSS and keep the host page mounted", async ({
   page,
@@ -67,7 +68,7 @@ test("inline edits preserve mixed-case source under uppercase CSS and keep the h
   const url = page.url();
   await eyebrow.click();
   await expect(eyebrow).toHaveAttribute("contenteditable", "plaintext-only");
-  await eyebrow.press("End");
+  await moveCaretToEnd(eyebrow);
   await eyebrow.pressSequentially("!");
   await expect
     .poll(
@@ -944,7 +945,7 @@ test("localized inline editing prepares and saves German fields without copying 
       result.request().method() === "PATCH" &&
       result.url().includes(`/api/localizedPages/${created.id}`),
   );
-  await heading.press("End");
+  await moveCaretToEnd(heading);
   await heading.pressSequentially("!");
   const acknowledgement = await saved;
   expect(acknowledgement.ok()).toBeTruthy();
@@ -1141,7 +1142,7 @@ test("page product and global scopes keep one native owner and independent revie
     "contenteditable",
     "plaintext-only",
   );
-  await pageHeading.press("End");
+  await moveCaretToEnd(pageHeading);
   await pageHeading.pressSequentially("!");
   // Request the next scope while the first typing burst is still dirty: the existing native queue must finish first.
   await page.getByRole("button", { name: "More tools", exact: true }).click();
@@ -1173,7 +1174,7 @@ test("page product and global scopes keep one native owner and independent revie
       response.request().method() === "POST" &&
       response.url().includes("/api/globals/siteHeader?"),
   );
-  await brand.press("End");
+  await moveCaretToEnd(brand);
   await brand.pressSequentially("!");
   expect((await savedGlobal).ok()).toBeTruthy();
   await brand.press("Escape");
@@ -1254,7 +1255,7 @@ test("page product and global scopes keep one native owner and independent revie
     "contenteditable",
     "plaintext-only",
   );
-  await productHeading.press("End");
+  await moveCaretToEnd(productHeading);
   await productHeading.pressSequentially("!");
   await expect
     .poll(

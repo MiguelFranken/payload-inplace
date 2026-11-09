@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 
 /** Only synthetic records inside the caller's disposable demo database. Uses real native auth/create. */
 export async function createShopEditor(
@@ -94,4 +94,16 @@ export async function createShopEditor(
     page.getByRole("navigation", { name: "Editing toolbar" }),
   ).toBeVisible();
   return { doc, source };
+}
+
+/** Put the caret at the end of the editable field across OS keymaps and line wraps. */
+export async function moveCaretToEnd(target: Locator) {
+  await target.evaluate((element) => {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    range.collapse(false);
+    const selection = getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+  });
 }

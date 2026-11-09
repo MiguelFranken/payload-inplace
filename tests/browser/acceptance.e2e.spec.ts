@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { createShopEditor } from "./testing/editor-fixtures";
+import { createShopEditor, moveCaretToEnd } from "./testing/editor-fixtures";
 
 test("rich-text formatting, safe paste and slow acknowledgements preserve structured native data", async ({
   page,
@@ -287,7 +287,7 @@ test("source text survives capitalize, NBSP, multiline and opaque renderer fallb
   expect((await read())._veRevision).toBe(doc._veRevision);
   expect((await read()).layout[0].eyebrow).toBe(eyebrow);
   await target.click();
-  await target.press("End");
+  await moveCaretToEnd(target);
   await target.pressSequentially("!");
   await expect
     .poll(async () => (await read()).layout[0].eyebrow)
@@ -296,14 +296,7 @@ test("source text survives capitalize, NBSP, multiline and opaque renderer fallb
   const multiline = page.locator('[data-ve-field="description"]').first();
   await multiline.click();
   await expect(multiline).toHaveAttribute("contenteditable", "plaintext-only");
-  await multiline.evaluate((element) => {
-    const range = document.createRange();
-    range.selectNodeContents(element);
-    range.collapse(false);
-    const selection = getSelection()!;
-    selection.removeAllRanges();
-    selection.addRange(range);
-  });
+  await moveCaretToEnd(multiline);
   await multiline.press("Enter");
   await expect(multiline).toBeFocused();
   await expect(multiline).toHaveAttribute("contenteditable", "plaintext-only");
