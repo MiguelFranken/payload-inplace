@@ -1,5 +1,6 @@
 import { expect, it } from "vitest";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   checkSourceBoundary,
   checkBindingsGraph,
@@ -99,7 +100,7 @@ it("keeps test fixtures out of production source even through relative imports",
 });
 
 it("enforces the same boundaries through workspace aliases and demo imports", () => {
-  const repository = process.cwd();
+  const repository = fileURLToPath(new URL("../../../../", import.meta.url));
   const client = path.join(
     repository,
     "packages/payload-inplace/src/frontend/case.tsx",
