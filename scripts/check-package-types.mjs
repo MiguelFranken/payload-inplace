@@ -19,6 +19,8 @@ execFileSync(
   "corepack",
   [
     "pnpm",
+    "--filter",
+    "payload-inplace",
     "exec",
     "attw",
     receipt.archive,

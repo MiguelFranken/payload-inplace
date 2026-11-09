@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
 import { MongoMemoryReplSet } from "mongodb-memory-server";
 import fs from "node:fs";
@@ -70,7 +71,7 @@ for (const signal of ["SIGINT", "SIGTERM"])
 
 async function run(
   args,
-  executable = "node_modules/next/dist/bin/next",
+  executable = fileURLToPath(import.meta.resolve("next/dist/bin/next")),
   overrides = {},
 ) {
   child = spawn(process.execPath, [executable, ...args], {
@@ -96,9 +97,13 @@ try {
       code === 0 ? resolve() : reject(new Error("Demo styles failed")),
     );
   });
-  await run(["apps/demo/prepare-db.ts"], "node_modules/tsx/dist/cli.mjs", {
-    VE_SEED: "1",
-  });
+  await run(
+    ["apps/demo/prepare-db.ts"],
+    fileURLToPath(import.meta.resolve("tsx/cli")),
+    {
+      VE_SEED: "1",
+    },
+  );
   if (process.env.VE_PRODUCTION === "1") {
     await run(["build", "apps/demo", "--turbopack"]);
     await run([

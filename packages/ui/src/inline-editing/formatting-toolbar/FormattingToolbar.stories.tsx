@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { fn } from "storybook/test";
+import { editorStoryCanvas } from "../../storybook/story-canvas";
+import { expect, fn } from "storybook/test";
 import { FormattingToolbar } from "./FormattingToolbar";
 
 const meta = {
@@ -27,6 +28,18 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const ActiveSelection: Story = {
+  play: async ({ args, canvasElement, userEvent }) => {
+    const canvas = await editorStoryCanvas(canvasElement);
+    await expect(canvas.getByRole("button", { name: "Bold" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    const italic = canvas.getByRole("button", { name: "Italic" });
+    await expect(italic).toHaveAttribute("aria-pressed", "false");
+    await userEvent.click(italic);
+    await expect(args.onFormat).toHaveBeenCalledOnce();
+    await expect(args.onFormat).toHaveBeenCalledWith("italic");
+  },
   decorators: [
     (Story) => (
       <div className="pve:pt-14 pve:[--pve-rich-x:32px] pve:[--pve-rich-y:32px]">

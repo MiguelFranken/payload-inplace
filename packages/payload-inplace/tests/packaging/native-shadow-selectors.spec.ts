@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { nativeShadowSelector } from "../../../../scripts/native-shadow-selectors.mjs";
+import { nativeShadowSelector } from "../../scripts/native-shadow-selectors.mjs";
 it("retains native dark root qualifiers inside the functional shadow host", () => {
   expect(nativeShadowSelector("html[data-theme=dark]")).toBe(
     ":host([data-theme=dark])",
@@ -19,7 +19,7 @@ it("keeps native body descendants scoped without changing their own attributes",
 });
 
 import postcss from "postcss";
-import { nativeShadowStyles } from "../../../../scripts/native-shadow-styles.mjs";
+import { nativeShadowStyles } from "../../scripts/native-shadow-styles.mjs";
 import { nativeStyleUnits } from "../../src/frontend/native-style-units.mjs";
 it("isolates upstream rem lengths and panel breakpoints while retaining host baseline and reduced motion", () => {
   const result = nativeShadowStyles(

@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { fn } from "storybook/test";
+import { expect, fn } from "storybook/test";
+import { editorStoryCanvas } from "../../storybook/story-canvas";
 import { Floatable } from "./Floatable";
 import { Button } from "../../primitives/button/button";
 
@@ -13,6 +14,16 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Settings: Story = {
+  play: async ({ args, canvasElement, userEvent }) => {
+    const canvas = await editorStoryCanvas(canvasElement);
+    await expect(canvas.getByRole("textbox", { name: "Heading" })).toHaveValue(
+      "Collection introduction",
+    );
+    await userEvent.click(
+      canvas.getByRole("button", { name: /close section settings/i }),
+    );
+    await expect(args.onClose).toHaveBeenCalledOnce();
+  },
   args: {
     onBack: fn(),
     children: (

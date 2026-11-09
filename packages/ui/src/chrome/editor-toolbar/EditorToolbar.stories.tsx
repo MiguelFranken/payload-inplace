@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { fn } from "storybook/test";
+import { expect, fn } from "storybook/test";
+import { editorStoryCanvas } from "../../storybook/story-canvas";
 import { EditorToolbar } from "./EditorToolbar";
 import { Button } from "../../primitives/button/button";
 import { Layers, MousePointer2 } from "lucide-react";
@@ -34,4 +35,13 @@ export const Expanded: Story = {
   },
 };
 
-export const Collapsed: Story = { args: { expanded: false, children: null } };
+export const Collapsed: Story = {
+  args: { expanded: false, children: null },
+  play: async ({ args, canvasElement, userEvent }) => {
+    const canvas = await editorStoryCanvas(canvasElement);
+    const launcher = canvas.getByRole("button", { name: "Edit page" });
+    await expect(launcher).toHaveAttribute("aria-expanded", "false");
+    await userEvent.click(launcher);
+    await expect(args.onExpand).toHaveBeenCalledOnce();
+  },
+};

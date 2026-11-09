@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { fn } from "storybook/test";
+import { editorStoryCanvas } from "../../storybook/story-canvas";
+import { expect, fn } from "storybook/test";
 import { VersionTimeline } from "./VersionTimeline";
 
 const meta = {
@@ -22,6 +23,12 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const SavedVersions: Story = {
+  play: async ({ args, canvasElement, userEvent }) => {
+    const canvas = await editorStoryCanvas(canvasElement);
+    await userEvent.click(canvas.getByRole("button", { name: /compare.*17/i }));
+    await expect(args.onChoose).toHaveBeenCalledOnce();
+    await expect(args.onChoose).toHaveBeenCalledWith("published");
+  },
   args: {
     versions: [
       {

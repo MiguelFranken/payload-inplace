@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": [
+    "src",
+    "tests",
+    "tsdown.config.ts",
+    "../../apps/demo/payload-types.ts"
+  ],
+  "exclude": ["dist"]
+}

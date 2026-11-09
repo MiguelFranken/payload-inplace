@@ -102,10 +102,11 @@
     "registry": "https://registry.npmjs.org"
   },
   "scripts": {
-    "build": "pnpm --dir ../.. build:package",
-    "typecheck": "tsc --noEmit -p ../../tsconfig.json",
+    "build": "pnpm build:css && tsdown && node scripts/copy-package-assets.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "test:unit": "vitest run --config ../../vitest.config.ts --project 'unit:plugin:*'",
-    "lint": "pnpm --dir ../.. lint:source"
+    "lint": "pnpm --dir ../.. lint:source",
+    "build:css": "tailwindcss -i src/admin/tailwind.css -o src/admin/styles.css --minify && tailwindcss -i src/preview/tailwind.css -o src/preview/styles.css --minify && tailwindcss -i src/launcher/tailwind.css -o src/launcher/styles.css --minify && tailwindcss -i src/frontend/inline.tailwind.css -o src/frontend/inline.styles.css --minify && node scripts/build-frontend-styles.mjs"
   },
   "peerDependencies": {
     "@payloadcms/db-postgres": "3.91.0",
@@ -152,6 +153,29 @@
   "devDependencies": {
     "@payload-inplace/core": "workspace:*",
     "@payload-inplace/lexical": "workspace:*",
-    "@payload-inplace/ui": "workspace:*"
+    "@payload-inplace/ui": "workspace:*",
+    "typescript": "5.9.3",
+    "tsdown": "0.22.3",
+    "vitest": "4.0.18",
+    "@payloadcms/next": "3.91.0",
+    "@payloadcms/db-postgres": "3.91.0",
+    "@payloadcms/ui": "3.91.0",
+    "@payloadcms/richtext-lexical": "3.91.0",
+    "@tailwindcss/cli": "4.3.3",
+    "tailwindcss": "4.3.3",
+    "@types/node": "^24.0.0",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "next": "16.4.2",
+    "payload": "3.91.0",
+    "graphql": "^16.12.0",
+    "postcss": "8.5.32",
+    "postcss-selector-parser": "7.1.7",
+    "@testing-library/react": "16.3.3",
+    "happy-dom": "21.0.4",
+    "publint": "0.3.25",
+    "@arethetypeswrong/cli": "0.18.5"
   }
 }

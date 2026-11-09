@@ -20,7 +20,7 @@ function EditorPreview({
     if (node) setShadow(node.shadowRoot ?? node.attachShadow({ mode: "open" }));
   }, []);
   return (
-    <div ref={mount}>
+    <div ref={mount} data-editor-story>
       {shadow &&
         createPortal(
           <>

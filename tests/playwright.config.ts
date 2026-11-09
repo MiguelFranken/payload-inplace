@@ -3,7 +3,8 @@ import { defineConfig, devices } from "@playwright/test";
 const origin = `http://127.0.0.1:${process.env.VE_PORT || 3127}`;
 
 export default defineConfig({
-  testDir: "tests/browser",
+  testDir: "browser",
+  outputDir: "../test-results/browser",
   testMatch: [
     "e2e.spec.ts",
     "optimistic.e2e.spec.ts",
@@ -28,6 +29,7 @@ export default defineConfig({
       : {
           stdout: "pipe",
           stderr: "pipe",
+          cwd: new URL("..", import.meta.url).pathname,
           command: "node apps/demo/start-server.mjs",
           url: `${origin}/admin/login`,
           reuseExistingServer: false,

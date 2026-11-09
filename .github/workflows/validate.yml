@@ -27,7 +27,7 @@ jobs:
       - run: corepack pnpm test:coverage
       - run: corepack pnpm test:workspace
       - run: corepack pnpm test:int
-      - run: corepack pnpm exec playwright install --with-deps chromium
+      - run: corepack pnpm --filter @payload-inplace/acceptance exec playwright install --with-deps chromium
       - run: corepack pnpm test:storybook
       - name: Validate review and toolbar without transactional revision metadata
         run: |

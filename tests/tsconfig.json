@@ -1,0 +1,5 @@
+{
+  "extends": "../tsconfig.json",
+  "include": ["**/*.ts", "../apps/demo/payload-types.ts"],
+  "exclude": []
+}

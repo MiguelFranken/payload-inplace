@@ -1,11 +1,9 @@
 import { defineConfig } from "tsdown";
 import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 const manifest = JSON.parse(
-  readFileSync(
-    new URL("./packages/payload-inplace/package.json", import.meta.url),
-    "utf8",
-  ),
+  readFileSync(new URL("./package.json", import.meta.url), "utf8"),
 );
 
 const external = Object.keys({
@@ -19,6 +17,7 @@ const external = Object.keys({
 const workspace = /^@payload-inplace\/(?:core|lexical|ui)\//;
 
 export default defineConfig({
+  cwd: fileURLToPath(new URL("../..", import.meta.url)),
   entry: {
     "core/policy": "packages/core/src/policy.ts",
     "core/geometry": "packages/core/src/geometry.ts",
@@ -49,7 +48,7 @@ export default defineConfig({
   clean: true,
   deps: {
     alwaysBundle: [workspace],
-    dts: { alwaysBundle: [workspace] },
+    dts: { alwaysBundle: [workspace], neverBundle: external },
     neverBundle: [
       ...external,
       /^node:/,

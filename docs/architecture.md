@@ -34,6 +34,9 @@ A selected field has exactly one owner: browser plaintext, compatible inline Lex
 | `packages/ui`                 | Private React views, chrome, localization, and colocated stories                           |
 | `apps/storybook`              | UI review with the same prefixed styles and shadow-root portals                            |
 | `apps/demo`                   | Synthetic commerce consumer plus regression fixtures                                       |
+| `tests`                       | Private acceptance workspace for Playwright, Storybook smoke checks and native integration |
 | `fixtures/installed-consumer` | Independent production app installing the exact packed archive                             |
+
+Each workspace declares its runtime and development dependencies. The root keeps repository-wide tooling for lint, formatting, Changesets, Turbo, TypeScript-based source checks and aggregate Vitest coverage. The demo owns its Next and Payload runtime, the plugin owns its bundler and CSS build, and the acceptance workspace owns its browser and database test tools.
 
 Consumers install `payload-inplace` and its host peers. The private UI workspace is compiled into the public package. Public subpaths are the supported facade; emitted internals/private workspaces are not API. Turbo caches deterministic build/unit work, while browser/database/artifact gates remain uncached. [Workspace ADR](adr/0007-workspace-and-native-boundaries.md) · [Native adapter inventory](native-v3-adapters.md) · [Quality gates](implementation/quality-gates.md).

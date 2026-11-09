@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { fn } from "storybook/test";
+import { expect, fireEvent, fn, waitFor } from "storybook/test";
+import { editorStoryCanvas } from "../../storybook/story-canvas";
 import { useState } from "react";
 import { SectionCatalogueView } from "./SectionCatalogueView";
 
@@ -54,5 +55,28 @@ export const Searchable: Story = {
         />
       </div>
     );
+  },
+};
+
+export const FilteredSelection: Story = {
+  ...Searchable,
+  play: async ({ args, canvasElement, userEvent }) => {
+    const canvas = await editorStoryCanvas(canvasElement);
+    await userEvent.click(
+      canvas.getByRole("combobox", { name: "Add section" }),
+    );
+    const search = await canvas.findByRole("combobox", {
+      name: /search sections/i,
+    });
+    await fireEvent.input(search, { target: { value: "Studio" } });
+    await waitFor(async () => {
+      await expect(
+        canvas.queryByRole("option", { name: "Questions" }),
+      ).not.toBeInTheDocument();
+    });
+    await userEvent.click(canvas.getByRole("option", { name: "Studio story" }));
+    await expect(args.onChoose).toHaveBeenCalledOnce();
+    await expect(args.onChoose).toHaveBeenCalledWith("story");
+    await expect(search).not.toBeInTheDocument();
   },
 };

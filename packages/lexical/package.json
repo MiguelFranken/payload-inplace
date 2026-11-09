@@ -16,5 +16,11 @@
   },
   "dependencies": {
     "@lexical/history": "0.50.0"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "tsdown": "0.22.3",
+    "vitest": "4.0.18",
+    "@payloadcms/richtext-lexical": "3.91.0"
   }
 }

@@ -10,5 +10,10 @@
   },
   "exports": {
     "./*": "./src/*.ts"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "tsdown": "0.22.3",
+    "vitest": "4.0.18"
   }
 }

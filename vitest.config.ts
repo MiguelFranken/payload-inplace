@@ -51,11 +51,21 @@ export default defineConfig({
       {
         extends: true as const,
         test: {
+          name: "unit:ui",
+          root,
+          include: ["packages/ui/tests/**/*.test.tsx"],
+          environment: "happy-dom",
+          setupFiles: ["./packages/ui/tests/setup.ts"],
+        },
+      },
+      {
+        extends: true as const,
+        test: {
           name: "components",
           root,
-          include: ["packages/*/tests/components/**/*.test.tsx"],
+          include: ["packages/payload-inplace/tests/components/**/*.test.tsx"],
           environment: "happy-dom",
-          setupFiles: ["./vitest.setup.ts"],
+          setupFiles: ["./packages/payload-inplace/tests/components/setup.ts"],
           testTimeout: 5000,
           fileParallelism: true,
         },

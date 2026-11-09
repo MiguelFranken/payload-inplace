@@ -13,9 +13,7 @@
     "baseUrl": ".",
     "paths": {
       "@internal/*": ["./packages/payload-inplace/src/*"],
-      "@payload-config": [
-        "./apps/demo/payload.config.ts"
-      ]
+      "@payload-config": ["./apps/demo/payload.config.ts"]
     }
   },
   "include": [
@@ -24,12 +22,7 @@
     "apps/demo/**/*.ts",
     "apps/demo/**/*.tsx",
     "tests/**/*.ts",
-    "*.ts",
-    "vitest.setup.ts"
+    "*.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "**/dist/**",
-    "**/.next*/**"
-  ]
+  "exclude": ["node_modules", "**/dist/**", "**/.next*/**"]
 }

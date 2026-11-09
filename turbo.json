@@ -2,9 +2,6 @@
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": [
     "tsconfig.json",
-    "tsdown.config.ts",
-    "scripts/build-frontend-styles.mjs",
-    "scripts/native-shadow-*.mjs",
     "vitest.config.ts",
     "eslint.config.js",
     ".oxlintrc.json",
@@ -26,8 +23,7 @@
       ],
       "inputs": [
         "$TURBO_DEFAULT$",
-        "../../scripts/**",
-        "../../tsdown.config.ts"
+        "../../scripts/**"
       ],
       "outputs": [
         "dist/**",
@@ -44,7 +40,8 @@
     },
     "typecheck": {
       "dependsOn": [
-        "build"
+        "build",
+        "^build"
       ],
       "outputs": []
     },

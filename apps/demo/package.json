@@ -4,10 +4,35 @@
   "type": "module",
   "scripts": {
     "dev": "pnpm --dir ../.. dev",
-    "build:app": "pnpm --dir ../.. exec next build apps/demo --turbopack"
+    "build:app": "next build --turbopack",
+    "build:css": "tailwindcss -i tailwind.css -o styles.css --minify && tailwindcss -i protected.tailwind.css -o protected.styles.css --minify",
+    "generate:importmap": "VE_DATABASE=postgres PAYLOAD_CONFIG_PATH=payload.config.ts payload generate:importmap",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
     "payload-inplace": "workspace:*",
-    "lucide-react": "1.66.0"
+    "lucide-react": "1.66.0",
+    "@payloadcms/db-mongodb": "3.91.0",
+    "@payloadcms/db-postgres": "3.91.0",
+    "@payloadcms/next": "3.91.0",
+    "@payloadcms/richtext-lexical": "3.91.0",
+    "@payloadcms/translations": "3.91.0",
+    "@payloadcms/ui": "3.91.0",
+    "graphql": "^16.12.0",
+    "next": "16.4.2",
+    "payload": "3.91.0",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "sharp": "0.34.2"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "@tailwindcss/cli": "4.3.3",
+    "tailwindcss": "4.3.3",
+    "mongodb-memory-server": "10.1.4",
+    "tsx": "4.21.0",
+    "@types/node": "^24.0.0",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3"
   }
 }

@@ -1,10 +1,7 @@
 import { expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { Floatable } from "@payload-inplace/ui/chrome/floatable/Floatable";
-vi.mock("@payloadcms/ui", () => ({
-  useTranslation: () => ({ i18n: { language: "en" } }),
-}));
-vi.mock("@payload-inplace/ui/chrome/floatable/use-panel-resize", () => ({
+import { Floatable } from "../../src/chrome/floatable/Floatable";
+vi.mock("../../src/chrome/floatable/use-panel-resize", () => ({
   usePanelResize: () => ({ id: "test-panel", style: {}, edge: () => ({}) }),
 }));
 it("keeps contextual footer actions outside the field scroll area and restores the section action", () => {

@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "storybook dev --port 6006",
     "build": "storybook build --output-dir dist",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test:stories": "vitest run"
   },
   "dependencies": {
     "@payload-inplace/ui": "workspace:*",
@@ -17,6 +18,14 @@
     "@tailwindcss/vite": "4.3.3",
     "storybook": "10.6.6",
     "tailwindcss": "4.3.3",
-    "vite": "7.3.8"
+    "vite": "7.3.8",
+    "typescript": "5.9.3",
+    "@types/node": "^24.0.0",
+    "vitest": "4.0.18",
+    "@storybook/addon-vitest": "10.6.6",
+    "@vitest/browser-playwright": "4.0.18",
+    "playwright": "1.58.2",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3"
   }
 }
