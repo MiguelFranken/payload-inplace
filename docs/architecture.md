@@ -26,12 +26,14 @@ A selected field has exactly one owner: browser plaintext, compatible inline Lex
 
 ## Repository boundaries
 
-| Workspace                     | Responsibility                                                                    |
-| ----------------------------- | --------------------------------------------------------------------------------- |
-| `packages/payload-inplace`    | The only public npm package: native v3 adapters, editor UI and server contracts   |
-| `packages/core`               | Private, framework-free identity, policy, bindings, geometry and protocol domains |
-| `packages/lexical`            | Private compatible rich-text runtime, bundled into the public facade              |
-| `apps/demo`                   | Synthetic commerce consumer plus regression fixtures                              |
-| `fixtures/installed-consumer` | Independent production app installing the exact packed archive                    |
+| Workspace                     | Responsibility                                                                             |
+| ----------------------------- | ------------------------------------------------------------------------------------------ |
+| `packages/payload-inplace`    | The only public npm package: native v3 adapters, editor orchestration and server contracts |
+| `packages/core`               | Private, framework-free identity, policy, bindings, geometry and protocol domains          |
+| `packages/lexical`            | Private compatible rich-text runtime, bundled into the public facade                       |
+| `packages/ui`                 | Private React views, chrome, localization, and colocated stories                           |
+| `apps/storybook`              | UI review with the same prefixed styles and shadow-root portals                            |
+| `apps/demo`                   | Synthetic commerce consumer plus regression fixtures                                       |
+| `fixtures/installed-consumer` | Independent production app installing the exact packed archive                             |
 
-Consumers install only `payload-inplace`. Public subpaths are the supported facade; emitted internals/private workspaces are not API. Turbo caches deterministic build/unit work, while browser/database/artifact gates remain uncached. [Workspace ADR](adr/0007-workspace-and-native-boundaries.md) · [Native adapter inventory](native-v3-adapters.md) · [Quality gates](implementation/quality-gates.md).
+Consumers install `payload-inplace` and its host peers. The private UI workspace is compiled into the public package. Public subpaths are the supported facade; emitted internals/private workspaces are not API. Turbo caches deterministic build/unit work, while browser/database/artifact gates remain uncached. [Workspace ADR](adr/0007-workspace-and-native-boundaries.md) · [Native adapter inventory](native-v3-adapters.md) · [Quality gates](implementation/quality-gates.md).

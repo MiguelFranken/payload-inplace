@@ -16,7 +16,16 @@
     "./primitives/tooltip/tooltip": "./src/primitives/tooltip/tooltip.tsx",
     "./primitives/portal/portal": "./src/primitives/portal/portal.tsx",
     "./chrome/editor-toolbar": "./src/chrome/editor-toolbar/EditorToolbar.tsx",
-    "./chrome.css": "./src/chrome/tailwind.css"
+    "./chrome.css": "./src/chrome/tailwind.css",
+    "./media/library": "./src/media/library/MediaLibrary.tsx",
+    "./chrome/roles": "./src/chrome/roles.ts",
+    "./review/document-diff": "./src/review/document-diff/DocumentDiff.tsx",
+    "./canvas/selection-outline": "./src/canvas/selection-outline/SelectionOutline.tsx",
+    "./sections/catalogue": "./src/sections/catalogue/SectionCatalogueView.tsx",
+    "./inline-editing/formatting-toolbar": "./src/inline-editing/formatting-toolbar/FormattingToolbar.tsx",
+    "./sections/section-row": "./src/sections/section-row/SectionRow.tsx",
+    "./review/version-timeline": "./src/review/version-timeline/VersionTimeline.tsx",
+    "./review/conflict-choices": "./src/review/conflict-choices/ConflictChoices.tsx"
   },
   "dependencies": {
     "@base-ui/react": "1.9.0",

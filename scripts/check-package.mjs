@@ -39,7 +39,7 @@ for (const entry of [
 if (!entries.includes("package/NOTICE"))
   throw Error("Missing upstream style attribution");
 for (const entry of entries)
-  if (/(?:node_modules|dev\/|test-results|\.env|\.git\/)/.test(entry))
+  if (/(?:node_modules|dev\/|test-results|\.stories\.|storybook|\.env|\.git\/)/.test(entry))
     throw Error(`Unexpected private/dev package entry ${entry}`);
 
 // The standalone npm package must never require its workspace or source aliases.
@@ -47,7 +47,7 @@ for (const entry of entries) {
   if (!/^package\/dist\/.*\.(?:js|d\.ts)$/.test(entry)) continue;
   const file = path.join("packages/payload-inplace", entry.slice("package/".length));
   for (const { spec } of importEdges(file, fs.readFileSync(file, "utf8")))
-    if (/^@(?:internal|payload-inplace)\//.test(spec))
+    if (/^(?:@(?:internal|payload-inplace)\/|@storybook\/|storybook(?:\/|$))/.test(spec))
       throw Error(`Private workspace import leaked into ${entry}: ${spec}`);
 }
 

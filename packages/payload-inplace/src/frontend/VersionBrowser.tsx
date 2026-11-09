@@ -17,13 +17,7 @@ import {
 } from "@payloadcms/ui";
 import { hasDraftValidationEnabled } from "payload/shared";
 import type { ClientBlock } from "payload";
-import {
-  History,
-  ChevronLeft,
-  ChevronRight,
-  RotateCcw,
-  LoaderCircle,
-} from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { Button } from "@payload-inplace/ui/primitives/button/button";
 import { DocumentReview } from "../admin/DocumentReview";
 import {
@@ -31,7 +25,7 @@ import {
   nativeDocumentMethod,
 } from "../state/document-target";
 import { nativeDraftAction } from "../adapters/native-request";
-import { chrome } from "../admin/chrome";
+import { VersionTimeline } from "@payload-inplace/ui/review/version-timeline";
 
 interface SavedVersion {
   id: string;
@@ -184,71 +178,27 @@ export function VersionBrowser({
       : formatDate(value);
   };
   return (
-    <div className="pve:grid pve:gap-4">
-      <p className={`pve:m-0 pve:text-sm pve:leading-relaxed ${chrome.muted}`}>
-        {t("compareSavedVersionsRestoringCreatesADraftPublicationStays")}
-      </p>
-      <div className="pve:grid pve:gap-2" aria-label={t("savedVersions")}>
-        {timeline?.versions.map((version) => (
-          <Button
-            key={version.id}
-            variant="outline"
-            aria-pressed={selected === version.id}
-            className="pve:h-auto pve:min-h-11 pve:justify-start pve:py-2 pve:text-start"
-            aria-label={t("compareVersion", {
-              version:
-                version.revision === undefined
-                  ? version.id
-                  : number(version.revision),
-            })}
-            disabled={restoring || processing}
-            onClick={() => choose(version.id)}
-          >
-            <History size={15} />
-            <span>{date(version)}</span>
-            <span className={`pve:ms-auto pve:text-xs ${chrome.muted}`}>
-              {version.status === "published" ? t("published") : t("draft")}
-            </span>
-          </Button>
-        ))}
-        {timeline?.versions.length === 0 && <p>{t("noSavedVersions")}</p>}
-      </div>
-      <div className="pve:flex pve:items-center pve:justify-between">
-        <Button
-          size="icon"
-          aria-label={t("newerVersions")}
-          disabled={page === 1 || busy}
-          onClick={() => setPage((value) => value - 1)}
-        >
-          <ChevronLeft size={17} className="pve:rtl:rotate-180" />
-        </Button>
-        <span className={`pve:text-xs ${chrome.muted}`}>
-          {t("versionPage", { page })}
-        </span>
-        <Button
-          size="icon"
-          aria-label={t("olderVersions")}
-          disabled={!timeline?.hasNextPage || busy}
-          onClick={() => setPage((value) => value + 1)}
-        >
-          <ChevronRight size={17} className="pve:rtl:rotate-180" />
-        </Button>
-      </div>
-      {loading && (
-        <p
-          role="status"
-          className="pve:flex pve:items-center pve:gap-2 pve:text-sm"
-        >
-          <LoaderCircle className="pve:motion-safe:animate-spin" size={16} />
-          {t("loadingVersion")}
-        </p>
-      )}
-      {error && (
-        <div role="alert">
-          <p>{t(error)}</p>
-          <Button onClick={() => void read(selected)}>{t("retry")}</Button>
-        </div>
-      )}
+    <VersionTimeline
+      versions={timeline?.versions.map((version) => ({
+        id: version.id,
+        date: date(version),
+        revision:
+          version.revision === undefined
+            ? version.id
+            : number(version.revision),
+        selected: selected === version.id,
+        status: version.status,
+      }))}
+      page={page}
+      busy={busy}
+      selectionDisabled={restoring || processing}
+      hasNextPage={Boolean(timeline?.hasNextPage)}
+      loading={loading}
+      error={error}
+      onChoose={choose}
+      onPageChange={setPage}
+      onRetry={() => void read(selected)}
+    >
       {snapshot && (
         <>
           <DocumentReview
@@ -276,6 +226,6 @@ export function VersionBrowser({
           </Button>
         </>
       )}
-    </div>
+    </VersionTimeline>
   );
 }

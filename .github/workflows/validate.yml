@@ -28,6 +28,7 @@ jobs:
       - run: corepack pnpm test:workspace
       - run: corepack pnpm test:int
       - run: corepack pnpm exec playwright install --with-deps chromium
+      - run: corepack pnpm test:storybook
       - name: Validate review and toolbar without transactional revision metadata
         run: |
           VE_PORT=3139 VE_NEXT_DIST_DIR=.next-mongo VE_PRODUCTION=1 corepack pnpm test:e2e tests/browser/acceptance.e2e.spec.ts --grep 'media selection persists'

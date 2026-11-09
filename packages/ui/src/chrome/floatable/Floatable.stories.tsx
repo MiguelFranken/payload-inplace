@@ -18,7 +18,10 @@ export const Settings: Story = {
     children: (
       <label className="pve:grid pve:gap-2">
         Heading
-        <input defaultValue="Collection introduction" />
+        <input
+          className="pve:w-full pve:box-border pve:rounded-md pve:border pve:border-solid pve:border-[var(--pve-border)] pve:bg-transparent pve:px-3 pve:py-2 pve:font-inherit pve:text-inherit"
+          defaultValue="Collection introduction"
+        />
       </label>
     ),
     footer: <Button variant="secondary">All section fields</Button>,

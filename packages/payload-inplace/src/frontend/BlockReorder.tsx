@@ -1,17 +1,12 @@
 "use client";
 
+import { SectionRow } from "@payload-inplace/ui/sections/section-row";
 import { localizedLabel } from "../i18n/labels";
 import { findBoundBlock } from "../preview/dom-target";
 import type { DocumentReference } from "@payload-inplace/core/document-ref";
 import { useEditorMessages } from "@payload-inplace/ui/localization/EditorMessages";
 
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type CSSProperties,
-} from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -30,13 +25,7 @@ import {
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import {
-  GripVertical,
-  Layers,
-  Settings2,
-  LockKeyhole,
-  LocateFixed,
-} from "lucide-react";
+import { GripVertical, LockKeyhole } from "lucide-react";
 import { useTranslation } from "@payloadcms/ui";
 import type { NativeSection } from "../schema/tree";
 import {
@@ -458,76 +447,23 @@ function ReorderItem({
       </div>
     );
   return (
-    <div
-      ref={setNodeRef}
-      data-ve-sortable={s.identity.blockId}
-      data-ve-drag-over={over === id}
-      data-ve-drop-target={over === id && active !== id}
-      style={
-        {
-          "--pve-sort-x": `${transform?.x || 0}px`,
-          "--pve-sort-y": `${transform?.y || 0}px`,
-          "--pve-sort-transition": transition || "none",
-        } as CSSProperties
-      }
-      className={`pve:flex pve:min-w-0 pve:items-center pve:gap-1 pve:rounded-xl pve:border pve:border-solid pve:border-[var(--pve-border,var(--theme-border-color,#e3e4e8))] pve:bg-[var(--pve-surface,var(--theme-elevation-0,#fff))] pve:p-1 pve:translate-x-[var(--pve-sort-x)] pve:translate-y-[var(--pve-sort-y)] pve:motion-safe:[transition:var(--pve-sort-transition)] ${isDragging ? "pve:opacity-30" : ""}`}
-    >
-      {handle}
-      <button
-        type="button"
-        onClick={onPick}
-        title={heading || label}
-        className="pve:flex pve:min-h-10 pve:min-w-0 pve:flex-1 pve:items-center pve:gap-2.5 pve:rounded-lg pve:border-0 pve:bg-transparent pve:px-1 pve:text-start pve:font-inherit pve:text-inherit pve:cursor-pointer pve:outline-none pve:focus-visible:ring-2 pve:focus-visible:ring-[var(--pve-accent,#3451eb)]"
-      >
-        <Layers
-          size={15}
-          className="pve:shrink-0 pve:text-[var(--pve-muted,var(--theme-elevation-700,#646773))]"
-        />
-        <span className="pve:min-w-0">
-          <span
-            dir="auto"
-            className="pve:block pve:truncate pve:text-sm pve:font-medium"
-          >
-            {number(s.index + 1)}. {heading || label}
-          </span>
-          <span
-            className="pve:block pve:max-w-36 pve:truncate pve:text-xs pve:leading-5 pve:text-[var(--pve-muted,var(--theme-elevation-700,#646773))]"
-            title={label}
-            dir="auto"
-          >
-            {label}
-            {lock ? t("fixedFirstSuffix") : ""}
-          </span>
-        </span>
-      </button>
-      {(onLocate || onSettings) && (
-        <div
-          role="group"
-          aria-label={t("sectionSettings")}
-          className="pve:flex pve:shrink-0 pve:items-center pve:gap-0 pve:rounded-lg pve:bg-[var(--pve-muted-surface,var(--theme-elevation-50,#f4f5f7))] pve:p-0.5"
-        >
-          {onLocate && (
-            <Button
-              size="small-icon"
-              aria-label={t("showNamedSection", { label })}
-              title={t("showOnPage")}
-              onClick={onLocate}
-            >
-              <LocateFixed size={16} />
-            </Button>
-          )}
-          {onSettings && (
-            <Button
-              size="small-icon"
-              aria-label={t("settingsForNamedSection", { label })}
-              title={t("sectionSettings")}
-              onClick={onSettings}
-            >
-              <Settings2 size={16} />
-            </Button>
-          )}
-        </div>
-      )}
-    </div>
+    <SectionRow
+      rowRef={setNodeRef}
+      blockId={s.identity.blockId}
+      label={label}
+      heading={heading}
+      position={number(s.index + 1)}
+      lock={lock}
+      handle={handle}
+      isDragging={isDragging}
+      dragOver={over === id}
+      dropTarget={over === id && active !== id}
+      offsetX={transform?.x}
+      offsetY={transform?.y}
+      transition={transition}
+      onPick={onPick}
+      onLocate={onLocate}
+      onSettings={onSettings}
+    />
   );
 }

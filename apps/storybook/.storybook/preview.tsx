@@ -8,9 +8,11 @@ import { ChromePortalProvider } from "@payload-inplace/ui/primitives/portal/port
 function EditorPreview({
   children,
   locale,
+  theme,
 }: {
   children: ReactNode;
   locale: string;
+  theme: "light" | "dark";
 }) {
   const [shadow, setShadow] = useState<ShadowRoot | null>(null);
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
@@ -26,7 +28,10 @@ function EditorPreview({
             <EditorMessagesProvider
               options={{ locale, direction: locale === "ar" ? "rtl" : "ltr" }}
             >
-              <div className="pve:box-border pve:min-h-64 pve:bg-[var(--pve-surface,#fff)] pve:p-4 pve:font-sans pve:text-sm pve:text-[var(--pve-text,#202127)]">
+              <div
+                data-theme={theme}
+                className="pve:box-border pve:min-h-64 pve:bg-[var(--pve-surface)] pve:p-4 pve:font-sans pve:text-sm pve:text-[var(--pve-text)] pve:[--pve-surface:#fff] pve:[--pve-text:#202127] pve:[--pve-border:#e3e4e8] pve:[--pve-muted:#646773] pve:[--pve-hover:#f1f2f5] pve:data-[theme=dark]:[--pve-surface:#18191d] pve:data-[theme=dark]:[--pve-text:#f0f0f2] pve:data-[theme=dark]:[--pve-border:#454751] pve:data-[theme=dark]:[--pve-muted:#b9bbc4] pve:data-[theme=dark]:[--pve-hover:#30313a]"
+              >
                 <ChromePortalProvider container={container}>
                   {children}
                 </ChromePortalProvider>
@@ -42,15 +47,22 @@ function EditorPreview({
 
 export default {
   globalTypes: {
+    theme: {
+      description: "Editor theme",
+      toolbar: { items: ["light", "dark"] },
+    },
     locale: {
       description: "Editor language and direction",
       toolbar: { items: ["en", "de", "ar"] },
     },
   },
-  initialGlobals: { locale: "en" },
+  initialGlobals: { locale: "en", theme: "light" },
   decorators: [
     (Story, context) => (
-      <EditorPreview locale={context.globals.locale}>
+      <EditorPreview
+        locale={context.globals.locale}
+        theme={context.globals.theme}
+      >
         <Story />
       </EditorPreview>
     ),

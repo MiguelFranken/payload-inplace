@@ -6,3 +6,6 @@
 
 @source "./InlineRichText.tsx";
 @source "../../../lexical/src";
+
+@source "../../../ui/src/inline-editing/**/*.tsx";
+@source not "../../../ui/src/inline-editing/**/*.stories.tsx";

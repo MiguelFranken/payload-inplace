@@ -42,7 +42,8 @@
     "test:workspace": "node scripts/check-workspace-cache.mjs",
     "docs:media": "VE_PORT=3167 VE_PRODUCTION=1 VE_NEXT_DIST_DIR=.next-docs-media playwright test -c playwright.docs.config.ts",
     "storybook": "pnpm --filter @payload-inplace/storybook dev",
-    "build:storybook": "node scripts/run-turbo.mjs run build --filter=@payload-inplace/storybook"
+    "build:storybook": "node scripts/run-turbo.mjs run build --filter=@payload-inplace/storybook",
+    "test:storybook": "playwright test -c playwright.storybook.config.ts"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",

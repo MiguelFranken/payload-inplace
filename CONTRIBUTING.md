@@ -43,6 +43,14 @@ dependency, and test directories from the project tree and file search.
 TypeScript can still return declaration files in Go to Implementation results.
 Use Go to Definition for a direct jump from a demo import to its source.
 
+## Review editor UI in Storybook
+
+Run `corepack pnpm storybook` and open [Storybook](http://localhost:6006).
+The stories live beside components in [packages/ui](packages/ui/README.md).
+Run `corepack pnpm build:storybook` followed by `corepack pnpm test:storybook`
+to check the built preview in Chromium. The demo remains the integration check
+for native Payload forms, permissions, persistence, and live DOM bindings.
+
 ## Validate changes
 
 ```sh
