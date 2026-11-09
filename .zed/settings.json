@@ -1,0 +1,16 @@
+{
+  "file_scan_exclusions": [
+    "...",
+    "**/node_modules",
+    "**/dist",
+    "**/.next*",
+    "**/.turbo",
+    "**/coverage",
+    "**/test-results",
+    "**/playwright-report",
+    "**/release-input-*",
+    "**/release-output",
+    "apps/demo/media",
+    "packages/payload-inplace/assets"
+  ]
+}

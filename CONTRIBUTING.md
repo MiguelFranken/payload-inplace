@@ -38,6 +38,11 @@ language server still has an older build open, run
 `editor: restart language server` from Zed’s command palette.
 The maps use source files from this checkout.
 
+The shared [Zed settings](.zed/settings.json) exclude generated build, cache,
+dependency, and test directories from the project tree and file search.
+TypeScript can still return declaration files in Go to Implementation results.
+Use Go to Definition for a direct jump from a demo import to its source.
+
 ## Validate changes
 
 ```sh
