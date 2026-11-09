@@ -1,9 +1,9 @@
-import { createEditorMessages, type EditorMessages } from "../i18n/messages.js";
-import { localizedLabel } from "../i18n/labels.js";
+import { createEditorMessages, type EditorMessages } from "../i18n/messages";
+import { localizedLabel } from "../i18n/labels";
 import type { ClientBlock, ClientField } from "payload";
-import { getArrayItemPath } from "../../../core/src/annotations.js";
-import { isDocumentMetadataField } from "../../../core/src/document-metadata.js";
-import { namedField } from "../schema/project-fields.js";
+import { getArrayItemPath } from "@payload-inplace/core/annotations";
+import { isDocumentMetadataField } from "@payload-inplace/core/document-metadata";
+import { namedField } from "../schema/project-fields";
 
 /** One authored leaf or structural row change. Stable row IDs prevent a move from appearing as rewritten content. */
 export type DocumentChange = {

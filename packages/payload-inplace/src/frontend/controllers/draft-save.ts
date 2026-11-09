@@ -8,13 +8,13 @@ import {
   useFormModified,
   useLocale,
 } from "@payloadcms/ui";
-import type { EditorTarget } from "../../types.js";
+import type { EditorTarget } from "@internal/types";
 
 import {
   nativeDocumentMethod,
   targetDocumentKey,
-} from "../../state/document-target.js";
-import { nativeDraftAction } from "../../adapters/native-request.js";
+} from "@internal/state/document-target";
+import { nativeDraftAction } from "@internal/adapters/native-request";
 
 /** Manual draft submission delegates to native Form's single-flight guard. */
 export function useNativeDraftSave(target: EditorTarget, disabled: boolean) {

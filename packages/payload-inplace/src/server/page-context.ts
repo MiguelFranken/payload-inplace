@@ -1,6 +1,6 @@
 import type { PayloadRequest } from "payload";
-import type { VisualEditorOptions } from "../types.js";
-import { readEditContext, verifyContext } from "./context.js";
+import type { VisualEditorOptions } from "../types";
+import { readEditContext, verifyContext } from "./context";
 
 /** Read only the explicitly named editor proof; ordinary auth cookies are never interpreted as editing activation. */
 export function readEditorCookie(req: PayloadRequest, nonce: string): string {

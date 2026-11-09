@@ -1,13 +1,13 @@
 "use client";
 
-import { EditorMessage } from "./messages.js";
+import { EditorMessage } from "./messages";
 
 import { lazy, Suspense } from "react";
 import type {
   ContextualFieldProps,
   FieldStrategyDefinition,
-} from "./field-strategies.js";
-import { mediaCollections } from "../schema/media-reference.js";
+} from "./field-strategies";
+import { mediaCollections } from "../schema/media-reference";
 
 export type MediaAsset = {
   id: string | number;
@@ -39,7 +39,7 @@ export interface MediaLibraryAdapter {
 }
 
 const Library = lazy(() =>
-  import("./MediaLibraryField.js").then((module) => ({
+  import("./MediaLibraryField").then((module) => ({
     default: module.MediaLibraryField,
   })),
 );

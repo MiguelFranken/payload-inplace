@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   mergePreviewData,
   normalizePreviewRows,
-} from "../../src/state/preview-data.js";
+} from "../../src/state/preview-data";
 describe("native optimistic projection", () => {
   it("keeps populated relationships only for the same ID and matches reordered rows by stable IDs", () => {
     const initial = {

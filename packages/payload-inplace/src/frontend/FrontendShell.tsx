@@ -3,24 +3,24 @@
 import {
   SectionPatterns,
   type PatternCapabilities,
-} from "./section-patterns.js";
-import { nativeSavedDocument } from "../adapters/native-response.js";
+} from "./section-patterns";
+import { nativeSavedDocument } from "../adapters/native-response";
 import {
   nativeDocumentArgs,
   nativeDocumentPath,
   nativeDocumentMethod,
   targetDocumentKey,
   targetSlug,
-} from "../state/document-target.js";
+} from "../state/document-target";
 import {
   NativeDocumentScopes,
   type ResolvedPageScope,
-} from "./document-scope.js";
-import { useSavedPreview } from "./controllers/saved-preview.js";
-import { useEditorMessages } from "./messages.js";
-import { EditorMessage } from "./messages.js";
+} from "./document-scope";
+import { useSavedPreview } from "./controllers/saved-preview";
+import { useEditorMessages } from "./messages";
+import { EditorMessage } from "./messages";
 
-import { NativeEditorMessages } from "./native-messages.js";
+import { NativeEditorMessages } from "./native-messages";
 import { createPortal } from "react-dom";
 import {
   Component,
@@ -50,43 +50,43 @@ import type { BlocksFieldClientProps, FormState } from "payload";
 import {
   EditorToolsProvider,
   type ResolvedEditorExtension,
-} from "./tools-context.js";
-import { FieldOwnershipProvider } from "./field-ownership.js";
-import type { EditorTool } from "../types.js";
-import type { Activation } from "../types.js";
-import type { StructuralPolicy } from "../state/policy.js";
+} from "./tools-context";
+import { FieldOwnershipProvider } from "./field-ownership";
+import type { EditorTool } from "../types";
+import type { Activation } from "../types";
+import type { StructuralPolicy } from "../state/policy";
 import {
   RecoveryContext,
   NativeSubmissionMonitor,
   useRecoveryState,
-} from "./recovery.js";
-import { ReviewBaselineContext } from "../admin/review-baseline.js";
-import { NativeAutosaveTrigger } from "./NativeAutosaveTrigger.js";
-import { InlinePreviewContext, NativePreviewSync } from "./inline-preview.js";
-import { installNativeRuntimeStyles } from "./native-runtime-styles.js";
+} from "./recovery";
+import { ReviewBaselineContext } from "../admin/review-baseline";
+import { NativeAutosaveTrigger } from "./NativeAutosaveTrigger";
+import { InlinePreviewContext, NativePreviewSync } from "./inline-preview";
+import { installNativeRuntimeStyles } from "./native-runtime-styles";
 import {
   protectNativeAcknowledgement,
   nativeSnapshotMatches,
-} from "../state/acknowledgement.js";
-import { PreviewStatusContext } from "./preview-status.js";
-import type { EditorPreviewSnapshot, EditorPreviewResponse } from "../types.js";
-import { FieldStrategiesProvider } from "./field-strategies.js";
-import { TransientPreviewProvider } from "./transient-preview.js";
-import { EditorLifecycleProvider, useEditorLifecycle } from "./lifecycle.js";
-import type { EditorOperationHandle } from "../../../core/src/events.js";
-import { AdvisoryLockContext, useNativeAdvisoryLock } from "./advisory-lock.js";
-import { FrontendControls } from "./FrontendControls.js";
+} from "../state/acknowledgement";
+import { PreviewStatusContext } from "./preview-status";
+import type { EditorPreviewSnapshot, EditorPreviewResponse } from "../types";
+import { FieldStrategiesProvider } from "./field-strategies";
+import { TransientPreviewProvider } from "./transient-preview";
+import { EditorLifecycleProvider, useEditorLifecycle } from "./lifecycle";
+import type { EditorOperationHandle } from "@payload-inplace/core/events";
+import { AdvisoryLockContext, useNativeAdvisoryLock } from "./advisory-lock";
+import { FrontendControls } from "./FrontendControls";
 
 type ShellProps = {
   diagnostics?: boolean;
   patterns?: PatternCapabilities;
   pageScopes?: ResolvedPageScope[];
   sharedStructure?: boolean;
-  ui?: import("../i18n/messages.js").EditorUIOptions;
+  ui?: import("../i18n/messages").EditorUIOptions;
   strategyProviders?: ReactNode;
-  catalogue?: import("../types.js").VisualEditorOptions["catalogue"];
-  richTextCapabilities?: import("../adapters/richtext-capabilities.js").RichTextCapabilities;
-  blockControls?: import("../types.js").VisualEditorOptions["blockControls"];
+  catalogue?: import("../types").VisualEditorOptions["catalogue"];
+  richTextCapabilities?: import("../adapters/richtext-capabilities").RichTextCapabilities;
+  blockControls?: import("../types").VisualEditorOptions["blockControls"];
   tools: EditorTool[];
   extensions: ResolvedEditorExtension[];
   children: ReactNode;

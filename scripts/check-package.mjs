@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
+import { importEdges } from "./import-boundaries.mjs";
 
 const output = execFileSync(
   "corepack",
@@ -40,6 +41,15 @@ if (!entries.includes("package/NOTICE"))
 for (const entry of entries)
   if (/(?:node_modules|dev\/|test-results|\.env|\.git\/)/.test(entry))
     throw Error(`Unexpected private/dev package entry ${entry}`);
+
+// The standalone npm package must never require its workspace or source aliases.
+for (const entry of entries) {
+  if (!/^package\/dist\/.*\.(?:js|d\.ts)$/.test(entry)) continue;
+  const file = path.join("packages/payload-inplace", entry.slice("package/".length));
+  for (const { spec } of importEdges(file, fs.readFileSync(file, "utf8")))
+    if (/^@(?:internal|payload-inplace)\//.test(spec))
+      throw Error(`Private workspace import leaked into ${entry}: ${spec}`);
+}
 
 const visit = (file, seen = new Set()) => {
   file = path.resolve(file);

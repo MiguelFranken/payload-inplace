@@ -1,8 +1,8 @@
 import { expect, it, vi } from "vitest";
 import { act, renderHook } from "@testing-library/react";
-import { createDeferredResponse } from "../../src/testing/fixtures.js";
-import { useSavedPreview } from "../../src/frontend/controllers/saved-preview.js";
-import type { EditorPreviewResponse } from "../../src/types.js";
+import { createDeferredResponse } from "../../src/testing/fixtures";
+import { useSavedPreview } from "../../src/frontend/controllers/saved-preview";
+import type { EditorPreviewResponse } from "../../src/types";
 
 const state = vi.hoisted(() => ({
   start: vi.fn(() => ({ id: "synthetic-operation", settle: vi.fn() })),

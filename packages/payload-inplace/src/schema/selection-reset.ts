@@ -1,5 +1,5 @@
 import type { FieldState } from "payload";
-import type { ResolvedBinding } from "./resolve-binding.js";
+import type { ResolvedBinding } from "./resolve-binding";
 
 /** A reset is offered only for a known writable native value. Groups, custom
  * fields, required values and whole lists stay in their native settings.

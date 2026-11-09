@@ -1,5 +1,5 @@
-import type { CommandIssue } from "../state/command-issue.js";
-import type { EditorMessages } from "./messages.js";
+import type { CommandIssue } from "../state/command-issue";
+import type { EditorMessages } from "./messages";
 
 /** Translate stable reasons at the UI boundary; domain decisions and saved/native errors do not depend on language. */
 export function formatCommandIssue(

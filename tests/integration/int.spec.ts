@@ -18,7 +18,7 @@ beforeAll(async () => {
     throw new Error("Provide an isolated visual_editor Postgres database");
   process.env.VE_SEED = "1";
   process.env.VE_TEST_SCHEMA = "1";
-  const config = (await import("./payload.config.js")).default;
+  const config = (await import("../../apps/demo/payload.config.js")).default;
   payload = await getPayload({ config });
 });
 
@@ -109,7 +109,7 @@ it("enforces actual read/update/host capability with a permitted control", async
     limit: 1,
   });
   const id = pages.docs[0].id;
-  const { editorOptions } = await import("./payload.config.js");
+  const { editorOptions } = await import("../../apps/demo/payload.config.js");
   const users = await payload.find({
     collection: "users",
     overrideAccess: true,
@@ -602,7 +602,7 @@ it.skipIf(process.env.VE_DATABASE !== "postgres")(
     const { createContext, signContext } = await import(
       "../../packages/payload-inplace/src/server/context.js"
     );
-    const { editorOptions } = await import("./payload.config.js");
+    const { editorOptions } = await import("../../apps/demo/payload.config.js");
     const admins = await payload.find({
       collection: "users",
       where: { role: { equals: "admin" } },
@@ -841,7 +841,7 @@ it.skipIf(process.env.VE_DATABASE !== "postgres")(
     const { signDocumentReview } = await import(
       "../../packages/payload-inplace/src/server/review.js"
     );
-    const options = (await import("./payload.config.js")).editorOptions;
+    const options = (await import("../../apps/demo/payload.config.js")).editorOptions;
     const user = (
       await payload.find({
         collection: "users",
@@ -1017,7 +1017,7 @@ it.runIf(process.env.VE_DATABASE === "postgres")(
     const { manageAdvisoryLock } = await import(
       "../../packages/payload-inplace/src/server/advisory-lock.js"
     );
-    const options = (await import("./payload.config.js")).editorOptions;
+    const options = (await import("../../apps/demo/payload.config.js")).editorOptions;
     const users = (
       await payload.find({ collection: "users", overrideAccess: true })
     ).docs;
@@ -1104,8 +1104,8 @@ it("keeps consumer-owned pattern storage behind native record ACL without changi
   const { createContext, signContext } = await import(
     "../../packages/payload-inplace/src/server/context.js"
   );
-  const { patternAdapter } = await import("./lib/pattern-fixture.js");
-  const editorOptions = (await import("./payload.config.js")).editorOptions;
+  const { patternAdapter } = await import("../../apps/demo/lib/pattern-fixture.js");
+  const editorOptions = (await import("../../apps/demo/payload.config.js")).editorOptions;
   const options = { ...editorOptions, patterns: patternAdapter };
   const users = (
     await payload.find({ collection: "users", overrideAccess: true })
@@ -1203,7 +1203,7 @@ it.skipIf(process.env.VE_DATABASE !== "postgres")(
     const { manageAdvisoryLock } = await import(
       "../../packages/payload-inplace/src/server/advisory-lock.js"
     );
-    const { editorOptions } = await import("./payload.config.js");
+    const { editorOptions } = await import("../../apps/demo/payload.config.js");
     const user = (
       await payload.find({
         collection: "users",

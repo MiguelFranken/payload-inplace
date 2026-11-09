@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { nativeDraftAction } from "../../src/adapters/native-request.js";
+import { nativeDraftAction } from "../../src/adapters/native-request";
 it("scopes manual and automatic native submissions to the selected content locale", () => {
   for (const autosave of [false, true]) {
     const url = new URL(

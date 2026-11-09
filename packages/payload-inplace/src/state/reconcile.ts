@@ -2,9 +2,9 @@ import type { ClientBlock, ClientField } from "payload";
 import {
   readStableValue,
   writeStableValue,
-} from "../../../core/src/stable-value.js";
-import { assertReconcileIdentities } from "../schema/reconcile-identities.js";
-import { documentChanges, type DocumentChange } from "./document-diff.js";
+} from "@payload-inplace/core/stable-value";
+import { assertReconcileIdentities } from "../schema/reconcile-identities";
+import { documentChanges, type DocumentChange } from "./document-diff";
 
 export interface ReconciliationConflict {
   labels: string[];

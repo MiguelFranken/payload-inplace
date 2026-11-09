@@ -8,10 +8,10 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useEditorMessages } from "./messages.js";
+import { useEditorMessages } from "./messages";
 import { useConfig, useForm } from "@payloadcms/ui";
 import { useRouter } from "next/navigation";
-import type { Activation, BlockIdentity, EditorTool } from "../types.js";
+import type { Activation, BlockIdentity, EditorTool } from "../types";
 
 /** Serializable, capability-filtered tools. Panel content is resolved through Payload's import map on the server. */
 export interface ResolvedEditorExtension {

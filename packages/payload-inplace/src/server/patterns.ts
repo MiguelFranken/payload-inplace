@@ -7,12 +7,12 @@ import {
   type PayloadRequest,
   type SanitizedGlobalConfig,
 } from "payload";
-import type { EditorCapabilityContext, VisualEditorOptions } from "../types.js";
-import { readEditContext } from "./context.js";
-import { nativeDocumentConfig } from "./document.js";
-import { resolveRoot } from "../schema/resolve.js";
-import { collectSections } from "../schema/tree.js";
-import { copyPatternFields } from "../schema/pattern-copy.js";
+import type { EditorCapabilityContext, VisualEditorOptions } from "../types";
+import { readEditContext } from "./context";
+import { nativeDocumentConfig } from "./document";
+import { resolveRoot } from "../schema/resolve";
+import { collectSections } from "../schema/tree";
+import { copyPatternFields } from "../schema/pattern-copy";
 
 /** Reauthorize a library operation independently from draft editing; the adapter must enforce its own storage/tenant ACL too. */
 export async function patternOperation(
@@ -24,7 +24,7 @@ export async function patternOperation(
     page?: number;
     id?: string;
     label?: string;
-    identity?: import("../types.js").BlockIdentity;
+    identity?: import("../types").BlockIdentity;
     expectedRevision?: unknown;
   },
 ) {
@@ -56,7 +56,7 @@ export async function patternOperation(
       choices.some((block) => block?.slug === slug),
     ),
   );
-  const validSummary = (value: import("../types.js").SectionPatternSummary) =>
+  const validSummary = (value: import("../types").SectionPatternSummary) =>
     typeof value.id === "string" &&
     value.id.length > 0 &&
     value.id.length <= 128 &&

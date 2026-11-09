@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { nativeSavedDocument } from "../../src/adapters/native-response.js";
+import { nativeSavedDocument } from "../../src/adapters/native-response";
 it("normalizes real v3 collection/global envelopes without mutating native content", () => {
   const collection = { collection: "pages", id: 1 },
     global = { kind: "global" as const, global: "header" };

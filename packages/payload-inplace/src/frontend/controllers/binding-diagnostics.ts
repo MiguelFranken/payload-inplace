@@ -2,10 +2,10 @@
 
 import { useCallback, useRef } from "react";
 import type { useForm } from "@payloadcms/ui";
-import type { InspectionTarget } from "../InspectionLayer.js";
-import type { NativeSection } from "../../schema/tree.js";
-import { resolveBinding } from "../../schema/resolve-binding.js";
-import { diagnoseBinding } from "../../schema/binding-diagnostics.js";
+import type { InspectionTarget } from "../InspectionLayer";
+import type { NativeSection } from "@internal/schema/tree";
+import { resolveBinding } from "@internal/schema/resolve-binding";
+import { diagnoseBinding } from "@internal/schema/binding-diagnostics";
 
 /** Opt-in development diagnostics run only on a selection, not in a document-wide observer or visitor graph. Deduplicated metadata excludes content values. */
 export function useBindingDiagnostics(

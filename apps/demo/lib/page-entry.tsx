@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { createLocalReq, getPayload } from "payload";
 import config, { editorOptions } from "@payload-config";
-import { readPageEditContext } from "../../../packages/payload-inplace/dist/exports/server.js";
+import { readPageEditContext } from "payload-inplace/server";
 import PublishedPage from "../app/(public)/[collection]/[slug]/page";
 import { DocumentEditor } from "../app/(protected)/visual-editor/page";
 

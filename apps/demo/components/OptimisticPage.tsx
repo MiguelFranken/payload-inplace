@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { useEditorPreviewData } from "../../../packages/payload-inplace/dist/exports/frontend.js";
+import { useEditorPreviewData } from "payload-inplace/frontend";
 import { RenderPageView } from "./RenderPageView";
 
 /** Only the explicitly activated route uses a client renderer. Public pages remain server components. */

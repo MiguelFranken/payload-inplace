@@ -1,11 +1,11 @@
 import { expect, it, vi, afterEach } from "vitest";
 import { act, render, screen } from "@testing-library/react";
-import { EditorMessagesProvider } from "../../src/frontend/messages.js";
-import { MediaLibraryField } from "../../src/frontend/MediaLibraryField.js";
+import { EditorMessagesProvider } from "../../src/frontend/messages";
+import { MediaLibraryField } from "../../src/frontend/MediaLibraryField";
 import type {
   MediaLibraryAdapter,
   MediaPage,
-} from "../../src/frontend/media-library.js";
+} from "../../src/frontend/media-library";
 afterEach(() => vi.useRealTimers());
 it("retranslates a late failure without restarting native-adjacent work or changing host direction", async () => {
   vi.useFakeTimers();

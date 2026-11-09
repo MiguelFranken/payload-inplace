@@ -3,7 +3,7 @@ import type {
   SanitizedCollectionConfig,
   SanitizedGlobalConfig,
 } from "payload";
-import type { EditorDocument } from "../types.js";
+import type { EditorDocument } from "../types";
 
 /** Resolve only configured native entities; callers still perform current access checks. */
 export function nativeDocumentConfig(

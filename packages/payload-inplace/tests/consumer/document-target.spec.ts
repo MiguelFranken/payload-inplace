@@ -6,7 +6,7 @@ import {
   parseEditorTarget,
   targetDocumentKey,
   targetScopeKey,
-} from "../../src/state/document-target.js";
+} from "../../src/state/document-target";
 it("keeps global and collection identities, native endpoints and roots distinct", () => {
   const global = { kind: "global" as const, global: "pages", root: "layout" },
     collection = { collection: "pages", id: "pages", root: "layout" };

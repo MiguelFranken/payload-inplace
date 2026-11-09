@@ -1,6 +1,6 @@
 import { sql } from "@payloadcms/db-postgres";
 import type { PostgresAdapter } from "@payloadcms/db-postgres";
-import type { ConcurrencyAdapter } from "../types.js";
+import type { ConcurrencyAdapter } from "../types";
 
 /** Payload 3.91 transaction adapter: serialize the document before native update/restore reads.
  * No direct writes to Payload content/version tables. Transaction-scoped locks release on commit/rollback.

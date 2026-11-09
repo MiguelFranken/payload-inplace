@@ -1,5 +1,5 @@
-import { indexBlocks, resolveIdentity } from "./identity.js";
-import type { InsertionTarget } from "./insertion.js";
+import { indexBlocks, resolveIdentity } from "./identity";
+import type { InsertionTarget } from "./insertion";
 
 /** A disposable presentation delta, never native Form state or a persisted document copy. */
 export interface InsertionProjection {

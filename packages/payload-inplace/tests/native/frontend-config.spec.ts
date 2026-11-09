@@ -3,7 +3,7 @@ import {
   frontendConfig,
   synchronizeNativeSchemaCaches,
   withFrontendImportMap,
-} from "../../src/server/frontend-config.js";
+} from "../../src/server/frontend-config";
 
 it("removes shell CSS entrypoints while preserving native fields, drawers, hooks and extensions", () => {
   const field = {

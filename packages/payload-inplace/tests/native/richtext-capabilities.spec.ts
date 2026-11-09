@@ -1,9 +1,9 @@
 import { expect, it } from "vitest";
 import type { Field, SanitizedConfig } from "payload";
-import { resolveRootSchemaPath } from "../../src/schema/resolve.js";
-import { collectSections } from "../../src/schema/tree.js";
-import { resolveBinding } from "../../src/schema/resolve-binding.js";
-import { richTextCapabilities } from "../../src/adapters/richtext-capabilities.js";
+import { resolveRootSchemaPath } from "../../src/schema/resolve";
+import { collectSections } from "../../src/schema/tree";
+import { resolveBinding } from "../../src/schema/resolve-binding";
+import { richTextCapabilities } from "../../src/adapters/richtext-capabilities";
 it("projects only native v3 Lexical capabilities by native schema paths and retains heading constraints", () => {
   const native = {
     name: "body",

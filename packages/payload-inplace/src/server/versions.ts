@@ -1,8 +1,8 @@
 import type { CollectionSlug, PayloadRequest } from "payload";
-import type { VisualEditorOptions } from "../types.js";
-import { isDocumentMetadataField } from "../../../core/src/document-metadata.js";
-import { readEditContext } from "./context.js";
-import { resolveTools } from "./tools.js";
+import type { VisualEditorOptions } from "../types";
+import { isDocumentMetadataField } from "@payload-inplace/core/document-metadata";
+import { readEditContext } from "./context";
+import { resolveTools } from "./tools";
 
 interface VersionRow {
   id: string | number;

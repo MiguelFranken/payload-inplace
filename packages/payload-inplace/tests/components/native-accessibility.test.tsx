@@ -1,7 +1,7 @@
 import { expect, it, vi } from "vitest";
 import { screen } from "@testing-library/react";
-import { installNativeUploadLabels } from "../../src/admin/native-accessibility.js";
-import { createEditorMessages } from "../../src/i18n/messages.js";
+import { installNativeUploadLabels } from "../../src/admin/native-accessibility";
+import { createEditorMessages } from "../../src/i18n/messages";
 vi.mock("@payloadcms/ui", () => ({ useModal: vi.fn() }));
 it("labels native date inputs and clear controls only inside the mounted editor, preserving consumer names", () => {
   const root = document.createElement("div");

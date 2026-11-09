@@ -1,6 +1,6 @@
 import { expect, it, vi } from "vitest";
 import type { DefaultServerFunctionArgs } from "payload";
-import { scopeNativeFunction } from "../../src/adapters/native-function-scope.js";
+import { scopeNativeFunction } from "../../src/adapters/native-function-scope";
 it("applies the current server-authorized locale and user after client/native arguments", async () => {
   const req = { locale: "de" },
     user = { id: "editor" },

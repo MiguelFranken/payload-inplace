@@ -1,6 +1,6 @@
 "use client";
 
-import { useEditorMessages } from "./messages.js";
+import { useEditorMessages } from "./messages";
 
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { Plus } from "lucide-react";
@@ -8,15 +8,15 @@ import type { ClientBlock } from "payload";
 import {
   documentKey,
   type DocumentReference,
-} from "../../../core/src/document-ref.js";
-import type { InsertionTarget } from "../../../core/src/insertion.js";
-import { elementRect } from "../preview/geometry.js";
-import { sectionElement } from "./BlockReorder.js";
-import type { NativeSection } from "../schema/tree.js";
-import { Button } from "./ui/button.js";
-import { ChromeTooltip } from "./ui/tooltip.js";
-import { CatalogueLauncher as SectionCatalogue } from "./CatalogueLauncher.js";
-import type { EditorCatalogueEntry } from "../types.js";
+} from "@payload-inplace/core/document-ref";
+import type { InsertionTarget } from "@payload-inplace/core/insertion";
+import { elementRect } from "../preview/geometry";
+import { sectionElement } from "./BlockReorder";
+import type { NativeSection } from "../schema/tree";
+import { Button } from "./ui/button";
+import { ChromeTooltip } from "./ui/tooltip";
+import { CatalogueLauncher as SectionCatalogue } from "./CatalogueLauncher";
+import type { EditorCatalogueEntry } from "../types";
 
 type Hover = {
   element: HTMLElement;

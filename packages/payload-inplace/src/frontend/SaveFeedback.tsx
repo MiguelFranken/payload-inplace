@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, Check, LoaderCircle } from "lucide-react";
-import { ChromeTooltip } from "./ui/tooltip.js";
+import { ChromeTooltip } from "./ui/tooltip";
 
 /** Persistence feedback has no layout footprint. Acknowledged saves show briefly; initial clean documents stay quiet. */
 export function useSaveFeedback({

@@ -4,11 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsdown --no-config --unbundle --dts --target es2022 src/*.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test:unit": "vitest run --config ../../vitest.config.ts --project unit:core"
   },
   "exports": {
-    "./*": "./dist/*.js"
+    "./*": "./src/*.ts"
   }
 }

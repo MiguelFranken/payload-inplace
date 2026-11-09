@@ -1,7 +1,7 @@
 "use client";
 
-import { useEditorPreviewData } from "../../../packages/payload-inplace/dist/exports/frontend.js";
-import type { EditorTarget } from "../../../packages/payload-inplace/dist/exports/types.js";
+import { useEditorPreviewData } from "payload-inplace/frontend";
+import type { EditorTarget } from "payload-inplace/types";
 import {
   ScopeFixtureView,
   type ScopeFixtureDocument,

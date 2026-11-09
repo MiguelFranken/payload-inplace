@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, use, useEffect, useRef, useState } from "react";
-import type { AdvisoryLockState } from "../server/advisory-lock.js";
+import type { AdvisoryLockState } from "../server/advisory-lock";
 
 export const AdvisoryLockContext = createContext<
   AdvisoryLockState & { retry?: () => void }

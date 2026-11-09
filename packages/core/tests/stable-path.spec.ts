@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { stableDataPath } from "../src/stable-path.js";
+import { stableDataPath } from "../src/stable-path";
 
 it("maps named-tab and nested array paths to encoded stable identities after reordering", () => {
   const doc = {

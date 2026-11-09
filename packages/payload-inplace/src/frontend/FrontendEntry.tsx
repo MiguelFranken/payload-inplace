@@ -1,13 +1,13 @@
 "use client";
 
-import type { EditorStaticMessageKey } from "../i18n/catalogue.js";
-import { EditorMessageError, editorErrorKey } from "../i18n/failure.js";
-import { useEditorMessages } from "./messages.js";
+import type { EditorStaticMessageKey } from "../i18n/catalogue";
+import { EditorMessageError, editorErrorKey } from "../i18n/failure";
+import { useEditorMessages } from "./messages";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { EditorUIOptions } from "../i18n/messages.js";
-import type { EditorTarget } from "../types.js";
+import type { EditorUIOptions } from "../i18n/messages";
+import type { EditorTarget } from "../types";
 import "../admin/styles.css";
 
 /** Explicit frontend sign-in/activation; merely visiting a public page never mounts this component. */

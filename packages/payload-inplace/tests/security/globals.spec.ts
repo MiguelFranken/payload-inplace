@@ -1,8 +1,8 @@
 import { expect, it, vi } from "vitest";
 import type { GlobalConfig, PayloadRequest } from "payload";
-import { configureGlobals } from "../../src/server/globals.js";
-import { signDocumentReview } from "../../src/server/review.js";
-import type { VisualEditorOptions } from "../../src/types.js";
+import { configureGlobals } from "../../src/server/globals";
+import { signDocumentReview } from "../../src/server/review";
+import type { VisualEditorOptions } from "../../src/types";
 
 const state = vi.hoisted(() => ({
   latest: {

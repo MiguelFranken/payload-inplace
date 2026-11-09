@@ -6,7 +6,7 @@ import {
   useFieldStrategy,
   defineFieldStrategy,
   ContextualFieldEditor,
-} from "../../src/frontend/field-strategies.js";
+} from "../../src/frontend/field-strategies";
 import type { ClientField, FieldState } from "payload";
 
 const bridge = vi.hoisted(() => ({

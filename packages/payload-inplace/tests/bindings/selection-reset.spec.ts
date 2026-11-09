@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
-import { selectionReset } from "../../src/schema/selection-reset.js";
-import { resolveBinding } from "../../src/schema/resolve-binding.js";
+import { selectionReset } from "../../src/schema/selection-reset";
+import { resolveBinding } from "../../src/schema/resolve-binding";
 import type { ClientField, FieldState } from "payload";
 
 const fields: ClientField[] = [

@@ -2,4 +2,4 @@
 
 import "./styles.css";
 
-export { GuardedRestore as default } from "./GuardedRestore.js";
+export { GuardedRestore as default } from "./GuardedRestore";

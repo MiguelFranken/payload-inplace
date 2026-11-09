@@ -1,10 +1,10 @@
 "use client";
 
-import { useEditorMessages } from "../frontend/messages.js";
+import { useEditorMessages } from "../frontend/messages";
 
 import { Button, useConfig, useTranslation, useLocale } from "@payloadcms/ui";
 import { useState } from "react";
-import { DocumentReview } from "./DocumentReview.js";
+import { DocumentReview } from "./DocumentReview";
 
 /** Restoring creates a guarded draft; publication remains a separate reviewed operation. */
 export function GuardedRestore({

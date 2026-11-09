@@ -1,5 +1,5 @@
 import type { ClientField, FormState } from "payload";
-import { editable } from "../../../core/src/editable.js";
+import { editable } from "@payload-inplace/core/editable";
 
 /** Synthetic schema/content only. It neither connects to Payload nor emulates access, save acknowledgements or transactions. */
 export function createEditorFixture() {

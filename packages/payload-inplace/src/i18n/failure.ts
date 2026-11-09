@@ -1,4 +1,4 @@
-import type { EditorStaticMessageKey } from "./catalogue.js";
+import type { EditorStaticMessageKey } from "./catalogue";
 
 /** Plugin-owned failures retain a message identity through asynchronous work; native/consumer field validation stays native text. */
 export class EditorMessageError extends Error {

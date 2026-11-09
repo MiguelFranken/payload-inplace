@@ -97,3 +97,33 @@ it("keeps test fixtures out of production source even through relative imports",
     ),
   ).not.toThrow();
 });
+
+it("enforces the same boundaries through workspace aliases and demo imports", () => {
+  const repository = process.cwd();
+  const client = path.join(
+    repository,
+    "packages/payload-inplace/src/frontend/case.tsx",
+  );
+  expect(() =>
+    checkSourceBoundary(
+      client,
+      '"use client"; import "@internal/server/context";',
+      repository,
+    ),
+  ).toThrow("server");
+  expect(() =>
+    checkSourceBoundary(
+      client,
+      'import "@internal/testing/fixtures";',
+      repository,
+    ),
+  ).toThrow("testing helper");
+  const demo = path.join(repository, "apps/demo/next.config.mjs");
+  expect(() =>
+    checkSourceBoundary(
+      demo,
+      'import "../../packages/payload-inplace/dist/exports/next.js";',
+      repository,
+    ),
+  ).toThrow("public package exports");
+});

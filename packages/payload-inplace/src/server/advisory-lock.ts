@@ -5,10 +5,10 @@ import {
   type PayloadRequest,
   type Where,
 } from "payload";
-import type { VisualEditorOptions } from "../types.js";
-import { nativeDocumentConfig } from "./document.js";
-import { targetDocumentKey } from "../state/document-target.js";
-import { readEditContext } from "./context.js";
+import type { VisualEditorOptions } from "../types";
+import { nativeDocumentConfig } from "./document";
+import { targetDocumentKey } from "../state/document-target";
+import { readEditContext } from "./context";
 
 const collection = "payload-locked-documents" as const;
 

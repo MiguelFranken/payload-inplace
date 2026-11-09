@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
-import { projectInsertion } from "../../../core/src/projection.js";
-import { previewExample } from "../../src/schema/example-preview.js";
-import { projectCatalogue } from "../../src/server/catalogue.js";
+import { projectInsertion } from "@payload-inplace/core/projection";
+import { previewExample } from "../../src/schema/example-preview";
+import { projectCatalogue } from "../../src/server/catalogue";
 import type { ClientField, ClientBlock, BlocksFieldClientProps } from "payload";
 it("projects stable neighbor insertion without mutating native values or retaining stale positions", () => {
   const doc = {

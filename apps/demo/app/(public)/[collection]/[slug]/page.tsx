@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { EditorLauncher } from "../../../../../../packages/payload-inplace/dist/exports/launcher.js";
+import { EditorLauncher } from "payload-inplace/launcher";
 import { createLocalReq } from "payload";
 import { getPayload } from "payload";
 import config, { editorOptions } from "@payload-config";

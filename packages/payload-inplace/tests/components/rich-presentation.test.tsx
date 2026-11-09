@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { createRichSurface } from "../../src/frontend/rich-presentation.js";
+import { createRichSurface } from "../../src/frontend/rich-presentation";
 it("preserves nested renderer typography and grid placement without freezing computed sizes", () => {
   const original = document.createElement("div");
   original.className = "grid grid-cols-3";
@@ -35,9 +35,9 @@ it("keeps a direct rich root as-is instead of treating a paragraph or heading as
 });
 
 it("decorates supported nodes without disrupting a rich document containing opaque nodes", async () => {
-  const { mountRichEditor } = await import("../../../lexical/src/editor.js");
+  const { mountRichEditor } = await import("@payload-inplace/lexical/editor");
   const { preserveRichClasses } = await import(
-    "../../src/frontend/rich-presentation.js"
+    "../../src/frontend/rich-presentation"
   );
   const original = document.createElement("div");
   original.innerHTML =

@@ -1,6 +1,6 @@
 import { expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { Floatable } from "../../src/frontend/Floatable.js";
+import { Floatable } from "../../src/frontend/Floatable";
 vi.mock("@payloadcms/ui", () => ({
   useTranslation: () => ({ i18n: { language: "en" } }),
 }));

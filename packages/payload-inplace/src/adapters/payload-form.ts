@@ -1,15 +1,15 @@
-import { commandIssueText, type CommandIssue } from "../state/command-issue.js";
+import { commandIssueText, type CommandIssue } from "../state/command-issue";
 import type { FormState } from "payload";
 import type { useForm } from "@payloadcms/ui";
-import type { BlockIdentity } from "../types.js";
+import type { BlockIdentity } from "../types";
 import {
   snapshotRoot,
   materializeStructuralRestore,
-} from "../state/history.js";
-import { indexBlocks, resolveIdentity } from "../state/identity.js";
-import { structureTransitionIssue } from "../state/policy.js";
-import type { StructuralPolicy } from "../state/policy.js";
-import type { StructuralHistory } from "../state/history.js";
+} from "../state/history";
+import { indexBlocks, resolveIdentity } from "../state/identity";
+import { structureTransitionIssue } from "../state/policy";
+import type { StructuralPolicy } from "../state/policy";
+import type { StructuralHistory } from "../state/history";
 
 type NativeForm = ReturnType<typeof useForm>;
 

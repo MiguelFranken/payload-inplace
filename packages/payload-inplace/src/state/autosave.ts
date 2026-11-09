@@ -1,4 +1,4 @@
-import { isDocumentMetadataField } from "../../../core/src/document-metadata.js";
+import { isDocumentMetadataField } from "@payload-inplace/core/document-metadata";
 import type { FormState } from "payload";
 
 /** Local preview is immediate; persistence waits for a typing pause even when a consumer's legacy live-preview interval is very short. */

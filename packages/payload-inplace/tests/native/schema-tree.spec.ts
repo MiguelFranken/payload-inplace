@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { collectSections } from "../../src/schema/tree.js";
+import { collectSections } from "../../src/schema/tree";
 
 const leaf = { slug: "copy", fields: [{ name: "heading", type: "text" }] };
 

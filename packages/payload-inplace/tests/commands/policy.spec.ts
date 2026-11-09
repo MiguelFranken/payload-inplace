@@ -2,7 +2,7 @@ import { expect, it } from "vitest";
 import {
   structureError,
   structureTransitionError,
-} from "../../src/state/policy.js";
+} from "../../src/state/policy";
 
 const hero = { blockType: "hero" },
   dates = { blockType: "dates" },

@@ -1,4 +1,4 @@
-import type { BlockIdentity } from "./types.js";
+import type { BlockIdentity } from "./types";
 
 /** Anchors carry identity, not stale array positions, until a command executes. */
 export type InsertionTarget =

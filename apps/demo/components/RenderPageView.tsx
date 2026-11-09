@@ -5,7 +5,7 @@ import {
   getFieldAttributes,
   getArrayItemAttributes,
   getArrayItemPath,
-} from "../../../packages/payload-inplace/dist/exports/bindings.js";
+} from "payload-inplace/bindings";
 
 /** The exact same server renderer serves public and authorized preview surfaces. */
 export function RenderPageView({

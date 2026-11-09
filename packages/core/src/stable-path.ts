@@ -1,4 +1,4 @@
-import { getArrayItemPath } from "./annotations.js";
+import { getArrayItemPath } from "./annotations";
 
 /** Convert a transient native numeric path into an ID path for comparison/navigation only. */
 export function stableDataPath(

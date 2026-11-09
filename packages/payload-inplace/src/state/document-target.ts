@@ -2,11 +2,11 @@ import type {
   EditorDocument,
   EditorTarget,
   VisualEditorOptions,
-} from "../types.js";
+} from "../types";
 import {
   documentKey as referenceKey,
   type DocumentReference,
-} from "../../../core/src/document-ref.js";
+} from "@payload-inplace/core/document-ref";
 
 /** Normalize legacy collection targets into discriminated provenance, without widening their authorization. */
 export function documentReference(target: EditorDocument): DocumentReference {

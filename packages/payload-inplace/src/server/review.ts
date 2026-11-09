@@ -1,13 +1,13 @@
-import type { EditorDocument } from "../types.js";
+import type { EditorDocument } from "../types";
 import {
   documentReference,
   targetDocumentKey,
-} from "../state/document-target.js";
-import { contentLocale } from "./content-locale.js";
+} from "../state/document-target";
+import { contentLocale } from "./content-locale";
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import type { PayloadRequest } from "payload";
-import { isDocumentMetadataField } from "../../../core/src/document-metadata.js";
-import { currentSession } from "./context.js";
+import { isDocumentMetadataField } from "@payload-inplace/core/document-metadata";
+import { currentSession } from "./context";
 
 /** Canonical authored-input hash excludes server metadata but retains nested row identities. */
 export function contentHash(data: Record<string, unknown>): string {

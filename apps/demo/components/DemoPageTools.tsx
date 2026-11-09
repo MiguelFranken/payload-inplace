@@ -1,7 +1,7 @@
 "use client";
 
 import { useDocumentInfo } from "@payloadcms/ui";
-import { NativeFieldSlot } from "../../../packages/payload-inplace/dist/exports/frontend.js";
+import { NativeFieldSlot } from "payload-inplace/frontend";
 
 /** Consumer-defined metadata control renders inside the shared contextual surface. */
 export function DemoPageTools() {

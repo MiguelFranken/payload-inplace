@@ -2,8 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { PROTOCOL, validateMessage } from "./protocol.js";
-import { elementRect } from "./geometry.js";
+import { PROTOCOL, validateMessage } from "./protocol";
+import { elementRect } from "./geometry";
 import "./styles.css";
 
 /** Mount once, exclusively after current authorization and explicit activation on the private preview. */

@@ -2,11 +2,11 @@
 
 import { lazy, Suspense, useState, useId, type ComponentProps } from "react";
 import { Plus } from "lucide-react";
-import { Button } from "./ui/button.js";
-import type { SectionCatalogue } from "./SectionCatalogue.js";
+import { Button } from "./ui/button";
+import type { SectionCatalogue } from "./SectionCatalogue";
 
 const Catalogue = lazy(() =>
-  import("./SectionCatalogue.js").then((module) => ({
+  import("./SectionCatalogue").then((module) => ({
     default: module.SectionCatalogue,
   })),
 );

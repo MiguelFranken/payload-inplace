@@ -1,13 +1,13 @@
 "use client";
 
-import type { EditorStaticMessageKey } from "../i18n/catalogue.js";
-import { EditorMessageError, editorErrorKey } from "../i18n/failure.js";
+import type { EditorStaticMessageKey } from "../i18n/catalogue";
+import { EditorMessageError, editorErrorKey } from "../i18n/failure";
 import {
   nativeDocumentArgs,
   targetFromNativeInfo,
   targetSlug,
-} from "../state/document-target.js";
-import { useEditorMessages } from "./messages.js";
+} from "../state/document-target";
+import { useEditorMessages } from "./messages";
 
 import { Radio } from "@base-ui/react/radio";
 import { RadioGroup } from "@base-ui/react/radio-group";
@@ -24,12 +24,12 @@ import {
   reconcileDocuments,
   resolveReconciliation,
   type DocumentReconciliation,
-} from "../state/reconcile.js";
-import { authoredFieldKey } from "../state/autosave.js";
-import { DocumentReview } from "../admin/DocumentReview.js";
-import { reviewText } from "../state/document-diff.js";
-import { Button } from "./ui/button.js";
-import { useEditorRecovery } from "./recovery.js";
+} from "../state/reconcile";
+import { authoredFieldKey } from "../state/autosave";
+import { DocumentReview } from "../admin/DocumentReview";
+import { reviewText } from "../state/document-diff";
+import { Button } from "./ui/button";
+import { useEditorRecovery } from "./recovery";
 
 /** This panel owns comparison snapshots only. Cancellation changes no native values; explicit acceptance rehydrates the sole Form and its existing save queue. */
 export function ConflictReview({ onApplied }: { onApplied: () => void }) {

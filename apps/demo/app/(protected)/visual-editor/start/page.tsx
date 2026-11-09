@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { getPayload, createLocalReq } from "payload";
 import config, { editorOptions } from "@payload-config";
-import { FrontendEntry } from "../../../../../../packages/payload-inplace/dist/exports/entry.js";
+import { FrontendEntry } from "payload-inplace/entry";
 import { RenderPage } from "../../../../components/RenderPage";
 
 export const metadata = { robots: { index: false, follow: false } };

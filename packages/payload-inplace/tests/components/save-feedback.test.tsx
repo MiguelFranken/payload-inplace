@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
-import { useSaveFeedback } from "../../src/frontend/SaveFeedback.js";
+import { useSaveFeedback } from "../../src/frontend/SaveFeedback";
 afterEach(() => vi.useRealTimers());
 it("stays quiet initially and dismisses a real acknowledgement after two seconds plus exit motion", () => {
   vi.useFakeTimers();

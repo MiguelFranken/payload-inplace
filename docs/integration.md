@@ -95,7 +95,7 @@ The package is published on public npm as `payload-inplace`. Normal 0.0.x releas
 
 ## Existing operational writes
 
-Existing reviewed domain commands can opt into `operationalWrites[collection]` with a server-only `authorize(req)` callback and explicit named `paths` outside configured visual roots. This is intended for operational data such as capacity. It does not grant access, skip revision checks, or permit publication of a sparse patch: pass the complete live document snapshot plus the latest revision, changing only allowed paths. Preserve any separate editorial draft using the returned revision. Never base authorization on request-body flags; use the existing domain command's server-owned request context. See the real transaction test in `apps/demo/int.spec.ts` and `packages/payload-inplace/src/server/operational-write.ts`.
+Existing reviewed domain commands can opt into `operationalWrites[collection]` with a server-only `authorize(req)` callback and explicit named `paths` outside configured visual roots. This is intended for operational data such as capacity. It does not grant access, skip revision checks, or permit publication of a sparse patch: pass the complete live document snapshot plus the latest revision, changing only allowed paths. Preserve any separate editorial draft using the returned revision. Never base authorization on request-body flags; use the existing domain command's server-owned request context. See the real transaction test in `tests/integration/int.spec.ts` and `packages/payload-inplace/src/server/operational-write.ts`.
 
 For terminal text, dotted nested fields and stable array item targets, see [nested bindings](nested-bindings.md). Consumers place the targets; Payload retains field access, conditions and saving.
 

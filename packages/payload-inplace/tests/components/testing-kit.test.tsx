@@ -5,7 +5,7 @@ import {
   createEditorFixture,
   createDeferredResponse,
   inspectNativeField,
-} from "../../src/exports/testing.js";
+} from "../../src/exports/testing";
 it("isolates synthetic fixtures, encodes stable bindings and settles delayed outcomes once", async () => {
   const a = createEditorFixture(),
     b = createEditorFixture();

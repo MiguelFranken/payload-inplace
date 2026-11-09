@@ -3,7 +3,7 @@ import type { Field } from "payload";
 import {
   resolveRootSchemaPath,
   resolveRootScope,
-} from "../../src/schema/resolve.js";
+} from "../../src/schema/resolve";
 it("distinguishes translated leaves from shared structure and inherits named group/tab localization", () => {
   const root: Field = {
     name: "layout",

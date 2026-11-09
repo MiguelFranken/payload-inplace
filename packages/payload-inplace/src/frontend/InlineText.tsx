@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useEffectEvent, useLayoutEffect, useRef } from "react";
-import { readPlainText } from "../adapters/plain-text.js";
+import { readPlainText } from "../adapters/plain-text";
 import { createPortal } from "react-dom";
-import { inlineStyles } from "./inline-styles.generated.js";
+import { inlineStyles } from "./inline-styles.generated";
 import { useField } from "@payloadcms/ui";
-import { useInlinePreviewGuard } from "./inline-preview.js";
+import { useInlinePreviewGuard } from "./inline-preview";
 
 /** The browser owns caret/IME/native text undo; useField is the sole data owner and native Form is the sole save path.
  * Only explicit plain-text field bindings are adopted. Rich/custom markup keeps its native field editor instead.

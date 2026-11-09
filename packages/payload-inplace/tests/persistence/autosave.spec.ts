@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { autosaveDelay, authoredFieldKey } from "../../src/state/autosave.js";
+import { autosaveDelay, authoredFieldKey } from "../../src/state/autosave";
 describe("native autosave idle policy", () => {
   it("batches legacy short intervals while respecting longer consumer intervals", () => {
     expect(autosaveDelay(100)).toBe(1500);
@@ -26,7 +26,7 @@ describe("native autosave idle policy", () => {
 });
 
 it("allows explicit recovery without acknowledging the failed native write or allowing another automatic retry", async () => {
-  const { canScheduleNativeSave } = await import("../../src/state/autosave.js");
+  const { canScheduleNativeSave } = await import("../../src/state/autosave");
   expect(canScheduleNativeSave(0, 0, 0)).toBe(true);
   expect(canScheduleNativeSave(1, 0, 0)).toBe(false);
   expect(canScheduleNativeSave(1, 0, 1)).toBe(true);

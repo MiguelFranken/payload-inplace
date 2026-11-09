@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
-import { createEditorMessages } from "../../src/i18n/messages.js";
-import { englishMessages, germanMessages } from "../../src/i18n/catalogue.js";
-import { editorLabel } from "../../src/server/tools.js";
+import { createEditorMessages } from "../../src/i18n/messages";
+import { englishMessages, germanMessages } from "../../src/i18n/catalogue";
+import { editorLabel } from "../../src/server/tools";
 it("keeps complete German catalogues and typed consumer fallback separate from content locale", () => {
   expect(Object.keys(germanMessages).sort()).toEqual(
     Object.keys(englishMessages).sort(),
@@ -43,7 +43,7 @@ it("keeps complete German catalogues and typed consumer fallback separate from c
 });
 
 it("resolves consumer labels for UI language and keeps drag/retry feedback overridable", async () => {
-  const { localizedLabel } = await import("../../src/i18n/labels.js");
+  const { localizedLabel } = await import("../../src/i18n/labels");
   expect(
     localizedLabel({ en: "Section", fr: "Rubrique" }, "fr-FR", "fallback"),
   ).toBe("Rubrique");

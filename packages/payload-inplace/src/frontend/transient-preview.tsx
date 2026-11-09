@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, use, useMemo, useState, type ReactNode } from "react";
-import type { InsertionProjection } from "../../../core/src/projection.js";
+import type { InsertionProjection } from "@payload-inplace/core/projection";
 
 /** Only a disposable insertion delta is stored here. Native values/history/dirty state are never changed by preview. */
 const TransientContext = createContext<{

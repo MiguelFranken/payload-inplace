@@ -1,1 +1,1 @@
-export * from "../../../core/src/policy.js";
+export * from "@payload-inplace/core/policy";

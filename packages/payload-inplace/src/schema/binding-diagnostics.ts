@@ -1,7 +1,7 @@
 import type { ClientField, FieldState } from "payload";
-import { isBindingPath } from "../../../core/src/editable.js";
-import { resolveBinding } from "./resolve-binding.js";
-import { canUpdateInlineField } from "./inline-access.js";
+import { isBindingPath } from "@payload-inplace/core/editable";
+import { resolveBinding } from "./resolve-binding";
+import { canUpdateInlineField } from "./inline-access";
 
 /** Development metadata only. No values, HTML, user/session details or credentials are included. Codes explain mapping/fallback; they never authorize a write. */
 export interface BindingDiagnostic {

@@ -1,5 +1,5 @@
 import type { ClientField } from "payload";
-import type { NativeSection } from "./tree.js";
+import type { NativeSection } from "./tree";
 
 /** Derive a readable row name from native schema/value/permission state, independent of consumer field naming.
  * Hidden, denied and conditionally inactive fields never become navigation labels. This is display data only.

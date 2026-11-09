@@ -18,15 +18,15 @@ import {
   useFormProcessing,
   useFormBackgroundProcessing,
 } from "@payloadcms/ui";
-import type { Activation, EditorTarget } from "../types.js";
-import type { DocumentReference } from "../../../core/src/document-ref.js";
-import { targetDocumentKey, targetScopeKey } from "../state/document-target.js";
-import { authoredFieldKey } from "../state/autosave.js";
-import { useEditorPageTransition } from "../launcher/EditorPageTransition.js";
-import { useNativeDraftSave } from "./controllers/draft-save.js";
-import { useEditorRecovery } from "./recovery.js";
-import { useAdvisoryLock } from "./advisory-lock.js";
-import type { EditorStaticMessageKey } from "../i18n/catalogue.js";
+import type { Activation, EditorTarget } from "../types";
+import type { DocumentReference } from "@payload-inplace/core/document-ref";
+import { targetDocumentKey, targetScopeKey } from "../state/document-target";
+import { authoredFieldKey } from "../state/autosave";
+import { useEditorPageTransition } from "../launcher/EditorPageTransition";
+import { useNativeDraftSave } from "./controllers/draft-save";
+import { useEditorRecovery } from "./recovery";
+import { useAdvisoryLock } from "./advisory-lock";
+import type { EditorStaticMessageKey } from "../i18n/catalogue";
 
 export interface ResolvedPageScope {
   target: EditorTarget;

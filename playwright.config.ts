@@ -3,7 +3,7 @@ import { defineConfig, devices } from "@playwright/test";
 const origin = `http://127.0.0.1:${process.env.VE_PORT || 3127}`;
 
 export default defineConfig({
-  testDir: "apps/demo",
+  testDir: "tests/browser",
   testMatch: [
     "e2e.spec.ts",
     "optimistic.e2e.spec.ts",

@@ -1,13 +1,13 @@
-import { configuredPageScopes } from "./page-scopes.js";
-import { nativeDocumentConfig, readNativeDocument } from "./document.js";
-import { parseEditorTarget, targetScopeKey } from "../state/document-target.js";
-import { contentLocale } from "./content-locale.js";
+import { configuredPageScopes } from "./page-scopes";
+import { nativeDocumentConfig, readNativeDocument } from "./document";
+import { parseEditorTarget, targetScopeKey } from "../state/document-target";
+import { contentLocale } from "./content-locale";
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import type {
   EditContext,
   EditorTarget,
   VisualEditorOptions,
-} from "../types.js";
+} from "../types";
 import {
   APIError,
   docAccessOperationGlobal,
@@ -186,7 +186,7 @@ export function createContext(
   target: EditorTarget,
   ttl = 900000,
   pagePath?: string,
-  pageOwner?: import("../types.js").EditorTarget,
+  pageOwner?: import("../types").EditorTarget,
 ): EditContext {
   if (!req.user || !currentSession(req))
     throw new Error("Session-backed authentication required");

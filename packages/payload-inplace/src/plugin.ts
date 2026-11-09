@@ -1,26 +1,26 @@
-import { patternEndpoint } from "./server/patterns.js";
-import { scopeEndpoint } from "./server/scopes.js";
-import { configureGlobals } from "./server/globals.js";
-import { readNativeDocument } from "./server/document.js";
-import { parseEditorTarget } from "./state/document-target.js";
-import { advisoryLockEndpoint } from "./server/advisory-lock.js";
-import { latestDraftEndpoint } from "./server/reconcile.js";
-import { prepareVersionRestore, versionEndpoint } from "./server/versions.js";
-import { trustedEditorOrigins } from "./server/origins.js";
-import { readEditorCookie, validatePagePath } from "./server/page-context.js";
+import { patternEndpoint } from "./server/patterns";
+import { scopeEndpoint } from "./server/scopes";
+import { configureGlobals } from "./server/globals";
+import { readNativeDocument } from "./server/document";
+import { parseEditorTarget } from "./state/document-target";
+import { advisoryLockEndpoint } from "./server/advisory-lock";
+import { latestDraftEndpoint } from "./server/reconcile";
+import { prepareVersionRestore, versionEndpoint } from "./server/versions";
+import { trustedEditorOrigins } from "./server/origins";
+import { readEditorCookie, validatePagePath } from "./server/page-context";
 import type {
   Config,
   Plugin,
   EditConfig,
   CollectionBeforeChangeHook,
 } from "payload";
-import type { VisualEditorOptions } from "./types.js";
-import { resolveTools } from "./server/tools.js";
-import { cloneFields } from "./schema/clone.js";
-import { resolveRoot } from "./schema/resolve.js";
-import { structureError } from "./state/policy.js";
-import { candidateMatches, signDocumentReview } from "./server/review.js";
-import { revisionGuard, assignRevision, REVISION } from "./server/revision.js";
+import type { VisualEditorOptions } from "./types";
+import { resolveTools } from "./server/tools";
+import { cloneFields } from "./schema/clone";
+import { resolveRoot } from "./schema/resolve";
+import { structureError } from "./state/policy";
+import { candidateMatches, signDocumentReview } from "./server/review";
+import { revisionGuard, assignRevision, REVISION } from "./server/revision";
 import {
   authorizeTarget,
   currentSession,
@@ -28,7 +28,7 @@ import {
   signContext,
   verifyContext,
   readEditContext,
-} from "./server/context.js";
+} from "./server/context";
 
 /** Compose opt-in roots without replacing native persistence, existing hooks or unrelated controls. */
 export function visualEditor(options: VisualEditorOptions): Plugin {

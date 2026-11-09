@@ -1,4 +1,4 @@
-import type { DocumentReference } from "./document-ref.js";
+import type { DocumentReference } from "./document-ref";
 
 export type EditorOperation =
   | "save"

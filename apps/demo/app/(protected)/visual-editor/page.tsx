@@ -5,7 +5,7 @@ import { unstable_rethrow } from "next/navigation";
 import { handleEditorServerFunctions } from "payload-inplace/native";
 import type { ServerFunctionClient } from "payload";
 import config, { editorOptions } from "@payload-config";
-import { FrontendEditor } from "../../../../../packages/payload-inplace/dist/exports/rsc.js";
+import { FrontendEditor } from "payload-inplace/rsc";
 import { authorizedEditor } from "../../../lib/authorized-editor";
 import { importMap } from "../../(payload)/admin/importMap.js";
 import { getServerPageSlots } from "../../../components/ServerPageSlots";
@@ -35,7 +35,7 @@ export async function DocumentEditor({ identifier }: { identifier: string }) {
     return handleEditorServerFunctions({ ...args, config, importMap }, req);
   };
   const refreshPreview = async (): Promise<
-    import("../../../../../packages/payload-inplace/dist/exports/types.js").EditorPreviewResponse
+    import("payload-inplace/types").EditorPreviewResponse
   > => {
     "use server";
     try {

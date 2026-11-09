@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
-import { editable } from "../../../core/src/editable.js";
-import { findBoundBlock } from "../../src/preview/dom-target.js";
+import { editable } from "@payload-inplace/core/editable";
+import { findBoundBlock } from "../../src/preview/dom-target";
 it("keeps equal row IDs in separate documents out of another scope’s canvas geometry", () => {
   const identity = { root: "layout", blockId: "same-id" };
   const global = { kind: "global" as const, global: "header" },

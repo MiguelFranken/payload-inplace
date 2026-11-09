@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { canUpdateInlineField } from "../../src/schema/inline-access.js";
+import { canUpdateInlineField } from "../../src/schema/inline-access";
 it("requires native permission without widening denied or unknown nested paths", () => {
   expect(canUpdateInlineField(true, "heading")).toBe(true);
   expect(

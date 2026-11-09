@@ -1,10 +1,10 @@
-import { createEditorMessages } from "../i18n/messages.js";
+import { createEditorMessages } from "../i18n/messages";
 import type { PayloadRequest } from "payload";
-import type { EditorTarget, VisualEditorOptions } from "../types.js";
-import { authorizeTarget } from "../server/context.js";
-import { resolveTools } from "../server/tools.js";
-import { DeferredInPlaceLauncher as InPlaceLauncher } from "./DeferredLauncher.js";
-import { launcherStyles } from "./styles.generated.js";
+import type { EditorTarget, VisualEditorOptions } from "../types";
+import { authorizeTarget } from "../server/context";
+import { resolveTools } from "../server/tools";
+import { DeferredInPlaceLauncher as InPlaceLauncher } from "./DeferredLauncher";
+import { launcherStyles } from "./styles.generated";
 
 /** Mount only for an authenticated CMS editor. Hosts can skip all auth work when their auth cookie is absent.
  * In-place hosts use a small activation adapter; anonymous routes never mount it.

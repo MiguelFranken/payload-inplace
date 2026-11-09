@@ -1,10 +1,10 @@
 import { expect, it, vi } from "vitest";
 import type { PayloadRequest } from "payload";
-import type { VisualEditorOptions } from "../../src/types.js";
+import type { VisualEditorOptions } from "../../src/types";
 import {
   patternEndpoint,
   patternOperation,
-} from "../../src/server/patterns.js";
+} from "../../src/server/patterns";
 
 const fixtures = vi.hoisted(() => ({
   access: true,

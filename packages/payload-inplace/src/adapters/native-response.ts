@@ -1,4 +1,4 @@
-import type { EditorDocument } from "../types.js";
+import type { EditorDocument } from "../types";
 
 const record = (value: unknown): value is Record<string, unknown> =>
   Boolean(value && typeof value === "object" && !Array.isArray(value));

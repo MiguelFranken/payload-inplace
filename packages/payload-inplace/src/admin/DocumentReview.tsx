@@ -1,6 +1,6 @@
 "use client";
 
-import { useEditorMessages } from "../frontend/messages.js";
+import { useEditorMessages } from "../frontend/messages";
 
 import type { ClientBlock, ClientField } from "payload";
 import {
@@ -16,9 +16,9 @@ import {
   documentChanges,
   reviewText,
   changedText,
-} from "../state/document-diff.js";
-import { Button } from "../frontend/ui/button.js";
-import { chrome } from "./chrome.js";
+} from "../state/document-diff";
+import { Button } from "../frontend/ui/button";
+import { chrome } from "./chrome";
 
 /** Only changed native leaves and structural operations are shown; unchanged sibling rows never flood the review. */
 export function DocumentReview({

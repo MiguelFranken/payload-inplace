@@ -6,7 +6,7 @@ import type {
   ContextualFieldProps,
   ContextualFieldValue,
   FieldStrategyDefinition,
-} from "../frontend/field-strategies.js";
+} from "../frontend/field-strategies";
 
 /** Unit-only control harness. Exercises a consumer Component's value/disabled/error/native-handoff UI without pretending to be Payload Form or a save/access backend. Verify registration, ACL and conditions separately in native integration. */
 export function FieldStrategyHarness<K extends ContextualFieldKind>({

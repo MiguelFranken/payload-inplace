@@ -1,16 +1,16 @@
 import { expect, it } from "vitest";
-import { createEditorMessages } from "../../src/i18n/messages.js";
-import { formatCommandIssue } from "../../src/i18n/command-issue.js";
+import { createEditorMessages } from "../../src/i18n/messages";
+import { formatCommandIssue } from "../../src/i18n/command-issue";
 import {
   commandIssueText,
   type CommandIssue,
-} from "../../src/state/command-issue.js";
+} from "../../src/state/command-issue";
 import {
   structureIssue,
   structureTransitionIssue,
-} from "../../../core/src/policy.js";
-import { applyCommand } from "../../src/adapters/payload-form.js";
-import { StructuralHistory } from "../../src/state/history.js";
+} from "@payload-inplace/core/policy";
+import { applyCommand } from "../../src/adapters/payload-form";
+import { StructuralHistory } from "../../src/state/history";
 it("formats typed structural reasons in the current UI language without changing the policy", () => {
   const en = createEditorMessages(),
     de = createEditorMessages({ locale: "de" });

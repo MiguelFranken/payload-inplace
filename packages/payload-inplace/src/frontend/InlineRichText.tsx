@@ -1,7 +1,7 @@
 "use client";
 
-import type { EditorStaticMessageKey } from "../i18n/catalogue.js";
-import { useEditorMessages } from "./messages.js";
+import type { EditorStaticMessageKey } from "../i18n/catalogue";
+import { useEditorMessages } from "./messages";
 
 import {
   useEffect,
@@ -27,23 +27,23 @@ import {
 import {
   mountRichEditor,
   type RichFormat,
-} from "../../../lexical/src/editor.js";
-import type { RichDocument } from "../../../lexical/src/document.js";
-import { registerInlineSurface, elementRect } from "../preview/geometry.js";
-import { useInlinePreviewGuard } from "./inline-preview.js";
-import { inlineStyles } from "./inline-styles.generated.js";
+} from "@payload-inplace/lexical/editor";
+import type { RichDocument } from "@payload-inplace/lexical/document";
+import { registerInlineSurface, elementRect } from "../preview/geometry";
+import { useInlinePreviewGuard } from "./inline-preview";
+import { inlineStyles } from "./inline-styles.generated";
 import { Popover } from "@base-ui/react/popover";
-import { useChromePortal } from "./ui/portal.js";
+import { useChromePortal } from "./ui/portal";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "./ui/menu.js";
-import { Button } from "./ui/button.js";
-import { createRichSurface, preserveRichClasses } from "./rich-presentation.js";
-import { richToolbarPosition } from "./rich-toolbar.js";
-import { chrome } from "../admin/chrome.js";
+} from "./ui/menu";
+import { Button } from "./ui/button";
+import { createRichSurface, preserveRichClasses } from "./rich-presentation";
+import { richToolbarPosition } from "./rich-toolbar";
+import { chrome } from "../admin/chrome";
 
 /** A normal-flow twin owns Lexical DOM while the untouched React subtree waits for native acknowledgement.
  * Opening settings unmounts this owner before native fields mount. The shared native Form is the only save path.

@@ -4,8 +4,8 @@ import {
   EditorLifecycleProvider,
   useEditorLifecycle,
   useEditorObserver,
-} from "../../src/frontend/lifecycle.js";
-import type { EditorLifecycleEvent } from "../../../core/src/events.js";
+} from "../../src/frontend/lifecycle";
+import type { EditorLifecycleEvent } from "@payload-inplace/core/events";
 vi.mock("@payloadcms/ui", () => ({ useLocale: () => ({ code: "de" }) }));
 it("scopes observers to active documents, keeps native work usable after observer rejection and cleans up", async () => {
   const events: EditorLifecycleEvent[] = [];

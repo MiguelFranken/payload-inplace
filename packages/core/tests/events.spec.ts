@@ -2,7 +2,7 @@ import { expect, it, vi } from "vitest";
 import {
   createEditorEventChannel,
   type EditorLifecycleEvent,
-} from "../src/events.js";
+} from "../src/events";
 
 it("emits one ordered correlated completion, preserves scope and isolates observer failures", async () => {
   let clock = 10;

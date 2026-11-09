@@ -1,10 +1,10 @@
 import { expect, it, vi, afterEach } from "vitest";
 import { act, render, screen, fireEvent } from "@testing-library/react";
-import { MediaLibraryField } from "../../src/frontend/MediaLibraryField.js";
+import { MediaLibraryField } from "../../src/frontend/MediaLibraryField";
 import type {
   MediaPage,
   MediaLibraryAdapter,
-} from "../../src/frontend/media-library.js";
+} from "../../src/frontend/media-library";
 import type { ClientField } from "payload";
 
 const field = {
@@ -125,7 +125,7 @@ it("aborts an in-flight upload on revoked editing and never applies its late com
 });
 it("uses native same-origin ACL search and never turns external URLs into asset IDs", async () => {
   const { createPayloadMediaLibrary } = await import(
-    "../../src/frontend/media-library.js"
+    "../../src/frontend/media-library"
   );
   const fetch = vi.spyOn(globalThis, "fetch").mockResolvedValue(
     new Response(

@@ -16,6 +16,8 @@ const external = Object.keys({
     new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:/|$)`),
 );
 
+const workspace = /^@payload-inplace\/(?:core|lexical)\//;
+
 export default defineConfig({
   entry: {
     "core/policy": "packages/core/src/policy.ts",
@@ -46,13 +48,14 @@ export default defineConfig({
   platform: "neutral",
   clean: true,
   deps: {
-    skipNodeModulesBundle: true,
+    alwaysBundle: [workspace],
+    dts: { alwaysBundle: [workspace] },
     neverBundle: [
       ...external,
       /^node:/,
       /^@payload-visual-editor\/native-handler$/,
     ],
   },
-  dts: true,
+  dts: { eager: true },
   css: { inject: true },
 });

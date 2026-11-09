@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { createMessages } from "../src/messages.js";
+import { createMessages } from "../src/messages";
 
 const catalogue = {
   select: "Select content",

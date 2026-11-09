@@ -1,4 +1,4 @@
-import type { BlockIdentity } from "./types.js";
+import type { BlockIdentity } from "./types";
 
 export interface IndexedBlock {
   id: string;

@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode, type FormEvent } from "react";
 import {
   useEditorPageTransition,
   useEditorPagePending,
-} from "./EditorPageTransition.js";
+} from "./EditorPageTransition";
 
 /** Submit the existing authorized activation endpoint, then merge the draft into the current website route. */
 export function InPlaceLauncher({

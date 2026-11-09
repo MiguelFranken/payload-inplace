@@ -1,2 +1,2 @@
-export { GuardedVersionView } from "../admin/GuardedVersionView.js";
-export { FrontendEditor } from "../frontend/FrontendEditor.js";
+export { GuardedVersionView } from "../admin/GuardedVersionView";
+export { FrontendEditor } from "../frontend/FrontendEditor";

@@ -1,1 +1,1 @@
-export { hasPageEditorSession } from "../preview/page-routing.js";
+export { hasPageEditorSession } from "../preview/page-routing";

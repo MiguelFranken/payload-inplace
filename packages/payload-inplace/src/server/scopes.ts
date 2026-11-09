@@ -1,16 +1,16 @@
 import type { PayloadRequest } from "payload";
-import type { EditContext, VisualEditorOptions } from "../types.js";
-import { parseEditorTarget, targetScopeKey } from "../state/document-target.js";
+import type { EditContext, VisualEditorOptions } from "../types";
+import { parseEditorTarget, targetScopeKey } from "../state/document-target";
 import {
   authorizeTarget,
   createContext,
   readEditContext,
   signContext,
   verifyContext,
-} from "./context.js";
-import { configuredPageScopes } from "./page-scopes.js";
-import { editorLabel } from "./tools.js";
-import { createEditorMessages } from "../i18n/messages.js";
+} from "./context";
+import { configuredPageScopes } from "./page-scopes";
+import { editorLabel } from "./tools";
+import { createEditorMessages } from "../i18n/messages";
 
 /** Client metadata contains only independently authorized targets/labels. It does not activate or read any foreign draft in the browser. */
 export async function availablePageScopes(
@@ -26,7 +26,7 @@ export async function availablePageScopes(
     options,
   );
   const result: {
-    target: import("../types.js").EditorTarget;
+    target: import("../types").EditorTarget;
     label: string;
   }[] = [];
   const language = createEditorMessages(options.ui, req.i18n.language).locale;

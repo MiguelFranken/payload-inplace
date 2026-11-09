@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { hasPageEditorSession } from "../../packages/payload-inplace/dist/exports/routing.js";
+import { hasPageEditorSession } from "payload-inplace/routing";
 
 /** Keep the actual browser URL and common website layout while selecting a separate, reauthorized authoring bundle. */
 export function proxy(request: NextRequest) {

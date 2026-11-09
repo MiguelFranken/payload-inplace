@@ -1,13 +1,13 @@
 import { expect, it, vi } from "vitest";
 import type { PayloadRequest } from "payload";
-import type { VisualEditorOptions } from "../../src/types.js";
+import type { VisualEditorOptions } from "../../src/types";
 import {
   createContext,
   readEditContext,
   signContext,
   verifyContext,
-} from "../../src/server/context.js";
-import { scopeEndpoint } from "../../src/server/scopes.js";
+} from "../../src/server/context";
+import { scopeEndpoint } from "../../src/server/scopes";
 
 function fixture() {
   const owner = { collection: "pages", id: 1, root: "layout" },

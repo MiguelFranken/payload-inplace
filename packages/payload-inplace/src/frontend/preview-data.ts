@@ -2,13 +2,13 @@
 
 import { useMemo, useRef } from "react";
 import { useForm, useFormFields } from "@payloadcms/ui";
-import { useTransientPreview } from "./transient-preview.js";
-import { projectInsertion } from "../../../core/src/projection.js";
-import { useInlinePreviewGuard } from "./inline-preview.js";
+import { useTransientPreview } from "./transient-preview";
+import { projectInsertion } from "@payload-inplace/core/projection";
+import { useInlinePreviewGuard } from "./inline-preview";
 import {
   mergePreviewData,
   normalizePreviewRows,
-} from "../state/preview-data.js";
+} from "../state/preview-data";
 
 /** Read an optimistic projection of the sole native Form, without another document store or persistence path.
  * The initial authorized, populated document supplies relationship objects only while their IDs match.

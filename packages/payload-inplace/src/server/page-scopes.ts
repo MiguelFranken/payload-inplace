@@ -3,11 +3,11 @@ import type {
   EditContext,
   EditorPageScope,
   VisualEditorOptions,
-} from "../types.js";
+} from "../types";
 import {
   parseEditorTarget,
   targetDocumentKey,
-} from "../state/document-target.js";
+} from "../state/document-target";
 
 /** Normalize server-owned scope configuration before it becomes client metadata. An unbounded/ambiguous catalogue fails closed. No content is copied into the returned descriptors. */
 export async function configuredPageScopes(

@@ -15,7 +15,7 @@ export type EditorDocument = CollectionEditorDocument | GlobalEditorDocument;
 export type EditorTarget = EditorDocument & { root: string };
 
 /** Serializable identity survives reordering; numeric data paths are resolved immediately before commands. */
-export type { BlockIdentity } from "../../core/src/types.js";
+export type { BlockIdentity } from "@payload-inplace/core/types";
 
 /** Host permission is additional to native collection/document/field access. Never serialize this callback. */
 export interface VisualEditorOptions {
@@ -24,11 +24,11 @@ export interface VisualEditorOptions {
   globals?: Record<string, { roots: string[] }>;
   globalPolicies?: Record<
     string,
-    Record<string, import("./state/policy.js").StructuralPolicy>
+    Record<string, import("./state/policy").StructuralPolicy>
   >;
   previewOrigin: string;
   /** Typed UI messages/formatting, independent of native Payload content localization. */
-  ui?: import("./i18n/messages.js").EditorUIOptions;
+  ui?: import("./i18n/messages").EditorUIOptions;
   /** Exact additional trusted browser origins serving this same editor (for example a deployment's branch alias).
    * Configure these on the server; wildcards and request-derived host trust are deliberately unsupported.
    */
@@ -55,7 +55,7 @@ export interface VisualEditorOptions {
   sessionTTL?: number;
   policies?: Record<
     string,
-    Record<string, import("./state/policy.js").StructuralPolicy>
+    Record<string, import("./state/policy").StructuralPolicy>
   >;
   concurrency?: ConcurrencyAdapter;
   /** Optional catalogue presentation. Examples are transient render-only data, never default persisted content. */

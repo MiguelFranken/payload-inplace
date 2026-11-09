@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { pageHandlePosition } from "../../src/preview/geometry.js";
+import { pageHandlePosition } from "../../src/preview/geometry";
 
 const box = (left: number, top: number, width: number, height: number) => ({
   left,

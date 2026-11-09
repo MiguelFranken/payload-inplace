@@ -4,15 +4,15 @@ import {
   documentReference,
   targetDocumentKey,
   targetSlug,
-} from "../state/document-target.js";
-import { focusNativeField } from "./focus-native-field.js";
-import { useBindingDiagnostics } from "./controllers/binding-diagnostics.js";
-import { useSectionPatterns } from "./section-patterns.js";
-import { SaveSectionPattern } from "./SaveSectionPattern.js";
-import { useDocumentScopes } from "./document-scope.js";
-import { localizedLabel } from "../i18n/labels.js";
-import { useEditorMessages } from "./messages.js";
-import { useEditorPageTransition } from "../launcher/EditorPageTransition.js";
+} from "../state/document-target";
+import { focusNativeField } from "./focus-native-field";
+import { useBindingDiagnostics } from "./controllers/binding-diagnostics";
+import { useSectionPatterns } from "./section-patterns";
+import { SaveSectionPattern } from "./SaveSectionPattern";
+import { useDocumentScopes } from "./document-scope";
+import { localizedLabel } from "../i18n/labels";
+import { useEditorMessages } from "./messages";
+import { useEditorPageTransition } from "../launcher/EditorPageTransition";
 import {
   lazy,
   Suspense,
@@ -52,77 +52,77 @@ import {
   History,
 } from "lucide-react";
 import type { BlocksFieldClientProps } from "payload";
-import type { Activation } from "../types.js";
+import type { Activation } from "../types";
 
-import { getArrayItemPath } from "../../../core/src/annotations.js";
-import { isPrivateEditorField } from "../../../core/src/document-metadata.js";
-import { stableDataPath } from "../../../core/src/stable-path.js";
-import { resolveBinding } from "../schema/resolve-binding.js";
-import { canUpdateInlineField } from "../schema/inline-access.js";
+import { getArrayItemPath } from "@payload-inplace/core/annotations";
+import { isPrivateEditorField } from "@payload-inplace/core/document-metadata";
+import { stableDataPath } from "@payload-inplace/core/stable-path";
+import { resolveBinding } from "../schema/resolve-binding";
+import { canUpdateInlineField } from "../schema/inline-access";
 
-import { sectionHeading } from "../schema/section-heading.js";
-import { useNativeStructure } from "./controllers/native-structure.js";
-import { usePanelNavigation } from "./controllers/panel-navigation.js";
-import { useNativeDraftSave } from "./controllers/draft-save.js";
-import { ownsTypingOrModal } from "../adapters/payload-form.js";
+import { sectionHeading } from "../schema/section-heading";
+import { useNativeStructure } from "./controllers/native-structure";
+import { usePanelNavigation } from "./controllers/panel-navigation";
+import { useNativeDraftSave } from "./controllers/draft-save";
+import { ownsTypingOrModal } from "../adapters/payload-form";
 
-import type { StructuralPolicy } from "../state/policy.js";
-import { SaveFeedback } from "./SaveFeedback.js";
-import { ReviewPublishButton } from "../admin/ReviewPublishButton.js";
-import { installNativeUploadLabels } from "../admin/native-accessibility.js";
-import { useEditorRecovery } from "./recovery.js";
+import type { StructuralPolicy } from "../state/policy";
+import { SaveFeedback } from "./SaveFeedback";
+import { ReviewPublishButton } from "../admin/ReviewPublishButton";
+import { installNativeUploadLabels } from "../admin/native-accessibility";
+import { useEditorRecovery } from "./recovery";
 import {
   namedField,
   projectFields,
   fieldOwnershipPaths,
-} from "../schema/project-fields.js";
-import { CatalogueLauncher as SectionCatalogue } from "./CatalogueLauncher.js";
-import { useTransientPreview } from "./transient-preview.js";
-import { ContextualFieldEditor, useFieldStrategy } from "./field-strategies.js";
-import { InsertionPoints } from "./InsertionPoints.js";
-import { canAdoptPlainText } from "../adapters/plain-text.js";
-import { resolveEditorStrategy } from "../schema/editor-strategy.js";
-import { InlineText } from "./InlineText.js";
-import { usePreviewStatus } from "./preview-status.js";
+} from "../schema/project-fields";
+import { CatalogueLauncher as SectionCatalogue } from "./CatalogueLauncher";
+import { useTransientPreview } from "./transient-preview";
+import { ContextualFieldEditor, useFieldStrategy } from "./field-strategies";
+import { InsertionPoints } from "./InsertionPoints";
+import { canAdoptPlainText } from "../adapters/plain-text";
+import { resolveEditorStrategy } from "../schema/editor-strategy";
+import { InlineText } from "./InlineText";
+import { usePreviewStatus } from "./preview-status";
 import { Settings2, X } from "lucide-react";
-import { selectionReset } from "../schema/selection-reset.js";
-import { ExtensionAction } from "./ExtensionAction.js";
-import { Floatable } from "./Floatable.js";
-import { useVisualEditor } from "./tools-context.js";
-import { NativeFieldsOwner, NativeFieldSlot } from "./field-ownership.js";
-import { InspectionLayer, type InspectionTarget } from "./InspectionLayer.js";
+import { selectionReset } from "../schema/selection-reset";
+import { ExtensionAction } from "./ExtensionAction";
+import { Floatable } from "./Floatable";
+import { useVisualEditor } from "./tools-context";
+import { NativeFieldsOwner, NativeFieldSlot } from "./field-ownership";
+import { InspectionLayer, type InspectionTarget } from "./InspectionLayer";
 
-import { Button as ChromeButton } from "./ui/button.js";
-import { ChromePortalProvider } from "./ui/portal.js";
+import { Button as ChromeButton } from "./ui/button";
+import { ChromePortalProvider } from "./ui/portal";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-} from "./ui/menu.js";
+} from "./ui/menu";
 import {
   BlockReorder,
   sectionElement,
   showSectionOnPage,
-} from "./BlockReorder.js";
-import type { NativeSection } from "../schema/tree.js";
-import { prepareAdvisoryExit, useAdvisoryLock } from "./advisory-lock.js";
+} from "./BlockReorder";
+import type { NativeSection } from "../schema/tree";
+import { prepareAdvisoryExit, useAdvisoryLock } from "./advisory-lock";
 
 const ConflictReview = lazy(() =>
-  import("./ConflictReview.js").then((module) => ({
+  import("./ConflictReview").then((module) => ({
     default: module.ConflictReview,
   })),
 );
 
 const VersionBrowser = lazy(() =>
-  import("./VersionBrowser.js").then((module) => ({
+  import("./VersionBrowser").then((module) => ({
     default: module.VersionBrowser,
   })),
 );
 
 const InlineRichText = lazy(() =>
-  import("./InlineRichText.js").then((module) => ({
+  import("./InlineRichText").then((module) => ({
     default: module.InlineRichText,
   })),
 );
@@ -144,9 +144,9 @@ export function FrontendControls({
   sharedStructure?: boolean;
   context: Activation;
   field: BlocksFieldClientProps["field"];
-  blockControls?: import("../types.js").VisualEditorOptions["blockControls"];
-  richTextCapabilities?: import("../adapters/richtext-capabilities.js").RichTextCapabilities;
-  catalogue?: import("../types.js").VisualEditorOptions["catalogue"];
+  blockControls?: import("../types").VisualEditorOptions["blockControls"];
+  richTextCapabilities?: import("../adapters/richtext-capabilities").RichTextCapabilities;
+  catalogue?: import("../types").VisualEditorOptions["catalogue"];
   permissions: any;
   policy?: StructuralPolicy;
   exitURL: string;

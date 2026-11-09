@@ -17,9 +17,17 @@ const domains = [
 export default defineConfig({
   esbuild: { jsx: "automatic" },
   root,
+  resolve: {
+    alias: {
+      "@internal": fileURLToPath(
+        new URL("./packages/payload-inplace/src", import.meta.url),
+      ),
+    },
+  },
   test: {
     projects: [
       ...domains.map((domain) => ({
+        extends: true as const,
         test: {
           name: `unit:plugin:${domain}`,
           root,
@@ -30,6 +38,7 @@ export default defineConfig({
         },
       })),
       ...["core", "lexical"].map((domain) => ({
+        extends: true as const,
         test: {
           name: `unit:${domain}`,
           root,
@@ -40,6 +49,7 @@ export default defineConfig({
         },
       })),
       {
+        extends: true as const,
         test: {
           name: "components",
           root,
@@ -51,10 +61,11 @@ export default defineConfig({
         },
       },
       {
+        extends: true as const,
         test: {
           name: "native-integration",
           root,
-          include: ["apps/demo/int.spec.ts"],
+          include: ["tests/integration/int.spec.ts"],
           environment: "node",
           testTimeout: 60000,
           hookTimeout: 120000,

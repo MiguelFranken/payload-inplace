@@ -10,9 +10,9 @@ import {
 import type {
   EditorPreviewResponse,
   EditorPreviewSnapshot,
-} from "../../types.js";
-import type { EditorStaticMessageKey } from "../../i18n/catalogue.js";
-import { useEditorLifecycle } from "../lifecycle.js";
+} from "@internal/types";
+import type { EditorStaticMessageKey } from "@internal/i18n/catalogue";
+import { useEditorLifecycle } from "../lifecycle";
 
 /** Single-flight saved presentation reads, independent from the sole native save queue. Coalesces revision floors, ignores late results after unmount and delegates authorization failure without touching field values. */
 export function useSavedPreview({

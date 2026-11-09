@@ -2,7 +2,7 @@ import { getPayload, createLocalReq } from "payload";
 import config from "@payload-config";
 import { buildFormState } from "@payloadcms/ui/utilities/buildFormState";
 import { unstable_rethrow } from "next/navigation";
-import { withFrontendImportMap } from "../../../../../packages/payload-inplace/dist/payload-inplace/src/server/frontend-config.js";
+import { withFrontendImportMap } from "payload-inplace/server";
 import { importMap } from "../../(payload)/admin/importMap.js";
 
 /** Test-only native runtime proof. Disabled outside the isolated e2e wrapper, including the interactive demo. */

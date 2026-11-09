@@ -1,1 +1,1 @@
-export * from "../../../core/src/identity.js";
+export * from "@payload-inplace/core/identity";

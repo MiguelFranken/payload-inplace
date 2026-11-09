@@ -17,33 +17,33 @@ import {
   useServerFunctions,
 } from "@payloadcms/ui";
 import type { BlocksFieldClientProps, ClientBlock, ClientField } from "payload";
-import type { InsertionTarget } from "../../../../core/src/insertion.js";
-import { useEditorMessages } from "../messages.js";
-import { formatCommandIssue } from "../../i18n/command-issue.js";
-import type { CommandIssue } from "../../state/command-issue.js";
-import { authoredFieldKey } from "../../state/autosave.js";
+import type { InsertionTarget } from "@payload-inplace/core/insertion";
+import { useEditorMessages } from "../messages";
+import { formatCommandIssue } from "@internal/i18n/command-issue";
+import type { CommandIssue } from "@internal/state/command-issue";
+import { authoredFieldKey } from "@internal/state/autosave";
 import {
   nativeDocumentArgs,
   targetFromNativeInfo,
-} from "../../state/document-target.js";
-import { preparedInsertedRow } from "../../../../core/src/row-preparation.js";
-import { previewExample } from "../../schema/example-preview.js";
-import { resolveBinding } from "../../schema/resolve-binding.js";
-import { selectionReset } from "../../schema/selection-reset.js";
-import { canUpdateInlineField } from "../../schema/inline-access.js";
-import { availableBlocks } from "../../schema/available-blocks.js";
-import { resolveRootSchemaPath } from "../../schema/resolve.js";
-import { collectSections, type NativeSection } from "../../schema/tree.js";
+} from "@internal/state/document-target";
+import { preparedInsertedRow } from "@payload-inplace/core/row-preparation";
+import { previewExample } from "@internal/schema/example-preview";
+import { resolveBinding } from "@internal/schema/resolve-binding";
+import { selectionReset } from "@internal/schema/selection-reset";
+import { canUpdateInlineField } from "@internal/schema/inline-access";
+import { availableBlocks } from "@internal/schema/available-blocks";
+import { resolveRootSchemaPath } from "@internal/schema/resolve";
+import { collectSections, type NativeSection } from "@internal/schema/tree";
 import {
   applyCommand,
   restoreRoot,
   type BlockCommand,
-} from "../../adapters/payload-form.js";
-import { StructuralHistory } from "../../state/history.js";
+} from "@internal/adapters/payload-form";
+import { StructuralHistory } from "@internal/state/history";
 import {
   structureTransitionError,
   type StructuralPolicy,
-} from "../../state/policy.js";
+} from "@internal/state/policy";
 
 /** Structural history/index only. Values and all persistence remain in the existing native Form.
  * Row metadata arrives in two phases; captureResult seals the single command after native fields initialize.
@@ -311,7 +311,7 @@ export function useNativeStructure({
       permissions,
       blocksMap: config.blocksMap as Record<string, ClientBlock>,
     });
-    const same = (identity: import("../../types.js").BlockIdentity) =>
+    const same = (identity: import("@internal/types").BlockIdentity) =>
       current.find(
         (s) =>
           s.identity.blockId === identity.blockId &&

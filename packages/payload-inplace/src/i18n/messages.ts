@@ -2,8 +2,8 @@ import {
   createMessages,
   type MessageOptions,
   type MessageTranslator,
-} from "../../../core/src/messages.js";
-import { englishMessages, germanMessages } from "./catalogue.js";
+} from "@payload-inplace/core/messages";
+import { englishMessages, germanMessages } from "./catalogue";
 
 export type EditorMessages = MessageTranslator<typeof englishMessages>;
 
@@ -35,4 +35,4 @@ export function createEditorMessages(
     },
   });
 }
-export type { EditorMessageKey } from "./catalogue.js";
+export type { EditorMessageKey } from "./catalogue";

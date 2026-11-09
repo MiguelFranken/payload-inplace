@@ -1,6 +1,6 @@
 import { act, cleanup, render } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
-import { InspectionLayer } from "../../src/frontend/InspectionLayer.js";
+import { InspectionLayer } from "../../src/frontend/InspectionLayer";
 
 afterEach(() => {
   cleanup();

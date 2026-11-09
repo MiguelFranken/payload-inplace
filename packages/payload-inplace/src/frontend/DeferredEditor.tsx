@@ -1,17 +1,17 @@
 "use client";
 
 import { lazy, Suspense, type ComponentProps } from "react";
-import type { FrontendShell } from "./FrontendShell.js";
-import type { ConfiguredFieldPanel } from "./ConfiguredFieldPanel.js";
+import type { FrontendShell } from "./FrontendShell";
+import type { ConfiguredFieldPanel } from "./ConfiguredFieldPanel";
 
 const Shell = lazy(() =>
-  import("./FrontendShell.js").then((module) => ({
+  import("./FrontendShell").then((module) => ({
     default: module.FrontendShell,
   })),
 );
 
 const Panel = lazy(() =>
-  import("./ConfiguredFieldPanel.js").then((module) => ({
+  import("./ConfiguredFieldPanel").then((module) => ({
     default: module.ConfiguredFieldPanel,
   })),
 );

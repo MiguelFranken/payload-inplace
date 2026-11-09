@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { operationalSnapshotMatches } from "../../src/server/operational-write.js";
+import { operationalSnapshotMatches } from "../../src/server/operational-write";
 
 const live = {
   id: 1,

@@ -1,8 +1,8 @@
 "use client";
 
-import type { EditorStaticMessageKey } from "../i18n/catalogue.js";
-import { EditorMessageError, editorErrorKey } from "../i18n/failure.js";
-import { useEditorMessages } from "./messages.js";
+import type { EditorStaticMessageKey } from "../i18n/catalogue";
+import { EditorMessageError, editorErrorKey } from "../i18n/failure";
+import { useEditorMessages } from "./messages";
 
 import { useEffect, useRef, useState } from "react";
 import {
@@ -24,14 +24,14 @@ import {
   RotateCcw,
   LoaderCircle,
 } from "lucide-react";
-import { Button } from "./ui/button.js";
-import { DocumentReview } from "../admin/DocumentReview.js";
+import { Button } from "./ui/button";
+import { DocumentReview } from "../admin/DocumentReview";
 import {
   targetFromNativeInfo,
   nativeDocumentMethod,
-} from "../state/document-target.js";
-import { nativeDraftAction } from "../adapters/native-request.js";
-import { chrome } from "../admin/chrome.js";
+} from "../state/document-target";
+import { nativeDraftAction } from "../adapters/native-request";
+import { chrome } from "../admin/chrome";
 
 interface SavedVersion {
   id: string;

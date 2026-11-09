@@ -3,7 +3,7 @@ import { act, render, fireEvent, screen } from "@testing-library/react";
 import {
   NativeDocumentScopes,
   useDocumentScopes,
-} from "../../src/frontend/document-scope.js";
+} from "../../src/frontend/document-scope";
 
 const state = vi.hoisted(() => ({
   modified: false,

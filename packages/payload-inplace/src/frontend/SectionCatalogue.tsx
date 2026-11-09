@@ -1,18 +1,18 @@
 "use client";
 
-import { useSectionPatterns } from "./section-patterns.js";
-import type { SectionPatternSummary } from "../types.js";
-import { Button } from "./ui/button.js";
-import { useEditorMessages } from "./messages.js";
+import { useSectionPatterns } from "./section-patterns";
+import type { SectionPatternSummary } from "../types";
+import { Button } from "./ui/button";
+import { useEditorMessages } from "./messages";
 
 import { Combobox } from "@base-ui/react/combobox";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { Plus, Search, Layers } from "lucide-react";
 import type { ClientBlock } from "payload";
-import type { EditorCatalogueEntry, EditorLabel } from "../types.js";
-import { useChromePortal } from "./ui/portal.js";
-import { ChromeTooltip } from "./ui/tooltip.js";
-import { chrome } from "../admin/chrome.js";
+import type { EditorCatalogueEntry, EditorLabel } from "../types";
+import { useChromePortal } from "./ui/portal";
+import { ChromeTooltip } from "./ui/tooltip";
+import { chrome } from "../admin/chrome";
 
 const label = (
   value: EditorLabel | undefined,

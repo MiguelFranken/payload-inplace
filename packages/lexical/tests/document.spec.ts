@@ -8,8 +8,8 @@ import {
   HISTORY_PUSH_TAG,
   SKIP_DOM_SELECTION_TAG,
 } from "lexical";
-import { mountRichEditor } from "../src/editor.js";
-import { safeLink, type RichDocument } from "../src/document.js";
+import { mountRichEditor } from "../src/editor";
+import { safeLink, type RichDocument } from "../src/document";
 
 let dispose: (() => void) | undefined;
 afterEach(() => {

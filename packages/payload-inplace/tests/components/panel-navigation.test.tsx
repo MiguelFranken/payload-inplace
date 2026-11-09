@@ -6,7 +6,7 @@ import {
   fireEvent,
 } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { usePanelNavigation } from "../../src/frontend/controllers/panel-navigation.js";
+import { usePanelNavigation } from "../../src/frontend/controllers/panel-navigation";
 
 function Harness() {
   const state = usePanelNavigation();

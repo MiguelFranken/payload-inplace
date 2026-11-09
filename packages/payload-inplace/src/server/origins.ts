@@ -1,4 +1,4 @@
-import type { VisualEditorOptions } from "../types.js";
+import type { VisualEditorOptions } from "../types";
 
 /** Validate the finite host-owned origin allowlist once at plugin initialization; never infer trust from forwarded headers. */
 export function trustedEditorOrigins(

@@ -3,7 +3,7 @@ import { act, renderHook } from "@testing-library/react";
 import {
   prepareAdvisoryExit,
   useNativeAdvisoryLock,
-} from "../../src/frontend/advisory-lock.js";
+} from "../../src/frontend/advisory-lock";
 afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();

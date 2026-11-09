@@ -3,7 +3,7 @@ import type { ClientField } from "payload";
 import {
   mediaCollections,
   mediaReference,
-} from "../../src/schema/media-reference.js";
+} from "../../src/schema/media-reference";
 it("retains monomorphic and polymorphic native reference shapes without editing the asset", () => {
   const upload = {
     name: "image",

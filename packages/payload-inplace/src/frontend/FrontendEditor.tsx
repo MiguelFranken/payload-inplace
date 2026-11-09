@@ -1,11 +1,11 @@
-import { availablePageScopes } from "../server/scopes.js";
-import { nativeDocumentConfig } from "../server/document.js";
+import { availablePageScopes } from "../server/scopes";
+import { nativeDocumentConfig } from "../server/document";
 import {
   nativeDocumentArgs,
   targetSlug,
   targetPolicy,
-} from "../state/document-target.js";
-import { createEditorMessages } from "../i18n/messages.js";
+} from "../state/document-target";
+import { createEditorMessages } from "../i18n/messages";
 import type { ImportMap, PayloadRequest, ServerFunctionClient } from "payload";
 import {
   createClientConfig,
@@ -15,22 +15,22 @@ import {
 } from "payload";
 import { buildFormState } from "@payloadcms/ui/utilities/buildFormState";
 import { Fragment, type ReactNode } from "react";
-import type { VisualEditorOptions } from "../types.js";
+import type { VisualEditorOptions } from "../types";
 import {
   frontendConfig,
   withFrontendImportMap,
-} from "../server/frontend-config.js";
-import { readEditContext } from "../server/context.js";
-import { resolveRoot, resolveRootScope } from "../schema/resolve.js";
+} from "../server/frontend-config";
+import { readEditContext } from "../server/context";
+import { resolveRoot, resolveRootScope } from "../schema/resolve";
 import { RenderServerComponent } from "@payloadcms/ui/elements/RenderServerComponent";
-import { editorLabel, resolveTools } from "../server/tools.js";
+import { editorLabel, resolveTools } from "../server/tools";
 import {
   DeferredConfiguredFieldPanel as ConfiguredFieldPanel,
   DeferredFrontendShell as FrontendShell,
-} from "./DeferredEditor.js";
-import { richTextCapabilities } from "../adapters/richtext-capabilities.js";
-import { projectCatalogue } from "../server/catalogue.js";
-import { frontendStyles } from "./theme.generated.js";
+} from "./DeferredEditor";
+import { richTextCapabilities } from "../adapters/richtext-capabilities";
+import { projectCatalogue } from "../server/catalogue";
+import { frontendStyles } from "./theme.generated";
 
 /** Prepare one native Payload Form for an explicitly activated frontend document.
  * The caller renders its real server-component website as children and supplies an authorization-checked native server-function action.
@@ -57,7 +57,7 @@ export async function FrontendEditor({
   /** Client presentational renderer using useEditorPreviewData. Server-only fragments may be passed into it as slots. */
   preview?: ReactNode;
   /** Host server function reauthorizes and returns fresh presentation; never redirects on denial. See EditorPreviewResponse. */
-  refreshPreview: () => Promise<import("../types.js").EditorPreviewResponse>;
+  refreshPreview: () => Promise<import("../types").EditorPreviewResponse>;
   exitURL: string;
   theme?: "light" | "dark";
 }) {

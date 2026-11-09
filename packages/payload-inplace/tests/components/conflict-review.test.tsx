@@ -43,7 +43,7 @@ vi.mock("../../src/frontend/recovery.js", () => ({
   useEditorRecovery: () => ({ resume: native.resume }),
 }));
 
-import { ConflictReview } from "../../src/frontend/ConflictReview.js";
+import { ConflictReview } from "../../src/frontend/ConflictReview";
 beforeEach(() => {
   vi.clearAllMocks();
   native.data.title = "Mine";

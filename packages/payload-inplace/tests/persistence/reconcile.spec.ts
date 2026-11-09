@@ -2,7 +2,7 @@ import { expect, it } from "vitest";
 import {
   reconcileDocuments,
   resolveReconciliation,
-} from "../../src/state/reconcile.js";
+} from "../../src/state/reconcile";
 
 const base = {
   id: 1,
@@ -81,7 +81,7 @@ it("surfaces delete/edit and duplicate identities, and keeps unknown JSON/rich t
 });
 it("validates only native list identities through named tabs, groups and reusable blocks", async () => {
   const { assertReconcileIdentities } = await import(
-    "../../src/schema/reconcile-identities.js"
+    "../../src/schema/reconcile-identities"
   );
   const schema: import("payload").ClientField[] = [
     {

@@ -3,6 +3,37 @@ import ts from "typescript";
 
 const normalized = (file) => file.split(path.sep).join("/");
 
+const workspaceSpecifier =
+  /^(?:@internal\/|@payload-inplace\/(?:core|lexical)\/)/;
+const resolutionCaches = new Map();
+
+function workspaceSource(file, spec, root) {
+  if (spec.startsWith(".")) return path.resolve(path.dirname(file), spec);
+  if (!workspaceSpecifier.test(spec)) return undefined;
+
+  if (!resolutionCaches.has(root)) {
+    const config = ts.readConfigFile(
+      path.join(root, "tsconfig.json"),
+      ts.sys.readFile,
+    );
+    if (config.error)
+      throw Error(`Cannot read TypeScript configuration in ${root}`);
+    const { options } = ts.convertCompilerOptionsFromJson(
+      config.config.compilerOptions,
+      root,
+    );
+    resolutionCaches.set(root, {
+      options,
+      cache: ts.createModuleResolutionCache(root, (name) => name, options),
+    });
+  }
+  const { options, cache } = resolutionCaches.get(root);
+  const result = ts.resolveModuleName(spec, file, options, ts.sys, cache);
+  if (!result.resolvedModule)
+    throw Error(`Unresolved workspace import: ${file}: ${spec}`);
+  return result.resolvedModule.resolvedFileName;
+}
+
 /** Parse imports instead of matching source text, including type-only edges and lazy imports. */
 export function importEdges(file, source) {
   const result = [];
@@ -81,14 +112,25 @@ export function checkSourceBoundary(file, source, root = process.cwd()) {
     if (statement.expression.text === "use client") client = true;
   }
   for (const edge of importEdges(file, source)) {
+    const resolved = normalized(
+      name.startsWith("packages/payload-inplace/src/") ||
+        name.startsWith("apps/demo/")
+        ? (workspaceSource(file, edge.spec, root) ?? "")
+        : "",
+    );
+    if (
+      name.startsWith("apps/demo/") &&
+      /\/packages\/payload-inplace\/(?:src|dist)\//.test(resolved)
+    )
+      throw Error(
+        `Demo bypasses the public package exports: ${name}: ${edge.spec}`,
+      );
     if (
       name.startsWith("packages/payload-inplace/src/") &&
       !name.includes("/src/testing/") &&
       !name.endsWith("/src/exports/testing.ts") &&
       (edge.spec === "payload-inplace/testing" ||
-        /\/src\/testing\//.test(
-          normalized(path.resolve(path.dirname(file), edge.spec)),
-        ))
+        /\/src\/testing\//.test(resolved))
     )
       throw Error(
         `Production source imports a testing helper: ${name}: ${edge.spec}`,
@@ -126,12 +168,10 @@ export function checkSourceBoundary(file, source, root = process.cwd()) {
       client &&
       !edge.typeOnly
     ) {
-      const resolved = normalized(path.resolve(path.dirname(file), edge.spec));
       if (
-        (edge.spec.startsWith(".") &&
-          /\/src\/(?:server\/|plugin\.|exports\/(?:server|rsc|next|postgres|native)\.)/.test(
-            resolved,
-          )) ||
+        /\/src\/(?:server\/|(?:plugin|exports\/(?:server|rsc|next|postgres|native))(?:\.|$))/.test(
+          resolved,
+        ) ||
         /^payload-inplace\/(?:server|rsc|next|postgres|native)$/.test(edge.spec)
       )
         throw Error(
@@ -145,8 +185,10 @@ export function checkSourceBoundary(file, source, root = process.cwd()) {
 export function checkBindingsGraph(entry, read, root = process.cwd()) {
   const visited = new Set();
   const resolve = (file, spec) => {
-    const base = path.resolve(path.dirname(file), spec),
-      stem = base.replace(/\.(?:m?js|tsx?)$/, "");
+    const base = workspaceSource(file, spec, root);
+    if (!base)
+      throw Error(`Bindings graph imports a package: ${file}: ${spec}`);
+    const stem = base.replace(/\.(?:m?js|tsx?)$/, "");
     for (const candidate of [stem + ".ts", stem + ".tsx", base, stem + ".mjs"])
       if (read(candidate) !== undefined) return candidate;
     throw Error(`Unresolved binding import: ${file}: ${spec}`);
@@ -165,11 +207,8 @@ export function checkBindingsGraph(entry, read, root = process.cwd()) {
       throw Error(`Bindings graph crossed into editor/server: ${name}`);
     const source = read(file);
     if (source === undefined) throw Error(`Missing binding source: ${name}`);
-    for (const edge of importEdges(file, source)) {
-      if (!edge.spec.startsWith("."))
-        throw Error(`Bindings graph imports a package: ${name}: ${edge.spec}`);
+    for (const edge of importEdges(file, source))
       visit(resolve(file, edge.spec));
-    }
   }
   visit(entry);
   return visited.size;

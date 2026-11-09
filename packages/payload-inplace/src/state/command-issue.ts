@@ -1,7 +1,7 @@
 import {
   structuralIssueText,
   type StructuralIssue,
-} from "../../../core/src/policy.js";
+} from "@payload-inplace/core/policy";
 
 /** Stable command failures carry only structural metadata, never native document values or credentials. */
 export type CommandIssue =

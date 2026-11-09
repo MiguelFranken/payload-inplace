@@ -1,9 +1,9 @@
 import { resolve } from "node:path";
 import { expect, it } from "vitest";
 import { readFileSync } from "node:fs";
-import { withVisualEditorNext } from "../../src/exports/next.js";
-import { hasPageEditorSession } from "../../src/preview/page-routing.js";
-import { signContext } from "../../src/server/context.js";
+import { withVisualEditorNext } from "../../src/exports/next";
+import { hasPageEditorSession } from "../../src/preview/page-routing";
+import { signContext } from "../../src/server/context";
 
 it("preserves host Turbopack options and resolves only the pinned native handler without RootLayout", () => {
   const config = withVisualEditorNext({
@@ -65,7 +65,7 @@ it("preserves an explicit host compatibility alias", () => {
 
 it("rejects unsupported native package combinations before field rendering", async () => {
   const { assertNativeVersions } = await import(
-    "../../src/server/runtime-compatibility.js"
+    "../../src/server/runtime-compatibility"
   );
   const supported = {
     payload: "3.91.0",

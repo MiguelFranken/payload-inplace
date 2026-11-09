@@ -6,8 +6,8 @@ import { notFound } from "next/navigation";
 import {
   readEditContext,
   documentKey,
-} from "../../../../../../packages/payload-inplace/dist/exports/server.js";
-import { PreviewBridge } from "../../../../../../packages/payload-inplace/dist/exports/preview.js";
+} from "payload-inplace/server";
+import { PreviewBridge } from "payload-inplace/preview";
 import { RenderPage } from "../../../../components/RenderPage";
 
 export const metadata = { robots: { index: false, follow: false } };

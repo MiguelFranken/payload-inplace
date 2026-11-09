@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
-import { createContext, signContext } from "../../src/server/context.js";
+import { createContext, signContext } from "../../src/server/context";
 import {
   readPageEditContext,
   validatePagePath,
-} from "../../src/server/page-context.js";
+} from "../../src/server/page-context";
 import type { PayloadRequest } from "payload";
-import type { VisualEditorOptions } from "../../src/types.js";
+import type { VisualEditorOptions } from "../../src/types";
 
 function fixture() {
   const document = { id: 1, layout: [], secretDraft: "Authorized draft only" };

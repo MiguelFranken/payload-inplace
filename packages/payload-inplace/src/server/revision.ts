@@ -1,11 +1,11 @@
-import { validateReview } from "./review.js";
+import { validateReview } from "./review";
 import { APIError } from "payload";
 import type {
   CollectionBeforeOperationHook,
   CollectionBeforeChangeHook,
 } from "payload";
-import { operationalSnapshotMatches } from "./operational-write.js";
-import type { ConcurrencyAdapter, OperationalWritePolicy } from "../types.js";
+import { operationalSnapshotMatches } from "./operational-write";
+import type { ConcurrencyAdapter, OperationalWritePolicy } from "../types";
 
 export const REVISION = "_veRevision";
 

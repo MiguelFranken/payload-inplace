@@ -2,7 +2,7 @@
 
 import { createContext, use, useEffect, useRef, type ReactNode } from "react";
 import { useConfig, useForm } from "@payloadcms/ui";
-import type { BlockIdentity, SectionPatternSummary } from "../types.js";
+import type { BlockIdentity, SectionPatternSummary } from "../types";
 
 export interface PatternCapabilities {
   canRead: boolean;

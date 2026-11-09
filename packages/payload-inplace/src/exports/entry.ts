@@ -1,2 +1,2 @@
 "use client";
-export { FrontendEntry } from "../frontend/FrontendEntry.js";
+export { FrontendEntry } from "../frontend/FrontendEntry";

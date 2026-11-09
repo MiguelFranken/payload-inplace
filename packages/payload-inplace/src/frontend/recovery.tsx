@@ -1,6 +1,6 @@
 "use client";
 
-import type { EditorStaticMessageKey } from "../i18n/catalogue.js";
+import type { EditorStaticMessageKey } from "../i18n/catalogue";
 import { createContext, use, useEffect, useRef, useState } from "react";
 import {
   useDocumentInfo,

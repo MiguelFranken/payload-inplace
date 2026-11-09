@@ -1,5 +1,5 @@
 import type { PayloadRequest } from "payload";
-import type { EditorTarget } from "../../../packages/payload-inplace/dist/exports/types.js";
+import type { EditorTarget } from "payload-inplace/types";
 
 /** Called only after authorizedEditor has reauthorized the exact native scope. Public renderers do not use this draft reader. */
 export function readDemoDocument(

@@ -1,14 +1,14 @@
 "use client";
 
-import type { EditorStaticMessageKey } from "../i18n/catalogue.js";
-import { useEditorMessages } from "./messages.js";
+import type { EditorStaticMessageKey } from "../i18n/catalogue";
+import { useEditorMessages } from "./messages";
 
 import { useEffect, useRef, useState } from "react";
 import { ImageOff } from "lucide-react";
-import { Button } from "./ui/button.js";
-import type { ContextualFieldProps } from "./field-strategies.js";
-import type { MediaAsset, MediaLibraryAdapter } from "./media-library.js";
-import { mediaCollections, mediaReference } from "../schema/media-reference.js";
+import { Button } from "./ui/button";
+import type { ContextualFieldProps } from "./field-strategies";
+import type { MediaAsset, MediaLibraryAdapter } from "./media-library";
+import { mediaCollections, mediaReference } from "../schema/media-reference";
 
 /** Mounted only while its contextual strategy owns this native field. Cancellation/late responses never write a value. */
 export function MediaLibraryField({

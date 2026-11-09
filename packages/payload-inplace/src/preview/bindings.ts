@@ -1,1 +1,1 @@
-export * from "../../../core/src/annotations.js";
+export * from "@payload-inplace/core/annotations";

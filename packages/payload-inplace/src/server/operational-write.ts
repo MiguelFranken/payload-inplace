@@ -1,4 +1,4 @@
-import { contentHash } from "./review.js";
+import { contentHash } from "./review";
 
 /** Compare a complete live-document snapshot while excluding only the configured operational paths.
  * A sparse patch is rejected: native Payload merges ordinary writes with the latest draft, so publishing

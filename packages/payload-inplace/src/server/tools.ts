@@ -1,10 +1,10 @@
-import { localizedLabel } from "../i18n/labels.js";
+import { localizedLabel } from "../i18n/labels";
 import type {
   EditorCapabilityContext,
   EditorLabel,
   EditorTool,
   VisualEditorOptions,
-} from "../types.js";
+} from "../types";
 
 export const defaultTools: EditorTool[] = [
   "content",

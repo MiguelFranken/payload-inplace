@@ -1,11 +1,11 @@
 import { expect, it } from "vitest";
 import type { ClientField } from "payload";
-import { resolveBinding } from "../../src/schema/resolve-binding.js";
+import { resolveBinding } from "../../src/schema/resolve-binding";
 import {
   getArrayItemAttributes,
   getArrayItemPath,
   getFieldAttributes,
-} from "../../src/preview/bindings.js";
+} from "../../src/preview/bindings";
 
 const fields = [
   {

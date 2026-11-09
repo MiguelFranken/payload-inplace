@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { resolveEditorStrategy } from "../../src/schema/editor-strategy.js";
+import { resolveEditorStrategy } from "../../src/schema/editor-strategy";
 import type { ClientField, FieldState } from "payload";
 it("uses one strategy classifier for permissions, native/custom overrides and async field initialization", () => {
   const args = {

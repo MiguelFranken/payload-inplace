@@ -1,7 +1,7 @@
 import {
   assertNativeVersions,
   nativePackageVersion,
-} from "../server/runtime-compatibility.js";
+} from "../server/runtime-compatibility";
 import { createRequire } from "node:module";
 import { dirname, relative, resolve, sep } from "node:path";
 import type { NextConfig } from "next";

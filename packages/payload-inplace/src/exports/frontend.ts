@@ -1,34 +1,34 @@
 "use client";
-export { useVisualEditor } from "../frontend/tools-context.js";
-export { NativeFieldSlot } from "../frontend/field-ownership.js";
-export { useEditorPreviewData } from "../frontend/preview-data.js";
+export { useVisualEditor } from "../frontend/tools-context";
+export { NativeFieldSlot } from "../frontend/field-ownership";
+export { useEditorPreviewData } from "../frontend/preview-data";
 
 export {
   EditorFieldStrategy,
   defineFieldStrategy,
-} from "../frontend/field-strategies.js";
+} from "../frontend/field-strategies";
 export type {
   FieldStrategyDefinition,
   ContextualFieldProps,
   ContextualFieldKind,
   ContextualFieldValue,
-} from "../frontend/field-strategies.js";
+} from "../frontend/field-strategies";
 export {
   defineMediaFieldStrategy,
   createPayloadMediaLibrary,
-} from "../frontend/media-library.js";
+} from "../frontend/media-library";
 export type {
   MediaAsset,
   MediaPage,
   MediaLibraryAdapter,
-} from "../frontend/media-library.js";
-export { useEditorObserver } from "../frontend/lifecycle.js";
+} from "../frontend/media-library";
+export { useEditorObserver } from "../frontend/lifecycle";
 export type {
   EditorLifecycleEvent,
   EditorObserver,
   EditorOperation,
   EditorOutcome,
   EditorFailureCategory,
-} from "../../../core/src/events.js";
+} from "@payload-inplace/core/events";
 
-export { useEditorMessages } from "../frontend/messages.js";
+export { useEditorMessages } from "../frontend/messages";

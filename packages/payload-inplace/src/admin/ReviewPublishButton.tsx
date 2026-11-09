@@ -4,9 +4,9 @@ import {
   nativeDocumentPath,
   nativeDocumentMethod,
   targetFromNativeInfo,
-} from "../state/document-target.js";
-import { useDocumentScopes } from "../frontend/document-scope.js";
-import { useEditorMessages } from "../frontend/messages.js";
+} from "../state/document-target";
+import { useDocumentScopes } from "../frontend/document-scope";
+import { useEditorMessages } from "../frontend/messages";
 
 import {
   Button,
@@ -33,18 +33,18 @@ import {
 } from "react";
 import type { ClientBlock, ClientField } from "payload";
 import { FileCheck2, LoaderCircle, X, Globe, History } from "lucide-react";
-import { useModalDismiss } from "./native-accessibility.js";
+import { useModalDismiss } from "./native-accessibility";
 
 const DocumentReview = lazy(() =>
-  import("./DocumentReview.js").then((module) => ({
+  import("./DocumentReview").then((module) => ({
     default: module.DocumentReview,
   })),
 );
-import { ReviewBaselineContext } from "./review-baseline.js";
-import { documentChanges } from "../state/document-diff.js";
-import { Button as ChromeButton } from "../frontend/ui/button.js";
-import { useOptionalEditorLifecycle } from "../frontend/lifecycle.js";
-import { chrome } from "./chrome.js";
+import { ReviewBaselineContext } from "./review-baseline";
+import { documentChanges } from "../state/document-diff";
+import { Button as ChromeButton } from "../frontend/ui/button";
+import { useOptionalEditorLifecycle } from "../frontend/lifecycle";
+import { chrome } from "./chrome";
 
 type Review = {
   draft: Record<string, any>;

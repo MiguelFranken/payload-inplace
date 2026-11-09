@@ -1,13 +1,13 @@
 "use client";
 
-import { useEditorMessages } from "./messages.js";
+import { useEditorMessages } from "./messages";
 import { useEffect, useEffectEvent, useRef, type ReactNode } from "react";
 import {
   parseDocumentKey,
   type DocumentReference,
-} from "../../../core/src/document-ref.js";
-import type { BlockIdentity } from "../types.js";
-import { elementRect, inlineSurface } from "../preview/geometry.js";
+} from "@payload-inplace/core/document-ref";
+import type { BlockIdentity } from "../types";
+import { elementRect, inlineSurface } from "../preview/geometry";
 
 /** Client selection is only provenance. The schema resolver and native server access remain authoritative. */
 export interface InspectionTarget {

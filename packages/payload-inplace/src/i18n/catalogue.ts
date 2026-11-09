@@ -1,4 +1,4 @@
-import type { Message } from "../../../core/src/messages.js";
+import type { Message } from "@payload-inplace/core/messages";
 
 /** Typed source copy. Consumers override messages by key; content and native field labels stay consumer-owned. */
 export const englishMessages = {

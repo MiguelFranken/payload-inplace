@@ -1,7 +1,7 @@
 "use client";
 
-import { targetSlug } from "../state/document-target.js";
-import { useEditorMessages } from "./messages.js";
+import { targetSlug } from "../state/document-target";
+import { useEditorMessages } from "./messages";
 
 import {
   Suspense,
@@ -23,12 +23,12 @@ import {
   useDocumentInfo,
   useForm,
 } from "@payloadcms/ui";
-import { useVisualEditor } from "./tools-context.js";
-import { collectSections } from "../schema/tree.js";
-import { resolveRoot } from "../schema/resolve.js";
+import { useVisualEditor } from "./tools-context";
+import { collectSections } from "../schema/tree";
+import { resolveRoot } from "../schema/resolve";
 import type { ClientBlock, ClientField } from "payload";
 
-import { claimNativeFields } from "../state/field-claims.js";
+import { claimNativeFields } from "../state/field-claims";
 
 type Claim = {
   id: string;

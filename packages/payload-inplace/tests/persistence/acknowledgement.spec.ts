@@ -1,5 +1,5 @@
 import { it, expect } from "vitest";
-import { protectNativeAcknowledgement } from "../../src/state/acknowledgement.js";
+import { protectNativeAcknowledgement } from "../../src/state/acknowledgement";
 it("protects multiple later keystrokes even when native isModified marks only the last field", () => {
   const submitted = {
     title: { value: "sent" },
@@ -56,7 +56,7 @@ it("keeps unchanged server normalization and revision acknowledgement while reje
 
 it("rejects stale validation metadata after a sibling value or row order changes", async () => {
   const { nativeSnapshotMatches } = await import(
-    "../../src/state/acknowledgement.js"
+    "../../src/state/acknowledgement"
   );
   expect(
     nativeSnapshotMatches(

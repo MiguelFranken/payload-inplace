@@ -5,9 +5,9 @@ import {
   readEditContext,
   signContext,
   verifyContext,
-} from "../../src/server/context.js";
-import { signReview, validateReview } from "../../src/server/review.js";
-import type { VisualEditorOptions } from "../../src/types.js";
+} from "../../src/server/context";
+import { signReview, validateReview } from "../../src/server/review";
+import type { VisualEditorOptions } from "../../src/types";
 it("binds activation and reviewed publication to a single content locale before protected reads", async () => {
   const findByID = vi.fn().mockResolvedValue({ id: 1, layout: [] });
   const req = {

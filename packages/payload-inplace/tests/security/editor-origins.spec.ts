@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { trustedEditorOrigins } from "../../src/server/origins.js";
+import { trustedEditorOrigins } from "../../src/server/origins";
 it("trusts only exact configured deployment, alias and Portless origins", () => {
   const origins = trustedEditorOrigins({
     previewOrigin: "https://deployment.example.test",

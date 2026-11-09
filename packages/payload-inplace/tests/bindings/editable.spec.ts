@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
-import { editable, isBindingPath } from "../../src/exports/bindings.js";
-import { documentKey, parseDocumentKey } from "../../src/exports/bindings.js";
+import { editable, isBindingPath } from "../../src/exports/bindings";
+import { documentKey, parseDocumentKey } from "../../src/exports/bindings";
 it("binds stable nested row terminals without repeating document or block provenance", () => {
   const e = editable(
     { kind: "collection", collection: "pages", id: "a:b" },

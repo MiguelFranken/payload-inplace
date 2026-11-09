@@ -1,9 +1,9 @@
 "use client";
 
-import { localizedLabel } from "../i18n/labels.js";
-import { findBoundBlock } from "../preview/dom-target.js";
-import type { DocumentReference } from "../../../core/src/document-ref.js";
-import { useEditorMessages } from "./messages.js";
+import { localizedLabel } from "../i18n/labels";
+import { findBoundBlock } from "../preview/dom-target";
+import type { DocumentReference } from "@payload-inplace/core/document-ref";
+import { useEditorMessages } from "./messages";
 
 import {
   useEffect,
@@ -38,13 +38,13 @@ import {
   LocateFixed,
 } from "lucide-react";
 import { useTranslation } from "@payloadcms/ui";
-import type { NativeSection } from "../schema/tree.js";
+import type { NativeSection } from "../schema/tree";
 import {
   elementRect,
   pageHandlePosition,
   boundTextRects,
-} from "../preview/geometry.js";
-import { Button } from "./ui/button.js";
+} from "../preview/geometry";
+import { Button } from "./ui/button";
 
 const key = (s: NativeSection) => JSON.stringify(s.identity);
 

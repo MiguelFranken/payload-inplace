@@ -4,16 +4,16 @@ export {
   getArrayItemPath,
   getFieldAttributes,
   getFieldGroupAttributes,
-} from "../preview/bindings.js";
+} from "../preview/bindings";
 
-export { editable, isBindingPath } from "../../../core/src/editable.js";
+export { editable, isBindingPath } from "@payload-inplace/core/editable";
 export {
   documentKey,
   parseDocumentKey,
-} from "../../../core/src/document-ref.js";
-export type { DocumentReference } from "../../../core/src/document-ref.js";
+} from "@payload-inplace/core/document-ref";
+export type { DocumentReference } from "@payload-inplace/core/document-ref";
 export type {
   BoundBlock,
   BindingPath,
   BindingAttributes,
-} from "../../../core/src/editable.js";
+} from "@payload-inplace/core/editable";

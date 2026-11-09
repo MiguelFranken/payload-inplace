@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { richToolbarPosition } from "../../src/frontend/rich-toolbar.js";
+import { richToolbarPosition } from "../../src/frontend/rich-toolbar";
 it("centers a compact toolbar above the caret instead of the whole rich-text field", () => {
   expect(
     richToolbarPosition(

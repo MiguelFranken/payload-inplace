@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 import type { ClientField } from "payload";
-import { copyPatternFields } from "../../src/schema/pattern-copy.js";
+import { copyPatternFields } from "../../src/schema/pattern-copy";
 it("copies declared writable content with fresh nested row identities while keeping asset references", () => {
   let next = 0;
   const fields = [

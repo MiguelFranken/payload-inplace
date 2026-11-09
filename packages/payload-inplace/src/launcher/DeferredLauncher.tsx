@@ -1,17 +1,17 @@
 "use client";
 
 import { lazy, Suspense, type ComponentProps } from "react";
-import type { EditorPageTransition as TransitionProps } from "./EditorPageTransition.js";
-import type { InPlaceLauncher as LauncherProps } from "./InPlaceLauncher.js";
+import type { EditorPageTransition as TransitionProps } from "./EditorPageTransition";
+import type { InPlaceLauncher as LauncherProps } from "./InPlaceLauncher";
 
 const Transition = lazy(() =>
-  import("./EditorPageTransition.js").then((module) => ({
+  import("./EditorPageTransition").then((module) => ({
     default: module.EditorPageTransition,
   })),
 );
 
 const Launcher = lazy(() =>
-  import("./InPlaceLauncher.js").then((module) => ({
+  import("./InPlaceLauncher").then((module) => ({
     default: module.InPlaceLauncher,
   })),
 );

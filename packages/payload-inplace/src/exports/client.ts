@@ -1,4 +1,4 @@
 "use client";
-export { VisualBlocksField } from "../admin/VisualBlocksField.js";
-export { RevisionField } from "../admin/RevisionField.js";
-export { ReviewPublishButton } from "../admin/NativeReviewPublishButton.js";
+export { VisualBlocksField } from "../admin/VisualBlocksField";
+export { RevisionField } from "../admin/RevisionField";
+export { ReviewPublishButton } from "../admin/NativeReviewPublishButton";

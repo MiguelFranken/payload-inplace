@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readPlainText } from "../../src/adapters/plain-text.js";
+import { readPlainText } from "../../src/adapters/plain-text";
 describe("authored plaintext semantics", () => {
   it("preserves source casing, spaces and NBSP regardless of CSS transforms", () => {
     const el = document.createElement("h2");
@@ -25,7 +25,7 @@ describe("authored plaintext semantics", () => {
 
 it("rejects truncated renderer projections without treating CSS casing or empty fallbacks as authored data", async () => {
   const { canAdoptPlainText } = await import(
-    "../../src/adapters/plain-text.js"
+    "../../src/adapters/plain-text"
   );
   const element = document.createElement("p");
   element.textContent = "Mixed Case\u00a0source";

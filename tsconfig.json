@@ -12,6 +12,7 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
+      "@internal/*": ["./packages/payload-inplace/src/*"],
       "@payload-config": [
         "./apps/demo/payload.config.ts"
       ]
@@ -22,6 +23,7 @@
     "packages/**/*.tsx",
     "apps/demo/**/*.ts",
     "apps/demo/**/*.tsx",
+    "tests/**/*.ts",
     "*.ts",
     "vitest.setup.ts"
   ],

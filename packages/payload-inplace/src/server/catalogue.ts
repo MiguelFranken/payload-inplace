@@ -1,6 +1,6 @@
 import type { ClientBlock, ClientField, BlocksFieldClientProps } from "payload";
-import type { EditorCatalogueEntry } from "../types.js";
-import { previewExample } from "../schema/example-preview.js";
+import type { EditorCatalogueEntry } from "../types";
+import { previewExample } from "../schema/example-preview";
 
 const child = (permission: unknown, key: string): unknown =>
   permission === true

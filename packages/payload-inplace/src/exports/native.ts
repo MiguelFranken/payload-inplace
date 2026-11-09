@@ -9,9 +9,9 @@ import { buildFormStateHandler } from "@payloadcms/ui/utilities/buildFormState";
 import { buildTableStateHandler } from "@payloadcms/ui/utilities/buildTableState";
 import { _internal_renderFieldHandler } from "@payloadcms/ui/rsc";
 import { handleServerFunctions as nativeHandler } from "@payload-visual-editor/native-handler";
-import { synchronizeNativeSchemaCaches } from "../server/frontend-config.js";
-import { contentLocale } from "../server/content-locale.js";
-import { scopeNativeFunction } from "../adapters/native-function-scope.js";
+import { synchronizeNativeSchemaCaches } from "../server/frontend-config";
+import { contentLocale } from "../server/content-locale";
+import { scopeNativeFunction } from "../adapters/native-function-scope";
 
 /** Standard native admin bridge. Extra client properties can never select an editor request or override its authorization scope. */
 export const handleServerFunctions: ServerFunctionHandler = async (args) => {

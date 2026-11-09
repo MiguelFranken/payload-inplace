@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
-import { StructuralHistory, snapshotRoot } from "../../src/state/history.js";
-import { structureError } from "../../src/state/policy.js";
-import { contentHash, candidateMatches } from "../../src/server/review.js";
+import { StructuralHistory, snapshotRoot } from "../../src/state/history";
+import { structureError } from "../../src/state/policy";
+import { contentHash, candidateMatches } from "../../src/server/review";
 it("structural history cannot restore unrelated content or revision and does not alias content values", () => {
   const fields: any = {
     layout: { value: 1, rows: [{ id: "a", blockType: "text" }] },
@@ -97,7 +97,7 @@ it("reviews native form projections without accepting changed/reordered row iden
 });
 it("duplicates every nested row identity without touching the source row", async () => {
   const { duplicateRowState } = await import(
-    "../../src/adapters/payload-form.js"
+    "../../src/adapters/payload-form"
   );
   const fields: any = {
     "layout.1.id": { value: "custom-root", initialValue: "custom-root" },
@@ -117,7 +117,7 @@ it("duplicates every nested row identity without touching the source row", async
   expect(fields["layout.1.items.0.id"].value).toBe("custom-nested");
 });
 it("schema composition preserves host editor instances, regexes and callback identities", async () => {
-  const { cloneFields } = await import("../../src/schema/clone.js");
+  const { cloneFields } = await import("../../src/schema/clone");
   const condition = () => true,
     pattern = /example/,
     editor = Object.create({ native: true });

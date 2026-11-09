@@ -1,8 +1,8 @@
-import type { BlockIdentity } from "../../../core/src/types.js";
+import type { BlockIdentity } from "@payload-inplace/core/types";
 import {
   documentKey,
   type DocumentReference,
-} from "../../../core/src/document-ref.js";
+} from "@payload-inplace/core/document-ref";
 
 /** Match renderer-owned identity and provenance together. Equal native row IDs in different documents must never share drag/locate/selection geometry. Legacy unscoped bindings still address only the active document. */
 export function findBoundBlock(

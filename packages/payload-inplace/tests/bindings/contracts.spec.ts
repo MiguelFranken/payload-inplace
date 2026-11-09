@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { resolveRoot } from "../../src/schema/resolve.js";
-import { indexBlocks, resolveIdentity } from "../../src/state/identity.js";
+import { resolveRoot } from "../../src/schema/resolve";
+import { indexBlocks, resolveIdentity } from "../../src/state/identity";
 import {
   getBlockAttributes,
   getFieldGroupAttributes,
-} from "../../src/preview/bindings.js";
-import { PROTOCOL, validateMessage } from "../../src/preview/protocol.js";
-import { signContext, verifyContext } from "../../src/server/context.js";
+} from "../../src/preview/bindings";
+import { PROTOCOL, validateMessage } from "../../src/preview/protocol";
+import { signContext, verifyContext } from "../../src/server/context";
 describe("authoring contracts", () => {
   it("resolves transparent containers and named tabs without conflating data/schema paths", () => {
     const root: any = { name: "layout", type: "blocks", blocks: [] };

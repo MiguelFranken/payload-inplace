@@ -3,9 +3,9 @@ import {
   getBlockAttributes,
   getFieldAttributes,
   getFieldGroupAttributes,
-} from "./annotations.js";
-import { documentKey, type DocumentReference } from "./document-ref.js";
-import type { BlockIdentity } from "./types.js";
+} from "./annotations";
+import { documentKey, type DocumentReference } from "./document-ref";
+import type { BlockIdentity } from "./types";
 
 type Depth = [never, 0, 1, 2, 3, 4];
 

@@ -4,5 +4,5 @@ export {
   createEditorFixture,
   createDeferredResponse,
   inspectNativeField,
-} from "../testing/fixtures.js";
-export { FieldStrategyHarness } from "../testing/FieldStrategyHarness.js";
+} from "../testing/fixtures";
+export { FieldStrategyHarness } from "../testing/FieldStrategyHarness";

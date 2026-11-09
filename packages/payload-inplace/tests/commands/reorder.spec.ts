@@ -1,6 +1,6 @@
 import { expect, it, vi } from "vitest";
-import { applyCommand } from "../../src/adapters/payload-form.js";
-import { StructuralHistory } from "../../src/state/history.js";
+import { applyCommand } from "../../src/adapters/payload-form";
+import { StructuralHistory } from "../../src/state/history";
 
 const identity = (blockId: string) => ({ root: "layout", blockId });
 

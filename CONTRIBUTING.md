@@ -17,6 +17,18 @@ Open `http://127.0.0.1:3127/shop` to explore the homewares demo. Use its footerâ
 
 The launcher creates a temporary Mongo replica set, initializes fixtures once, starts explicit Turbopack, and removes the database after shutdown. Production browser runs use a separate `.next-prod` output. Stop the launcher normally to complete cleanup; never reuse a human's running server.
 
+## Imports and test layout
+
+The [demo](apps/demo/README.md) uses the public `payload-inplace` entry points.
+The workspace links them to the local build. Keep browser scenarios and
+integration setup in [the repository tests](tests/README.md).
+
+In plugin source, use extensionless relative imports for nearby modules,
+`@internal/*` for deeper links within the plugin, and workspace package subpaths
+for Core and Lexical. The build resolves both private workspaces into the npm
+artifact. Keep explicit extensions in paths passed to Node for direct file
+loading.
+
 ## Validate changes
 
 ```sh

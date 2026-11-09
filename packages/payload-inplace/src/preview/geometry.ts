@@ -1,1 +1,1 @@
-export * from "../../../core/src/geometry.js";
+export * from "@payload-inplace/core/geometry";

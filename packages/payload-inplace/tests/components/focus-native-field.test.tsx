@@ -1,6 +1,6 @@
 import { afterEach, expect, it } from "vitest";
 import { waitFor } from "@testing-library/react";
-import { focusNativeField } from "../../src/frontend/focus-native-field.js";
+import { focusNativeField } from "../../src/frontend/focus-native-field";
 
 const cleanups: (() => void)[] = [];
 afterEach(() => {

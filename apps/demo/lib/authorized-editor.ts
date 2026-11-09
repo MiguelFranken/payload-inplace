@@ -7,7 +7,7 @@ import { importMap } from "../app/(payload)/admin/importMap.js";
 import {
   readEditContext,
   verifyContext,
-} from "../../../packages/payload-inplace/dist/exports/server.js";
+} from "payload-inplace/server";
 
 /** Every frontend render and native server-function call checks the current session and activation again. */
 export async function authorizedEditor(

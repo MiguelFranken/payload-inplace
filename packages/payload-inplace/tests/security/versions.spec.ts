@@ -3,8 +3,8 @@ import type { PayloadRequest } from "payload";
 import {
   prepareVersionRestore,
   versionEndpoint,
-} from "../../src/server/versions.js";
-import type { VisualEditorOptions } from "../../src/types.js";
+} from "../../src/server/versions";
+import type { VisualEditorOptions } from "../../src/types";
 vi.mock("../../src/server/context.js", () => ({
   readEditContext: async () => ({
     context: { target: { collection: "pages", id: "p", root: "layout" } },

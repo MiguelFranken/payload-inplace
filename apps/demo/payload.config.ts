@@ -8,12 +8,12 @@ import { buildConfig, validations } from "payload";
 import { mongooseAdapter } from "@payloadcms/db-mongodb";
 import { postgresAdapter } from "@payloadcms/db-postgres";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
-import { postgresConcurrency } from "../../packages/payload-inplace/dist/exports/postgres.js";
-import { visualEditor } from "../../packages/payload-inplace/dist/index.js";
+import { postgresConcurrency } from "payload-inplace/postgres";
+import { visualEditor } from "payload-inplace";
 import { seed } from "./seed";
 import { commerceCollections } from "./commerce/schema";
 import { commercePath } from "./commerce/paths";
-import type { VisualEditorOptions } from "../../packages/payload-inplace/dist/exports/types.js";
+import type { VisualEditorOptions } from "payload-inplace/types";
 import type {
   Block,
   CollectionConfig,

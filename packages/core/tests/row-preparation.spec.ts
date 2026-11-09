@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { preparedInsertedRow } from "../src/row-preparation.js";
+import { preparedInsertedRow } from "../src/row-preparation";
 
 it("waits for native leaf initialization and never selects a previous row at the same index", () => {
   const before = new Set(["old"]);

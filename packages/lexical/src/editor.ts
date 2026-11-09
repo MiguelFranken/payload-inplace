@@ -38,7 +38,7 @@ import {
   serializeLosslessly,
   type RichNode,
   type RichDocument,
-} from "./document.js";
+} from "./document";
 
 export type RichFormat =
   | TextFormatType

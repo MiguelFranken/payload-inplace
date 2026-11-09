@@ -4,7 +4,7 @@ import { useCallback, useState, type SetStateAction } from "react";
 import {
   panelTransition,
   type PanelState,
-} from "../../../../core/src/panels.js";
+} from "@payload-inplace/core/panels";
 
 const value = <T>(next: SetStateAction<T>, previous: T): T =>
   typeof next === "function" ? (next as (v: T) => T)(previous) : next;

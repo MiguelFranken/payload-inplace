@@ -1,6 +1,6 @@
 import type { BlocksFieldClientProps, ClientBlock, ClientField } from "payload";
 import { getFieldPaths } from "payload/shared";
-import type { BlockIdentity } from "../types.js";
+import type { BlockIdentity } from "../types";
 
 /** A schema-resolved section: numeric data paths are transient, schema paths contain block slugs instead of indices. */
 export interface NativeSection {

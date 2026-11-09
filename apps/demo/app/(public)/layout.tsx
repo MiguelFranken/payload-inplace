@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { getPayload } from "payload";
 import config, { editorOptions } from "@payload-config";
-import { EditorPageTransition } from "../../../../packages/payload-inplace/dist/exports/launcher.js";
+import { EditorPageTransition } from "payload-inplace/launcher";
 import "../../styles.css";
 import {
   StorefrontHeader,

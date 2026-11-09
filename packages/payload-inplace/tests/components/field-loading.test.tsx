@@ -4,7 +4,7 @@ import { StrictMode, Suspense, use, useEffect, useState } from "react";
 import {
   FieldOwnershipProvider,
   NativeFieldsOwner,
-} from "../../src/frontend/field-ownership.js";
+} from "../../src/frontend/field-ownership";
 vi.mock("@payloadcms/ui", () => ({
   Button: () => null,
   RenderFields: () => null,

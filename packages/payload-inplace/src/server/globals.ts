@@ -5,14 +5,14 @@ import {
   type GlobalBeforeChangeHook,
   type EditConfig,
 } from "payload";
-import type { VisualEditorOptions } from "../types.js";
-import { cloneFields } from "../schema/clone.js";
-import { resolveRoot } from "../schema/resolve.js";
-import { structureError } from "../state/policy.js";
-import { readEditContext } from "./context.js";
-import { readNativeDocument } from "./document.js";
-import { validateDocumentReview } from "./review.js";
-import { prepareVersionRestore } from "./versions.js";
+import type { VisualEditorOptions } from "../types";
+import { cloneFields } from "../schema/clone";
+import { resolveRoot } from "../schema/resolve";
+import { structureError } from "../state/policy";
+import { readEditContext } from "./context";
+import { readNativeDocument } from "./document";
+import { validateDocumentReview } from "./review";
+import { prepareVersionRestore } from "./versions";
 
 const revisionState = "payloadInplaceGlobalRevision";
 

@@ -1,1 +1,1 @@
-export { postgresConcurrency } from "../server/postgres.js";
+export { postgresConcurrency } from "../server/postgres";

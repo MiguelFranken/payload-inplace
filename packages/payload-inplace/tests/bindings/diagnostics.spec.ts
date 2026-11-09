@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 import type { ClientField } from "payload";
-import { diagnoseBinding } from "../../src/schema/binding-diagnostics.js";
+import { diagnoseBinding } from "../../src/schema/binding-diagnostics";
 
 const fields = [
   { name: "heading", type: "text" },

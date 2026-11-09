@@ -1,9 +1,9 @@
 "use client";
 
-import { useEditorMessages } from "./messages.js";
+import { useEditorMessages } from "./messages";
 
-import { NativeFieldSlot } from "./field-ownership.js";
-import { useVisualEditor } from "./tools-context.js";
+import { NativeFieldSlot } from "./field-ownership";
+import { useVisualEditor } from "./tools-context";
 
 /** Declarative field panels reuse native controls; consumers only list existing field paths. */
 export function ConfiguredFieldPanel({

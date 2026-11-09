@@ -1,7 +1,7 @@
 import { it, expect } from "vitest";
-import { availableBlocks } from "../../src/schema/available-blocks.js";
-import { applyCommand } from "../../src/adapters/payload-form.js";
-import { StructuralHistory } from "../../src/state/history.js";
+import { availableBlocks } from "../../src/schema/available-blocks";
+import { applyCommand } from "../../src/adapters/payload-form";
+import { StructuralHistory } from "../../src/state/history";
 it("resolves referenced blocks and distinguishes no filter from an empty native whitelist", () => {
   const hero: any = { slug: "hero", fields: [] },
     field: any = {

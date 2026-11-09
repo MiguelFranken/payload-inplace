@@ -7,7 +7,7 @@ import {
   getBlockAttributes,
   getFieldAttributes,
   getFieldGroupAttributes,
-} from "../../../packages/payload-inplace/dist/exports/bindings.js";
+} from "payload-inplace/bindings";
 
 type Identity = { root: string; blockId: string };
 

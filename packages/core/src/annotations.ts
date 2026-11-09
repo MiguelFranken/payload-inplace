@@ -1,4 +1,4 @@
-import type { BlockIdentity } from "./types.js";
+import type { BlockIdentity } from "./types";
 
 /** Attach only on the authorized preview surface; public rendering gets identical unannotated DOM. */
 export function getBlockAttributes(

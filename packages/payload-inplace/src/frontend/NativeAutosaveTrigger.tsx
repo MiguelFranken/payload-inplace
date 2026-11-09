@@ -1,6 +1,6 @@
 "use client";
 
-import { useEditorRecovery } from "./recovery.js";
+import { useEditorRecovery } from "./recovery";
 import { useEffect, useMemo, useState } from "react";
 import {
   useAllFormFields,
@@ -16,19 +16,19 @@ import {
   targetFromNativeInfo,
   nativeDocumentMethod,
   targetDocumentKey,
-} from "../state/document-target.js";
-import { nativeDraftAction } from "../adapters/native-request.js";
+} from "../state/document-target";
+import { nativeDraftAction } from "../adapters/native-request";
 import {
   autosaveDelay,
   authoredFieldKey,
   canScheduleNativeSave,
-} from "../state/autosave.js";
+} from "../state/autosave";
 import {
   getAutosaveInterval,
   hasAutosaveEnabled,
   hasDraftValidationEnabled,
 } from "payload/shared";
-import { useNativeIdleSubmit } from "./controllers/idle-submit.js";
+import { useNativeIdleSubmit } from "./controllers/idle-submit";
 
 /** The idle trigger delegates directly to the sole native Form.submit. An unacknowledged attempt waits for explicit recovery, never another timer. */
 export function NativeAutosaveTrigger() {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEditorMessages } from "../frontend/messages.js";
+import { useEditorMessages } from "../frontend/messages";
 
 import type { BlocksFieldClientProps } from "payload";
 import {

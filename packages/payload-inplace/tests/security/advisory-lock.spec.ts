@@ -1,6 +1,6 @@
 import { expect, it, vi } from "vitest";
 import type { PayloadRequest } from "payload";
-import type { VisualEditorOptions } from "../../src/types.js";
+import type { VisualEditorOptions } from "../../src/types";
 
 const hooks = vi.hoisted(() => ({
   authorize: vi.fn(),
@@ -21,7 +21,7 @@ vi.mock("../../src/server/context.js", () => ({
 import {
   advisoryLockEndpoint,
   manageAdvisoryLock,
-} from "../../src/server/advisory-lock.js";
+} from "../../src/server/advisory-lock";
 it("does not mutate disabled/unsupported locks and never exposes owner data on foreign leases", async () => {
   hooks.authorize.mockResolvedValue({
     context: { target: { collection: "pages", id: "1", root: "layout" } },

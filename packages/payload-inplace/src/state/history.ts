@@ -1,4 +1,4 @@
-import { commandIssueText, type CommandIssue } from "./command-issue.js";
+import { commandIssueText, type CommandIssue } from "./command-issue";
 import type { FormState } from "payload";
 
 function cloneValue<T>(value: T): T {

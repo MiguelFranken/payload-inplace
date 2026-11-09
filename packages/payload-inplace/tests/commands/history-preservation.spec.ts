@@ -2,8 +2,8 @@ import { expect, it } from "vitest";
 import {
   materializeStructuralRestore,
   StructuralHistory,
-} from "../../src/state/history.js";
-import { restoreRoot } from "../../src/adapters/payload-form.js";
+} from "../../src/state/history";
+import { restoreRoot } from "../../src/adapters/payload-form";
 
 function fields(rows: { id: string; heading: string }[], root = "layout"): any {
   const result: any = {

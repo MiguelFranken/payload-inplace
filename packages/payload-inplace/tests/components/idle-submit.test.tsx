@@ -1,6 +1,6 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { renderHook } from "@testing-library/react";
-import { useNativeIdleSubmit } from "../../src/frontend/controllers/idle-submit.js";
+import { useNativeIdleSubmit } from "../../src/frontend/controllers/idle-submit";
 afterEach(() => vi.useRealTimers());
 it("batches a typing burst and ignores metadata/callback refreshes without postponing the idle deadline", async () => {
   vi.useFakeTimers();

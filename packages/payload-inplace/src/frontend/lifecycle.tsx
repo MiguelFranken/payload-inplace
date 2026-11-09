@@ -11,13 +11,13 @@ import {
 import {
   createEditorEventChannel,
   type EditorObserver,
-} from "../../../core/src/events.js";
+} from "@payload-inplace/core/events";
 import {
   documentReference,
   targetDocumentKey,
-} from "../state/document-target.js";
+} from "../state/document-target";
 import { useLocale } from "@payloadcms/ui";
-import type { EditorTarget } from "../types.js";
+import type { EditorTarget } from "../types";
 
 const Context = createContext<ReturnType<
   typeof createEditorEventChannel

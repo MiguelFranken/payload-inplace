@@ -1,5 +1,5 @@
-import { editable } from "../../../packages/payload-inplace/dist/exports/bindings.js";
-import type { EditorTarget } from "../../../packages/payload-inplace/dist/exports/types.js";
+import { editable } from "payload-inplace/bindings";
+import type { EditorTarget } from "payload-inplace/types";
 
 export interface ScopeFixtureDocument {
   target: EditorTarget;
