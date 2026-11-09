@@ -1,6 +1,6 @@
 "use client";
 
-import { useEditorMessages } from "../frontend/messages";
+import { useEditorMessages } from "@payload-inplace/ui/localization/EditorMessages";
 
 import type { ClientBlock, ClientField } from "payload";
 import {
@@ -17,7 +17,7 @@ import {
   reviewText,
   changedText,
 } from "../state/document-diff";
-import { Button } from "../frontend/ui/button";
+import { Button } from "@payload-inplace/ui/primitives/button/button";
 import { chrome } from "./chrome";
 
 /** Only changed native leaves and structural operations are shown; unchanged sibling rows never flood the review. */

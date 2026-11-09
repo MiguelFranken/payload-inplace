@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { createEditorMessages } from "../../src/i18n/messages";
+import { createEditorMessages } from "@payload-inplace/ui/localization/messages";
 import { formatCommandIssue } from "../../src/i18n/command-issue";
 import {
   commandIssueText,

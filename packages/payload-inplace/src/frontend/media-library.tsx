@@ -1,6 +1,6 @@
 "use client";
 
-import { EditorMessage } from "./messages";
+import { EditorMessage } from "@payload-inplace/ui/localization/EditorMessages";
 
 import { lazy, Suspense } from "react";
 import type {

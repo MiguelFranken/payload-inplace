@@ -1,4 +1,4 @@
-import { createEditorMessages, type EditorMessages } from "../i18n/messages";
+import { createEditorMessages, type EditorMessages } from "@payload-inplace/ui/localization/messages";
 import { localizedLabel } from "../i18n/labels";
 import type { ClientBlock, ClientField } from "payload";
 import { getArrayItemPath } from "@payload-inplace/core/annotations";

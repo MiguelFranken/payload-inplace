@@ -16,7 +16,7 @@ const external = Object.keys({
     new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:/|$)`),
 );
 
-const workspace = /^@payload-inplace\/(?:core|lexical)\//;
+const workspace = /^@payload-inplace\/(?:core|lexical|ui)\//;
 
 export default defineConfig({
   entry: {

@@ -2,7 +2,7 @@
 
 import { Tooltip } from "@base-ui/react/tooltip";
 import type { ReactElement } from "react";
-import { useChromePortal } from "./portal";
+import { useChromePortal } from "../portal/portal";
 
 /** Delayed, keyboard-accessible help stays inside the editor's isolated portal and theme. */
 export function ChromeTooltip({

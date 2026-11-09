@@ -28,7 +28,7 @@ export interface VisualEditorOptions {
   >;
   previewOrigin: string;
   /** Typed UI messages/formatting, independent of native Payload content localization. */
-  ui?: import("./i18n/messages").EditorUIOptions;
+  ui?: import("@payload-inplace/ui/localization/messages").EditorUIOptions;
   /** Exact additional trusted browser origins serving this same editor (for example a deployment's branch alias).
    * Configure these on the server; wildcards and request-derived host trust are deliberately unsupported.
    */

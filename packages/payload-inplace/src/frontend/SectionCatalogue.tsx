@@ -2,16 +2,16 @@
 
 import { useSectionPatterns } from "./section-patterns";
 import type { SectionPatternSummary } from "../types";
-import { Button } from "./ui/button";
-import { useEditorMessages } from "./messages";
+import { Button } from "@payload-inplace/ui/primitives/button/button";
+import { useEditorMessages } from "@payload-inplace/ui/localization/EditorMessages";
 
 import { Combobox } from "@base-ui/react/combobox";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { Plus, Search, Layers } from "lucide-react";
 import type { ClientBlock } from "payload";
 import type { EditorCatalogueEntry, EditorLabel } from "../types";
-import { useChromePortal } from "./ui/portal";
-import { ChromeTooltip } from "./ui/tooltip";
+import { useChromePortal } from "@payload-inplace/ui/primitives/portal/portal";
+import { ChromeTooltip } from "@payload-inplace/ui/primitives/tooltip/tooltip";
 import { chrome } from "../admin/chrome";
 
 const label = (

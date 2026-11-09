@@ -10,7 +10,7 @@ import {
 } from "./context";
 import { configuredPageScopes } from "./page-scopes";
 import { editorLabel } from "./tools";
-import { createEditorMessages } from "../i18n/messages";
+import { createEditorMessages } from "@payload-inplace/ui/localization/messages";
 
 /** Client metadata contains only independently authorized targets/labels. It does not activate or read any foreign draft in the browser. */
 export async function availablePageScopes(

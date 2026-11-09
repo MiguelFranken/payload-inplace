@@ -5,7 +5,7 @@ import {
   targetSlug,
   targetPolicy,
 } from "../state/document-target";
-import { createEditorMessages } from "../i18n/messages";
+import { createEditorMessages } from "@payload-inplace/ui/localization/messages";
 import type { ImportMap, PayloadRequest, ServerFunctionClient } from "payload";
 import {
   createClientConfig,

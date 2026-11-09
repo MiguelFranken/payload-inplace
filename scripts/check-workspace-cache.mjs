@@ -39,6 +39,7 @@ const manifests = new Map();
 const roots = [
   "packages/core/dist",
   "packages/lexical/dist",
+  "packages/ui/dist",
   "packages/payload-inplace/dist",
 ];
 

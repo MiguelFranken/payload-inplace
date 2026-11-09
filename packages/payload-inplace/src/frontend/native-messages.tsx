@@ -2,8 +2,8 @@
 
 import { useTranslation } from "@payloadcms/ui";
 import type { ReactNode } from "react";
-import type { EditorUIOptions } from "../i18n/messages";
-import { EditorMessagesProvider } from "./messages";
+import type { EditorUIOptions } from "@payload-inplace/ui/localization/messages";
+import { EditorMessagesProvider } from "@payload-inplace/ui/localization/EditorMessages";
 
 /** Native UI language supplies the default; selected document content locale remains owned by Payload's LocaleProvider. */
 export function NativeEditorMessages({

@@ -1,0 +1,22 @@
+{
+  "name": "@payload-inplace/storybook",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "storybook dev --port 6006",
+    "build": "storybook build --output-dir dist",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@payload-inplace/ui": "workspace:*",
+    "react": "19.2.6",
+    "react-dom": "19.2.6"
+  },
+  "devDependencies": {
+    "@storybook/react-vite": "10.6.6",
+    "@tailwindcss/vite": "4.3.3",
+    "storybook": "10.6.6",
+    "tailwindcss": "4.3.3",
+    "vite": "7.3.8"
+  }
+}

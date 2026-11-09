@@ -1,6 +1,6 @@
 import { expect, it, vi, afterEach } from "vitest";
 import { act, render, screen } from "@testing-library/react";
-import { EditorMessagesProvider } from "../../src/frontend/messages";
+import { EditorMessagesProvider } from "@payload-inplace/ui/localization/EditorMessages";
 import { MediaLibraryField } from "../../src/frontend/MediaLibraryField";
 import type {
   MediaLibraryAdapter,

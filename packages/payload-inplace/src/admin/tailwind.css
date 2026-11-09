@@ -1,15 +1,5 @@
-@layer pve-theme, pve-utilities;
-@import "tailwindcss/theme.css" layer(pve-theme) prefix(pve);
-@import "tailwindcss/utilities.css" layer(pve-utilities) prefix(pve)
-  source(none);
+@import "../../../ui/src/chrome/tailwind.css";
 @source "./**/*.tsx";
-
-@theme inline {
-  --text-xs: var(--pve-font-caption, 12px);
-  --text-sm: var(--pve-font-body, 13px);
-  --text-base: var(--pve-font-input, 16px);
-  --text-xl: var(--pve-font-title, 20px);
-  --spacing: 4px;
-}
-
 @source "../frontend/**/*.tsx";
+
+@source not "../../../ui/src/**/*.stories.tsx";

@@ -17,8 +17,8 @@ import {
   type ResolvedPageScope,
 } from "./document-scope";
 import { useSavedPreview } from "./controllers/saved-preview";
-import { useEditorMessages } from "./messages";
-import { EditorMessage } from "./messages";
+import { useEditorMessages } from "@payload-inplace/ui/localization/EditorMessages";
+import { EditorMessage } from "@payload-inplace/ui/localization/EditorMessages";
 
 import { NativeEditorMessages } from "./native-messages";
 import { createPortal } from "react-dom";
@@ -82,7 +82,7 @@ type ShellProps = {
   patterns?: PatternCapabilities;
   pageScopes?: ResolvedPageScope[];
   sharedStructure?: boolean;
-  ui?: import("../i18n/messages").EditorUIOptions;
+  ui?: import("@payload-inplace/ui/localization/messages").EditorUIOptions;
   strategyProviders?: ReactNode;
   catalogue?: import("../types").VisualEditorOptions["catalogue"];
   richTextCapabilities?: import("../adapters/richtext-capabilities").RichTextCapabilities;

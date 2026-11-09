@@ -1,6 +1,6 @@
 "use client";
 
-import { useEditorMessages } from "./messages";
+import { useEditorMessages } from "@payload-inplace/ui/localization/EditorMessages";
 import { useEffect, useEffectEvent, useRef, type ReactNode } from "react";
 import {
   parseDocumentKey,

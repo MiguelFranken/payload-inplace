@@ -11,7 +11,7 @@ import type {
   EditorPreviewResponse,
   EditorPreviewSnapshot,
 } from "@internal/types";
-import type { EditorStaticMessageKey } from "@internal/i18n/catalogue";
+import type { EditorStaticMessageKey } from "@payload-inplace/ui/localization/catalogue";
 import { useEditorLifecycle } from "../lifecycle";
 
 /** Single-flight saved presentation reads, independent from the sole native save queue. Coalesces revision floors, ignores late results after unmount and delegates authorization failure without touching field values. */

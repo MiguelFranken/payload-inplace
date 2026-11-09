@@ -18,7 +18,7 @@ import {
 } from "@payloadcms/ui";
 import type { BlocksFieldClientProps, ClientBlock, ClientField } from "payload";
 import type { InsertionTarget } from "@payload-inplace/core/insertion";
-import { useEditorMessages } from "../messages";
+import { useEditorMessages } from "@payload-inplace/ui/localization/EditorMessages";
 import { formatCommandIssue } from "@internal/i18n/command-issue";
 import type { CommandIssue } from "@internal/state/command-issue";
 import { authoredFieldKey } from "@internal/state/autosave";

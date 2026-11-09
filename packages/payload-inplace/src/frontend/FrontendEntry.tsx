@@ -1,12 +1,12 @@
 "use client";
 
-import type { EditorStaticMessageKey } from "../i18n/catalogue";
+import type { EditorStaticMessageKey } from "@payload-inplace/ui/localization/catalogue";
 import { EditorMessageError, editorErrorKey } from "../i18n/failure";
-import { useEditorMessages } from "./messages";
+import { useEditorMessages } from "@payload-inplace/ui/localization/EditorMessages";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { EditorUIOptions } from "../i18n/messages";
+import type { EditorUIOptions } from "@payload-inplace/ui/localization/messages";
 import type { EditorTarget } from "../types";
 import "../admin/styles.css";
 

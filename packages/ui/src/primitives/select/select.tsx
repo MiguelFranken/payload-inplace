@@ -2,7 +2,7 @@
 // Adapted from shadcn/ui registry/base-nova/ui/select.tsx (MIT).
 import { Select as SelectPrimitive } from "@base-ui/react/select";
 import { Check, ChevronDown, ChevronUp } from "lucide-react";
-import { useChromePortal } from "./portal";
+import { useChromePortal } from "../portal/portal";
 
 export const Select = SelectPrimitive.Root;
 

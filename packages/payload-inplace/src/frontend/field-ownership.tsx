@@ -1,7 +1,7 @@
 "use client";
 
 import { targetSlug } from "../state/document-target";
-import { useEditorMessages } from "./messages";
+import { useEditorMessages } from "@payload-inplace/ui/localization/EditorMessages";
 
 import {
   Suspense,

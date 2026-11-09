@@ -42,6 +42,6 @@ Set inherited CSS variables on the activated website ancestor/root using your ow
 }
 ```
 
-This is **host CSS**, not a required plugin stylesheet. Inspect the complete [chrome primitives](../../packages/payload-inplace/src/admin/chrome.tsx) and [panel token fallbacks](../../packages/payload-inplace/src/frontend/Floatable.tsx) before overriding dimensions or stacking. Keep dock and panel geometry within the viewport; test 320px and your fixed bottom bars. Review contrast for your actual surface/text/focus pairs.
+This is **host CSS**, not a required plugin stylesheet. Inspect the complete [chrome primitives](../../packages/payload-inplace/src/admin/chrome.tsx) and [panel token fallbacks](../../packages/ui/src/chrome/floatable/Floatable.tsx) before overriding dimensions or stacking. Keep dock and panel geometry within the viewport; test 320px and your fixed bottom bars. Review contrast for your actual surface/text/focus pairs.
 
 Editor chrome uses prefixed Tailwind without Preflight and isolated native styles. Native controls follow Payload's scale and panel width, while editable content keeps your renderer's typography. Do not load the full admin application CSS/map into the website or override all native inputs with storefront styles. [Component-map isolation](../frontend-component-map.md).

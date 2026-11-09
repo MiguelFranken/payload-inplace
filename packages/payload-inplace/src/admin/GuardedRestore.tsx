@@ -1,6 +1,6 @@
 "use client";
 
-import { useEditorMessages } from "../frontend/messages";
+import { useEditorMessages } from "@payload-inplace/ui/localization/EditorMessages";
 
 import { Button, useConfig, useTranslation, useLocale } from "@payloadcms/ui";
 import { useState } from "react";

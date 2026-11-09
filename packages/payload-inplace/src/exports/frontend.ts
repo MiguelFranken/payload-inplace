@@ -31,4 +31,4 @@ export type {
   EditorFailureCategory,
 } from "@payload-inplace/core/events";
 
-export { useEditorMessages } from "../frontend/messages";
+export { useEditorMessages } from "@payload-inplace/ui/localization/EditorMessages";

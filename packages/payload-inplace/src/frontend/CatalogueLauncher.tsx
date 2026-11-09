@@ -2,7 +2,7 @@
 
 import { lazy, Suspense, useState, useId, type ComponentProps } from "react";
 import { Plus } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "@payload-inplace/ui/primitives/button/button";
 import type { SectionCatalogue } from "./SectionCatalogue";
 
 const Catalogue = lazy(() =>

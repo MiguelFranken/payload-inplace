@@ -151,6 +151,7 @@
   ],
   "devDependencies": {
     "@payload-inplace/core": "workspace:*",
-    "@payload-inplace/lexical": "workspace:*"
+    "@payload-inplace/lexical": "workspace:*",
+    "@payload-inplace/ui": "workspace:*"
   }
 }

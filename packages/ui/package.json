@@ -1,0 +1,39 @@
+{
+  "name": "@payload-inplace/ui",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./chrome/floatable/Floatable": "./src/chrome/floatable/Floatable.tsx",
+    "./chrome/floatable/use-panel-resize": "./src/chrome/floatable/use-panel-resize.ts",
+    "./chrome/save-feedback/SaveFeedback": "./src/chrome/save-feedback/SaveFeedback.tsx",
+    "./localization/EditorMessages": "./src/localization/EditorMessages.tsx",
+    "./localization/messages": "./src/localization/messages.ts",
+    "./localization/catalogue": "./src/localization/catalogue.ts",
+    "./primitives/button/button": "./src/primitives/button/button.tsx",
+    "./primitives/menu/menu": "./src/primitives/menu/menu.tsx",
+    "./primitives/select/select": "./src/primitives/select/select.tsx",
+    "./primitives/tooltip/tooltip": "./src/primitives/tooltip/tooltip.tsx",
+    "./primitives/portal/portal": "./src/primitives/portal/portal.tsx",
+    "./chrome/editor-toolbar": "./src/chrome/editor-toolbar/EditorToolbar.tsx",
+    "./chrome.css": "./src/chrome/tailwind.css"
+  },
+  "dependencies": {
+    "@base-ui/react": "1.9.0",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "lucide-react": "1.66.0",
+    "@payload-inplace/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "~19.2.4",
+    "react-dom": "~19.2.4"
+  },
+  "devDependencies": {
+    "@storybook/react-vite": "10.6.6",
+    "storybook": "10.6.6"
+  },
+  "scripts": {
+    "build": "tailwindcss -i src/chrome/tailwind.css -o dist/chrome.css --minify"
+  }
+}

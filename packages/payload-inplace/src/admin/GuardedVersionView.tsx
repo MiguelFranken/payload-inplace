@@ -1,4 +1,4 @@
-import { createEditorMessages } from "../i18n/messages";
+import { createEditorMessages } from "@payload-inplace/ui/localization/messages";
 import type { DocumentViewServerProps } from "payload";
 import { GuardedRestore } from "./NativeGuardedRestore";
 

@@ -23,7 +23,7 @@ function check(directory) {
   }
 }
 
-for (const domain of ["core", "lexical", "payload-inplace"])
+for (const domain of ["core", "lexical", "ui", "payload-inplace"])
   check(path.join(root, "packages", domain, "src"));
 
 check(path.join(root, "apps/demo"));

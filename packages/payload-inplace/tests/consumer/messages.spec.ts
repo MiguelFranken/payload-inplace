@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
-import { createEditorMessages } from "../../src/i18n/messages";
-import { englishMessages, germanMessages } from "../../src/i18n/catalogue";
+import { createEditorMessages } from "@payload-inplace/ui/localization/messages";
+import { englishMessages, germanMessages } from "@payload-inplace/ui/localization/catalogue";
 import { editorLabel } from "../../src/server/tools";
 it("keeps complete German catalogues and typed consumer fallback separate from content locale", () => {
   expect(Object.keys(germanMessages).sort()).toEqual(

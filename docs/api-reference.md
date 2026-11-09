@@ -124,7 +124,7 @@ Runtime entrypoints have different ownership: bindings are inert; server/RSC/nat
 | [`MediaLibraryAdapter`](../packages/payload-inplace/src/frontend/media-library.tsx#L23) | interface | A consumer-owned library reads/uploads assets under its own authorization. It returns references, never a replacement document or trusted external URL. |
 | [`MediaPage`](../packages/payload-inplace/src/frontend/media-library.tsx#L20) | type | See the linked declaration for the exact typed contract. |
 | [`NativeFieldSlot`](../packages/payload-inplace/src/frontend/field-ownership.tsx#L147) | function | Mount an existing named native field in a consumer floatable, preserving schema paths, conditions and effective permissions. Full document paths may traverse groups, tabs, arrays and native block rows. Selection-relative paths resolve against the current block identity. |
-| [`useEditorMessages`](../packages/payload-inplace/src/frontend/messages.tsx#L48) | function | Consumers may use explicit options outside authoring; active controls normally inherit the current editor catalogue. |
+| [`useEditorMessages`](../packages/ui/src/localization/EditorMessages.tsx#L48) | function | Consumers may use explicit options outside authoring; active controls normally inherit the current editor catalogue. |
 | [`useEditorObserver`](../packages/payload-inplace/src/frontend/lifecycle.tsx#L55) | function | Consumer import-map providers opt into metadata events. Changing callbacks neither reloads the document nor changes native submission behavior. |
 | [`useEditorPreviewData`](../packages/payload-inplace/src/frontend/preview-data.ts#L18) | function | Read an optimistic projection of the sole native Form, without another document store or persistence path. The initial authorized, populated document supplies relationship objects only while their IDs match. Rendering is held while the browser owns inline composition/caret; direct text is already visible in the DOM. This hook belongs exclusively to an activated client renderer. Keep data loading/domain effects in server slots. |
 | [`useVisualEditor`](../packages/payload-inplace/src/frontend/tools-context.tsx#L52) | function | Consumer controls share the current authorized target and native form; server actions recheck their own capability. |
@@ -165,11 +165,11 @@ Runtime entrypoints have different ownership: bindings are inert; server/RSC/nat
 
 | Export | Kind | Contract |
 | --- | --- | --- |
-| [`createEditorMessages`](../packages/payload-inplace/src/i18n/messages.ts#L22) | function | Construct an overridable UI catalogue for server renderers, launchers and active controls. Unknown locales fall back to English copy with their own Intl formatting/direction. |
-| [`EditorMessageKey`](../packages/payload-inplace/src/i18n/catalogue.ts#L357) | type | See the linked declaration for the exact typed contract. |
-| [`EditorMessageOverrides`](../packages/payload-inplace/src/i18n/messages.ts#L10) | type | See the linked declaration for the exact typed contract. |
-| [`EditorMessages`](../packages/payload-inplace/src/i18n/messages.ts#L8) | type | See the linked declaration for the exact typed contract. |
-| [`EditorUIOptions`](../packages/payload-inplace/src/i18n/messages.ts#L15) | interface | UI copy/formatting only. This configuration never selects a Payload content locale or expands document access. |
+| [`createEditorMessages`](../packages/ui/src/localization/messages.ts#L22) | function | Construct an overridable UI catalogue for server renderers, launchers and active controls. Unknown locales fall back to English copy with their own Intl formatting/direction. |
+| [`EditorMessageKey`](../packages/ui/src/localization/catalogue.ts#L357) | type | See the linked declaration for the exact typed contract. |
+| [`EditorMessageOverrides`](../packages/ui/src/localization/messages.ts#L10) | type | See the linked declaration for the exact typed contract. |
+| [`EditorMessages`](../packages/ui/src/localization/messages.ts#L8) | type | See the linked declaration for the exact typed contract. |
+| [`EditorUIOptions`](../packages/ui/src/localization/messages.ts#L15) | interface | UI copy/formatting only. This configuration never selects a Payload content locale or expands document access. |
 
 ## `payload-inplace/testing`
 

@@ -5,8 +5,8 @@ import {
   createEditorMessages,
   type EditorUIOptions,
   type EditorMessages,
-} from "../i18n/messages";
-import type { EditorStaticMessageKey } from "../i18n/catalogue";
+} from "./messages";
+import type { EditorStaticMessageKey } from "./catalogue";
 
 const defaults = createEditorMessages();
 

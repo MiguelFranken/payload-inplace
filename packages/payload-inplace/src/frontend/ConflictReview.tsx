@@ -1,13 +1,13 @@
 "use client";
 
-import type { EditorStaticMessageKey } from "../i18n/catalogue";
+import type { EditorStaticMessageKey } from "@payload-inplace/ui/localization/catalogue";
 import { EditorMessageError, editorErrorKey } from "../i18n/failure";
 import {
   nativeDocumentArgs,
   targetFromNativeInfo,
   targetSlug,
 } from "../state/document-target";
-import { useEditorMessages } from "./messages";
+import { useEditorMessages } from "@payload-inplace/ui/localization/EditorMessages";
 
 import { Radio } from "@base-ui/react/radio";
 import { RadioGroup } from "@base-ui/react/radio-group";
@@ -28,7 +28,7 @@ import {
 import { authoredFieldKey } from "../state/autosave";
 import { DocumentReview } from "../admin/DocumentReview";
 import { reviewText } from "../state/document-diff";
-import { Button } from "./ui/button";
+import { Button } from "@payload-inplace/ui/primitives/button/button";
 import { useEditorRecovery } from "./recovery";
 
 /** This panel owns comparison snapshots only. Cancellation changes no native values; explicit acceptance rehydrates the sole Form and its existing save queue. */

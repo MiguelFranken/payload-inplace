@@ -1,7 +1,7 @@
-export { createEditorMessages } from "../i18n/messages";
+export { createEditorMessages } from "@payload-inplace/ui/localization/messages";
 export type {
   EditorUIOptions,
   EditorMessages,
   EditorMessageKey,
   EditorMessageOverrides,
-} from "../i18n/messages";
+} from "@payload-inplace/ui/localization/messages";

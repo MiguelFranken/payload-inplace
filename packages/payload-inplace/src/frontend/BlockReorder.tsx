@@ -3,7 +3,7 @@
 import { localizedLabel } from "../i18n/labels";
 import { findBoundBlock } from "../preview/dom-target";
 import type { DocumentReference } from "@payload-inplace/core/document-ref";
-import { useEditorMessages } from "./messages";
+import { useEditorMessages } from "@payload-inplace/ui/localization/EditorMessages";
 
 import {
   useEffect,
@@ -44,7 +44,7 @@ import {
   pageHandlePosition,
   boundTextRects,
 } from "../preview/geometry";
-import { Button } from "./ui/button";
+import { Button } from "@payload-inplace/ui/primitives/button/button";
 
 const key = (s: NativeSection) => JSON.stringify(s.identity);
 

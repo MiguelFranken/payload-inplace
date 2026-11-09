@@ -1,8 +1,8 @@
 "use client";
 
-import type { EditorStaticMessageKey } from "../i18n/catalogue";
+import type { EditorStaticMessageKey } from "@payload-inplace/ui/localization/catalogue";
 import { EditorMessageError, editorErrorKey } from "../i18n/failure";
-import { useEditorMessages } from "./messages";
+import { useEditorMessages } from "@payload-inplace/ui/localization/EditorMessages";
 
 import { useEffect, useRef, useState } from "react";
 import {
@@ -24,7 +24,7 @@ import {
   RotateCcw,
   LoaderCircle,
 } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "@payload-inplace/ui/primitives/button/button";
 import { DocumentReview } from "../admin/DocumentReview";
 import {
   targetFromNativeInfo,

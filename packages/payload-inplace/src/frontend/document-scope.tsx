@@ -26,7 +26,7 @@ import { useEditorPageTransition } from "../launcher/EditorPageTransition";
 import { useNativeDraftSave } from "./controllers/draft-save";
 import { useEditorRecovery } from "./recovery";
 import { useAdvisoryLock } from "./advisory-lock";
-import type { EditorStaticMessageKey } from "../i18n/catalogue";
+import type { EditorStaticMessageKey } from "@payload-inplace/ui/localization/catalogue";
 
 export interface ResolvedPageScope {
   target: EditorTarget;

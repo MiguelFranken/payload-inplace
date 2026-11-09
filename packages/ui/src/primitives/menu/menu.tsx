@@ -1,11 +1,11 @@
 "use client";
 // Adapted from shadcn/ui registry/base-nova/ui/dropdown-menu.tsx (MIT).
-import { useEditorMessages } from "../messages";
+import { useEditorMessages } from "../../localization/EditorMessages";
 import { clsx } from "clsx";
-import { buttonVariants } from "./button";
+import { buttonVariants } from "../button/button";
 import { Menu } from "@base-ui/react/menu";
-import { ChromeTooltip } from "./tooltip";
-import { useChromePortal } from "./portal";
+import { ChromeTooltip } from "../tooltip/tooltip";
+import { useChromePortal } from "../portal/portal";
 
 export const DropdownMenu = Menu.Root;
 

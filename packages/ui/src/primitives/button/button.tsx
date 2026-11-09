@@ -3,7 +3,7 @@
 import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { cva, type VariantProps } from "class-variance-authority";
 import { clsx } from "clsx";
-import { ChromeTooltip } from "./tooltip";
+import { ChromeTooltip } from "../tooltip/tooltip";
 
 /** Shared chrome presentation for buttons and composite triggers, each using one interactive primitive. */
 export const buttonVariants = cva(

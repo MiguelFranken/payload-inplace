@@ -1,11 +1,11 @@
 "use client";
 
-import type { EditorStaticMessageKey } from "../i18n/catalogue";
-import { useEditorMessages } from "./messages";
+import type { EditorStaticMessageKey } from "@payload-inplace/ui/localization/catalogue";
+import { useEditorMessages } from "@payload-inplace/ui/localization/EditorMessages";
 
 import { useEffect, useRef, useState } from "react";
 import { ImageOff } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "@payload-inplace/ui/primitives/button/button";
 import type { ContextualFieldProps } from "./field-strategies";
 import type { MediaAsset, MediaLibraryAdapter } from "./media-library";
 import { mediaCollections, mediaReference } from "../schema/media-reference";

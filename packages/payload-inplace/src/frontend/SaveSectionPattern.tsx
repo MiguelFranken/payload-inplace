@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { BookmarkPlus, LoaderCircle } from "lucide-react";
 import type { BlockIdentity } from "../types";
 import { useSectionPatterns } from "./section-patterns";
-import { useEditorMessages } from "./messages";
-import { Button } from "./ui/button";
+import { useEditorMessages } from "@payload-inplace/ui/localization/EditorMessages";
+import { Button } from "@payload-inplace/ui/primitives/button/button";
 
 /** Explicit saved-section copy; cancelling the name form never changes native fields or history. */
 export function SaveSectionPattern({

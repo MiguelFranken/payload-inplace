@@ -6,7 +6,7 @@ import {
   targetFromNativeInfo,
 } from "../state/document-target";
 import { useDocumentScopes } from "../frontend/document-scope";
-import { useEditorMessages } from "../frontend/messages";
+import { useEditorMessages } from "@payload-inplace/ui/localization/EditorMessages";
 
 import {
   Button,
@@ -42,7 +42,7 @@ const DocumentReview = lazy(() =>
 );
 import { ReviewBaselineContext } from "./review-baseline";
 import { documentChanges } from "../state/document-diff";
-import { Button as ChromeButton } from "../frontend/ui/button";
+import { Button as ChromeButton } from "@payload-inplace/ui/primitives/button/button";
 import { useOptionalEditorLifecycle } from "../frontend/lifecycle";
 import { chrome } from "./chrome";
 

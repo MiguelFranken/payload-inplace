@@ -1,6 +1,6 @@
 "use client";
 
-import type { EditorStaticMessageKey } from "../i18n/catalogue";
+import type { EditorStaticMessageKey } from "@payload-inplace/ui/localization/catalogue";
 import { createContext, use, useEffect, useRef, useState } from "react";
 import {
   useDocumentInfo,

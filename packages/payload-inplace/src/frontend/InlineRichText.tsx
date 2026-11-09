@@ -1,7 +1,7 @@
 "use client";
 
-import type { EditorStaticMessageKey } from "../i18n/catalogue";
-import { useEditorMessages } from "./messages";
+import type { EditorStaticMessageKey } from "@payload-inplace/ui/localization/catalogue";
+import { useEditorMessages } from "@payload-inplace/ui/localization/EditorMessages";
 
 import {
   useEffect,
@@ -33,14 +33,14 @@ import { registerInlineSurface, elementRect } from "../preview/geometry";
 import { useInlinePreviewGuard } from "./inline-preview";
 import { inlineStyles } from "./inline-styles.generated";
 import { Popover } from "@base-ui/react/popover";
-import { useChromePortal } from "./ui/portal";
+import { useChromePortal } from "@payload-inplace/ui/primitives/portal/portal";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "./ui/menu";
-import { Button } from "./ui/button";
+} from "@payload-inplace/ui/primitives/menu/menu";
+import { Button } from "@payload-inplace/ui/primitives/button/button";
 import { createRichSurface, preserveRichClasses } from "./rich-presentation";
 import { richToolbarPosition } from "./rich-toolbar";
 import { chrome } from "../admin/chrome";

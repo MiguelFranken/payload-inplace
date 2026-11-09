@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useEditorMessages } from "./messages";
+import { useEditorMessages } from "@payload-inplace/ui/localization/EditorMessages";
 import { useConfig, useForm } from "@payloadcms/ui";
 import { useRouter } from "next/navigation";
 import type { Activation, BlockIdentity, EditorTool } from "../types";

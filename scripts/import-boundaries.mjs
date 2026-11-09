@@ -4,7 +4,7 @@ import ts from "typescript";
 const normalized = (file) => file.split(path.sep).join("/");
 
 const workspaceSpecifier =
-  /^(?:@internal\/|@payload-inplace\/(?:core|lexical)\/)/;
+  /^(?:@internal\/|@payload-inplace\/(?:core|lexical|ui)\/)/;
 const resolutionCaches = new Map();
 
 function workspaceSource(file, spec, root) {
@@ -143,6 +143,19 @@ export function checkSourceBoundary(file, source, root = process.cwd()) {
           .startsWith(core + path.sep))
     )
       throw Error(`Core import crosses its boundary: ${name}: ${edge.spec}`);
+    if (
+      name.startsWith("packages/ui/src/") &&
+      (/^(?:payload(?:-inplace)?(?:\/|$)|@payloadcms\/|next(?:\/|$)|@internal\/)/.test(
+        edge.spec,
+      ) ||
+        (edge.spec.startsWith(".") &&
+          !path
+            .resolve(path.dirname(file), edge.spec)
+            .startsWith(path.join(root, "packages/ui/src") + path.sep)))
+    )
+      throw Error(
+        `UI source crosses into the Payload integration: ${name}: ${edge.spec}`,
+      );
     if (name.startsWith("packages/lexical/src/")) {
       const allowed = [
         "@payloadcms/richtext-lexical/lexical",

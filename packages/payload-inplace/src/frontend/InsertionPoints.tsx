@@ -1,6 +1,6 @@
 "use client";
 
-import { useEditorMessages } from "./messages";
+import { useEditorMessages } from "@payload-inplace/ui/localization/EditorMessages";
 
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { Plus } from "lucide-react";
@@ -13,8 +13,8 @@ import type { InsertionTarget } from "@payload-inplace/core/insertion";
 import { elementRect } from "../preview/geometry";
 import { sectionElement } from "./BlockReorder";
 import type { NativeSection } from "../schema/tree";
-import { Button } from "./ui/button";
-import { ChromeTooltip } from "./ui/tooltip";
+import { Button } from "@payload-inplace/ui/primitives/button/button";
+import { ChromeTooltip } from "@payload-inplace/ui/primitives/tooltip/tooltip";
 import { CatalogueLauncher as SectionCatalogue } from "./CatalogueLauncher";
 import type { EditorCatalogueEntry } from "../types";
 

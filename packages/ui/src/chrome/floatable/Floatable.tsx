@@ -1,12 +1,11 @@
 "use client";
 
-import { useEditorMessages } from "./messages";
+import { useEditorMessages } from "../../localization/EditorMessages";
 
 import { useEffect, useRef, type ReactNode, type RefObject } from "react";
 import { X, ArrowLeft } from "lucide-react";
-import { useTranslation } from "@payloadcms/ui";
 import { usePanelResize } from "./use-panel-resize";
-import { Button } from "./ui/button";
+import { Button } from "../../primitives/button/button";
 
 /**
  * One contextual surface is docked above the toolbar. Native field breakpoints
@@ -43,8 +42,7 @@ export function Floatable({
     body = useRef<HTMLDivElement>(null),
     origin = useRef<HTMLElement | null>(null);
   const resize = usePanelResize(panel, width);
-  const { i18n } = useTranslation();
-  const { t } = useEditorMessages(undefined, i18n.language);
+  const { t } = useEditorMessages();
 
   useEffect(() => {
     const root = panel.current?.getRootNode();

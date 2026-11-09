@@ -103,7 +103,7 @@ describe("document review leaf and structural changes", () => {
 });
 
 it("uses consumer UI overrides and native language fallback for generic review row labels", async () => {
-  const { createEditorMessages } = await import("../../src/i18n/messages");
+  const { createEditorMessages } = await import("@payload-inplace/ui/localization/messages");
   const messages = createEditorMessages({
     locale: "de-DE",
     messages: { de: { item: "Zeile" } },
