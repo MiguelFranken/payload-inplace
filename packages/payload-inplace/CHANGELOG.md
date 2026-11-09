@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.0.10
+
+### Patch Changes
+
+- 4ecca88: Extract editor chrome, sections, media, review, and inline editing views into a private UI workspace. Add Storybook with colocated stories for the shared views and use the same components and editor styles in the plugin.
+- eccb33d: Clarify consumer setup and optional integrations, refresh the screenshot tour, and document current compatibility and release boundaries.
+- 62c2de4: Use the host’s matching `@payloadcms/richtext-lexical` peer for the inline editor’s Lexical imports. Install it at the same version as Payload. The build also emits declaration maps for source navigation in the repository.
+
 ## 0.0.9
 
 ### Patch Changes
