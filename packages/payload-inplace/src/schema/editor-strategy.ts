@@ -1,4 +1,14 @@
 import type { ClientField, FieldState } from "payload";
+import type { EditorBlockControls } from "../types";
+
+/** A block profile can disable inline editing or allow only specific native permission paths. */
+export function allowsInlineField(
+  profile: EditorBlockControls | undefined,
+  path: string,
+) {
+  const inline = profile?.inlineEdit;
+  return inline !== false && (!Array.isArray(inline) || inline.includes(path));
+}
 
 /** Strategy resolution never authorizes a write. Native access, conditions and Form validation remain authoritative. */
 export type EditorStrategy = {

@@ -1,6 +1,6 @@
 # Public API reference
 
-Generated from the documented facade exports. Run `corepack pnpm docs:generate`; CI checks freshness with `docs:check`. Types and linked declarations are authoritative for arguments. Start with the [integration guide](integration.md), [binding recipe](implementation/bindings-and-insertion.md), [extension/testing recipes](testing-and-extensions.md) and [native ownership ADR](adr/0007-workspace-and-native-boundaries.md).
+Generated from the documented facade exports. Run `corepack pnpm docs:generate`; CI checks freshness with `docs:check`. Types and linked declarations are authoritative for arguments. Start with the [integration guide](integration.md), [binding recipe](implementation/bindings-and-insertion.md), [extension/testing recipes](testing-and-extensions.md) and [editor architecture](architecture.md).
 
 Runtime entrypoints have different ownership: bindings are inert; server/RSC/native stay server-only; frontend/client require an authorized native Form; testing is optional test-only code. An annotation or test fixture never grants access.
 

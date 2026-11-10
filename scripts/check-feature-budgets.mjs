@@ -80,7 +80,7 @@ for (const [name, entry] of Object.entries(entries)) {
   };
 }
 
-const baselineFile = "docs/validation/performance/feature-budgets.json";
+const baselineFile = "packages/payload-inplace/tests/packaging/feature-budgets.json";
 
 if (process.argv.includes("--record"))
   fs.writeFileSync(

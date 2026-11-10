@@ -2,11 +2,9 @@
 
 Package builds, source tests, installed-archive acceptance, public npm availability and consumer deployment are separate facts. The [current machine-readable receipt](validation/workshops-release.json) records exact identities rather than treating a green demo as proof of a deployed consumer.
 
-## Released baseline: 0.0.9
+## Release evidence
 
-[Canonical CI](https://github.com/MiguelFranken/payload-inplace/actions/runs/42084863609) validated runtime source `ea24e121f8c93d7e13049435ff73d19fdac5688f`: 255 unit/component tests in 82 files, 77 production browser cases and 13 PostgreSQL native cases. Mongo ran 5 applicable native cases with 8 transaction-specific skips, plus 1 review browser case. The independent installed consumer passed 5 enabled and 3 disabled baselines, with 2 intentionally disabled authoring skips.
-
-[OIDC publication](https://github.com/MiguelFranken/payload-inplace/actions/runs/42089746843) published the exact archive. The receipt separately records the public registry hash/provenance and the Workshops feature preview's focused acceptance. Neither establishes production rollout for another host. New documentation/demo work is validated separately and does not retroactively change these immutable results.
+Use the current receipt for the exact package version, source commit, archive digest and CI links. It also records which acceptance ran in Workshops. Previous public release receipts remain alongside it so regressions can be traced to a known archive.
 
 ## Match the check to the change
 
@@ -21,10 +19,8 @@ Package builds, source tests, installed-archive acceptance, public npm availabil
 
 Run commands from [Contributing](../CONTRIBUTING.md#validate-changes), and the [test-kit guide](testing-and-extensions.md). Keep credentials/private draft content out of fixtures and screenshots. Record source SHA/dirty state, exact package hash, environment, selected cases, passed/failed/skipped counts and original media. Include public/inactive negative checks alongside an active positive control.
 
-## Current documentation and demo review
+## Keep validation reproducible
 
-[November 6 documentation audit and visual review](validation/2026-11-06-docs-and-demo.md) records the 50-file existing-docs audit, six new high-density captures, responsive production-browser checks and explicit limits. It does not replace runtime release acceptance.
+Keep enforced thresholds and release receipts in source control. Put transient reports, screenshots and traces in CI or review artifacts. Keep [product screenshots](images/README.md) in the repo because the README uses them. The [performance methodology](validation/performance/README.md) explains the two budget checks.
 
-## Historical records
-
-[Dated alpha ledger](validation/2026-11-03-validation-ledger.md) · [Roadmap implementation checkpoints](implementation/roadmap.md) · [Per-ticket acceptance](validation/linear-acceptance/README.md) · [Performance method](validation/performance/README.md). Historical “pending”, no-push and unsupported-feature statements are not current installation instructions.
+Earlier implementation logs and raw captures remain available in the [historical source snapshot](https://github.com/MiguelFranken/payload-inplace/tree/ba333f88b0bc6cdf4f630e224156e24534cc3abc/docs/validation).

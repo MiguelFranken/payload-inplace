@@ -6,17 +6,25 @@ import { execFileSync } from "node:child_process";
 // Generated API source fragments use GitHub line anchors, not Markdown headings.
 const files = execFileSync(
   "git",
-  ["ls-files", "--cached", "--others", "--exclude-standard", "--", "*.md"],
+  [
+    "ls-files",
+    "-z",
+    "--cached",
+    "--others",
+    "--exclude-standard",
+    "--",
+    "*.md",
+  ],
   { encoding: "utf8" },
 )
-  .trim()
-  .split("\n")
+  .split("\0")
   .filter(
     (file) =>
       file &&
       !file.startsWith(".agents/") &&
       !file.startsWith(".changeset/") &&
-      !file.endsWith("AGENTS.md"),
+      !file.endsWith("AGENTS.md") &&
+      fs.existsSync(file),
   );
 
 const issues = [];
