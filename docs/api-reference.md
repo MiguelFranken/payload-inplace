@@ -9,7 +9,7 @@ Runtime entrypoints have different ownership: bindings are inert; server/RSC/nat
 | Export | Kind | Contract |
 | --- | --- | --- |
 | [`EditorTarget`](../packages/payload-inplace/src/types.ts#L15) | type | See the linked declaration for the exact typed contract. |
-| [`visualEditor`](../packages/payload-inplace/src/plugin.ts#L34) | function | Compose opt-in roots without replacing native persistence, existing hooks or unrelated controls. |
+| [`visualEditor`](../packages/payload-inplace/src/plugin.ts#L26) | function | Compose opt-in roots without replacing native persistence, existing hooks or unrelated controls. |
 | [`VisualEditorOptions`](../packages/payload-inplace/src/types.ts#L21) | interface | Host permission is additional to native collection/document/field access. Never serialize this callback. |
 
 ## `payload-inplace/client`
