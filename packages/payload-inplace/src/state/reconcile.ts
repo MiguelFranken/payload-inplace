@@ -21,21 +21,59 @@ export interface DocumentReconciliation {
   remoteChanges: DocumentChange[];
 }
 
-const overlap = (a: string, b: string) =>
-  a === b || a.startsWith(b + ".") || b.startsWith(a + ".");
-
-function patch(change: DocumentChange) {
-  const parts = change.path.split(".");
-  if (parts.at(-1) === "$position") parts.pop();
-  if (parts.at(-1)?.startsWith("@")) parts.pop();
-  return { path: parts.join("."), structural: parts.join(".") !== change.path };
+interface Patch {
+  structural: boolean;
+  labels: string[];
 }
 
-const roots = (paths: string[]) =>
-  [...new Set(paths)].filter(
-    (path) =>
-      !paths.some((parent) => parent !== path && path.startsWith(parent + ".")),
+function ancestors(path: string): string[] {
+  const parents: string[] = [];
+  for (
+    let dot = path.lastIndexOf(".");
+    dot >= 0;
+    dot = path.lastIndexOf(".", dot - 1)
+  ) {
+    parents.push(path.slice(0, dot));
+    if (dot === 0) break;
+  }
+  return parents;
+}
+
+function indexPatches(changes: DocumentChange[]): Map<string, Patch> {
+  const patches = new Map<string, Patch>();
+  for (const change of changes) {
+    const parts = change.path.split(".");
+    if (parts.at(-1) === "$position") parts.pop();
+    if (parts.at(-1)?.startsWith("@")) parts.pop();
+    const path = parts.join(".");
+    const structural = path !== change.path;
+    const existing = patches.get(path);
+    if (existing) existing.structural ||= structural;
+    else
+      patches.set(path, {
+        structural,
+        labels: structural ? change.labels.slice(0, -1) : change.labels,
+      });
+  }
+  return patches;
+}
+
+/** Record whether any patch below each ancestor changes list structure. */
+function descendants(
+  patches: ReadonlyMap<string, Patch>,
+): Map<string, boolean> {
+  const result = new Map<string, boolean>();
+  for (const [path, { structural }] of patches)
+    for (const parent of ancestors(path))
+      result.set(parent, Boolean(result.get(parent) || structural));
+  return result;
+}
+
+function roots<T>(paths: ReadonlyMap<string, T>): string[] {
+  return [...paths.keys()].filter(
+    (path) => !ancestors(path).some((parent) => paths.has(parent)),
   );
+}
 
 /** Three-way comparison uses native schema atomicity and stable row identity. Only disjoint authored patches merge automatically; a structural overlap becomes an explicit whole-list choice. Metadata always comes from latest. */
 export function reconcileDocuments(
@@ -49,44 +87,56 @@ export function reconcileDocuments(
     assertReconcileIdentities(snapshot, fields, blocks);
   const localChanges = documentChanges(base, local, fields, blocks),
     remoteChanges = documentChanges(base, latest, fields, blocks);
-  const mine = localChanges.map(patch),
-    theirs = remoteChanges.map(patch),
-    conflicted = new Map<string, boolean>();
-  for (const a of mine)
-    for (const b of theirs)
-      if (overlap(a.path, b.path)) {
-        const path = a.path.length <= b.path.length ? a.path : b.path;
-        // Equal authored results need no user decision.
-        if (
-          JSON.stringify(readStableValue(local, path)) ===
-          JSON.stringify(readStableValue(latest, path))
-        )
-          continue;
-        conflicted.set(
-          path,
-          Boolean(conflicted.get(path) || a.structural || b.structural),
-        );
-      }
-  const conflicts = roots([...conflicted.keys()]).map((path) => {
-    const source = [...localChanges, ...remoteChanges].find(
-      (change) => patch(change).path === path,
-    );
-    const labels = source
-      ? patch(source).structural
-        ? source.labels.slice(0, -1)
-        : source.labels
-      : [path];
-    return {
+  const mine = indexPatches(localChanges);
+  const theirs = indexPatches(remoteChanges);
+  const remoteDescendants = descendants(theirs);
+  const conflicted = new Map<string, ReconciliationConflict>();
+  const equalOutcomes = new Set<string>();
+  function compare(path: string, structural: boolean) {
+    const existing = conflicted.get(path);
+    if (existing) {
+      existing.structural ||= structural;
+      return;
+    }
+    if (equalOutcomes.has(path)) return;
+    const localValue = readStableValue(local, path);
+    const latestValue = readStableValue(latest, path);
+    if (JSON.stringify(localValue) === JSON.stringify(latestValue)) {
+      equalOutcomes.add(path);
+      return;
+    }
+    conflicted.set(path, {
       path,
-      labels,
-      structural: Boolean(conflicted.get(path)),
-      local: readStableValue(local, path),
-      latest: readStableValue(latest, path),
-    };
-  });
+      labels: (mine.get(path) ?? theirs.get(path))?.labels ?? [path],
+      structural,
+      local: localValue,
+      latest: latestValue,
+    });
+  }
+
+  for (const [path, { structural }] of mine) {
+    // Exact and descendant matches both compare the same local subtree.
+    const exact = theirs.get(path);
+    const below = remoteDescendants.get(path);
+    if (exact || below !== undefined)
+      compare(path, Boolean(structural || exact?.structural || below));
+    for (const parent of ancestors(path)) {
+      const remote = theirs.get(parent);
+      if (remote) compare(parent, structural || remote.structural);
+    }
+  }
+
+  const conflicts = roots(conflicted).map((path) => conflicted.get(path)!);
+  const conflictAncestors = new Set(
+    conflicts.flatMap(({ path }) => ancestors(path)),
+  );
   const merged = structuredClone(latest);
-  for (const path of roots(mine.map((change) => change.path)))
-    if (!conflicts.some((conflict) => overlap(conflict.path, path)))
+  for (const path of roots(mine))
+    if (
+      !conflicted.has(path) &&
+      !conflictAncestors.has(path) &&
+      !ancestors(path).some((parent) => conflicted.has(parent))
+    )
       writeStableValue(merged, path, readStableValue(local, path));
   return { merged, conflicts, localChanges, remoteChanges };
 }
