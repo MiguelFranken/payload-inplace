@@ -6,7 +6,8 @@ on:
 permissions:
   contents: read
 jobs:
-  validate:
+  source:
+    name: Source and Storybook
     # Playwright 1.58.2 supports Noble; ubuntu-latest has moved to 26.04.
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -26,9 +27,28 @@ jobs:
       - run: corepack pnpm lint
       - run: corepack pnpm test:coverage
       - run: corepack pnpm test:workspace
-      - run: corepack pnpm test:int
       - run: corepack pnpm --filter @payload-inplace/acceptance exec playwright install --with-deps chromium
       - run: corepack pnpm test:storybook
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: validation-source
+          path: test-results
+  native:
+    name: Native Payload and browser
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - run: corepack enable
+      - run: corepack pnpm install --frozen-lockfile
+      - run: corepack pnpm build
+      - run: corepack pnpm test:int
+      - run: corepack pnpm --filter @payload-inplace/acceptance exec playwright install --with-deps chromium
       - name: Validate review and toolbar without transactional revision metadata
         run: |
           VE_PORT=3139 VE_NEXT_DIST_DIR=.next-mongo VE_PRODUCTION=1 corepack pnpm test:e2e tests/browser/acceptance.e2e.spec.ts --grep 'media selection persists'
@@ -36,15 +56,48 @@ jobs:
       - run: VE_PORT=3137 corepack pnpm exec node scripts/postgres-test.mjs e2e
       - run: corepack pnpm test:graph
       - run: corepack pnpm exec node scripts/postgres-test.mjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: validation-native
+          path: test-results
+  package:
+    name: Packed consumer
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - run: corepack enable
+      - run: corepack pnpm install --frozen-lockfile
+      - run: corepack pnpm build
       - run: corepack pnpm release:check
       - run: corepack pnpm pack:check
       - run: corepack pnpm test:consumer
       - run: corepack pnpm test:package-types
+      - run: corepack pnpm --filter @payload-inplace/acceptance exec playwright install --with-deps chromium
       - run: corepack pnpm test:installed-consumer
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
+          # prepare-release.mjs downloads this exact artifact from successful main runs.
           name: validation
           path: |
             test-results
             *.tgz
+  validate:
+    needs: [source, native, package]
+    # A skipped required check does not block merges. Evaluate all lane results.
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Require every validation lane to succeed
+        env:
+          LANE_RESULTS: ${{ toJSON(needs) }}
+        run: |
+          jq -r 'to_entries[] | "\(.key): \(.value.result)"' <<< "$LANE_RESULTS"
+          jq -e 'length > 0 and all(.[]; .result == "success")' <<< "$LANE_RESULTS" > /dev/null
