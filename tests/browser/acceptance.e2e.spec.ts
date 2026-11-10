@@ -1258,3 +1258,155 @@ test("before-section hover preview keeps the catalogue anchor stable", async ({
     page.getByRole("heading", { name: "A story worth sharing.", exact: true }),
   ).toHaveCount(0);
 });
+
+test("inline section comparison switches saved views without writes or navigation", async ({
+  page,
+}, testInfo) => {
+  const { doc } = await createShopEditor(page);
+  const preview = page.locator("[data-ve-preview]");
+  const heading = preview.locator('[data-ve-field="heading"]').first();
+  const marker = page.locator("[data-ve-comparison-marker]");
+  const compare = page.getByRole("region", { name: "Compare sections" });
+  const openComparison = async () => {
+    await page.getByRole("button", { name: "More tools" }).press("Enter");
+    await page
+      .getByRole("menuitem", { name: "Compare sections" })
+      .press("Enter");
+    await expect(compare).toBeVisible();
+    await expect(
+      compare.getByRole("button", { name: "Close comparison" }),
+    ).toBeFocused();
+  };
+
+  const comparisonResponse = page.waitForResponse(
+    (response) =>
+      new URL(response.url()).pathname ===
+      "/api/visual-editor/section-comparison",
+  );
+  await openComparison();
+  const result = await comparisonResponse;
+  expect(result.ok()).toBeTruthy();
+  expect(result.headers()["cache-control"]).toBe("private, no-store");
+  expect(Object.keys(await result.json()).sort()).toEqual([
+    "draft",
+    "published",
+    "revision",
+  ]);
+  const proof = result.request().postDataJSON().proof;
+  const visitor = await page.context().browser()!.newContext();
+  try {
+    const denied = await visitor.request.post(
+      new URL("/api/visual-editor/section-comparison", page.url()).href,
+      {
+        headers: { Origin: new URL(page.url()).origin },
+        data: { proof },
+      },
+    );
+    expect(denied.status()).toBe(403);
+    expect(await denied.json()).not.toHaveProperty("draft");
+  } finally {
+    await visitor.close();
+  }
+  await expect(compare.getByText(/no published version/)).toBeVisible();
+  await expect(
+    compare.getByRole("button", { name: "Published" }),
+  ).toBeDisabled();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: "More tools" })).toBeFocused();
+
+  const target = { collection: "shops", id: doc.id, root: "layout" };
+  const path = `/api/shops/${doc.id}`;
+  const candidate = await (
+    await page.request.get(`${path}?draft=true&depth=0`)
+  ).json();
+  const review = await page.request.post("/api/visual-editor/review", {
+    headers: { Origin: new URL(page.url()).origin },
+    data: { target, candidate },
+  });
+  expect(review.ok()).toBeTruthy();
+  const published = await page.request.patch(`${path}?depth=0`, {
+    data: {
+      ...candidate,
+      _status: "published",
+      _veReviewToken: (await review.json()).token,
+    },
+  });
+  expect(published.ok()).toBeTruthy();
+  const live = (await published.json()).doc;
+
+  const [hero, collection, story, questions] = live.layout;
+  const draft = await page.request.patch(`${path}?draft=true&depth=0`, {
+    data: {
+      _veRevision: live._veRevision,
+      layout: [
+        { ...hero, heading: "A new storefront heading" },
+        story,
+        collection,
+        { blockType: "editorial", heading: "A new draft section" },
+      ],
+    },
+  });
+  expect(draft.ok()).toBeTruthy();
+  const saved = (await draft.json()).doc;
+  await page.reload();
+  await expect(heading).toHaveText("A new storefront heading");
+  const route = page.url();
+  const writes: string[] = [];
+  page.on("request", (request) => {
+    if (
+      new URL(request.url()).pathname === path &&
+      request.method() === "PATCH"
+    )
+      writes.push(request.url());
+  });
+
+  await openComparison();
+  await expect(compare.getByText(/5 changed sections/)).toBeVisible();
+  await expect(compare.getByText(/see removed sections/)).toBeVisible();
+  await expect(marker.filter({ hasText: "Edited" })).toBeVisible();
+  await expect(
+    preview.getByRole("heading", { name: "A new draft section" }),
+  ).toBeAttached();
+  await compare
+    .getByRole("button", { name: "Next changed section" })
+    .press("Enter");
+  await expect(marker.filter({ hasText: "Edited" })).toHaveAttribute(
+    "data-current",
+    "true",
+  );
+  await page.screenshot({
+    path: testInfo.outputPath("compare-draft-desktop.png"),
+  });
+
+  await compare.getByRole("button", { name: "Published" }).press("Enter");
+  await expect(heading).toHaveText(hero.heading);
+  await expect(
+    preview.getByRole("heading", { name: "A new draft section" }),
+  ).toHaveCount(0);
+  await expect(
+    preview.locator(`[data-ve-block="${questions.id}"]`).first(),
+  ).toBeAttached();
+  await expect(compare.getByText(/see added sections/)).toBeVisible();
+
+  await page.setViewportSize({ width: 320, height: 740 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const box = await compare.boundingBox();
+  expect(box!.x).toBeGreaterThanOrEqual(0);
+  expect(box!.x + box!.width).toBeLessThanOrEqual(320);
+  await compare
+    .getByRole("button", { name: "Next changed section" })
+    .press("Enter");
+  await expect(marker.filter({ hasText: "Moved" }).first()).toBeVisible();
+  await page.screenshot({
+    path: testInfo.outputPath("compare-published-mobile.png"),
+  });
+  await page.keyboard.press("Escape");
+  await expect(compare).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "More tools" })).toBeFocused();
+  await expect(heading).toHaveText("A new storefront heading");
+  await expect(page).toHaveURL(route);
+  expect(writes).toEqual([]);
+  expect(
+    await (await page.request.get(`${path}?draft=true&depth=0`)).json(),
+  ).toEqual(saved);
+});

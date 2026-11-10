@@ -10,11 +10,13 @@ Generic editing, preview protocol, schema adapters and tests belong here. Consum
 - Validate package output and real Payload/browser behavior before consumer integration. Use explicit Turbopack and isolated temporary databases.
 - Never commit credentials or private consumer data. Report incomplete acceptance honestly.
 
-## Pull request merges
+## Pull request stacks and merges
 
-- Squash each approved PR into a single Conventional Commit on its target branch. Use the PR title as the commit subject and the PR description as the body. Keep both useful as permanent Git history.
-- Pass the current PR head to `gh pr merge --squash --match-head-commit` with the explicit subject and body. Verify the resulting commit and validation on the target branch.
-- Land stacks from the base upward. After each squash, retarget the next PR and verify that its result matches the reviewed and tested tree. If the trees differ or the branch conflicts, replay only that PR’s changes on the new base and validate again.
+- Split substantial work into focused, reviewable PRs with their own purpose, diff and validation. Stack dependent PRs in implementation order. Start the first branch at current `main` and base each next PR on the preceding PR's head. Open independent changes directly against `main`.
+- Link dependent PRs as a native GitHub stack. Use `gh stack submit` for new layers or `gh stack link` with the existing PR numbers in bottom-to-top order. In the web UI, confirm **Preview stack**. Verify the stack map or REST `stack` metadata shows the expected order and base.
+- Wait for CI on the current heads. Squash each PR into one Conventional Commit using its PR title and description. Keep those useful as permanent Git history. The repository's squash defaults are **Pull request title and description**.
+- Merge a native stack with `gh stack merge --yes --squash`, GitHub's stack UI, or the [asynchronous merge API](https://docs.github.com/en/rest/pulls/pulls#merge-a-pull-request-asynchronously). GitHub lands the selected layers from the base upward. After a partial merge or a lower-layer change, check the remaining bases and diffs, cascade a rebase if needed, and validate updated heads.
+- For a standalone PR, use `gh pr merge --squash --match-head-commit` with the explicit PR title and description. Verify the landed commits and CI on the target branch.
 
 ## Interface implementation
 

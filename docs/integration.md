@@ -79,6 +79,12 @@ A shared preview secret, Draft Mode, a query parameter and the presence of a coo
 
 The standard CMS remains the fallback. All edits use the single native Form and persistence path. Native configured autosave, manual draft save and reviewed publication share that Form. Optimistic feedback never means a write has already succeeded; errors retain the working copy and offer explicit recovery. Drafts are shared Payload drafts, not private per-editor branches. Asset uploads remain separate writes.
 
+### Compare sections on the page
+
+Open **More tools → Compare sections** after the draft has saved. The editor outlines changed top-level sections. Nested field and block changes appear on their owning section. Use **Next changed section** to move through the visible changes in page order. **Draft** shows additions and **Published** shows removals. Escape closes comparison and returns focus to the toolbar.
+
+Comparison is available with the History tool and a client `preview` renderer that consumes `useEditorPreviewData`. Use the existing block bindings on the top-level section wrappers. The Published toggle substitutes the saved published blocks at the active root for display. Resolve published relationship and media IDs the same way the renderer resolves IDs after an optimistic change. Other roots, document fields outside the active root, and server-only slots keep their existing render source. Use **Review changes** for the document-wide diff and publication.
+
 ## Consumer controls and theme
 
 Built-in `tools` can be disabled or server capability-gated. `fieldPanels` declare existing document/selection field paths and optional block-type applicability. Custom `extensions` register panel/control components through Payload's import map, or explicit server actions with optional saved-revision and confirmation requirements. The compact horizontal dock opens one contextual panel at a time; secondary extensions live in More tools. Sections show readable native content names across consumer field names and support list/on-page dragging, keyboard moves and native structural undo. Page controls avoid rendered field text; dense layouts retain the section-list alternative. See [dock and reordering](guides/sections.md#reordering-and-history).
