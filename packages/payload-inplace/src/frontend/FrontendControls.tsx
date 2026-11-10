@@ -49,7 +49,7 @@ import type { BlocksFieldClientProps } from "payload";
 import type { Activation } from "../types";
 
 import { getArrayItemPath } from "@payload-inplace/core/annotations";
-import { stableDataPath } from "@payload-inplace/core/stable-path";
+import { locateVersionChange } from "./controllers/version-location";
 import { resolveBinding } from "../schema/resolve-binding";
 import { canUpdateInlineField } from "../schema/inline-access";
 
@@ -986,26 +986,14 @@ export function FrontendControls({
                     closeView("versions");
                   }}
                   onLocate={(path) => {
-                    const data = form.getData();
-                    const match = sections
-                      .map((section) => ({
-                        section,
-                        stable: stableDataPath(data, section.path),
-                      }))
-                      .filter(
-                        (entry) =>
-                          entry.stable &&
-                          (path === entry.stable ||
-                            path.startsWith(entry.stable + ".")),
-                      )
-                      .sort((a, b) => b.stable!.length - a.stable!.length)[0];
-                    if (
-                      !match ||
-                      !showSectionOnPage(
-                        match.section,
-                        documentReference(context.target),
-                      )
-                    )
+                    const document = documentReference(context.target);
+                    const located = locateVersionChange(
+                      path,
+                      form.getData(),
+                      sections,
+                      (section) => showSectionOnPage(section, document),
+                    );
+                    if (!located)
                       setError(t("thisChangeIsNotVisibleOnTheCurrentPage"));
                   }}
                 />

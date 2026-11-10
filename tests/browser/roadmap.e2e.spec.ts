@@ -209,7 +209,9 @@ test("inline Lexical edits structured text through the native queue without repl
     );
   });
   await body.click();
-  const surface = page.locator('[data-ve-inline-active][contenteditable="true"]');
+  const surface = page.locator(
+    '[data-ve-inline-active][contenteditable="true"]',
+  );
   await expect(surface).toHaveAttribute("contenteditable", "true");
   await expect(
     page.getByRole("toolbar", { name: "Text formatting" }),
@@ -411,6 +413,23 @@ test("saved versions reopen, compare changed content and restore a guarded draft
     })
     .click();
   await expect(page.locator("[data-ve-diff-path]")).not.toHaveCount(0);
+  await page.evaluate(() => {
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: "instant",
+    });
+  });
+  const beforeLocate = await page.evaluate(() => window.scrollY);
+  await expect(heading).not.toBeInViewport();
+  await page
+    .getByRole("button", { name: /^Show on page:/ })
+    .first()
+    .click();
+  await expect(heading).toBeInViewport();
+  expect(await page.evaluate(() => window.scrollY)).toBeLessThan(beforeLocate);
+  await expect(
+    page.getByRole("heading", { name: "Saved versions" }),
+  ).toBeVisible();
   const writes: string[] = [];
   page.on("request", (request) => {
     if (
