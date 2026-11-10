@@ -144,6 +144,30 @@ export const englishMessages = {
   resolveDraftConflict: "Resolve draft conflict",
   loadingComparison: "Loading comparison…",
   savedVersions: "Saved versions",
+  compareSections: "Compare sections",
+  closeSectionComparison: "Close comparison",
+  sectionComparisonVersion: "Section version",
+  nextSectionChange: "Next changed section",
+  loadingSectionComparison: "Loading saved sections…",
+  sectionComparisonUnavailable:
+    "Could not load the comparison. Try again or reopen the editor.",
+  sectionComparisonStale:
+    "The saved draft changed. Reopen the editor to compare the latest version.",
+  noSectionChanges: "The saved sections match the published version.",
+  sectionComparisonCount: {
+    one: "{count} changed section",
+    other: "{count} changed sections",
+  },
+  sectionComparisonPosition: "{label} · {position} of {total}",
+  sectionComparisonNoPublished: "This page has no published version.",
+  sectionComparisonShowRemoved: "Switch to Published to see removed sections.",
+  sectionComparisonShowAdded: "Switch to Draft to see added sections.",
+  sectionComparisonUnmapped:
+    "Some changes have no visible section on this view.",
+  sectionAdded: "Added",
+  sectionRemoved: "Removed",
+  sectionEdited: "Edited",
+  sectionComparisonMoved: "Moved",
   loadingVersions: "Loading versions…",
   thisChangeIsNotVisibleOnTheCurrentPage:
     "This change is not visible on the current page.",
@@ -512,6 +536,33 @@ export const germanMessages = {
   resolveDraftConflict: "Entwürfe abgleichen",
   loadingComparison: "Vergleich wird geladen…",
   savedVersions: "Gespeicherte Versionen",
+  compareSections: "Abschnitte vergleichen",
+  closeSectionComparison: "Vergleich schließen",
+  sectionComparisonVersion: "Version der Abschnitte",
+  nextSectionChange: "Nächster geänderter Abschnitt",
+  loadingSectionComparison: "Gespeicherte Abschnitte werden geladen…",
+  sectionComparisonUnavailable:
+    "Der Vergleich konnte nicht geladen werden. Versuche es erneut oder öffne den Editor erneut.",
+  sectionComparisonStale:
+    "Der gespeicherte Entwurf wurde geändert. Öffne den Editor erneut, um die aktuelle Version zu vergleichen.",
+  noSectionChanges:
+    "Die gespeicherten Abschnitte entsprechen der veröffentlichten Version.",
+  sectionComparisonCount: {
+    one: "{count} geänderter Abschnitt",
+    other: "{count} geänderte Abschnitte",
+  },
+  sectionComparisonPosition: "{label} · {position} von {total}",
+  sectionComparisonNoPublished: "Diese Seite wurde noch nicht veröffentlicht.",
+  sectionComparisonShowRemoved:
+    "Wechsle zur veröffentlichten Version, um entfernte Abschnitte zu sehen.",
+  sectionComparisonShowAdded:
+    "Wechsle zum Entwurf, um hinzugefügte Abschnitte zu sehen.",
+  sectionComparisonUnmapped:
+    "Einige Änderungen haben in dieser Ansicht keinen sichtbaren Abschnitt.",
+  sectionAdded: "Hinzugefügt",
+  sectionRemoved: "Entfernt",
+  sectionEdited: "Bearbeitet",
+  sectionComparisonMoved: "Verschoben",
   loadingVersions: "Versionen werden geladen…",
   thisChangeIsNotVisibleOnTheCurrentPage:
     "Diese Änderung ist auf der aktuellen Seite nicht sichtbar.",
