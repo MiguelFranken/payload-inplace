@@ -60,7 +60,7 @@ Preview an option before inserting it. Cancel without saving; insert with native
 
 ### Review what changed
 
-<img src="https://raw.githubusercontent.com/MiguelFranken/payload-inplace/main/docs/images/ecommerce-review.png" width="1440" alt="Changed-only draft review comparing the edited product heading with its published value before publication.">
+<img src="https://raw.githubusercontent.com/MiguelFranken/payload-inplace/main/docs/images/ecommerce-review.png" width="1440" alt="Draft review showing a product heading edit, an availability change from Yes to No, and added lead time.">
 
 Compare against the published document or the draft at session start. Publish the reviewed saved revision, then return to the website. [Drafts, review and history →](https://github.com/MiguelFranken/payload-inplace/blob/main/docs/guides/publishing.md)
 

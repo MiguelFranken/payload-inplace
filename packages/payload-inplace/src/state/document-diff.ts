@@ -14,6 +14,7 @@ export type DocumentChange = {
   kind: "added" | "removed" | "changed" | "moved";
   before: unknown;
   after: unknown;
+  fieldType?: ClientField["type"];
   from?: number;
   to?: number;
 };
@@ -128,7 +129,14 @@ export function documentChanges(
     const kind =
       a === undefined ? "added" : b === undefined ? "removed" : "changed";
     const push = () =>
-      changes.push({ path, labels, kind, before: a, after: b });
+      changes.push({
+        path,
+        labels,
+        kind,
+        before: a,
+        after: b,
+        ...(field && { fieldType: field.type }),
+      });
     if (Array.isArray(a) && Array.isArray(b)) {
       const iterable =
         !field || field.type === "blocks" || field.type === "array";
@@ -264,6 +272,52 @@ export function reviewText(value: unknown): string {
       ([key, entry]) => `${title(undefined, key, "en")}: ${reviewText(entry)}`,
     )
     .join("\n");
+}
+
+/** Preserve the type of each changed value before generating display text for the review. */
+export function presentDocumentChange(
+  change: DocumentChange,
+  { t }: Pick<EditorMessages, "t">,
+) {
+  const { before, after, fieldType } = change;
+  const richText =
+    fieldType === "richText" ||
+    (!fieldType && (isLexicalValue(before) || isLexicalValue(after)));
+  const plainText =
+    (!fieldType || fieldType === "text" || fieldType === "textarea") &&
+    typeof before === "string" &&
+    typeof after === "string";
+  const formatValue = (value: unknown): string => {
+    if (value == null) return "";
+    if (richText) return reviewText(value);
+    if (fieldType === "json" || typeof value === "object") {
+      return JSON.stringify(value, null, 2);
+    }
+    if (typeof value === "boolean")
+      return t(value ? "booleanYes" : "booleanNo");
+    return String(value);
+  };
+  let previous = formatValue(before);
+  let next = formatValue(after);
+  // Distinguish stored strings from primitive values with the same display text.
+  if (
+    !richText &&
+    previous &&
+    previous === next &&
+    typeof before !== typeof after
+  ) {
+    if (typeof before === "string") previous = JSON.stringify(before);
+    if (typeof after === "string") next = JSON.stringify(after);
+  }
+  const text = plainText || richText ? changedText(previous, next) : undefined;
+
+  return {
+    ...change,
+    before: previous,
+    after: next,
+    text,
+    richTextDetailsChanged: richText && previous === next,
+  };
 }
 
 /** Linear-time character boundary diff, with Unicode code points kept intact and shared context left unmarked. */

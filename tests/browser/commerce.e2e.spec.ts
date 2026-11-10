@@ -270,6 +270,32 @@ test("commerce compound price and array-item panels use native fields, condition
     currency: "EUR",
   });
   await page.screenshot({ path: "test-results/commerce-native-fields.png" });
+  await page
+    .getByRole("button", { name: "Review changes", exact: true })
+    .click();
+  const diff = page.locator("[data-ve-document-diff]");
+  const available = diff.locator("[data-ve-diff-path$='.available']");
+  await expect(available.locator("del")).toHaveText("Yes");
+  await expect(available.locator("ins")).toHaveText("No");
+  const amount = diff.locator("[data-ve-diff-path$='.pricing.amount']");
+  await expect(amount.locator("del")).toHaveText("640");
+  await expect(amount.locator("ins")).toHaveText("690");
+  await page.screenshot({ path: "test-results/commerce-typed-review.png" });
+
+  await page.setViewportSize({ width: 320, height: 900 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await available.scrollIntoViewIfNeeded();
+  await expect(available.locator("ins")).toBeVisible();
+  expect(
+    await diff.evaluate(
+      (element) => element.scrollWidth <= element.clientWidth,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: "test-results/commerce-typed-review-narrow.png",
+  });
+  await page.keyboard.press("Escape");
+  await expect(diff).toHaveCount(0);
 });
 
 test("every storefront block exposes nested terminals, promotion settings and owned product cards", async ({
