@@ -19,6 +19,8 @@
     "./chrome.css": "./src/chrome/tailwind.css",
     "./media/library": "./src/media/library/MediaLibrary.tsx",
     "./chrome/roles": "./src/chrome/roles.ts",
+    "./review/comparison-toolbar": "./src/review/section-comparison/ComparisonToolbar.tsx",
+    "./review/comparison-marker": "./src/review/section-comparison/ComparisonMarker.tsx",
     "./review/document-diff": "./src/review/document-diff/DocumentDiff.tsx",
     "./canvas/selection-outline": "./src/canvas/selection-outline/SelectionOutline.tsx",
     "./sections/catalogue": "./src/sections/catalogue/SectionCatalogueView.tsx",
