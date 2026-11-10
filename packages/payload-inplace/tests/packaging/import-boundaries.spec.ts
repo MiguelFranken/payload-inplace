@@ -128,3 +128,18 @@ it("enforces the same boundaries through workspace aliases and demo imports", ()
     ),
   ).toThrow("public package exports");
 });
+
+
+it("keeps shared views independent of the Lexical runtime and confines Lexical relative imports", () => {
+  const ui = path.join(root, "packages/ui/src/view.tsx");
+  const lexical = path.join(root, "packages/lexical/src/editor.ts");
+  expect(() =>
+    checkSourceBoundary(ui, 'import "@payload-inplace/lexical/editor";', root),
+  ).toThrow("UI source");
+  expect(() =>
+    checkSourceBoundary(lexical, 'import "../../ui/src/view";', root),
+  ).toThrow("Lexical runtime");
+  expect(() =>
+    checkSourceBoundary(lexical, 'import "./document";', root),
+  ).not.toThrow();
+});

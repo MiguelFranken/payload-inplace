@@ -302,7 +302,7 @@ test("production active feature transfer and interaction budgets include native 
       phases[name].chunkRequests,
       `${name} is really fetched on demand`,
     ).toBeGreaterThan(0);
-  const file = "docs/validation/performance/browser-budgets.json";
+  const file = "tests/browser/browser-budgets.json";
   const distDir = process.env.VE_NEXT_DIST_DIR || ".next-prod";
   const report = {
     commit: execFileSync("git", ["rev-parse", "HEAD"], {

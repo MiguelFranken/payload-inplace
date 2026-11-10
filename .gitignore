@@ -30,7 +30,6 @@ release-input-*/
 release-output/
 
 .turbo/
-apps/demo/media/
 packages/payload-inplace/README.md
 packages/payload-inplace/LICENSE
 packages/payload-inplace/NOTICE

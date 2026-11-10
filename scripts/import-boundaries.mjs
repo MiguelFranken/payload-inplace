@@ -3,6 +3,13 @@ import ts from "typescript";
 
 const normalized = (file) => file.split(path.sep).join("/");
 
+function staysIn(file, spec, directory) {
+  return (
+    spec.startsWith(".") &&
+    path.resolve(path.dirname(file), spec).startsWith(directory + path.sep)
+  );
+}
+
 const workspaceSpecifier =
   /^(?:@internal\/|@payload-inplace\/(?:core|lexical|ui)\/)/;
 const resolutionCaches = new Map();
@@ -137,21 +144,16 @@ export function checkSourceBoundary(file, source, root = process.cwd()) {
       );
     if (
       name.startsWith("packages/core/src/") &&
-      (!edge.spec.startsWith(".") ||
-        !path
-          .resolve(path.dirname(file), edge.spec)
-          .startsWith(core + path.sep))
+      !staysIn(file, edge.spec, core)
     )
       throw Error(`Core import crosses its boundary: ${name}: ${edge.spec}`);
     if (
       name.startsWith("packages/ui/src/") &&
-      (/^(?:payload(?:-inplace)?(?:\/|$)|@payloadcms\/|next(?:\/|$)|@internal\/)/.test(
+      (/^(?:payload(?:-inplace)?(?:\/|$)|@payloadcms\/|next(?:\/|$)|@internal\/|@payload-inplace\/lexical(?:\/|$))/.test(
         edge.spec,
       ) ||
         (edge.spec.startsWith(".") &&
-          !path
-            .resolve(path.dirname(file), edge.spec)
-            .startsWith(path.join(root, "packages/ui/src") + path.sep)))
+          !staysIn(file, edge.spec, path.join(root, "packages/ui/src"))))
     )
       throw Error(
         `UI source crosses into the Payload integration: ${name}: ${edge.spec}`,
@@ -162,7 +164,7 @@ export function checkSourceBoundary(file, source, root = process.cwd()) {
         "@lexical/history",
       ];
       if (
-        !edge.spec.startsWith(".") &&
+        !staysIn(file, edge.spec, path.join(root, "packages/lexical/src")) &&
         !allowed.some(
           (prefix) =>
             edge.spec === prefix || edge.spec.startsWith(prefix + "/"),
