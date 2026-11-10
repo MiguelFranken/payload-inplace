@@ -1,6 +1,7 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { useNativeIdleSubmit } from "../../src/frontend/controllers/idle-submit";
+import { createDeferredResponse } from "../../src/testing/fixtures";
 afterEach(() => vi.useRealTimers());
 it("batches a typing burst and ignores metadata/callback refreshes without postponing the idle deadline", async () => {
   vi.useFakeTimers();
@@ -95,4 +96,95 @@ it("scope changes and unmount cancel stale callbacks, and rejected native work i
   view.unmount();
   await vi.advanceTimersByTimeAsync(2000);
   expect(save).toHaveBeenCalledTimes(1);
+});
+
+function setupPendingSave() {
+  vi.useFakeTimers();
+  const first = createDeferredResponse<void>();
+  const save = vi
+    .fn(async (_key: string) => {})
+    .mockImplementationOnce(() => first.promise);
+  const error = vi.fn();
+  const props = { key: "initial", scope: "pages/1/de", enabled: true };
+  const view = renderHook(
+    ({ key, scope, enabled }) =>
+      useNativeIdleSubmit({
+        authoredKey: key,
+        scope,
+        enabled,
+        delay: 1500,
+        onIdle: () => save(key),
+        onError: error,
+      }),
+    { initialProps: props },
+  );
+  return { first, save, error, view, props };
+}
+
+it("submits only the latest idle edit once after a slow native save settles", async () => {
+  const { first, save, view, props } = setupPendingSave();
+  await vi.advanceTimersByTimeAsync(1500);
+  view.rerender({ ...props, key: "intermediate" });
+  await vi.advanceTimersByTimeAsync(1500);
+  view.rerender({ ...props, key: "latest" });
+  await vi.advanceTimersByTimeAsync(1500);
+  expect(save.mock.calls).toEqual([["initial"]]);
+
+  first.resolve(undefined);
+  await vi.advanceTimersByTimeAsync(0);
+  expect(save.mock.calls).toEqual([["initial"], ["latest"]]);
+  await vi.advanceTimersByTimeAsync(5000);
+  expect(save).toHaveBeenCalledTimes(2);
+});
+
+it.each(["disable", "unmount"])(
+  "cancels a queued idle edit on %s",
+  async (change) => {
+    const { first, save, view, props } = setupPendingSave();
+    await vi.advanceTimersByTimeAsync(1500);
+    view.rerender({ ...props, key: "newer" });
+    await vi.advanceTimersByTimeAsync(1500);
+    if (change === "unmount") view.unmount();
+    else view.rerender({ ...props, key: "newer", enabled: false });
+
+    first.resolve(undefined);
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(save.mock.calls).toEqual([["initial"]]);
+  },
+);
+
+it.each([500, 1500])(
+  "waits for explicit recovery after a failure with a newer edit idle for %i ms",
+  async (elapsed) => {
+    const { first, save, error, view, props } = setupPendingSave();
+    await vi.advanceTimersByTimeAsync(1500);
+    const newer = { ...props, key: "newer" };
+    view.rerender(newer);
+    await vi.advanceTimersByTimeAsync(elapsed);
+
+    const reason = Error("native failure");
+    first.reject(reason);
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(error).toHaveBeenCalledExactlyOnceWith(reason);
+    expect(save.mock.calls).toEqual([["initial"]]);
+
+    view.rerender({ ...newer, enabled: false });
+    view.rerender(newer);
+    await vi.advanceTimersByTimeAsync(1500);
+    expect(save.mock.calls).toEqual([["initial"], ["newer"]]);
+  },
+);
+
+it("ignores a rejected save from a previous visit to the same scope", async () => {
+  const { first, save, error, view, props } = setupPendingSave();
+  await vi.advanceTimersByTimeAsync(1500);
+  view.rerender({ ...props, key: "english", scope: "pages/1/en" });
+  await vi.advanceTimersByTimeAsync(1500);
+  view.rerender({ ...props, key: "german" });
+  await vi.advanceTimersByTimeAsync(1500);
+
+  first.reject(Error("previous visit failed"));
+  await vi.advanceTimersByTimeAsync(0);
+  expect(error).not.toHaveBeenCalled();
+  expect(save.mock.calls).toEqual([["initial"], ["german"]]);
 });

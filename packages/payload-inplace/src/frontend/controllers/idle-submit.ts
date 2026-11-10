@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useEffectEvent, useRef } from "react";
+import { useEffectEvent, useLayoutEffect, useRef } from "react";
 
-/** Schedules one native submission after authored input becomes idle. Metadata/callback identity never restarts the timer.
- * The caller owns native processing, acknowledgement and retry gates; this hook owns no document values or persistence queue.
+/** Schedules one native submission after authored input becomes idle. Retains the latest idle deadline during an active submission.
+ * The caller owns native values, acknowledgement and retry gates.
  */
 export function useNativeIdleSubmit({
   authoredKey,
@@ -20,30 +20,56 @@ export function useNativeIdleSubmit({
   onIdle: () => Promise<unknown>;
   onError: (error: unknown) => void;
 }) {
-  const live = useRef(true);
-  useEffect(() => {
-    live.current = true;
-    return () => {
-      live.current = false;
-    };
-  }, []);
-  const busy = useRef(false),
-    fire = useEffectEvent(onIdle),
-    failure = useEffectEvent(onError);
-  useEffect(() => {
+  const generation = useRef(0);
+  const busy = useRef(false);
+  const pending = useRef<{
+    ready: boolean;
+    submit: () => Promise<void>;
+    cancel: () => void;
+  }>(undefined);
+  const fire = useEffectEvent(onIdle);
+  const failure = useEffectEvent(onError);
+
+  // A scope can be left and revisited before an older request settles.
+  useLayoutEffect(
+    () => () => {
+      generation.current++;
+    },
+    [scope],
+  );
+
+  useLayoutEffect(() => {
     if (!enabled) return;
-    const timer = setTimeout(() => {
-      if (busy.current) return;
-      busy.current = true;
-      void Promise.resolve()
-        .then(() => fire())
-        .catch((error) => {
-          if (live.current) failure(error);
-        })
-        .finally(() => {
+    const owner = generation.current;
+    const intent = {
+      ready: false,
+      async submit() {
+        intent.cancel();
+        busy.current = true;
+        try {
+          await fire();
+        } catch (error) {
+          if (owner === generation.current) {
+            // Cancel the queued edit before recovery changes the caller's gate.
+            pending.current?.cancel();
+            failure(error);
+          }
+        } finally {
           busy.current = false;
-        });
+          const next = pending.current;
+          if (next?.ready) void next.submit();
+        }
+      },
+      cancel() {
+        clearTimeout(timer);
+        if (pending.current === intent) pending.current = undefined;
+      },
+    };
+    const timer = setTimeout(() => {
+      intent.ready = true;
+      if (!busy.current) void intent.submit();
     }, delay);
-    return () => clearTimeout(timer);
+    pending.current = intent;
+    return intent.cancel;
   }, [authoredKey, scope, enabled, delay]);
 }
