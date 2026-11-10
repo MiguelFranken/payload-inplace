@@ -1,4 +1,7 @@
-import { createEditorMessages, type EditorMessages } from "@payload-inplace/ui/localization/messages";
+import {
+  createEditorMessages,
+  type EditorMessages,
+} from "@payload-inplace/ui/localization/messages";
 import { localizedLabel } from "../i18n/labels";
 import type { ClientBlock, ClientField } from "payload";
 import { getArrayItemPath } from "@payload-inplace/core/annotations";
@@ -46,10 +49,25 @@ function isRecord(value: unknown): value is Record<string, any> {
   return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }
 
-function rowIDs(rows: unknown[]): string[] | undefined {
-  if (!rows.every((row) => isRecord(row) && row.id != null)) return;
-  const ids = rows.map((row) => String((row as any).id));
-  return new Set(ids).size === ids.length ? ids : undefined;
+function rowPositions(rows: unknown[]): Map<string, number> | undefined {
+  const positions = new Map<string, number>();
+  for (const [index, row] of rows.entries()) {
+    if (!isRecord(row) || row.id == null) return;
+    const id = String(row.id);
+    if (positions.has(id)) return;
+    positions.set(id, index);
+  }
+  return positions;
+}
+
+function commonRanks(
+  positions: Map<string, number>,
+  other: Map<string, number>,
+): Map<string, number> {
+  const ranks = new Map<string, number>();
+  for (const id of positions.keys())
+    if (other.has(id)) ranks.set(id, ranks.size);
+  return ranks;
 }
 
 /** Compare the complete authorized saved document using native labels and stable iterable identity.
@@ -80,21 +98,19 @@ export function documentChanges(
     const push = () =>
       changes.push({ path, labels, kind, before: a, after: b });
     if (Array.isArray(a) && Array.isArray(b)) {
-      const fromIDs = rowIDs(a),
-        toIDs = rowIDs(b);
-      if (
-        fromIDs &&
-        toIDs &&
-        (field?.type === "blocks" || field?.type === "array" || !field)
-      ) {
-        const commonFrom = fromIDs.filter((id) => toIDs.includes(id)),
-          commonTo = toIDs.filter((id) => fromIDs.includes(id));
+      const iterable =
+        !field || field.type === "blocks" || field.type === "array";
+      const fromPositions = iterable ? rowPositions(a) : undefined;
+      const toPositions = iterable ? rowPositions(b) : undefined;
+      if (fromPositions && toPositions) {
+        const commonFrom = commonRanks(fromPositions, toPositions);
+        const commonTo = commonRanks(toPositions, fromPositions);
         for (const id of [
-          ...toIDs,
-          ...fromIDs.filter((id) => !toIDs.includes(id)),
+          ...toPositions.keys(),
+          ...[...fromPositions.keys()].filter((id) => !toPositions.has(id)),
         ]) {
-          const from = fromIDs.indexOf(id),
-            to = toIDs.indexOf(id),
+          const from = fromPositions.get(id) ?? -1,
+            to = toPositions.get(id) ?? -1,
             old = a[from],
             next = b[to],
             row = next || old;
@@ -125,7 +141,7 @@ export function documentChanges(
             });
             continue;
           }
-          if (commonFrom.indexOf(id) !== commonTo.indexOf(id))
+          if (commonFrom.get(id) !== commonTo.get(id))
             changes.push({
               path: `${rowPath}.$position`,
               labels: rowLabels,
