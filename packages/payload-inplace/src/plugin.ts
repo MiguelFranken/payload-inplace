@@ -6,6 +6,7 @@ import { parseEditorTarget } from "./state/document-target";
 import { advisoryLockEndpoint } from "./server/advisory-lock";
 import { latestDraftEndpoint } from "./server/reconcile";
 import { versionEndpoint } from "./server/versions";
+import { sectionComparisonEndpoint } from "./server/section-comparison";
 import { trustedEditorOrigins } from "./server/origins";
 import { readEditorCookie, validatePagePath } from "./server/page-context";
 import type { Config, Plugin } from "payload";
@@ -137,6 +138,12 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
           path: "/visual-editor/versions",
           method: "post",
           handler: (req) => versionEndpoint(req, options, trustedOrigins),
+        },
+        {
+          path: "/visual-editor/section-comparison",
+          method: "post",
+          handler: (req) =>
+            sectionComparisonEndpoint(req, options, trustedOrigins),
         },
         {
           path: "/visual-editor/action",
