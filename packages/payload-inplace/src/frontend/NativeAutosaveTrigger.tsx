@@ -20,7 +20,7 @@ import {
 import { nativeDraftAction } from "../adapters/native-request";
 import {
   autosaveDelay,
-  authoredFieldKey,
+  createAuthoredFieldKey,
   canScheduleNativeSave,
 } from "../state/autosave";
 import {
@@ -41,7 +41,7 @@ export function NativeAutosaveTrigger() {
     modified = useFormModified(),
     processing = useFormProcessing(),
     background = useFormBackgroundProcessing();
-  const valueKey = useMemo(() => authoredFieldKey(fields), [fields]);
+  const authoredFieldKey = useMemo(() => createAuthoredFieldKey(), []);
   const [composing, setComposing] = useState(false);
   useEffect(() => {
     const start = () => setComposing(true),
@@ -67,6 +67,10 @@ export function NativeAutosaveTrigger() {
         recovery.acknowledged.current,
         recovery.retryAuthorized.current,
       ),
+  );
+  const valueKey = useMemo(
+    () => (enabled ? authoredFieldKey(fields) : ""),
+    [authoredFieldKey, enabled, fields],
   );
   useNativeIdleSubmit({
     authoredKey: valueKey,

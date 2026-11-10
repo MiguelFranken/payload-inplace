@@ -33,3 +33,25 @@ it("allows explicit recovery without acknowledging the failed native write or al
   expect(canScheduleNativeSave(2, 0, 1)).toBe(false);
   expect(canScheduleNativeSave(2, 2, 1)).toBe(true);
 });
+
+it("reuses path order while always reading current values and row identity", async () => {
+  const { createAuthoredFieldKey } = await import("../../src/state/autosave");
+  const key = createAuthoredFieldKey();
+  const state = {
+    layout: { rows: [{ id: "a", blockType: "hero" }, { id: "b" }] },
+    "layout.0.body": { value: { children: [{ text: "before" }] } },
+    _veRevision: { value: 1 },
+  };
+  const initial = key(state);
+  state["layout.0.body"].value.children[0]!.text = "after";
+  state.layout.rows.reverse();
+  state._veRevision.value = 2;
+  expect(key(state)).not.toBe(initial);
+  expect(key(state)).toBe(authoredFieldKey(state));
+  expect(key({ ...state, title: { value: "new field" } })).toBe(
+    authoredFieldKey({ ...state, title: { value: "new field" } }),
+  );
+  expect(
+    key({ "layout.0.body": state["layout.0.body"], layout: state.layout }),
+  ).toBe(authoredFieldKey(state));
+});
