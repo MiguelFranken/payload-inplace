@@ -37,12 +37,16 @@ it("coalesces saved revision floors and uses the current callbacks without dupli
   });
   expect(refresh).toHaveBeenCalledTimes(2);
   expect(accept).not.toHaveBeenCalled();
-  expect(replacement).toHaveBeenCalledWith({ revision: 2, content: null });
+  expect(replacement).not.toHaveBeenCalled();
+  expect(hook.result.current.pending).toBe(true);
   await act(async () => {
     second.resolve({ revision: 3, content: null });
     await done;
   });
-  expect(replacement).toHaveBeenLastCalledWith({ revision: 3, content: null });
+  expect(replacement).toHaveBeenCalledExactlyOnceWith({
+    revision: 3,
+    content: null,
+  });
   expect(hook.result.current.pending).toBe(false);
   expect(hook.result.current.error).toBeNull();
 });
@@ -89,4 +93,53 @@ it("ignores a late snapshot after the document owner unmounts", async () => {
   });
   expect(accept).not.toHaveBeenCalled();
   expect(denied).not.toHaveBeenCalled();
+});
+
+it("remembers a preview ahead of the requested revision and never applies an older snapshot afterward", async () => {
+  const refresh = vi
+    .fn()
+    .mockResolvedValueOnce({ revision: 4, content: null })
+    .mockResolvedValueOnce({ revision: 3, content: null })
+    .mockResolvedValueOnce({ revision: 4, content: null });
+  const accept = vi.fn();
+  const hook = renderHook(() =>
+    useSavedPreview({ initialRevision: 1, refresh, accept, denied: vi.fn() }),
+  );
+  await act(async () => {
+    await hook.result.current.request(2);
+  });
+  expect(accept).toHaveBeenCalledExactlyOnceWith({
+    revision: 4,
+    content: null,
+  });
+  await act(async () => {
+    await hook.result.current.request(3);
+  });
+  expect(accept).toHaveBeenCalledTimes(1);
+  expect(hook.result.current.error).toBe("savedPreviewBehind");
+  await act(async () => hook.result.current.retry());
+  expect(accept).toHaveBeenCalledTimes(2);
+  expect(hook.result.current.error).toBeNull();
+});
+
+it("honors access denial even when a newer preview request is queued", async () => {
+  const read = createDeferredResponse<EditorPreviewResponse>();
+  const refresh = vi.fn(() => read.promise);
+  const accept = vi.fn();
+  const denied = vi.fn();
+  const hook = renderHook(() =>
+    useSavedPreview({ initialRevision: 1, refresh, accept, denied }),
+  );
+  let done!: Promise<void>;
+  act(() => {
+    done = hook.result.current.request(2);
+    void hook.result.current.request(3);
+  });
+  await act(async () => {
+    read.resolve({ error: "denied" });
+    await done;
+  });
+  expect(refresh).toHaveBeenCalledOnce();
+  expect(accept).not.toHaveBeenCalled();
+  expect(denied).toHaveBeenCalledOnce();
 });
