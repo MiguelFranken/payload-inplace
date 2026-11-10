@@ -79,6 +79,9 @@ import {
 } from "./controllers/inline-selection";
 import { InlineText } from "./InlineText";
 import { usePreviewStatus } from "./preview-status";
+import { useInlinePreviewGuard } from "./inline-preview";
+import { SectionComparisonPanel } from "./SectionComparisonPanel";
+import type { useSectionComparison } from "./controllers/section-comparison";
 import { Settings2, X } from "lucide-react";
 import { selectionReset } from "../schema/selection-reset";
 import { ExtensionAction } from "./ExtensionAction";
@@ -128,6 +131,8 @@ export function FrontendControls({
   permissions,
   policy,
   exitURL,
+  comparisonHost,
+  comparison,
 }: {
   diagnostics?: boolean;
   sharedStructure?: boolean;
@@ -139,12 +144,16 @@ export function FrontendControls({
   permissions: any;
   policy?: StructuralPolicy;
   exitURL: string;
+  comparisonHost: HTMLElement | null;
+  comparison: ReturnType<typeof useSectionComparison>;
 }) {
   const documentScopes = useDocumentScopes();
   const transient = useTransientPreview();
   const recovery = useEditorRecovery();
   const advisory = useAdvisoryLock();
   const serverPreview = usePreviewStatus();
+  const inlinePreview = useInlinePreviewGuard();
+  const comparing = comparison.state.kind !== "closed";
   const editorTools = useVisualEditor();
   const [expanded, setExpanded] = useState(true);
   const [portalContainer, setPortalContainer] = useState<HTMLDivElement | null>(
@@ -331,8 +340,12 @@ export function FrontendControls({
     if (rootElement.current)
       return installNativeUploadLabels(rootElement.current, t);
   }, [t]);
+  function closeComparison() {
+    comparison.close();
+    requestAnimationFrame(() => toolsButton.current?.focus());
+  }
   useEffect(() => {
-    if (!expanded) return;
+    if (!expanded || comparing) return;
     const keyboard = (event: KeyboardEvent) => {
       const target = event.composedPath()[0] as EventTarget;
       if (event.defaultPrevented) return;
@@ -382,6 +395,7 @@ export function FrontendControls({
     return () => window.removeEventListener("keydown", keyboard);
   }, [
     disabled,
+    comparing,
     history,
     undo,
     expanded,
@@ -824,13 +838,19 @@ export function FrontendControls({
           }
           document={documentReference(context.target)}
           root={context.target.root}
-          enabled={expanded && !hasPanel && !selection?.field && !disabled}
+          enabled={
+            expanded &&
+            !comparing &&
+            !hasPanel &&
+            !selection?.field &&
+            !disabled
+          }
           options={insertionOptions}
           insert={insert}
           insertPattern={insertPattern}
           locale={i18n.language}
         />
-        {expanded && (
+        {expanded && !comparing && (
           <InspectionLayer
             inspecting={inspecting && !recovery.failure && !form.disabled}
             highlighting={highlighting && !hasPanel}
@@ -892,36 +912,41 @@ export function FrontendControls({
             }
           />
         )}
-        {expanded && selected && selection && canInline && !hasPanel && (
-          <NativeFieldsOwner
-            key={inlinePath}
-            path={inlinePath!}
-            activate={() => (selection.element as HTMLElement).focus()}
-          >
-            {strategy.kind === "richText" ? (
-              <Suspense fallback={null}>
-                <InlineRichText
+        {expanded &&
+          !comparing &&
+          selected &&
+          selection &&
+          canInline &&
+          !hasPanel && (
+            <NativeFieldsOwner
+              key={inlinePath}
+              path={inlinePath!}
+              activate={() => (selection.element as HTMLElement).focus()}
+            >
+              {strategy.kind === "richText" ? (
+                <Suspense fallback={null}>
+                  <InlineRichText
+                    element={selection.element as HTMLElement}
+                    path={inlinePath!}
+                    label={describe(selection)}
+                    features={lexicalFeatures || []}
+                    disabled={disabled}
+                    onSettings={() => setSettingsOpen(true)}
+                  />
+                </Suspense>
+              ) : (
+                <InlineText
+                  key={inlinePath}
                   element={selection.element as HTMLElement}
                   path={inlinePath!}
                   label={describe(selection)}
-                  features={lexicalFeatures || []}
+                  multiline={candidate?.type === "textarea"}
+                  point={selection.point}
                   disabled={disabled}
-                  onSettings={() => setSettingsOpen(true)}
                 />
-              </Suspense>
-            ) : (
-              <InlineText
-                key={inlinePath}
-                element={selection.element as HTMLElement}
-                path={inlinePath!}
-                label={describe(selection)}
-                multiline={candidate?.type === "textarea"}
-                point={selection.point}
-                disabled={disabled}
-              />
-            )}
-          </NativeFieldsOwner>
-        )}
+              )}
+            </NativeFieldsOwner>
+          )}
         {expanded && outline && (
           <BlockReorder
             scope={documentReference(context.target)}
@@ -1437,7 +1462,26 @@ export function FrontendControls({
                 )}
               </div>
             )}
-          <div className="pve:relative pve:ml-auto pve:w-max pve:max-w-full">
+          {comparing && comparisonHost && (
+            <SectionComparisonPanel
+              comparison={comparison}
+              host={comparisonHost}
+              field={field}
+              blocks={
+                config.blocksMap as Record<
+                  string,
+                  import("payload").ClientBlock
+                >
+              }
+              scope={documentReference(context.target)}
+              root={context.target.root}
+              onClose={closeComparison}
+            />
+          )}
+          <div
+            hidden={comparing}
+            className="pve:relative pve:ml-auto pve:w-max pve:max-w-full"
+          >
             <SaveFeedback
               expanded={expanded}
               saving={
@@ -1510,6 +1554,29 @@ export function FrontendControls({
                   activeDocumentKey={targetDocumentKey(context.target)}
                   triggerRef={toolsButton}
                   canBrowseVersions={!processing && !background && !modified}
+                  canCompare={
+                    !processing &&
+                    !background &&
+                    !modified &&
+                    !inlinePreview.active &&
+                    !serverPreview.pending &&
+                    !serverPreview.error &&
+                    !recovery.failure &&
+                    documentScopes.phase === "idle"
+                  }
+                  onCompare={
+                    comparisonHost && editorTools.tools.includes("history")
+                      ? () => {
+                          closeView();
+                          closeTools();
+                          cancelInsertionIntent();
+                          transient.preview(undefined);
+                          setSelection(undefined);
+                          setHighlighting(false);
+                          void comparison.open();
+                        }
+                      : undefined
+                  }
                   canUndo={!disabled && history.canUndo}
                   canRedo={!disabled && history.canRedo}
                   canSave={!disabled && modified && !background}
@@ -1557,7 +1624,7 @@ export function FrontendControls({
               </>
             </EditorToolbar>
           </div>
-          {inspecting && expanded && (
+          {inspecting && expanded && !comparing && (
             <p className="pve:sr-only" role="status">
               {t("editTextOnThePageOrChooseASection")}
             </p>

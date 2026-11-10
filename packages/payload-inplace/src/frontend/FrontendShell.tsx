@@ -66,6 +66,8 @@ import { PreviewStatusContext } from "./preview-status";
 import type { EditorPreviewSnapshot, EditorPreviewResponse } from "../types";
 import { FieldStrategiesProvider } from "./field-strategies";
 import { TransientPreviewProvider } from "./transient-preview";
+import { ComparisonPreviewContext } from "./comparison-preview";
+import { useSectionComparison } from "./controllers/section-comparison";
 import { EditorLifecycleProvider, useEditorLifecycle } from "./lifecycle";
 import type { EditorOperationHandle } from "@payload-inplace/core/events";
 import { AdvisoryLockContext, useNativeAdvisoryLock } from "./advisory-lock";
@@ -285,6 +287,21 @@ function NativeDocumentForm(
     { config } = useConfig(),
     { getFormState } = useServerFunctions();
   const recovery = useRecoveryState(props.statusURL);
+  const comparison = useSectionComparison({
+    url: `${config.routes.api.replace(/\/$/, "")}/visual-editor/section-comparison`,
+    proof: props.initialState._veActivation?.value,
+    revision: info.data?._veRevision ?? info.data?.updatedAt,
+    locale: props.context.locale,
+  });
+  const publishedSections =
+    comparison.state.kind === "ready" &&
+    comparison.state.side === "published" &&
+    comparison.state.snapshot.published
+      ? {
+          root: props.context.target.root,
+          rows: comparison.state.snapshot.published,
+        }
+      : undefined;
   const advisory = useNativeAdvisoryLock(
     config.routes.api,
     String(props.initialState._veActivation?.value || ""),
@@ -463,7 +480,11 @@ function NativeDocumentForm(
                             >
                               <Suspense fallback={props.children}>
                                 <PreviewBoundary fallback={props.children}>
-                                  {props.preview}
+                                  <ComparisonPreviewContext
+                                    value={publishedSections}
+                                  >
+                                    {props.preview}
+                                  </ComparisonPreviewContext>
                                 </PreviewBoundary>
                               </Suspense>
                             </PreviewPortal>
@@ -479,6 +500,8 @@ function NativeDocumentForm(
                             permissions={props.fieldPermissions}
                             policy={props.policy}
                             exitURL={props.exitURL}
+                            comparisonHost={props.previewTarget}
+                            comparison={comparison}
                           />
                         </TransientPreviewProvider>
                       </FieldStrategiesProvider>

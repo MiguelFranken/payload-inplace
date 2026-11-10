@@ -78,6 +78,12 @@ export function showSectionOnPage(
   const element = sectionElement(section, scope);
   const rect = element && elementRect(element);
   if (!rect) return false;
+  scrollToSection(rect);
+  return true;
+}
+
+/** Align a measured section below sticky site navigation, honoring reduced motion. */
+export function scrollToSection(rect: DOMRect) {
   const headers = [...document.querySelectorAll("header")].filter((header) => {
     const position = getComputedStyle(header).position;
     const box = header.getBoundingClientRect();
@@ -104,7 +110,6 @@ export function showSectionOnPage(
       ? "instant"
       : "smooth",
   });
-  return true;
 }
 
 /** Both surfaces dispatch exactly one native identity-based move on drop. Drag state never changes document data. */
