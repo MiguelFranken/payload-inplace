@@ -50,12 +50,20 @@ export function useSavedPreview({
     setError(null);
     const observation = current.current.events.start("preview", parent.current);
     try {
-      let again = false;
-      do {
-        const minimum = requested.current,
+      for (;;) {
+        const minimum = requested.current;
+        let result: EditorPreviewResponse;
+        try {
           result = await current.current.refresh();
+        } catch {
+          result = { error: "unavailable" };
+        }
         if (disposed.current) return;
         if ("error" in result) {
+          // A transient failure belongs to the read that started before the
+          // latest save. Authorization denial still ends the session.
+          if (result.error === "unavailable" && minimum < requested.current)
+            continue;
           observation.settle(
             "failed",
             result.error === "denied" ? "session" : "preview",
@@ -67,18 +75,15 @@ export function useSavedPreview({
         if (result.revision < requested.current) {
           // A newer acknowledgement may arrive during the read. Skip the
           // intermediate snapshot and give that newer request its own read.
-          if (minimum < requested.current) {
-            again = true;
-            continue;
-          }
+          if (minimum < requested.current) continue;
           observation.settle("failed", "preview");
           setError("savedPreviewBehind");
           return;
         }
         requested.current = result.revision;
         current.current.accept(result);
-        again = requested.current > result.revision;
-      } while (again);
+        if (requested.current <= result.revision) break;
+      }
       observation.settle("succeeded");
     } catch {
       observation.settle(disposed.current ? "cancelled" : "failed", "preview");

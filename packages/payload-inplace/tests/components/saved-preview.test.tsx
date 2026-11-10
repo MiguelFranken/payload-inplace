@@ -143,3 +143,37 @@ it("honors access denial even when a newer preview request is queued", async () 
   expect(accept).not.toHaveBeenCalled();
   expect(denied).toHaveBeenCalledOnce();
 });
+
+it.each(["unavailable response", "network rejection"])(
+  "reads the newer queued revision after a superseded %s",
+  async (failure) => {
+    const first = createDeferredResponse<EditorPreviewResponse>();
+    const refresh = vi
+      .fn()
+      .mockImplementationOnce(() => first.promise)
+      .mockResolvedValueOnce({ revision: 3, content: null });
+    const accept = vi.fn();
+    const hook = renderHook(() =>
+      useSavedPreview({ initialRevision: 1, refresh, accept, denied: vi.fn() }),
+    );
+    let done!: Promise<void>;
+    act(() => {
+      done = hook.result.current.request(2);
+      void hook.result.current.request(3);
+    });
+    await act(async () => {
+      if (failure === "unavailable response")
+        first.resolve({ error: "unavailable" });
+      else first.reject(Error("Connection interrupted"));
+      await done;
+    });
+
+    expect(refresh).toHaveBeenCalledTimes(2);
+    expect(accept).toHaveBeenCalledExactlyOnceWith({
+      revision: 3,
+      content: null,
+    });
+    expect(hook.result.current.error).toBeNull();
+    expect(hook.result.current.pending).toBe(false);
+  },
+);
