@@ -422,7 +422,7 @@ test("touch-emulated canvas insertion and ordering use one native structural com
 
 test("media selection persists through its panel and compact review survives save metadata updates", async ({
   page,
-}) => {
+}, testInfo) => {
   const { doc } = await createShopEditor(page);
   const dock = page.getByRole("navigation", { name: "Editing toolbar" });
   const before = (await dock.boundingBox())!;
@@ -479,7 +479,9 @@ test("media selection persists through its panel and compact review survives sav
   });
   await expect(catalogueSearch).toBeVisible();
   await catalogueSearch.press("Escape");
-  await page.screenshot({ path: "test-results/panel-action-surfaces.png" });
+  await page.screenshot({
+    path: testInfo.outputPath("panel-action-surfaces.png"),
+  });
   await sectionsPanel
     .getByRole("button", { name: "Close Sections panel", exact: true })
     .click();
@@ -547,7 +549,9 @@ test("media selection persists through its panel and compact review survives sav
       (block: { blockType: string }) => block.blockType === "editorial",
     ).heading,
   ).toBe("An edited studio story");
-  await page.screenshot({ path: "test-results/compact-reviewed-toolbar.png" });
+  await page.screenshot({
+    path: testInfo.outputPath("compact-reviewed-toolbar.png"),
+  });
 });
 
 test("selection geometry grows and shrinks with wrapping text and the live rich-text surface", async ({

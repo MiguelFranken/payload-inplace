@@ -50,9 +50,12 @@ jobs:
       - run: corepack pnpm test:int
       - run: corepack pnpm --filter @payload-inplace/acceptance exec playwright install --with-deps chromium
       - name: Validate review and toolbar without transactional revision metadata
-        run: |
-          VE_PORT=3139 VE_NEXT_DIST_DIR=.next-mongo VE_PRODUCTION=1 corepack pnpm test:e2e tests/browser/acceptance.e2e.spec.ts --grep 'media selection persists'
-          cp test-results/results.json test-results/mongo-ui.json
+        env:
+          VE_BROWSER_ARTIFACTS: mongo
+          VE_PORT: 3139
+          VE_NEXT_DIST_DIR: .next-mongo
+          VE_PRODUCTION: "1"
+        run: corepack pnpm test:e2e tests/browser/acceptance.e2e.spec.ts --grep 'media selection persists'
       - run: VE_PORT=3137 corepack pnpm exec node scripts/postgres-test.mjs e2e
       - run: corepack pnpm test:graph
       - run: corepack pnpm exec node scripts/postgres-test.mjs
