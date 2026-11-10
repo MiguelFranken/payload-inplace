@@ -177,3 +177,91 @@ it("keeps ambiguous row identities atomic instead of matching an arbitrary row",
     { path: "rows", kind: "changed", before: old, after: next },
   ]);
 });
+
+it("keeps an authored ID inside a native block group in the review", () => {
+  const schema = [
+    {
+      name: "layout",
+      type: "blocks",
+      blocks: [
+        {
+          slug: "text",
+          fields: [
+            {
+              type: "group",
+              name: "reference",
+              fields: [{ type: "text", name: "id", label: "External ID" }],
+            },
+          ],
+        },
+      ],
+    },
+  ] as ClientField[];
+  const before = {
+    layout: [{ id: "row", blockType: "text", reference: { id: "old" } }],
+  };
+  const after = {
+    layout: [{ id: "row", blockType: "text", reference: { id: "new" } }],
+  };
+
+  expect(documentChanges(before, after, schema)).toMatchObject([
+    {
+      path: "layout.@row.reference.id",
+      kind: "changed",
+      before: "old",
+      after: "new",
+    },
+  ]);
+});
+
+it("retains the native schema and label under a named tab", () => {
+  const schema = [
+    {
+      type: "tabs",
+      tabs: [
+        {
+          name: "presentation",
+          label: "Page presentation",
+          fields: [
+            { type: "json", name: "settings", label: "Display settings" },
+          ],
+        },
+      ],
+    },
+  ] as ClientField[];
+  const before = [{ id: "a", weight: 1 }];
+  const after = [{ id: "a", weight: 2 }];
+
+  expect(
+    documentChanges(
+      { presentation: { settings: before } },
+      { presentation: { settings: after } },
+      schema,
+    ),
+  ).toEqual([
+    {
+      path: "presentation.settings",
+      labels: ["Page presentation", "Display settings"],
+      kind: "changed",
+      before,
+      after,
+    },
+  ]);
+});
+
+it("reviews a real field named root without treating the entire document as rich text", () => {
+  const schema = [
+    {
+      type: "group",
+      name: "root",
+      fields: [{ type: "text", name: "heading" }],
+    },
+  ] as ClientField[];
+  expect(
+    documentChanges(
+      { root: { heading: "Old" } },
+      { root: { heading: "New" } },
+      schema,
+    ),
+  ).toMatchObject([{ path: "root.heading", kind: "changed" }]);
+});

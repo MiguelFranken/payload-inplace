@@ -6,7 +6,6 @@ import { localizedLabel } from "../i18n/labels";
 import type { ClientBlock, ClientField } from "payload";
 import { getArrayItemPath } from "@payload-inplace/core/annotations";
 import { isDocumentMetadataField } from "@payload-inplace/core/document-metadata";
-import { namedField } from "../schema/project-fields";
 
 /** One authored leaf or structural row change. Stable row IDs prevent a move from appearing as rewritten content. */
 export type DocumentChange = {
@@ -47,6 +46,38 @@ function title(value: unknown, fallback: string, locale: string): string {
 
 function isRecord(value: unknown): value is Record<string, any> {
   return Boolean(value && typeof value === "object" && !Array.isArray(value));
+}
+
+type ClientTab = Extract<ClientField, { type: "tabs" }>["tabs"][number];
+
+function reviewField(
+  fields: ClientField[],
+  name: string,
+): ClientField | ClientTab | undefined {
+  for (const field of fields) {
+    if ("name" in field && field.name === name) return field;
+    if (field.type === "tabs") {
+      for (const tab of field.tabs) {
+        if ("name" in tab) {
+          if (tab.name === name) return tab;
+        } else {
+          const child = reviewField(tab.fields, name);
+          if (child) return child;
+        }
+      }
+    } else if (!("name" in field) && "fields" in field) {
+      const child = reviewField(field.fields, name);
+      if (child) return child;
+    }
+  }
+}
+
+function isLexicalValue(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    value.root?.type === "root" &&
+    Array.isArray(value.root.children)
+  );
 }
 
 function rowPositions(rows: unknown[]): Map<string, number> | undefined {
@@ -91,6 +122,7 @@ export function documentChanges(
     labels: string[],
     schema: ClientField[] = [],
     field?: ClientField,
+    isRow = false,
   ) {
     if (equal(a, b)) return;
     const kind =
@@ -153,7 +185,7 @@ export function documentChanges(
             });
           const rowFields =
             block?.fields || (field?.type === "array" ? field.fields : []);
-          walk(old, next, rowPath, rowLabels, rowFields);
+          walk(old, next, rowPath, rowLabels, rowFields, undefined, true);
         }
         return;
       }
@@ -165,8 +197,11 @@ export function documentChanges(
       ["richText", "json", "relationship", "upload", "point"].includes(
         field?.type || "",
       ) ||
-      a?.root ||
-      b?.root
+      (path &&
+        !field &&
+        !isRow &&
+        !schema.length &&
+        (isLexicalValue(a) || isLexicalValue(b)))
     ) {
       push();
       return;
@@ -186,28 +221,23 @@ export function documentChanges(
       for (const key of keys) {
         if (
           (path === "" && isDocumentMetadataField(key)) ||
-          (path.includes(".@") && key === "id")
+          (isRow && key === "id")
         )
           continue;
-        const child = namedField(schema, key),
-          childLabel = title(
-            child && "label" in child ? child.label : undefined,
-            key,
-            locale,
-          );
-        const nextFields =
-          child && "fields" in child
-            ? child.fields
-            : child?.type === "tabs"
-              ? child.tabs.flatMap((tab) => tab.fields)
-              : [];
+        const child = reviewField(schema, key);
+        const childLabel = title(
+          child && "label" in child ? child.label : undefined,
+          key,
+          locale,
+        );
+        const nextFields = child && "fields" in child ? child.fields : [];
         walk(
           a?.[key],
           b?.[key],
           [path, key].filter(Boolean).join("."),
           [...labels, childLabel],
           nextFields,
-          child,
+          child && "type" in child ? child : undefined,
         );
       }
       return;
