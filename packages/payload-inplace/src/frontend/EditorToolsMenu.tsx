@@ -4,6 +4,7 @@ import type { Ref } from "react";
 import {
   Check,
   History,
+  GitCompareArrows,
   LogOut,
   Minus,
   MoreHorizontal,
@@ -28,6 +29,8 @@ export function EditorToolsMenu({
   activeDocumentKey,
   triggerRef,
   canBrowseVersions,
+  canCompare,
+  onCompare,
   canUndo,
   canRedo,
   canSave,
@@ -41,6 +44,8 @@ export function EditorToolsMenu({
   activeDocumentKey: string;
   triggerRef: Ref<HTMLButtonElement>;
   canBrowseVersions: boolean;
+  canCompare: boolean;
+  onCompare?: () => void;
   canUndo: boolean;
   canRedo: boolean;
   canSave: boolean;
@@ -100,6 +105,12 @@ export function EditorToolsMenu({
             </DropdownMenuItem>
           ))}
         <DropdownMenuSeparator />
+        {onCompare && (
+          <DropdownMenuItem disabled={!canCompare} onClick={onCompare}>
+            <GitCompareArrows size={16} />
+            {t("compareSections")}
+          </DropdownMenuItem>
+        )}
         {editorTools.tools.includes("history") && (
           <>
             <DropdownMenuItem

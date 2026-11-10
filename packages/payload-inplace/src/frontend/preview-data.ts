@@ -1,14 +1,15 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { use, useMemo, useRef } from "react";
 import { useForm, useFormFields } from "@payloadcms/ui";
 import { useTransientPreview } from "./transient-preview";
 import { projectInsertion } from "@payload-inplace/core/projection";
 import { useInlinePreviewGuard } from "./inline-preview";
 import {
-  mergePreviewData,
-  normalizePreviewRows,
-} from "../state/preview-data";
+  ComparisonPreviewContext,
+  showPublishedSections,
+} from "./comparison-preview";
+import { mergePreviewData, normalizePreviewRows } from "../state/preview-data";
 
 /** Read an optimistic projection of the sole native Form, without another document store or persistence path.
  * The initial authorized, populated document supplies relationship objects only while their IDs match.
@@ -21,6 +22,7 @@ export function useEditorPreviewData<T extends Record<string, any>>(
   const form = useForm(),
     guard = useInlinePreviewGuard();
   const transient = useTransientPreview();
+  const published = use(ComparisonPreviewContext);
   const fields = useFormFields(([fields]) => (guard.active ? null : fields));
   const data = useRef(initialDocument);
   return useMemo(() => {
@@ -29,6 +31,7 @@ export function useEditorPreviewData<T extends Record<string, any>>(
         mergePreviewData(initialDocument, form.getData()) as T,
         form.getFields(),
       ) as T;
+    if (published) return showPublishedSections(data.current, published);
     return projectInsertion(
       data.current,
       transient.capable ? transient.projection : undefined,
@@ -38,6 +41,7 @@ export function useEditorPreviewData<T extends Record<string, any>>(
     guard.active,
     initialDocument,
     form,
+    published,
     transient.capable,
     transient.projection,
   ]);
