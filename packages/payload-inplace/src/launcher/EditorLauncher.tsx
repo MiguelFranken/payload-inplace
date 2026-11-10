@@ -1,3 +1,4 @@
+import { editorActivationPath } from "../adapters/native-request";
 import { createEditorMessages } from "@payload-inplace/ui/localization/messages";
 import type { PayloadRequest } from "payload";
 import type { EditorTarget, VisualEditorOptions } from "../types";
@@ -84,7 +85,10 @@ export async function EditorLauncher({
       </button>
     </>
   );
-  const action = `${req.payload.config.routes.api}/visual-editor/activate${req.locale && req.locale !== "all" ? `?locale=${encodeURIComponent(req.locale)}&fallback-locale=null` : ""}`;
+  const action = editorActivationPath(
+    req.payload.config.routes.api,
+    req.locale,
+  );
   const className =
     "pvl:fixed pvl:end-5 pvl:bottom-4 pvl:z-[var(--pve-z-index,2147483000)] pvl:m-0 pvl:font-[family-name:var(--pve-font-family,system-ui)]";
   return (

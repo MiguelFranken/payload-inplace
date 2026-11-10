@@ -1,5 +1,6 @@
 "use client";
 
+import { editorActivationPath } from "../adapters/native-request";
 import type { EditorStaticMessageKey } from "@payload-inplace/ui/localization/catalogue";
 import { EditorMessageError, editorErrorKey } from "../i18n/failure";
 import { useEditorMessages } from "@payload-inplace/ui/localization/EditorMessages";
@@ -51,14 +52,11 @@ export function FrontendEntry({
         });
         if (!login.ok) throw new EditorMessageError("signInFailed");
       }
-      const response = await fetch(
-        `${api}/visual-editor/activate${contentLocale ? `?locale=${encodeURIComponent(contentLocale)}&fallback-locale=null` : ""}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(target),
-        },
-      );
+      const response = await fetch(editorActivationPath(api, contentLocale), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(target),
+      });
       if (!response.ok) throw new EditorMessageError("editingUnavailable");
       const { context } = await response.json();
       if (context.pagePath) {
