@@ -64,11 +64,18 @@ export function useSavedPreview({
           else setError("savedPreviewUnavailable");
           return;
         }
-        if (result.revision < minimum) {
+        if (result.revision < requested.current) {
+          // A newer acknowledgement may arrive during the read. Skip the
+          // intermediate snapshot and give that newer request its own read.
+          if (minimum < requested.current) {
+            again = true;
+            continue;
+          }
           observation.settle("failed", "preview");
           setError("savedPreviewBehind");
           return;
         }
+        requested.current = result.revision;
         current.current.accept(result);
         again = requested.current > result.revision;
       } while (again);
