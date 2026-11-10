@@ -1,6 +1,9 @@
 import {
   assertPublicGraph,
   assertActiveGraph,
+  assertObservedResourceContent,
+  observedPublicResources,
+  selectDeliveredModules,
 } from "./production-graph-contract.mjs";
 import fs from "node:fs";
 import path from "node:path";
@@ -32,25 +35,15 @@ const observation = JSON.parse(
   fs.readFileSync("test-results/public-anonymous.json", "utf8"),
 );
 
-if (!observation.production || observation.samples.length !== 3)
-  throw Error("Fresh production anonymous resource observations required");
-
-const delivered = new Set(
-  observation.samples.flatMap((sample) =>
-    sample.resources.map((resource) => resource.url),
-  ),
+const buildId = fs.readFileSync(path.join(root, "BUILD_ID"), "utf8").trim();
+const { rootMainFiles } = JSON.parse(
+  fs.readFileSync(path.join(root, "build-manifest.json"), "utf8"),
 );
-
-const deliveredModules = Object.fromEntries(
-  Object.entries(published.clientModules).filter(([, module]) =>
-    module.chunks.some((chunk) =>
-      delivered.has(chunk.startsWith("/_next/") ? chunk : `/_next/${chunk}`),
-    ),
-  ),
+const delivered = observedPublicResources(observation, buildId, rootMainFiles);
+const deliveredModules = selectDeliveredModules(
+  published.clientModules,
+  delivered,
 );
-
-if (!Object.keys(deliveredModules).length)
-  throw Error("Empty delivered graph cannot prove isolation");
 
 assertPublicGraph(deliveredModules);
 
@@ -83,15 +76,15 @@ if (
 
 let bytes = 0;
 
-for (const chunk of delivered) {
+for (const [chunk, resource] of delivered) {
   const content = fs.readFileSync(
-    path.join(root, chunk.replace("/_next/", "")),
-    "utf8",
+    path.join(root, chunk.slice("/_next/".length)),
   );
-  bytes += Buffer.byteLength(content);
+  assertObservedResourceContent(resource, content);
+  bytes += content.byteLength;
   if (
     /payload-visual-editor\/v1|data-ve-overlay|ve-workspace|data-ve-ui|pve:inline-geometry/.test(
-      content,
+      content.toString("utf8"),
     )
   )
     throw Error(`Editor implementation delivered in public chunk ${chunk}`);
@@ -101,9 +94,10 @@ fs.writeFileSync(
   "test-results/production-graph.json",
   JSON.stringify(
     {
+      buildId,
       registeredModules: Object.keys(published.clientModules).length,
       deliveredModules: Object.keys(deliveredModules),
-      chunks: [...delivered],
+      chunks: [...delivered.keys()],
       decodedDeliveredBytes: bytes,
       heavyEditorModules: 0,
       deferredRegistrationBytes: Buffer.byteLength(bootstrap),

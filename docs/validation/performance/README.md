@@ -8,4 +8,4 @@ The baseline includes Payload/React/Next/Lexical/Base UI peers in actual browser
 
 These localhost measurements are diagnostic guardrails. Browser byte/request ceilings allow 30% growth plus a small fixed allowance; action/execution ceilings account for CI variability. Existing 75-block input/frame and slow-save/caret/selection regressions remain separate behavioral gates.
 
-Visitor isolation remains stricter: production resource observations, a delivered import graph, active positive controls and injected leaks prove authoring never enters anonymous/inactive resources. The independent packed consumer also compares enabled/disabled public resources byte for byte.
+The visitor graph check requires three anonymous Chromium samples from the same production build. It verifies the running server’s build marker, requires the runtime entry chunks in every sample, and compares each observed JS/CSS digest against the build output. Active positive controls and an injected leak exercise the graph detector. The separate packed-consumer check compares enabled and disabled public resources byte for byte.

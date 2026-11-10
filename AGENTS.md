@@ -10,6 +10,12 @@ Generic editing, preview protocol, schema adapters and tests belong here. Consum
 - Validate package output and real Payload/browser behavior before consumer integration. Use explicit Turbopack and isolated temporary databases.
 - Never commit credentials or private consumer data. Report incomplete acceptance honestly.
 
+## Pull request merges
+
+- Squash each approved PR into a single Conventional Commit on its target branch. Use the PR title as the commit subject and the PR description as the body. Keep both useful as permanent Git history.
+- Pass the current PR head to `gh pr merge --squash --match-head-commit` with the explicit subject and body. Verify the resulting commit and validation on the target branch.
+- Land stacks from the base upward. After each squash, retarget the next PR and verify that its result matches the reviewed and tested tree. If the trees differ or the branch conflicts, replay only that PR’s changes on the new base and validate again.
+
 ## Interface implementation
 
 Use the local `.agents/skills/better-interface/SKILL.md` and its six owning skills when creating or reviewing editor UI. Validate complete flows at desktop and 320px widths, with keyboard and reduced motion. Keep review evidence in `docs/validation`.
