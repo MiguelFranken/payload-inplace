@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  SectionPatterns,
-  type PatternCapabilities,
-} from "./section-patterns";
+import { SectionPatterns, type PatternCapabilities } from "./section-patterns";
 import { nativeSavedDocument } from "../adapters/native-response";
 import {
   nativeDocumentArgs,
@@ -12,10 +9,7 @@ import {
   targetDocumentKey,
   targetSlug,
 } from "../state/document-target";
-import {
-  NativeDocumentScopes,
-  type ResolvedPageScope,
-} from "./document-scope";
+import { NativeDocumentScopes, type ResolvedPageScope } from "./document-scope";
 import { useSavedPreview } from "./controllers/saved-preview";
 import { useEditorMessages } from "@payload-inplace/ui/localization/EditorMessages";
 import { EditorMessage } from "@payload-inplace/ui/localization/EditorMessages";
@@ -261,7 +255,6 @@ export function FrontendShell(props: ShellProps) {
                               previewTarget={previewTarget}
                               previewReady={previewReady}
                               onPreviewReady={() => setPreviewReady(true)}
-                              renderedRevision={visible.revision}
                             >
                               {visible.children}
                             </NativeDocumentForm>
@@ -282,7 +275,6 @@ export function FrontendShell(props: ShellProps) {
 
 function NativeDocumentForm(
   props: ShellProps & {
-    renderedRevision: string | number;
     onSnapshot: (snapshot: EditorPreviewSnapshot) => void;
     previewTarget: HTMLElement | null;
     previewReady: boolean;
@@ -487,7 +479,6 @@ function NativeDocumentForm(
                             permissions={props.fieldPermissions}
                             policy={props.policy}
                             exitURL={props.exitURL}
-                            renderedRevision={props.renderedRevision}
                           />
                         </TransientPreviewProvider>
                       </FieldStrategiesProvider>

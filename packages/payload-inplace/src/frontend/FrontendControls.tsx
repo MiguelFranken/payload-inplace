@@ -5,7 +5,8 @@ import {
   targetDocumentKey,
   targetSlug,
 } from "../state/document-target";
-import { focusNativeField } from "./focus-native-field";
+import { SectionFieldPanel } from "./SectionFieldPanel";
+import { projectSectionFieldPanel } from "../schema/section-field-panel";
 import { useBindingDiagnostics } from "./controllers/binding-diagnostics";
 import { useSectionPatterns } from "./section-patterns";
 import { SaveSectionPattern } from "./SaveSectionPattern";
@@ -22,7 +23,6 @@ import {
   useState,
 } from "react";
 import {
-  RenderFields,
   LeaveWithoutSaving,
   useConfig,
   useDocumentInfo,
@@ -42,13 +42,8 @@ import {
   Redo2,
   Trash2,
   Undo2,
-  PanelsTopLeft,
-  MoreHorizontal,
-  Check,
   Minus,
-  LogOut,
   LocateFixed,
-  History,
 } from "lucide-react";
 import type { BlocksFieldClientProps } from "payload";
 import type { Activation } from "../types";
@@ -71,17 +66,18 @@ import { SaveFeedback } from "@payload-inplace/ui/chrome/save-feedback/SaveFeedb
 import { ReviewPublishButton } from "../admin/ReviewPublishButton";
 import { installNativeUploadLabels } from "../admin/native-accessibility";
 import { useEditorRecovery } from "./recovery";
-import {
-  namedField,
-  projectFields,
-  fieldOwnershipPaths,
-} from "../schema/project-fields";
+import { namedField, projectFields } from "../schema/project-fields";
 import { CatalogueLauncher as SectionCatalogue } from "./CatalogueLauncher";
 import { useTransientPreview } from "./transient-preview";
-import { ContextualFieldEditor, useFieldStrategy } from "./field-strategies";
 import { InsertionPoints } from "./InsertionPoints";
-import { canAdoptPlainText } from "../adapters/plain-text";
-import { resolveEditorStrategy } from "../schema/editor-strategy";
+import {
+  allowsInlineField,
+  resolveEditorStrategy,
+} from "../schema/editor-strategy";
+import {
+  canEditRenderedField,
+  useInlineSelection,
+} from "./controllers/inline-selection";
 import { InlineText } from "./InlineText";
 import { usePreviewStatus } from "./preview-status";
 import { Settings2, X } from "lucide-react";
@@ -94,13 +90,7 @@ import { InspectionLayer, type InspectionTarget } from "./InspectionLayer";
 
 import { Button as ChromeButton } from "@payload-inplace/ui/primitives/button/button";
 import { ChromePortalProvider } from "@payload-inplace/ui/primitives/portal/portal";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from "@payload-inplace/ui/primitives/menu/menu";
+import { EditorToolsMenu } from "./EditorToolsMenu";
 import {
   BlockReorder,
   sectionElement,
@@ -150,7 +140,6 @@ export function FrontendControls({
   permissions: any;
   policy?: StructuralPolicy;
   exitURL: string;
-  renderedRevision: string | number;
 }) {
   const documentScopes = useDocumentScopes();
   const transient = useTransientPreview();
@@ -216,8 +205,7 @@ export function FrontendControls({
     [selection, setSelection] = useState<InspectionTarget>(),
     [error, setError] = useState("");
   const [highlighting, setHighlighting] = useState(false);
-  const inspector = useRef<HTMLElement>(null),
-    inspectButton = useRef<HTMLButtonElement>(null),
+  const inspectButton = useRef<HTMLButtonElement>(null),
     sectionsButton = useRef<HTMLButtonElement>(null),
     toolsButton = useRef<HTMLButtonElement>(null),
     launcherButton = useRef<HTMLButtonElement>(null);
@@ -458,9 +446,7 @@ export function FrontendControls({
           !(candidate.admin as any)?.components?.Field &&
           candidate.admin?.readOnly !== true &&
           !("hasMany" in candidate && candidate.hasMany) &&
-          profile?.inlineEdit !== false &&
-          (!Array.isArray(profile?.inlineEdit) ||
-            profile.inlineEdit.includes(resolved.permissionPath)) &&
+          allowsInlineField(profile, resolved.permissionPath) &&
           state?.passesCondition !== false &&
           (candidate.type === "richText" || node.childElementCount === 0) &&
           !node.closest("a,button,input,textarea,select")
@@ -686,24 +672,16 @@ export function FrontendControls({
               ),
               readOnly: resolved.readOnly,
               edit: target.edit,
-              inline:
-                profile?.inlineEdit !== false &&
-                (!Array.isArray(profile?.inlineEdit) ||
-                  profile.inlineEdit.includes(resolved.permissionPath)),
+              inline: allowsInlineField(profile, resolved.permissionPath),
               lexicalFeatures:
                 richTextCapabilities?.[
                   `${section.schemaPath}.${resolved.schemaPath}`
                 ],
-              markupSafe:
-                target.element instanceof HTMLElement &&
-                (field.type === "richText" ||
-                  target.element.hasAttribute("data-ve-inline-active") ||
-                  (target.element.childElementCount === 0 &&
-                    canAdoptPlainText(
-                      target.element,
-                      form.getField(`${section.path}.${resolved.path}`)?.value,
-                    ))) &&
-                !target.element.closest("a,button,input,textarea,select"),
+              markupSafe: canEditRenderedField(
+                target.element,
+                field.type,
+                form.getField(`${section.path}.${resolved.path}`)?.value,
+              ),
             })
           : undefined;
       const inline = decision?.kind === "text" || decision?.kind === "richText";
@@ -742,18 +720,18 @@ export function FrontendControls({
         })
       : undefined;
   const candidate = binding?.field;
-  const resetPath =
+  const inlinePath =
     binding && selected ? `${selected.path}.${binding.path}` : undefined;
   const resetStatePath = binding?.row
-    ? resetPath?.slice(0, resetPath.lastIndexOf("."))
-    : resetPath;
+    ? inlinePath?.slice(0, inlinePath.lastIndexOf("."))
+    : inlinePath;
   useFormFields(([fields]) =>
     resetStatePath ? fields[resetStatePath] : undefined,
   );
   const reset = selectionReset(
     binding,
     resetStatePath ? form.getField(resetStatePath) : undefined,
-    resetPath ? form.getDataByPath(resetPath) : undefined,
+    inlinePath ? form.getDataByPath(inlinePath) : undefined,
     !disabled &&
       !selected?.readOnly &&
       Boolean(
@@ -790,84 +768,16 @@ export function FrontendControls({
     setSettingsOpen(true);
   }
 
-  const inlinePath =
-    binding && selected ? `${selected.path}.${binding.path}` : undefined;
-  // Subscribe to this path, but read the current path from the native Form.
-  // Payload's selector hook may retain its previous selected slice for the first
-  // render after the selector path changes. Caching that old field's value or
-  // conditions would incorrectly classify the newly picked terminal.
-  useFormFields(([fields]) => (inlinePath ? fields[inlinePath] : undefined));
-  const inlineState = inlinePath ? form.getField(inlinePath) : undefined;
-  const lexicalFeatures =
-    binding && selected
-      ? richTextCapabilities?.[`${selected.schemaPath}.${binding.schemaPath}`]
-      : undefined;
-  // Assess opaque renderer projections once per explicit pick, after native
-  // field initialization. Later structural reindexing/server projection can
-  // temporarily show older DOM; that must not reclassify a retained selection
-  // and open settings over the panel the user just chose. ACL/condition/type
-  // checks below remain live and authoritative on every native state change.
-  const markupAssessment = useRef<{
-    selection: InspectionTarget;
-    safe: boolean;
-  } | null>(null);
-  if (!selection) markupAssessment.current = null;
-  if (
-    selection &&
-    candidate &&
-    inlineState &&
-    markupAssessment.current?.selection !== selection
-  )
-    markupAssessment.current = {
+  const { strategy, contextual, contextualMatch, canInline, lexicalFeatures } =
+    useInlineSelection({
       selection,
-      safe:
-        selection.element instanceof HTMLElement &&
-        (candidate.type === "richText" ||
-          selection.element.hasAttribute("data-ve-inline-active") ||
-          (selection.element.childElementCount === 0 &&
-            canAdoptPlainText(selection.element, inlineState.value))) &&
-        !selection.element.closest("a,button,input,textarea,select"),
-    };
-  const strategy =
-    candidate && binding && selection
-      ? resolveEditorStrategy({
-          field: candidate,
-          state: inlineState,
-          row: Boolean(binding.row),
-          permitted: canUpdateInlineField(
-            selected?.permissions,
-            binding.permissionPath,
-          ),
-          readOnly: binding.readOnly,
-          edit: selection.edit,
-          inline:
-            profile?.inlineEdit !== false &&
-            (!Array.isArray(profile?.inlineEdit) ||
-              profile.inlineEdit.includes(binding.permissionPath)),
-          lexicalFeatures,
-          markupSafe:
-            markupAssessment.current?.selection === selection
-              ? markupAssessment.current.safe
-              : true,
-        })
-      : { kind: "native" as const };
-  const contextualMatch =
-    candidate && binding && selected && inlinePath
-      ? {
-          field: candidate,
-          path: inlinePath,
-          schemaPath: `${selected.schemaPath}.${binding.schemaPath}`,
-          blockType: selected.block?.slug,
-        }
-      : undefined;
-  const contextual = useFieldStrategy(
-    selection?.edit !== "panel" && !binding?.row ? contextualMatch : undefined,
-    inlineState,
-    !disabled && strategy.kind !== "unavailable",
-  );
-  const quickField = candidate;
-  const canInline =
-    !contextual && (strategy.kind === "text" || strategy.kind === "richText");
+      selected,
+      binding,
+      inlinePath,
+      profile,
+      richTextCapabilities,
+      disabled,
+    });
   const inlinePending = strategy.kind === "pending";
   useEffect(() => {
     if (selection && !canInline && !inlinePending && !disabled)
@@ -875,65 +785,19 @@ export function FrontendControls({
     // Each pick is a fresh user intent, even when the DOM element and field are
     // unchanged. A closed row/settings panel must reopen on the next pick.
   }, [selection, canInline, inlinePending, disabled, setSettingsOpen]);
-  const grouped = selection?.fields?.map((path) =>
-    selected
-      ? resolveBinding({
-          fields: configuredFields,
-          value: form.getDataByPath(selected.path),
-          binding: path,
-          permissions: selected.permissions,
-        })
-      : undefined,
-  );
-  const groupScope =
-    grouped?.length &&
-    grouped.every(
-      (item) => item && !item.row && item.parentPath === grouped[0]?.parentPath,
-    )
-      ? grouped[0]
-      : undefined;
-  const scope = binding || groupScope;
-  const relativeParent = binding?.row ? binding.path : scope?.parentPath;
-  const panelPath = selected
-    ? [selected.path, relativeParent].filter(Boolean).join(".")
-    : "";
-  const panelSchemaPath = selected
-    ? [
-        selected.schemaPath,
-        binding?.row ? binding.schemaPath : scope?.parentSchemaPath,
-      ]
-        .filter(Boolean)
-        .join(".")
-    : "";
-  const panelPermissions = binding?.row
-    ? binding.row.permissions
-    : scope
-      ? scope.permissions
-      : selected?.permissions;
-  const fields = binding
-    ? binding.row
-      ? binding.row.fields
-      : canInline
-        ? binding.siblings
-        : [binding.field]
-    : selection?.field
-      ? []
-      : selection?.fields
-        ? groupScope
-          ? grouped!.map((item) => item!.field)
-          : []
-        : configuredFields;
-
-  const settingsSectionPath = selected?.path;
-  const settingsFocusPath =
-    settingsSectionPath && binding && !binding.row
-      ? `${settingsSectionPath}.${binding.path}`
-      : undefined;
-  useEffect(() => {
-    if (!settingsOpen || !settingsSectionPath || !inspector.current) return;
-    // Follow the resolved native path if stable array identities are reindexed.
-    return focusNativeField(inspector.current, settingsFocusPath);
-  }, [settingsOpen, settingsSectionPath, settingsFocusPath]);
+  const fieldPanel =
+    selected &&
+    projectSectionFieldPanel({
+      section: selected,
+      configuredFields,
+      binding,
+      field: selection?.field,
+      group: selection?.fields,
+      canInline,
+      sectionValue: selection?.fields
+        ? form.getDataByPath(selected.path)
+        : undefined,
+    });
 
   const extension = editorTools.extensions.find(
     (e) => e.id === (customTool || editorTools.openPanels.at(-1)),
@@ -1124,7 +988,7 @@ export function FrontendControls({
                 element={selection.element as HTMLElement}
                 path={inlinePath!}
                 label={describe(selection)}
-                multiline={quickField?.type === "textarea"}
+                multiline={candidate?.type === "textarea"}
                 point={selection.point}
                 disabled={disabled}
               />
@@ -1250,7 +1114,7 @@ export function FrontendControls({
                 </div>
               </Floatable>
             )}
-          {expanded && selected && settingsOpen && !outline && (
+          {expanded && selected && fieldPanel && settingsOpen && !outline && (
             <Floatable
               title={selection?.field ? describe(selection) : title}
               autoFocus={false}
@@ -1335,50 +1199,17 @@ export function FrontendControls({
                 inspectButton.current?.focus();
               }}
             >
-              <div
-                ref={(node) => {
-                  inspector.current = node;
-                }}
+              <SectionFieldPanel
+                panel={fieldPanel}
+                sectionPath={selected.path}
+                field={selection?.field}
+                disabled={disabled}
+                contextual={
+                  contextual && contextualMatch
+                    ? { definition: contextual, match: contextualMatch }
+                    : undefined
+                }
               >
-                {fields?.length ? (
-                  <NativeFieldsOwner
-                    key={`${panelPath}:${selection?.field || "all"}`}
-                    paths={fieldOwnershipPaths(fields, panelPath)}
-                  >
-                    {contextual && contextualMatch ? (
-                      <ContextualFieldEditor
-                        definition={contextual}
-                        context={contextualMatch}
-                        disabled={disabled}
-                        fallback={
-                          <RenderFields
-                            margins="small"
-                            fields={fields}
-                            parentPath={panelPath}
-                            parentSchemaPath={panelSchemaPath}
-                            parentIndexPath=""
-                            permissions={panelPermissions}
-                            readOnly={disabled || scope?.readOnly}
-                            forceRender
-                          />
-                        }
-                      />
-                    ) : (
-                      <RenderFields
-                        margins="small"
-                        fields={fields}
-                        parentPath={panelPath}
-                        parentSchemaPath={panelSchemaPath}
-                        parentIndexPath=""
-                        permissions={panelPermissions}
-                        readOnly={disabled || scope?.readOnly}
-                        forceRender
-                      />
-                    )}
-                  </NativeFieldsOwner>
-                ) : (
-                  <p>{t("thisContentIsNoLongerAvailableAtThisLocation")}</p>
-                )}
                 {selected.parent === context.target.root &&
                   patterns?.canSave &&
                   patterns.allowedBlocks.includes(
@@ -1392,7 +1223,7 @@ export function FrontendControls({
                       }
                     />
                   )}
-              </div>
+              </SectionFieldPanel>
             </Floatable>
           )}
           {expanded && outline && (
@@ -1760,118 +1591,35 @@ export function FrontendControls({
                     <Layers size={18} aria-hidden="true" />
                   </ChromeButton>
                 )}
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    ref={toolsButton}
-                    aria-label={t("moreTools")}
-                    title={t("moreTools")}
-                  >
-                    <MoreHorizontal size={18} />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    {documentScopes.scopes.length > 1 && (
-                      <>
-                        {documentScopes.scopes.map((scope) => (
-                          <DropdownMenuItem
-                            key={targetDocumentKey(scope.target)}
-                            aria-current={
-                              targetDocumentKey(scope.target) ===
-                              targetDocumentKey(context.target)
-                                ? "true"
-                                : undefined
-                            }
-                            disabled={documentScopes.phase !== "idle"}
-                            onClick={() =>
-                              documentScopes.request(
-                                documentReference(scope.target),
-                              )
-                            }
-                          >
-                            {targetDocumentKey(scope.target) ===
-                            targetDocumentKey(context.target) ? (
-                              <Check size={16} />
-                            ) : (
-                              <PanelsTopLeft size={16} />
-                            )}
-                            <span>{scope.label}</span>
-                          </DropdownMenuItem>
-                        ))}
-                        <DropdownMenuSeparator />
-                      </>
-                    )}
-                    {editorTools.extensions
-                      .filter((e) => e.showInDock !== false)
-                      .map((e) => (
-                        <DropdownMenuItem
-                          key={e.id}
-                          onClick={() => {
-                            setOutline(false);
-                            setSettingsOpen(false);
-                            if (e.kind === "panel") {
-                              setCustomTool(null);
-                              editorTools.openPanel(e.id);
-                            } else {
-                              closeTools();
-                              setCustomTool(e.id);
-                            }
-                          }}
-                        >
-                          <PanelsTopLeft size={16} />
-                          {e.label}
-                        </DropdownMenuItem>
-                      ))}
-                    <DropdownMenuSeparator />
-                    {editorTools.tools.includes("history") && (
-                      <>
-                        <DropdownMenuItem
-                          disabled={processing || background || modified}
-                          onClick={() => {
-                            (document.activeElement as HTMLElement)?.blur();
-                            closeTools();
-                            setSelection(undefined);
-                            openView({ kind: "versions" });
-                          }}
-                        >
-                          <History size={16} />
-                          {t("savedVersions")}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          disabled={disabled || !history.canUndo}
-                          onClick={() => undo()}
-                        >
-                          <Undo2 size={16} />
-                          {t("undoSectionChange")}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          disabled={disabled || !history.canRedo}
-                          onClick={() => undo(true)}
-                        >
-                          <Redo2 size={16} />
-                          {t("redoSectionChange")}
-                        </DropdownMenuItem>
-                      </>
-                    )}
-                    <DropdownMenuItem
-                      disabled={disabled || !modified || background}
-                      onClick={() => void saveDraft()}
-                    >
-                      <Check size={16} />
-                      {t("saveDraftNow")}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="pve:sm:hidden"
-                      onClick={minimize}
-                    >
-                      <Minus size={16} />
-                      {t("minimizeEditor")}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => void exit()}>
-                      <LogOut size={16} />
-                      {t("exitEditing")}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <EditorToolsMenu
+                  activeDocumentKey={targetDocumentKey(context.target)}
+                  triggerRef={toolsButton}
+                  canBrowseVersions={!processing && !background && !modified}
+                  canUndo={!disabled && history.canUndo}
+                  canRedo={!disabled && history.canRedo}
+                  canSave={!disabled && modified && !background}
+                  onExtension={(extension) => {
+                    setOutline(false);
+                    setSettingsOpen(false);
+                    if (extension.kind === "panel") {
+                      setCustomTool(null);
+                      editorTools.openPanel(extension.id);
+                    } else {
+                      closeTools();
+                      setCustomTool(extension.id);
+                    }
+                  }}
+                  onVersions={() => {
+                    (document.activeElement as HTMLElement)?.blur();
+                    closeTools();
+                    setSelection(undefined);
+                    openView({ kind: "versions" });
+                  }}
+                  onUndo={undo}
+                  onSave={() => void saveDraft()}
+                  onMinimize={minimize}
+                  onExit={() => void exit()}
+                />
                 <span
                   aria-hidden="true"
                   className="pve:mx-1 pve:h-5 pve:w-px pve:shrink-0 pve:bg-[var(--pve-border,var(--theme-border-color,#e3e4e8))]"
