@@ -6,31 +6,48 @@ import {
   useForm,
   useFormBackgroundProcessing,
   useFormModified,
+  useFormProcessing,
   useLocale,
 } from "@payloadcms/ui";
 import type { EditorTarget } from "@internal/types";
 
-import {
-  nativeDocumentMethod,
-  targetDocumentKey,
-} from "@internal/state/document-target";
+import { nativeDocumentMethod } from "@internal/state/document-target";
 import { nativeDraftAction } from "@internal/adapters/native-request";
 
-/** Manual draft submission delegates to native Form's single-flight guard. */
+// The dock and document switcher share a native Form. Payload can replace the
+// context object during submission, but the native form ref stays stable.
+const manualSubmissions = new WeakSet<ReturnType<typeof useForm>["formRef"]>();
+
+/** Submit a manual draft once per native Form, including triggers before React publishes the processing state. */
 export function useNativeDraftSave(target: EditorTarget, disabled: boolean) {
-  const form = useForm(),
-    { config } = useConfig(),
-    locale = useLocale();
-  const modified = useFormModified(),
-    background = useFormBackgroundProcessing();
-  const documentScope = targetDocumentKey(target);
+  const form = useForm();
+  const { config } = useConfig();
+  const { code } = useLocale();
+  const modified = useFormModified();
+  const processing = useFormProcessing();
+  const background = useFormBackgroundProcessing();
+  const action = nativeDraftAction(config.routes.api, target, code);
+  const method = nativeDocumentMethod(target);
+
   return useCallback(async () => {
-    if (disabled || !modified || background) return;
-    form.setBackgroundProcessing(true);
+    const { formRef, setBackgroundProcessing } = form;
+    if (
+      disabled ||
+      form.disabled ||
+      !modified ||
+      processing ||
+      background ||
+      !formRef ||
+      manualSubmissions.has(formRef)
+    )
+      return;
+
+    manualSubmissions.add(formRef);
     try {
+      setBackgroundProcessing(true);
       await form.submit({
-        action: nativeDraftAction(config.routes.api, target, locale.code),
-        method: nativeDocumentMethod(target),
+        action,
+        method,
         overrides: { _status: "draft" },
         acceptValues: true,
         disableFormWhileProcessing: false,
@@ -38,15 +55,8 @@ export function useNativeDraftSave(target: EditorTarget, disabled: boolean) {
         skipValidation: true,
       });
     } finally {
-      form.setBackgroundProcessing(false);
+      manualSubmissions.delete(formRef);
+      setBackgroundProcessing(false);
     }
-  }, [
-    disabled,
-    modified,
-    background,
-    form,
-    config.routes.api,
-    documentScope,
-    locale.code,
-  ]);
+  }, [action, background, disabled, form, method, modified, processing]);
 }
