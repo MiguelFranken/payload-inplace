@@ -36,3 +36,10 @@ Three parts must agree:
 Hover/focus projects the example at the chosen gap; closing/Escape cancels it with no draft write or history entry. The picker retains its original gap when the preview changes page height. Choosing inserts **native Payload defaults**, not sample copy. Put intended initial content in your schema's `defaultValue`; use the separate opt-in [pattern adapter](../implementation/section-patterns.md) for saved independent section copies.
 
 A server-only renderer can still insert native blocks but cannot display an unsaved browser-side preview of arbitrary server work. Keep business requests/effects out of catalogue hover. The [commerce catalogue](../../apps/demo/payload.config.ts) and [consumer renderer](../../apps/demo/commerce/CommercePageView.tsx) are executable examples.
+
+
+## Reordering and history
+
+Canvas and list moves resolve stable section IDs against the current native Form and use the same structural command. The source and destination must share a blocks field. Permissions and the configured ordering constraints apply to both surfaces. Dragging makes no draft write until a valid drop. The Sections list provides a keyboard alternative when a dense layout leaves no space for canvas controls.
+
+Undo and redo affect only the structural operation. They preserve newer text edits and unrelated rows. If the original parent or row has disappeared, the editor reports a conflict instead of moving the row now at the old index.

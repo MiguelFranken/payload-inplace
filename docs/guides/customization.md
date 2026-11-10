@@ -24,7 +24,7 @@ These are entries in your existing `VisualEditorOptions`. Use schema names that 
 
 Use `strategyProviders` plus `EditorFieldStrategy` for a compatible selected scalar. A definition receives the native value/setter, disabled/error state and `openNative`. It must not own another document store or save callback. [Runnable strategy recipe](../implementation/contextual-fields.md).
 
-Use `extensions` for a full panel/control or explicit server action. Panels mount existing fields through `NativeFieldSlot`; `useVisualEditor` opens registered tools. Actions reauthorize on the server and delegate writes to your existing domain service. Scheduling, recipients and operational statuses remain app-owned, even if displayed on a page. [Extension boundaries](../adr/0004-workshops-extension-boundaries.md) · [Test your control](../testing-and-extensions.md).
+Use `extensions` for a full panel/control or explicit server action. Panels mount existing fields through `NativeFieldSlot`; `useVisualEditor` opens registered tools. Actions reauthorize on the server and delegate writes to your existing domain service. Scheduling, recipients and operational statuses remain app-owned, even if displayed on a page. [Test your control](../testing-and-extensions.md).
 
 ## Theme the editor
 

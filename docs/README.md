@@ -37,4 +37,4 @@ Edit your existing Payload v3 website without moving the work into the admin UI.
 
 [Public API](api-reference.md) · [Architecture](architecture.md) · [Native v3 adapters](native-v3-adapters.md) · [Quality gates](implementation/quality-gates.md) · [Validation](validation.md) · [Release process](release.md) · [Changelog](../CHANGELOG.md) · [Contributing](../CONTRIBUTING.md)
 
-The numbered [architecture decisions](adr/0007-workspace-and-native-boundaries.md) explain tradeoffs. Dated validation reports and the [implementation ledger](implementation/roadmap.md) preserve historical evidence; use the guides above for current setup instructions. Existing installations of the former scoped package can use the separate [migration guide](migration.md).
+The [architecture guide](architecture.md) links the decisions that still constrain the implementation. The [validation guide](validation.md) explains which checks to run and where to find release evidence. Existing installations of the former scoped package can use the separate [migration guide](migration.md).
