@@ -1,6 +1,6 @@
 # Documentation screenshots
 
-The six `ecommerce-*.png` images are original, unedited **2880 × 2000 PNG** captures of the Still & Form synthetic commerce demo, refreshed on November 6, 2026. Chromium renders at 1440 × 1000 CSS pixels with device scale factor 2; these are native high-density captures, not upscaled older images. The README displays them at up to 1440px and links to the originals.
+The six `ecommerce-*.png` images are original, unedited **2880 × 2000 PNG** captures of the Still & Form synthetic commerce demo, refreshed on November 6, 2026. The review image was refreshed on November 11 to show whole checkbox values. Chromium renders at 1440 × 1000 CSS pixels with device scale factor 2; these are native high-density captures, not upscaled older images. The README displays them at up to 1440px and links to the originals.
 
 | File                       | Actual state                                                    |
 | -------------------------- | --------------------------------------------------------------- |

@@ -4,11 +4,7 @@ import { useEditorMessages } from "@payload-inplace/ui/localization/EditorMessag
 
 import type { ClientBlock, ClientField } from "payload";
 import { DocumentDiff } from "@payload-inplace/ui/review/document-diff";
-import {
-  documentChanges,
-  reviewText,
-  changedText,
-} from "../state/document-diff";
+import { documentChanges, presentDocumentChange } from "../state/document-diff";
 
 /** Only changed native leaves and structural operations are shown; unchanged sibling rows never flood the review. */
 export function DocumentReview({
@@ -47,11 +43,7 @@ export function DocumentReview({
       afterLabel={afterLabel}
       locale={locale}
       onLocate={onLocate}
-      changes={changes.map((change) => {
-        const before = reviewText(change.before);
-        const after = reviewText(change.after);
-        return { ...change, before, after, text: changedText(before, after) };
-      })}
+      changes={changes.map((change) => presentDocumentChange(change, messages))}
     />
   );
 }

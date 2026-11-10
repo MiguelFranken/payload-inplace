@@ -19,7 +19,8 @@ export interface DocumentDiffRow {
   kind: "added" | "removed" | "changed" | "moved";
   before: string;
   after: string;
-  text: { prefix: string; removed: string; added: string; suffix: string };
+  text?: { prefix: string; removed: string; added: string; suffix: string };
+  richTextDetailsChanged?: boolean;
   from?: number;
   to?: number;
 }
@@ -58,6 +59,8 @@ export function DocumentDiff({
     <div className="pve:grid pve:gap-4" data-ve-document-diff="">
       {changes.map((change) => {
         const { before: a, after: b, text } = change;
+        const removed = text?.removed ?? a;
+        const added = text?.added ?? b;
         const status =
           change.kind === "added"
             ? t("added")
@@ -131,13 +134,13 @@ export function DocumentDiff({
                   <p className="pve:m-0 pve:whitespace-pre-wrap pve:text-sm pve:leading-relaxed pve:[overflow-wrap:anywhere]">
                     {a ? (
                       <>
-                        {text.prefix}
-                        {text.removed && (
+                        {text?.prefix}
+                        {removed && (
                           <del className="pve:rounded-sm pve:bg-[var(--pve-diff-removed-bg,#fef2f2)] pve:text-[var(--pve-diff-removed-text,#912018)]">
-                            {text.removed}
+                            {removed}
                           </del>
                         )}
-                        {text.suffix}
+                        {text?.suffix}
                       </>
                     ) : (
                       <span className={chrome.muted}>{empty}</span>
@@ -156,19 +159,19 @@ export function DocumentDiff({
                   <p className="pve:m-0 pve:whitespace-pre-wrap pve:text-sm pve:leading-relaxed pve:[overflow-wrap:anywhere]">
                     {b ? (
                       <>
-                        {text.prefix}
-                        {text.added && (
+                        {text?.prefix}
+                        {added && (
                           <ins className="pve:rounded-sm pve:bg-[var(--pve-diff-added-bg,#ecfdf3)] pve:text-[var(--pve-diff-added-text,#067647)] pve:no-underline">
-                            {text.added}
+                            {added}
                           </ins>
                         )}
-                        {text.suffix}
+                        {text?.suffix}
                       </>
                     ) : (
                       <span className={chrome.muted}>{empty}</span>
                     )}
                   </p>
-                  {a === b && (
+                  {change.richTextDetailsChanged && (
                     <p
                       className={`pve:mb-0 pve:mt-3 pve:text-xs pve:leading-relaxed ${chrome.muted}`}
                     >

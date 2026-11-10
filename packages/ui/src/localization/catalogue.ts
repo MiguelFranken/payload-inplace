@@ -52,6 +52,8 @@ export const englishMessages = {
   sharedSectionStructure:
     "Section changes affect all content languages. Translated fields use {locale}.",
   empty: "Empty",
+  booleanYes: "Yes",
+  booleanNo: "No",
   noChanges: "No changes",
   thisDraftMatchesTheSelectedComparison:
     "This draft matches the selected comparison.",
@@ -442,6 +444,8 @@ export const germanMessages = {
   sharedSectionStructure:
     "Abschnittsänderungen gelten für alle Inhaltssprachen. Übersetzte Felder verwenden {locale}.",
   empty: "Leer",
+  booleanYes: "Ja",
+  booleanNo: "Nein",
   noChanges: "Keine Änderungen",
   thisDraftMatchesTheSelectedComparison:
     "Dieser Stand stimmt mit der gewählten Vergleichsversion überein.",

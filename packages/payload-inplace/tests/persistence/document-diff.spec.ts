@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { documentChanges, changedText } from "../../src/state/document-diff";
+import { createEditorMessages } from "@payload-inplace/ui/localization/messages";
+import {
+  changedText,
+  documentChanges,
+  presentDocumentChange,
+} from "../../src/state/document-diff";
 import type { ClientField } from "payload";
 
 const fields = [
@@ -241,6 +246,7 @@ it("retains the native schema and label under a named tab", () => {
   ).toEqual([
     {
       path: "presentation.settings",
+      fieldType: "json",
       labels: ["Page presentation", "Display settings"],
       kind: "changed",
       before,
@@ -264,4 +270,84 @@ it("reviews a real field named root without treating the entire document as rich
       schema,
     ),
   ).toMatchObject([{ path: "root.heading", kind: "changed" }]);
+});
+
+describe("review value presentation", () => {
+  const messages = createEditorMessages();
+
+  it.each([
+    ["checkbox", true, false, "Yes", "No"],
+    ["checkbox", false, null, "No", ""],
+    ["number", 0, 10, "0", "10"],
+    ["date", "2026-10-01", "2026-10-02", "2026-10-01", "2026-10-02"],
+    ["select", "in-stock", "out-of-stock", "in-stock", "out-of-stock"],
+    ["radio", "light-oak", "dark-oak", "light-oak", "dark-oak"],
+    [
+      "email",
+      "a@example.test",
+      "b@example.test",
+      "a@example.test",
+      "b@example.test",
+    ],
+    ["relationship", "product-1", "product-2", "product-1", "product-2"],
+    ["upload", 1, 2, "1", "2"],
+    ["point", [1, 2], [1, 3], "[\n  1,\n  2\n]", "[\n  1,\n  3\n]"],
+    ["json", { id: 1 }, { id: 2 }, '{\n  "id": 1\n}', '{\n  "id": 2\n}'],
+    ["json", "a", "ab", '"a"', '"ab"'],
+  ] as const)(
+    "presents %s values in full",
+    (fieldType, before, after, oldText, newText) => {
+      const [change] = documentChanges({ field: before }, { field: after }, [
+        { name: "field", type: fieldType } as ClientField,
+      ]);
+      expect(presentDocumentChange(change!, messages)).toMatchObject({
+        before: oldText,
+        after: newText,
+        text: undefined,
+        richTextDetailsChanged: false,
+      });
+    },
+  );
+
+  it("localizes whole boolean values and preserves mixed scalar types", () => {
+    const [checkbox, mixed] = documentChanges(
+      { available: true, amount: 0 },
+      { available: false, amount: "0" },
+    );
+    expect(
+      presentDocumentChange(checkbox!, createEditorMessages({ locale: "de" })),
+    ).toMatchObject({ before: "Ja", after: "Nein", text: undefined });
+    expect(presentDocumentChange(mixed!, messages)).toMatchObject({
+      before: "0",
+      after: '"0"',
+      text: undefined,
+    });
+  });
+
+  it("keeps shared prose unmarked and identifies formatting-only rich text changes", () => {
+    const [heading, body] = documentChanges(
+      {
+        heading: "Arc lounge chair",
+        body: {
+          root: { type: "root", children: [{ text: "Same", format: 0 }] },
+        },
+      },
+      {
+        heading: "Arc lounge chair — natural oak",
+        body: {
+          root: { type: "root", children: [{ text: "Same", format: 1 }] },
+        },
+      },
+    );
+    expect(presentDocumentChange(heading!, messages).text).toEqual({
+      prefix: "Arc lounge chair",
+      added: " — natural oak",
+      removed: "",
+      suffix: "",
+    });
+    expect(presentDocumentChange(body!, messages)).toMatchObject({
+      text: { prefix: "Same", added: "", removed: "", suffix: "" },
+      richTextDetailsChanged: true,
+    });
+  });
 });
