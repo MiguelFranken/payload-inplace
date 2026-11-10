@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.1.0
+
+### Minor Changes
+
+- e93fc13: Compare saved draft and published sections directly on the page. The editor outlines edited, added, removed and moved sections and lets you step through changes while keeping the native draft and its undo history.
+
+### Patch Changes
+
+- 23f2284: Reduce the work needed to track edits, acknowledge saves, undo structural changes, and review large drafts. Existing field ownership, row identity, and conflict decisions are preserved.
+- 4e11277: Keep the native editor responsive when a background status response belongs to an older save or activation. A current access denial or validation error still enters the normal recovery flow.
+- dffffed: Keep the active content locale when reopening an editor session after a failed save or expired activation.
+- d6905b0: Retain the latest idle draft edit while another autosave is running. Obsolete scope failures no longer interrupt a newer editing session.
+- 61a7b1c: Coalesce repeated manual save requests that target the same Payload form, including a save triggered while switching document scopes.
+- 6642605: Keep the visible page preview stable while newer saves are acknowledged. Superseded server snapshots are skipped and an older snapshot cannot replace a newer one.
+- 1600743: Locate saved changes by stable section identity after reordering. When a nested block is hidden or removed, scroll to its closest rendered parent section.
+- 6c40642: Show boolean, number, date, choice, and reference changes as whole values in the review dialog. Keep inline highlights for prose, and preserve structured values such as JSON and coordinates.
+
 ## 0.0.10
 
 ### Patch Changes
