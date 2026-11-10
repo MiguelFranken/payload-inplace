@@ -1,7 +1,19 @@
-import type { FormState } from "payload";
+import type { FormField, FormState } from "payload";
 
 function sameValue(a: unknown, b: unknown) {
   return Object.is(a, b) || JSON.stringify(a) === JSON.stringify(b);
+}
+
+function sameRows(a: FormField["rows"], b: FormField["rows"]): boolean {
+  if (a === b) return true;
+  if (!a || !b || a.length !== b.length) return false;
+  return a.every((row, index) => row.id === b[index]?.id);
+}
+
+function sameField(a: FormField | undefined, b: FormField | undefined) {
+  return (
+    a === b || (sameValue(a?.value, b?.value) && sameRows(a?.rows, b?.rows))
+  );
 }
 
 /** A save acknowledges its submitted snapshot, not subsequent keystrokes. Preserve native local values and reject metadata for rows that moved during the request.
@@ -14,30 +26,31 @@ export function protectNativeAcknowledgement(
   current: FormState,
 ): FormState {
   const safe: FormState = {};
-  for (const [path, field] of Object.entries(incoming)) {
-    const parts = path.split(".");
-    let matchingRow = true;
-    for (let i = 0; i < parts.length; i++) {
-      if (!/^\d+$/.test(parts[i])) continue;
-      const parent = parts.slice(0, i).join("."),
-        index = Number(parts[i]);
-      if (
-        current[parent]?.rows?.[index]?.id !==
-        submitted[parent]?.rows?.[index]?.id
-      ) {
-        matchingRow = false;
-        break;
+  const rowMatches = new Map<string, boolean>();
+  function rowsMatch(path: string): boolean {
+    let end = path.length;
+    while (end > 0) {
+      const dot = path.lastIndexOf(".", end - 1);
+      const part = path.slice(dot + 1, end);
+      if (/^\d+$/.test(part)) {
+        const prefix = path.slice(0, end);
+        const cached = rowMatches.get(prefix);
+        if (cached !== undefined) return cached;
+        const parent = dot < 0 ? "" : path.slice(0, dot);
+        const index = Number(part);
+        const matches =
+          current[parent]?.rows?.[index]?.id ===
+            submitted[parent]?.rows?.[index]?.id && rowsMatch(parent);
+        rowMatches.set(prefix, matches);
+        return matches;
       }
+      end = dot;
     }
-    if (!matchingRow) continue;
-    const changed =
-      !sameValue(current[path]?.value, submitted[path]?.value) ||
-      !sameValue(
-        current[path]?.rows?.map((r) => r.id),
-        submitted[path]?.rows?.map((r) => r.id),
-      );
-    if (!changed) safe[path] = field;
+    return true;
   }
+  for (const [path, field] of Object.entries(incoming))
+    if (rowsMatch(path) && sameField(current[path], submitted[path]))
+      safe[path] = field;
   return safe;
 }
 
@@ -46,14 +59,10 @@ export function nativeSnapshotMatches(
   submitted: FormState,
   current: FormState,
 ): boolean {
-  return [
-    ...new Set([...Object.keys(submitted), ...Object.keys(current)]),
-  ].every(
-    (path) =>
-      sameValue(submitted[path]?.value, current[path]?.value) &&
-      sameValue(
-        submitted[path]?.rows?.map((r) => r.id),
-        current[path]?.rows?.map((r) => r.id),
-      ),
-  );
+  for (const path of Object.keys(submitted))
+    if (!sameField(submitted[path], current[path])) return false;
+  for (const path of Object.keys(current))
+    if (!Object.hasOwn(submitted, path) && !sameField(undefined, current[path]))
+      return false;
+  return true;
 }
