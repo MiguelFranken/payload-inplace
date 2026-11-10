@@ -4,10 +4,17 @@ function sameValue(a: unknown, b: unknown) {
   return Object.is(a, b) || JSON.stringify(a) === JSON.stringify(b);
 }
 
+function sameRow(
+  a: NonNullable<FormField["rows"]>[number] | undefined,
+  b: NonNullable<FormField["rows"]>[number] | undefined,
+): boolean {
+  return a?.id === b?.id && a?.blockType === b?.blockType;
+}
+
 function sameRows(a: FormField["rows"], b: FormField["rows"]): boolean {
   if (a === b) return true;
   if (!a || !b || a.length !== b.length) return false;
-  return a.every((row, index) => row.id === b[index]?.id);
+  return a.every((row, index) => sameRow(row, b[index]));
 }
 
 function sameField(a: FormField | undefined, b: FormField | undefined) {
@@ -39,8 +46,10 @@ export function protectNativeAcknowledgement(
         const parent = dot < 0 ? "" : path.slice(0, dot);
         const index = Number(part);
         const matches =
-          current[parent]?.rows?.[index]?.id ===
-            submitted[parent]?.rows?.[index]?.id && rowsMatch(parent);
+          sameRow(
+            current[parent]?.rows?.[index],
+            submitted[parent]?.rows?.[index],
+          ) && rowsMatch(parent);
         rowMatches.set(prefix, matches);
         return matches;
       }
