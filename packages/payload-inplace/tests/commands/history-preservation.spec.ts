@@ -182,3 +182,60 @@ it("restoring the last removed array item excludes the native row-count sentinel
     expect(result.fields["layout.0.cards.0.heading"].value).toBe("Keep");
   }
 });
+
+it("scans each source once when restoring many rows and preserves exact numeric path segments", () => {
+  const count = 240;
+  const initial = Array.from({ length: count }, (_, index) =>
+    row(`row-${index}`),
+  );
+  const history = new StructuralHistory("layout");
+  history.checkpoint(fields(initial));
+  const current = fields(initial.slice().reverse());
+  let unrelatedReads = 0;
+  Object.defineProperty(current, "unrelated", {
+    enumerable: true,
+    get() {
+      unrelatedReads++;
+      return { value: "must stay outside restoration" };
+    },
+  });
+  const snapshot = history.undo(current)!;
+  unrelatedReads = 0;
+  const result = materializeStructuralRestore(current, snapshot, "layout");
+  if (typeof result === "string") throw Error(result);
+  expect(unrelatedReads).toBe(1);
+  expect(result.fields["layout.2.heading"]?.value).toBe("row-2");
+  expect(result.fields["layout.20.heading"]?.value).toBe("row-20");
+  expect(result.fields.layout?.rows).toHaveLength(count);
+  expect(result.fields.unrelated).toBeUndefined();
+});
+
+it("keeps nested mementos scoped to the edited list", () => {
+  const history = new StructuralHistory("layout");
+  const before = {
+    ...fields([row("parent"), row("sibling")]),
+    ...fields([row("child")], "layout.0.children"),
+  };
+  history.checkpoint(before, "layout.0.children", {
+    kind: "remove",
+    id: "child",
+  });
+  const snapshot = history.undo(before)!;
+  expect(Object.keys(snapshot)).toEqual([
+    "layout.0.children",
+    "layout.0.children.0.id",
+    "layout.0.children.0.heading",
+  ]);
+});
+
+it("keeps a structural checkpoint inside the configured root", () => {
+  const history = new StructuralHistory("layout");
+  const form = fields([row("unrelated")], "layoutBackup");
+  expect(
+    history.checkpoint(form, "layoutBackup", {
+      kind: "remove",
+      id: "unrelated",
+    }),
+  ).toBe(false);
+  expect(history.canUndo).toBe(false);
+});
