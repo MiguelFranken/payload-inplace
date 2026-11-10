@@ -19,6 +19,18 @@ Use the current receipt for the exact package version, source commit, archive di
 
 Run commands from [Contributing](../CONTRIBUTING.md#validate-changes), and the [test-kit guide](testing-and-extensions.md). Keep credentials/private draft content out of fixtures and screenshots. Record source SHA/dirty state, exact package hash, environment, selected cases, passed/failed/skipped counts and original media. Include public/inactive negative checks alongside an active positive control.
 
+## Find CI evidence
+
+The `validate` check requires all three lanes to pass. GitHub Actions uploads reports as separate artifacts from the same run.
+
+| Lane | Artifact | Evidence |
+| --- | --- | --- |
+| Source and Storybook | `validation-source` | Unit coverage and component checks |
+| Native Payload and browser | `validation-native` | Database integration, production browser and public delivery checks |
+| Packed consumer | `validation` | Package archive and installed-consumer checks |
+
+The release workflow reads the `validation` artifact from a successful main run. Keep that artifact name and archive layout stable.
+
 ## Keep validation reproducible
 
 Keep enforced thresholds and release receipts in source control. Put transient reports, screenshots and traces in CI or review artifacts. Keep [product screenshots](images/README.md) in the repo because the README uses them. The [performance methodology](validation/performance/README.md) explains the two budget checks.
