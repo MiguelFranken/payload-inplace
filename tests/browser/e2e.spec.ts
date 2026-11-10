@@ -1,5 +1,7 @@
-import { writeFile } from "node:fs/promises";
-import { test, expect } from "@playwright/test";
+import { readFile, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import path from "node:path";
+import { test, expect, type Request, type Response } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
 async function login(page: any, role = "admin") {
@@ -307,23 +309,48 @@ for (const role of ["anonymous", "reader", "admin"])
         });
         expect(auth.ok()).toBe(true);
       }
-      const samples: any[] = [];
+      const production = process.env.VE_PRODUCTION === "1";
+      let buildId: string | undefined;
+      if (production) {
+        const build = path.join(
+          "apps/demo",
+          process.env.VE_NEXT_DIST_DIR || ".next-prod",
+        );
+        buildId = (await readFile(path.join(build, "BUILD_ID"), "utf8")).trim();
+        expect(buildId).toBeTruthy();
+        // The marker must come from the server under test, even when an existing
+        // server is supplied. Keep this probe outside the navigation samples.
+        const marker = `static/${buildId}/_buildManifest.js`;
+        const response = await page.request.get(`/_next/${marker}`);
+        expect(response.ok(), "server should serve this build's manifest").toBe(
+          true,
+        );
+        expect(await response.body()).toEqual(
+          await readFile(path.join(build, marker)),
+        );
+      }
+      const samples = [];
       for (let sample = 0; sample < 3; sample++) {
-        const sources: Promise<{ url: string; bytes: number; text: string }>[] =
-          [];
+        const sources: Promise<{
+          url: string;
+          bytes: number;
+          text: string;
+          sha256: string;
+        }>[] = [];
         const requests: string[] = [];
-        const response = (res: any) => {
+        const response = (res: Response) => {
           const type = res.request().resourceType();
           if (["script", "stylesheet"].includes(type))
             sources.push(
-              res.text().then((text: string) => ({
+              res.body().then((body) => ({
                 url: new URL(res.url()).pathname,
-                bytes: Buffer.byteLength(text),
-                text,
+                bytes: body.byteLength,
+                text: body.toString("utf8"),
+                sha256: createHash("sha256").update(body).digest("hex"),
               })),
             );
         };
-        const request = (req: any) =>
+        const request = (req: Request) =>
           requests.push(new URL(req.url()).pathname);
         page.on("response", response);
         page.on("request", request);
@@ -372,21 +399,23 @@ for (const role of ["anonymous", "reader", "admin"])
           ...navigation,
           requests: requests.length,
           decodedResourceBytes: resources.reduce((sum, r) => sum + r.bytes, 0),
-          resources: resources.map(({ url, bytes }) => ({ url, bytes })),
+          resources: resources.map(({ url, bytes, sha256 }) => ({
+            url,
+            bytes,
+            sha256,
+          })),
         });
       }
       await writeFile(
         `test-results/public-${role}.json`,
-        JSON.stringify(
-          { role, production: process.env.VE_PRODUCTION === "1", samples },
-          null,
-          2,
-        ),
+        JSON.stringify({ role, production, buildId, samples }, null, 2),
       );
       await testInfo.attach(`public-${role}.json`, {
         body: JSON.stringify(
           {
             role,
+            production,
+            buildId,
             disabled: process.env.VE_DISABLED === "1",
             node: process.version,
             samples,
