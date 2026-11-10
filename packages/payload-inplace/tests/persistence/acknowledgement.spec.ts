@@ -148,3 +148,21 @@ it("compares separately allocated row metadata, counts, and authored fields that
     }),
   ).toBe(true);
 });
+
+it("rejects old schema data if a block keeps its ID but changes type", async () => {
+  const { nativeSnapshotMatches } = await import(
+    "../../src/state/acknowledgement"
+  );
+  const submitted = {
+    layout: { value: 1, rows: [{ id: "same-id", blockType: "text" }] },
+    "layout.0.heading": { value: "Shared heading" },
+  };
+  const current = {
+    ...submitted,
+    layout: { value: 1, rows: [{ id: "same-id", blockType: "hero" }] },
+  };
+  expect(nativeSnapshotMatches(submitted, current)).toBe(false);
+  expect(protectNativeAcknowledgement(submitted, submitted, current)).toEqual(
+    {},
+  );
+});

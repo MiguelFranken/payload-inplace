@@ -1,6 +1,7 @@
-import { renderHook } from "@testing-library/react";
+import { render, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { NativeAutosaveTrigger } from "../../src/frontend/NativeAutosaveTrigger";
 import { useNativeDraftSave } from "../../src/frontend/controllers/draft-save";
 import type { EditorTarget } from "../../src/types";
 
@@ -9,9 +10,12 @@ const state = vi.hoisted(() => {
     disabled: false,
     formRef: { current: null },
     submit: vi.fn<() => Promise<void>>(),
+    getFields: () => ({}),
+    setModified: vi.fn(),
     setBackgroundProcessing: vi.fn<(active: boolean) => void>(),
   });
   return {
+    idle: undefined as (() => Promise<void>) | undefined,
     form: makeForm(),
     makeForm,
     modified: true,
@@ -22,12 +26,32 @@ const state = vi.hoisted(() => {
 });
 
 vi.mock("@payloadcms/ui", () => ({
+  useAllFormFields: () => [{}],
+  useDocumentInfo: () => ({
+    collectionSlug: "pages",
+    id: 1,
+    docConfig: { versions: { drafts: { autosave: true } } },
+  }),
   useConfig: () => ({ config: { routes: { api: "/custom-api/" } } }),
   useForm: () => state.form,
   useFormBackgroundProcessing: () => state.background,
   useFormModified: () => state.modified,
   useFormProcessing: () => state.processing,
   useLocale: () => ({ code: state.locale }),
+}));
+
+vi.mock("../../src/frontend/recovery", () => ({
+  useEditorRecovery: () => ({
+    attempt: 0,
+    acknowledged: { current: 0 },
+    retryAuthorized: { current: 0 },
+  }),
+}));
+
+vi.mock("../../src/frontend/controllers/idle-submit", () => ({
+  useNativeIdleSubmit: ({ onIdle }: { onIdle: () => Promise<void> }) => {
+    state.idle = onIdle;
+  },
 }));
 
 const page: EditorTarget = { collection: "pages", id: 1, root: "layout" };
@@ -180,3 +204,29 @@ describe("manual draft submission", () => {
     expect(state.form.setBackgroundProcessing).not.toHaveBeenCalled();
   });
 });
+
+it.each(["manual", "autosave"] as const)(
+  "keeps %s in flight when both triggers see the same idle Form state",
+  async (winner) => {
+    const release = holdSubmission();
+    const save = renderHook(() => useNativeDraftSave(page, false));
+    render(<NativeAutosaveTrigger />);
+    const manual = save.result.current;
+    const autosave = state.idle!;
+    const first = (winner === "manual" ? manual : autosave)();
+    const second = (winner === "manual" ? autosave : manual)();
+    try {
+      expect(state.form.submit).toHaveBeenCalledTimes(1);
+      expect(state.form.setBackgroundProcessing.mock.calls).toEqual([[true]]);
+    } finally {
+      release();
+      await Promise.all([first, second]);
+    }
+    expect(state.form.setBackgroundProcessing.mock.calls).toEqual([
+      [true],
+      [false],
+    ]);
+    await manual();
+    expect(state.form.submit).toHaveBeenCalledTimes(2);
+  },
+);

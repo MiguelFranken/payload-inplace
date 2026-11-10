@@ -28,6 +28,7 @@ import {
   hasAutosaveEnabled,
   hasDraftValidationEnabled,
 } from "payload/shared";
+import { runNativeDraftSubmission } from "./controllers/draft-save";
 import { useNativeIdleSubmit } from "./controllers/idle-submit";
 
 /** The idle trigger delegates directly to the sole native Form.submit. An unacknowledged attempt waits for explicit recovery, never another timer. */
@@ -89,10 +90,8 @@ export function NativeAutosaveTrigger() {
       }),
     onIdle: async () => {
       const submittedKey = authoredFieldKey(form.getFields());
-      let saved = false;
-      form.setBackgroundProcessing(true);
-      try {
-        const result = await form.submit({
+      const result = await runNativeDraftSubmission(form, () =>
+        form.submit({
           action: nativeDraftAction(
             config.routes.api,
             targetFromNativeInfo(info),
@@ -105,13 +104,10 @@ export function NativeAutosaveTrigger() {
           disableFormWhileProcessing: false,
           disableSuccessStatus: true,
           skipValidation: !hasDraftValidationEnabled(info.docConfig!),
-        });
-        saved = Boolean(result?.res.ok);
-      } finally {
-        form.setBackgroundProcessing(false);
-        if (saved && submittedKey === authoredFieldKey(form.getFields()))
-          form.setModified(false);
-      }
+        }),
+      );
+      if (result?.res.ok && submittedKey === authoredFieldKey(form.getFields()))
+        form.setModified(false);
     },
   });
   return null;
