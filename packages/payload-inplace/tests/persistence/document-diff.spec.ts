@@ -103,7 +103,9 @@ describe("document review leaf and structural changes", () => {
 });
 
 it("uses consumer UI overrides and native language fallback for generic review row labels", async () => {
-  const { createEditorMessages } = await import("@payload-inplace/ui/localization/messages");
+  const { createEditorMessages } = await import(
+    "@payload-inplace/ui/localization/messages"
+  );
   const messages = createEditorMessages({
     locale: "de-DE",
     messages: { de: { item: "Zeile" } },
@@ -136,4 +138,42 @@ it("uses consumer UI overrides and native language fallback for generic review r
       "de-DE",
     )[0]?.labels,
   ).toContain("Abschnitt 1");
+});
+
+it("preserves common ranks through large shifts and emits changed rows in document order", () => {
+  const original = Array.from({ length: 1000 }, (_, id) => ({
+    id,
+    body: "Original",
+  }));
+  const shifted = [{ id: "new", body: "New" }, ...original.slice(1)];
+  shifted[10] = { id: 10, body: "Updated" };
+  expect(
+    documentChanges({ rows: original }, { rows: shifted }).map(
+      ({ path, kind }) => [path, kind],
+    ),
+  ).toEqual([
+    ["rows.@new", "added"],
+    ["rows.@10.body", "changed"],
+    ["rows.@0", "removed"],
+  ]);
+  [shifted[20], shifted[21]] = [shifted[21]!, shifted[20]!];
+  expect(
+    documentChanges({ rows: original }, { rows: shifted })
+      .filter(({ kind }) => kind === "moved")
+      .map(({ path, from, to }) => [path, from, to]),
+  ).toEqual([
+    ["rows.@21.$position", 22, 21],
+    ["rows.@20.$position", 21, 22],
+  ]);
+});
+
+it("keeps ambiguous row identities atomic instead of matching an arbitrary row", () => {
+  const old = [
+    { id: 1, text: "old" },
+    { id: "1", text: "duplicate" },
+  ];
+  const next = [{ id: 1, text: "new" }, old[1]];
+  expect(documentChanges({ rows: old }, { rows: next })).toMatchObject([
+    { path: "rows", kind: "changed", before: old, after: next },
+  ]);
 });

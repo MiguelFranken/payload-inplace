@@ -117,3 +117,61 @@ it("validates only native list identities through named tabs, groups and reusabl
     "content.group.rows",
   );
 });
+
+it("separates adjacent path names and preserves disjoint changes across a wide draft", () => {
+  const source = Object.fromEntries(
+    Array.from({ length: 1000 }, (_, index) => [
+      `field${index}`,
+      { text: "base" },
+    ]),
+  );
+  const local = { ...source };
+  const latest = { ...source };
+  for (let i = 0; i < 1000; i++) {
+    if (i % 2) local[`field${i}`] = { text: "local" };
+    else latest[`field${i}`] = { text: "remote" };
+  }
+  latest.field10 = { text: "remote" };
+  local.field1 = { text: "local" };
+  latest.field15 = { text: "remote conflict" };
+  const result = reconcileDocuments(source, local, latest);
+  expect(result.conflicts.map(({ path }) => path)).toEqual(["field15.text"]);
+  expect(result.merged).toMatchObject({
+    field1: { text: "local" },
+    field10: { text: "remote" },
+    field15: { text: "remote conflict" },
+    field997: { text: "local" },
+    field998: { text: "remote" },
+  });
+});
+
+it("collapses repeated structural edits into one conflict and keeps unrelated lists mergeable", () => {
+  const base = {
+    groups: [
+      {
+        id: "first",
+        rows: [
+          { id: "a", text: "base" },
+          { id: "b", text: "base" },
+          { id: "c", text: "base" },
+        ],
+      },
+      { id: "second", rows: [{ id: "a", text: "base" }] },
+    ],
+  };
+  const local = structuredClone(base);
+  local.groups[0]!.rows.reverse();
+  local.groups[0]!.rows.pop();
+  local.groups[1]!.rows[0]!.text = "local";
+  const latest = structuredClone(base);
+  latest.groups[0]!.rows[0]!.text = "remote a";
+  latest.groups[0]!.rows[1]!.text = "remote b";
+  const result = reconcileDocuments(base, local, latest);
+  expect(result.conflicts).toMatchObject([
+    { path: "groups.@first.rows", structural: true },
+  ]);
+  expect(result.merged.groups).toMatchObject([
+    { id: "first", rows: latest.groups[0]!.rows },
+    { id: "second", rows: local.groups[1]!.rows },
+  ]);
+});

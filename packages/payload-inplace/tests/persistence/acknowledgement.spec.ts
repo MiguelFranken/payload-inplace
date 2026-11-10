@@ -71,3 +71,80 @@ it("rejects stale validation metadata after a sibling value or row order changes
     ),
   ).toBe(true);
 });
+
+it("shares ancestry checks across sibling fields and rejects only the moved subtree", () => {
+  let idReads = 0;
+  function row(value: string) {
+    return {
+      get id() {
+        idReads++;
+        return value;
+      },
+    };
+  }
+  const leaves = Object.fromEntries(
+    Array.from({ length: 200 }, (_, i) => [
+      `layout.0.children.0.field${i}`,
+      { value: i },
+    ]),
+  );
+  const submitted = {
+    ...leaves,
+    layout: { rows: [row("outer")] },
+    "layout.0.children": { rows: [row("old-child"), row("other")] },
+    "layout.0.heading": { value: "keep" },
+  };
+  const current = {
+    ...submitted,
+    layout: { rows: [row("outer")] },
+    "layout.0.children": { rows: [row("other"), row("old-child")] },
+  };
+  const incoming = { ...leaves, "layout.0.heading": { value: "normalized" } };
+  expect(protectNativeAcknowledgement(incoming, submitted, current)).toEqual({
+    "layout.0.heading": { value: "normalized" },
+  });
+  expect(idReads).toBe(4);
+});
+
+it("rejects a changed outer row even when its nested row ID and value still match", () => {
+  const path = "layout.0.children.0.title";
+  const submitted = {
+    layout: { rows: [{ id: "outer-a" }] },
+    "layout.0.children": { rows: [{ id: "same-child" }] },
+    [path]: { value: "same text" },
+  };
+  const current = { ...submitted, layout: { rows: [{ id: "outer-b" }] } };
+  expect(
+    protectNativeAcknowledgement(
+      { [path]: { value: "stale" } },
+      submitted,
+      current,
+    ),
+  ).toEqual({});
+});
+
+it("compares separately allocated row metadata, counts, and authored fields that only exist in one snapshot", async () => {
+  const { nativeSnapshotMatches } = await import(
+    "../../src/state/acknowledgement"
+  );
+  const baseline = { layout: { rows: [{ id: "a", collapsed: true }] } };
+  expect(
+    nativeSnapshotMatches(baseline, {
+      layout: { rows: [{ id: "a", collapsed: false }] },
+    }),
+  ).toBe(true);
+  expect(
+    nativeSnapshotMatches(baseline, { layout: { rows: [{ id: "b" }] } }),
+  ).toBe(false);
+  expect(nativeSnapshotMatches(baseline, { layout: { rows: [] } })).toBe(false);
+  expect(nativeSnapshotMatches(baseline, { layout: {} })).toBe(false);
+  expect(
+    nativeSnapshotMatches(baseline, { ...baseline, newField: { value: 0 } }),
+  ).toBe(false);
+  expect(
+    nativeSnapshotMatches(baseline, {
+      ...baseline,
+      transient: { valid: true },
+    }),
+  ).toBe(true);
+});

@@ -1,5 +1,5 @@
 import { commandIssueText, type CommandIssue } from "./command-issue";
-import type { FormState } from "payload";
+import type { FormField, FormState } from "payload";
 
 function cloneValue<T>(value: T): T {
   if (Array.isArray(value)) return value.map(cloneValue) as T;
@@ -15,19 +15,20 @@ function cloneValue<T>(value: T): T {
   return value;
 }
 
+function copyField(field: FormField): FormField {
+  return {
+    ...field,
+    value: cloneValue(field.value),
+    rows: field.rows?.map((row) => ({ ...row })),
+  };
+}
+
 /** Only the chosen layout subtree enters history. Callbacks/custom component identities stay intact. */
 export function snapshotRoot(fields: FormState, root: string): FormState {
   return Object.fromEntries(
     Object.entries(fields)
       .filter(([path]) => path === root || path.startsWith(root + "."))
-      .map(([path, field]) => [
-        path,
-        {
-          ...field,
-          value: cloneValue(field.value),
-          rows: field.rows?.map((row) => ({ ...row })),
-        },
-      ]),
+      .map(([path, field]) => [path, copyField(field)]),
   );
 }
 
@@ -79,31 +80,57 @@ function resolveScope(
 }
 
 function mirror(fields: FormState, root: string, previous: FormState) {
-  const snapshot = snapshotRoot(fields, root),
-    scope = scopes.get(previous);
-  if (scope)
-    scopes.set(snapshot, {
-      ...scope,
-      path: resolveScope(fields, scope.tokens) || scope.path,
-    });
+  const scope = scopes.get(previous);
+  const path = scope
+    ? (resolveScope(fields, scope.tokens) ?? scope.path)
+    : root;
+  const snapshot = snapshotRoot(fields, path);
+  if (scope) scopes.set(snapshot, { ...scope, path });
   return snapshot;
 }
 
-function insertionIndex(rows: any[], template: any[], id: string) {
-  const original = template.findIndex((row) => String(row.id) === id);
-  for (const row of template.slice(original + 1)) {
-    const index = rows.findIndex(
-      (current) => String(current.id) === String(row.id),
-    );
-    if (index >= 0) return index;
+type Rows = NonNullable<FormField["rows"]>;
+
+function rowPositions(rows: Rows): Map<string, number> {
+  const positions = new Map<string, number>();
+  for (const [index, row] of rows.entries()) {
+    const id = String(row.id);
+    if (!positions.has(id)) positions.set(id, index);
   }
-  for (const row of template.slice(0, original).reverse()) {
-    const index = rows.findIndex(
-      (current) => String(current.id) === String(row.id),
-    );
-    if (index >= 0) return index + 1;
+  return positions;
+}
+
+function insertionIndex(rows: Rows, template: Rows, original: number) {
+  const positions = rowPositions(rows);
+  for (let i = original + 1; i < template.length; i++) {
+    const index = positions.get(String(template[i]!.id));
+    if (index !== undefined) return index;
+  }
+  for (let i = original - 1; i >= 0; i--) {
+    const index = positions.get(String(template[i]!.id));
+    if (index !== undefined) return index + 1;
   }
   return Math.max(0, Math.min(original, rows.length));
+}
+
+function collectRowFields(
+  fields: FormState,
+  container: string,
+  destinations: Map<string, number[]>,
+  output: [string, FormField][][],
+) {
+  if (!destinations.size) return;
+  const prefix = `${container}.`;
+  for (const [path, field] of Object.entries(fields)) {
+    if (!path.startsWith(prefix)) continue;
+    const dot = path.indexOf(".", prefix.length);
+    const sourceIndex = path.slice(prefix.length, dot < 0 ? undefined : dot);
+    const indices = destinations.get(sourceIndex);
+    if (!indices) continue;
+    const suffix = dot < 0 ? "" : path.slice(dot);
+    for (const index of indices)
+      output[index]!.push([suffix, copyField(field)]);
+  }
 }
 
 /** Materialize only the affected container and row identity. Existing row subtrees come from the current Form, preserving later text and native nested changes.
@@ -123,13 +150,19 @@ export function materializeStructuralRestore(
   if (!path) return renderIssue({ code: "removed-container" });
   const previousRows = snapshot[scope.path]?.rows || [],
     currentRows = current[path]?.rows || [];
+  const currentPositions = rowPositions(currentRows);
+  const previousPositions = rowPositions(previousRows);
   const mutation = scope.mutation;
   let rows = [...previousRows];
   if (mutation) {
     const id = mutation.id;
     if (!id) return renderIssue({ code: "preparing" });
-    const existing = currentRows.find((row) => String(row.id) === id),
-      desired = previousRows.find((row) => String(row.id) === id);
+    const currentIndex = currentPositions.get(id);
+    const previousIndex = previousPositions.get(id);
+    const existing =
+      currentIndex === undefined ? undefined : currentRows[currentIndex];
+    const desired =
+      previousIndex === undefined ? undefined : previousRows[previousIndex];
     rows = currentRows.filter((row) => String(row.id) !== id);
     if (["move", "up", "down"].includes(mutation.kind) && !existing)
       return renderIssue({ code: "removed-moved-section" });
@@ -138,7 +171,7 @@ export function materializeStructuralRestore(
         rows = [...currentRows];
       else
         rows.splice(
-          insertionIndex(rows, previousRows, id),
+          insertionIndex(rows, previousRows, previousIndex!),
           0,
           existing || desired,
         );
@@ -155,21 +188,26 @@ export function materializeStructuralRestore(
       rows: rows.map((row) => ({ ...row })),
     },
   };
-  rows.forEach((row, index) => {
-    const currentIndex = currentRows.findIndex(
-        (candidate) => String(candidate.id) === String(row.id),
-      ),
-      fromCurrent = currentIndex >= 0;
-    const source = fromCurrent ? current : snapshot,
-      sourceIndex = fromCurrent
-        ? currentIndex
-        : previousRows.findIndex(
-            (candidate) => String(candidate.id) === String(row.id),
-          );
-    const prefix = `${fromCurrent ? path : scope.path}.${sourceIndex}`;
-    for (const [field, state] of Object.entries(snapshotRoot(source, prefix)))
-      restored[`${path}.${index}${field.slice(prefix.length)}`] = state;
-  });
+  const currentDestinations = new Map<string, number[]>();
+  const previousDestinations = new Map<string, number[]>();
+  const rowFields: [string, FormField][][] = rows.map(() => []);
+  for (const [index, row] of rows.entries()) {
+    const id = String(row.id);
+    const currentIndex = currentPositions.get(id);
+    const sourceIndex = currentIndex ?? previousPositions.get(id);
+    if (sourceIndex === undefined) continue;
+    const destinations =
+      currentIndex !== undefined ? currentDestinations : previousDestinations;
+    const key = String(sourceIndex);
+    const indices = destinations.get(key);
+    if (indices) indices.push(index);
+    else destinations.set(key, [index]);
+  }
+  collectRowFields(current, path, currentDestinations, rowFields);
+  collectRowFields(snapshot, scope.path, previousDestinations, rowFields);
+  for (const [index, entries] of rowFields.entries())
+    for (const [suffix, state] of entries)
+      restored[`${path}.${index}${suffix}`] = state;
   return { path, fields: restored };
 }
 
@@ -189,9 +227,11 @@ export class StructuralHistory {
     container = this.root,
     mutation?: StructuralMutation,
   ) {
+    if (container !== this.root && !container.startsWith(this.root + "."))
+      return false;
     this.captureResult(fields);
     if (this.pending) return false;
-    const snapshot = snapshotRoot(fields, this.root);
+    const snapshot = snapshotRoot(fields, container);
     scopes.set(snapshot, {
       path: container,
       tokens: tokensFor(fields, container),
