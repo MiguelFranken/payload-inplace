@@ -13,7 +13,7 @@ import { SaveSectionPattern } from "./SaveSectionPattern";
 import { useDocumentScopes } from "./document-scope";
 import { localizedLabel } from "../i18n/labels";
 import { useEditorMessages } from "@payload-inplace/ui/localization/EditorMessages";
-import { useEditorPageTransition } from "../launcher/EditorPageTransition";
+import { useEditorSession } from "./controllers/editor-session";
 import {
   lazy,
   Suspense,
@@ -49,7 +49,6 @@ import type { BlocksFieldClientProps } from "payload";
 import type { Activation } from "../types";
 
 import { getArrayItemPath } from "@payload-inplace/core/annotations";
-import { isPrivateEditorField } from "@payload-inplace/core/document-metadata";
 import { stableDataPath } from "@payload-inplace/core/stable-path";
 import { resolveBinding } from "../schema/resolve-binding";
 import { canUpdateInlineField } from "../schema/inline-access";
@@ -97,7 +96,7 @@ import {
   showSectionOnPage,
 } from "./BlockReorder";
 import type { NativeSection } from "../schema/tree";
-import { prepareAdvisoryExit, useAdvisoryLock } from "./advisory-lock";
+import { useAdvisoryLock } from "./advisory-lock";
 
 const ConflictReview = lazy(() =>
   import("./ConflictReview").then((module) => ({
@@ -193,7 +192,6 @@ export function FrontendControls({
   const dock = useRef<HTMLElement>(null),
     rootElement = useRef<HTMLDivElement>(null);
   const [actionResult, setActionResult] = useState("");
-  const [reopening, setReopening] = useState(false);
   const form = useForm(),
     info = useDocumentInfo(),
     { config } = useConfig(),
@@ -466,67 +464,14 @@ export function FrontendControls({
     pick({ element, identity: section.identity });
     setSettingsOpen(true);
   }
-  const refreshPage = useEditorPageTransition();
-  async function exit(published = false) {
-    if (
-      !published &&
-      modified &&
-      !window.confirm(t("leaveTheEditorChangesThatHaveNotFinishedSaving"))
-    )
-      return;
-    const resumeLeases = await prepareAdvisoryExit();
-    try {
-      const response = await fetch(
-        `${config.routes.api}/visual-editor/deactivate`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nonce: context.nonce }),
-        },
-      );
-      if (!response.ok) throw Error("Deactivation failed");
-      if (context.pagePath && refreshPage) refreshPage();
-      else window.location.assign(exitURL);
-    } catch {
-      resumeLeases();
-      setError(t("couldNotLeaveEditingPleaseTryAgain"));
-    }
-  }
-
-  async function reopenEditor() {
-    if (
-      (modified || background) &&
-      !window.confirm(t("openTheLatestSavedDraftDownloadYourWorkingCopy"))
-    )
-      return;
-    setReopening(true);
-    setError("");
-    try {
-      const response = await fetch(
-        `${config.routes.api}/visual-editor/activate`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(context.target),
-        },
-      );
-      if (!response.ok) throw new Error("activation denied");
-      const { context: fresh } = await response.json();
-      if (fresh.pagePath && refreshPage) {
-        refreshPage();
-        return;
-      }
-      const next = new URL(window.location.href);
-      next.searchParams.set("context", fresh.nonce);
-      window.location.assign(next.href);
-    } catch {
-      setError(t("couldNotReopenTheEditorYourWorkingCopyIs"));
-      setReopening(false);
-    }
-  }
-  useEffect(() => {
-    const timer = setTimeout(
-      () => {
+  const { exit, reopenEditor, reopening, downloadWorkingCopy } =
+    useEditorSession({
+      context,
+      exitURL,
+      modified,
+      background,
+      onError: setError,
+      onExpire: () => {
         form.setDisabled(true);
         setInspecting(false);
         recovery.setFailure({
@@ -535,25 +480,7 @@ export function FrontendControls({
             "editingSessionExpiredDownloadYourWorkingCopyBeforeReopening",
         });
       },
-      Math.max(0, context.expires - Date.now()),
-    );
-    return () => clearTimeout(timer);
-  }, [context.expires]);
-  function downloadWorkingCopy() {
-    const data = Object.fromEntries(
-      Object.entries(form.getData()).filter(
-        ([key]) => !isPrivateEditorField(key),
-      ),
-    );
-    const url = URL.createObjectURL(
-      new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }),
-    );
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `${targetDocumentKey(context.target).replace(/[^a-zA-Z0-9_-]/g, "-")}-working-copy.json`;
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
+    });
   async function retry() {
     try {
       const response = await fetch(recovery.statusURL, { cache: "no-store" });

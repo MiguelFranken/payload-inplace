@@ -133,14 +133,14 @@ Runtime entrypoints have different ownership: bindings are inert; server/RSC/nat
 
 | Export | Kind | Contract |
 | --- | --- | --- |
-| [`EditorLauncher`](../packages/payload-inplace/src/launcher/EditorLauncher.tsx#L13) | function | Mount only for an authenticated CMS editor. Hosts can skip all auth work when their auth cookie is absent. In-place hosts use a small activation adapter; anonymous routes never mount it. Public HTML and published data remain separate from authoring: this serializes only a target and capability-filtered labels, never draft values or activation proof. |
+| [`EditorLauncher`](../packages/payload-inplace/src/launcher/EditorLauncher.tsx#L14) | function | Mount only for an authenticated CMS editor. Hosts can skip all auth work when their auth cookie is absent. In-place hosts use a small activation adapter; anonymous routes never mount it. Public HTML and published data remain separate from authoring: this serializes only a target and capability-filtered labels, never draft values or activation proof. |
 | [`EditorPageTransition`](../packages/payload-inplace/src/launcher/DeferredLauncher.tsx#L20) | function | Keep the small authenticated bridge in a separate client chunk; anonymous responses never render it. |
 
 ## `payload-inplace/entry`
 
 | Export | Kind | Contract |
 | --- | --- | --- |
-| [`FrontendEntry`](../packages/payload-inplace/src/frontend/FrontendEntry.tsx#L14) | function | Explicit frontend sign-in/activation; merely visiting a public page never mounts this component. |
+| [`FrontendEntry`](../packages/payload-inplace/src/frontend/FrontendEntry.tsx#L15) | function | Explicit frontend sign-in/activation; merely visiting a public page never mounts this component. |
 
 ## `payload-inplace/next`
 
