@@ -3,9 +3,17 @@ import { defineConfig, devices } from "@playwright/test";
 
 const origin = `http://127.0.0.1:${process.env.VE_PORT || 3127}`;
 
+const artifactGroup = process.env.VE_BROWSER_ARTIFACTS;
+if (artifactGroup && !/^[a-z][a-z0-9-]*$/.test(artifactGroup))
+  throw new Error("VE_BROWSER_ARTIFACTS must be a lowercase artifact group");
+
+const results = artifactGroup
+  ? `../test-results/${artifactGroup}`
+  : "../test-results";
+
 export default defineConfig({
   testDir: "browser",
-  outputDir: "../test-results/browser",
+  outputDir: `${results}/browser`,
   testMatch: [
     "e2e.spec.ts",
     "optimistic.e2e.spec.ts",
@@ -15,7 +23,7 @@ export default defineConfig({
     "performance.e2e.spec.ts",
   ],
   workers: 1,
-  reporter: [["list"], ["json", { outputFile: "../test-results/results.json" }]],
+  reporter: [["list"], ["json", { outputFile: `${results}/results.json` }]],
   timeout: 60000,
   expect: { timeout: 15000 },
   use: {

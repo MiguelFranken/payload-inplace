@@ -31,6 +31,11 @@ The `validate` check requires all three lanes to pass. GitHub Actions uploads re
 
 The release workflow reads the `validation` artifact from a successful main run. Keep that artifact name and archive layout stable.
 
+The default Postgres browser run writes to `test-results/results.json` and
+`test-results/browser/`. The CI MongoDB smoke test sets
+`VE_BROWSER_ARTIFACTS=mongo` to keep its report, traces, and screenshots under
+`test-results/mongo/`.
+
 ## Keep validation reproducible
 
 Keep enforced thresholds and release receipts in source control. Put transient reports, screenshots and traces in CI or review artifacts. Keep [product screenshots](images/README.md) in the repo because the README uses them. The [performance methodology](validation/performance/README.md) explains the two budget checks.
