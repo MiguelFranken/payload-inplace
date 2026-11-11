@@ -13,10 +13,12 @@ export const DropdownMenu = Menu.Root;
 export function DropdownMenuTrigger({
   className,
   size = "icon",
+  variant,
   ...props
 }: Omit<Menu.Trigger.Props, "className"> & {
   className?: string;
   size?: "icon" | "compact-icon";
+  variant?: "selection";
 }) {
   const { t } = useEditorMessages();
   return (
@@ -24,7 +26,7 @@ export function DropdownMenuTrigger({
       <Menu.Trigger
         {...props}
         title={undefined}
-        className={clsx(buttonVariants({ size }), className)}
+        className={clsx(buttonVariants({ size, variant }), className)}
       />
     </ChromeTooltip>
   );

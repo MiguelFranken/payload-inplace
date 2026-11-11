@@ -26,7 +26,7 @@ export function SelectionOutline({
         <div
           data-ve-ui=""
           data-ve-selection-caption=""
-          className="pve:pointer-events-auto pve:absolute pve:bottom-full pve:start-[var(--pve-label-offset,-2px)] pve:flex pve:max-w-[min(360px,var(--pve-caption-width,calc(100vw-4px)))] pve:items-center pve:gap-1 pve:rounded-t-md pve:bg-[var(--pve-accent,#3455db)] pve:pe-1 pve:ps-2 pve:py-0.5 pve:font-sans pve:text-xs pve:leading-relaxed pve:text-white pve:in-data-[label-below=true]:bottom-auto pve:in-data-[label-below=true]:top-full pve:in-data-[label-below=true]:rounded-t-none pve:in-data-[label-below=true]:rounded-b-md"
+          className="pve:pointer-events-auto pve:absolute pve:bottom-full pve:start-[var(--pve-label-offset,-2px)] pve:flex pve:max-w-[min(360px,var(--pve-caption-width,calc(100vw-4px)))] pve:items-center pve:gap-1 pve:rounded-t-md pve:bg-[var(--pve-accent,#3455db)] pve:pe-1 pve:ps-2 pve:py-0.5 pve:font-sans pve:text-xs pve:leading-relaxed pve:text-white pve:in-data-[label-below=true]:bottom-auto pve:in-data-[label-below=true]:top-full pve:in-data-[label-below=true]:rounded-t-none pve:in-data-[label-below=true]:rounded-b-md pve:in-data-[label-pinned=true]:bottom-auto pve:in-data-[label-pinned=true]:top-[var(--pve-caption-top)] pve:in-data-[label-pinned=true]:rounded-e-md"
         >
           <span ref={caption} className="pve:min-w-0 pve:truncate pve:py-1" />
           <div

@@ -30,6 +30,12 @@ This finish is one row inside the product's array. Its SKU, native checkbox and 
 
 Hover or focus an option to preview it where the plus was opened. Closing cancels it without a save; insertion uses native defaults. Use the section list for locate, settings and pointer/keyboard reordering. [Catalogue configuration](guides/sections.md).
 
+## Move a section from the page
+
+Select the section background to reveal its caption. The arrows move it one place, and **More section actions → Move to position** lists every eligible destination in its blocks field. The same menu can include app-specific actions for the selected block type. [Reordering and history](guides/sections.md#reordering-and-history)
+
+![The Studio story caption shows settings, move up, move down and a menu containing Move to position and Check story section](images/ecommerce-block-actions.png)
+
 ## Compare sections on the page
 
 Open **More tools → Compare sections** once the draft has saved. The outline and **Edited** marker identify the product section containing changes. Switch between **Draft** and **Published** to compare the heading on the same page.

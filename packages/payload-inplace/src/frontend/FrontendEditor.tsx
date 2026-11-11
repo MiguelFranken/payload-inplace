@@ -77,6 +77,7 @@ export async function FrontendEditor({
     id: extension.id,
     kind: extension.kind,
     showInDock: extension.showInDock,
+    blockTypes: extension.kind === "action" ? extension.blockTypes : undefined,
     requireSaved:
       extension.kind === "action" ? extension.requireSaved : undefined,
     label: editorLabel(extension.label, uiLanguage),
@@ -118,6 +119,7 @@ export async function FrontendEditor({
       id: panel.id,
       kind: "panel" as const,
       showInDock: panel.showInDock,
+      blockTypes: undefined,
       requireSaved: undefined,
       label: editorLabel(panel.label, uiLanguage),
       width: panel.width,

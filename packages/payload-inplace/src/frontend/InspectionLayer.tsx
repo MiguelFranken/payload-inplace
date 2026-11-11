@@ -77,6 +77,7 @@ export function InspectionLayer({
   inspecting,
   highlighting = false,
   selected,
+  resolveSelectedElement,
   onPick,
   describe,
   hint,
@@ -89,6 +90,7 @@ export function InspectionLayer({
   /** Hover feedback is opt-in; direct text selection can remain enabled independently. */
   highlighting?: boolean;
   selected?: InspectionTarget;
+  resolveSelectedElement?: () => Element | undefined;
   onPick: (target: InspectionTarget) => void;
   describe: (target: InspectionTarget) => string;
   hint?: (target: InspectionTarget) => string;
@@ -104,6 +106,7 @@ export function InspectionLayer({
   });
   // Native form/save renders change callbacks, not the pointer or selected target.
   const currentSelection = useEffectEvent(() => selected);
+  const selectedElementNow = useEffectEvent(() => resolveSelectedElement?.());
   const label = useEffectEvent((target: InspectionTarget) =>
     target.element === selected?.element
       ? describe(target)
@@ -143,22 +146,45 @@ export function InspectionLayer({
       }
       box.removeAttribute("hidden");
       if (box === hover.current) {
-        const below = String(rect.top < 40);
+        const pinned =
+          Boolean(resolveSelectedElement) &&
+          box.hasAttribute("data-ve-selection-outline") &&
+          rect.top < 40 &&
+          rect.bottom >= 112;
+        const below = String(rect.top < 40 && !pinned);
+        if (box.dataset.labelPinned !== String(pinned))
+          box.dataset.labelPinned = String(pinned);
+        if (pinned) {
+          const top = `${56 - rect.top}px`;
+          if (box.style.getPropertyValue("--pve-caption-top") !== top)
+            box.style.setProperty("--pve-caption-top", top);
+        }
         if (box.dataset.labelBelow !== below) box.dataset.labelBelow = below;
-        const available = `${Math.max(0, innerWidth - Math.max(0, rect.left) - 4)}px`;
+        const captionLeft = Math.max(
+          0,
+          Math.min(rect.left - 2, innerWidth - 168),
+        );
+        const available = `${innerWidth - captionLeft - 4}px`;
         if (box.style.getPropertyValue("--pve-caption-width") !== available)
           box.style.setProperty("--pve-caption-width", available);
-        const offset = `${Math.max(-2, -rect.left)}px`;
+        const offset = `${captionLeft - rect.left}px`;
         if (box.style.getPropertyValue("--pve-label-offset") !== offset)
           box.style.setProperty("--pve-label-offset", offset);
       }
     }
-    function follow(element: Element) {
+    function follow(element: Element, retainSelection: boolean) {
       frame = 0;
       if (disposed) return;
-      place(hover.current, element, false);
-      if (element.isConnected && !document.hidden)
-        frame = requestAnimationFrame(() => follow(element));
+      const visible = element.isConnected
+        ? element
+        : retainSelection
+          ? selectedElementNow()
+          : undefined;
+      place(hover.current, visible || null, false);
+      if ((visible || retainSelection) && !document.hidden)
+        frame = requestAnimationFrame(() =>
+          follow(visible || element, retainSelection),
+        );
     }
     function draw(animate: boolean) {
       frame = 0;
@@ -167,9 +193,14 @@ export function InspectionLayer({
       const hovered =
         inspecting && highlighting ? hoverTarget.current : undefined;
       const target = hovered || selected;
-      const measured = target?.element
-        ? inlineSurface(target.element)
-        : undefined;
+      const retainSelection =
+        target === selected && Boolean(resolveSelectedElement);
+      const element = target?.element.isConnected
+        ? target.element
+        : retainSelection
+          ? selectedElementNow()
+          : target?.element;
+      const measured = element ? inlineSurface(element) : undefined;
       const next = new Set<Element>([
         document.body,
         ...(measured?.isConnected ? [measured] : []),
@@ -196,11 +227,17 @@ export function InspectionLayer({
         if (caption.current.textContent !== text)
           caption.current.textContent = text;
       }
-      place(box, target?.element || null, animate && Boolean(hovered));
+      place(box, element || null, animate && Boolean(hovered));
       // ResizeObserver cannot see translation-only host motion or smooth-scroll settling.
       // Keep one frame read for the active target; unchanged geometry causes no style writes.
-      if (target?.element.isConnected && !document.hidden)
-        frame = requestAnimationFrame(() => follow(target.element));
+      if (
+        target &&
+        (element?.isConnected || retainSelection) &&
+        !document.hidden
+      )
+        frame = requestAnimationFrame(() =>
+          follow(element || target.element, retainSelection),
+        );
     }
     function schedule(animate = false) {
       if (frame) cancelAnimationFrame(frame);

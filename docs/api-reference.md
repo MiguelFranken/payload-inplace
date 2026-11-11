@@ -8,9 +8,9 @@ Runtime entrypoints have different ownership: bindings are inert; server/RSC/nat
 
 | Export | Kind | Contract |
 | --- | --- | --- |
-| [`EditorTarget`](../packages/payload-inplace/src/types.ts#L15) | type | See the linked declaration for the exact typed contract. |
-| [`visualEditor`](../packages/payload-inplace/src/plugin.ts#L27) | function | Compose opt-in roots without replacing native persistence, existing hooks or unrelated controls. |
-| [`VisualEditorOptions`](../packages/payload-inplace/src/types.ts#L21) | interface | Host permission is additional to native collection/document/field access. Never serialize this callback. |
+| [`EditorTarget`](../packages/payload-inplace/src/types.ts#L16) | type | See the linked declaration for the exact typed contract. |
+| [`visualEditor`](../packages/payload-inplace/src/plugin.ts#L28) | function | Compose opt-in roots without replacing native persistence, existing hooks or unrelated controls. |
+| [`VisualEditorOptions`](../packages/payload-inplace/src/types.ts#L22) | interface | Host permission is additional to native collection/document/field access. Never serialize this callback. |
 
 ## `payload-inplace/client`
 
@@ -63,32 +63,33 @@ Runtime entrypoints have different ownership: bindings are inert; server/RSC/nat
 
 | Export | Kind | Contract |
 | --- | --- | --- |
-| [`Activation`](../packages/payload-inplace/src/types.ts#L119) | type | Browser-visible activation never includes the signed cookie or underlying authentication session ID. |
+| [`Activation`](../packages/payload-inplace/src/types.ts#L120) | type | Browser-visible activation never includes the signed cookie or underlying authentication session ID. |
 | [`BlockIdentity`](../packages/core/src/types.ts#L2) | interface | Stable provenance for one block, independent of native field positions or frameworks. |
-| [`CollectionEditorDocument`](../packages/payload-inplace/src/types.ts#L4) | type | Exact document scope for authoring. Root paths are validated against configured block schemas. |
-| [`ConcurrencyAdapter`](../packages/payload-inplace/src/types.ts#L107) | interface | Lock the exact write transaction before Payload reads the latest draft. Unsupported adapters must throw. |
-| [`EditContext`](../packages/payload-inplace/src/types.ts#L90) | interface | See the linked declaration for the exact typed contract. |
-| [`EditorActionExtension`](../packages/payload-inplace/src/types.ts#L158) | interface | Actions are explicit, origin-checked server operations. Delegate writes to existing domain APIs with current req and overrideAccess:false. The plugin authorizes the document and capability again; a client-supplied subject is untrusted host input, never authority. |
-| [`EditorBlockControls`](../packages/payload-inplace/src/types.ts#L193) | interface | See the linked declaration for the exact typed contract. |
-| [`EditorCapability`](../packages/payload-inplace/src/types.ts#L136) | type | See the linked declaration for the exact typed contract. |
-| [`EditorCapabilityContext`](../packages/payload-inplace/src/types.ts#L130) | interface | Server-only capability inputs always come from the authenticated, freshly authorized target. |
-| [`EditorCatalogueEntry`](../packages/payload-inplace/src/types.ts#L213) | interface | Describes an allowed block in the active editor; it cannot widen native block/field access. |
-| [`EditorControlExtension`](../packages/payload-inplace/src/types.ts#L174) | interface | Consumer controls render inside the contextual surface and can use native fields or invoke capability-checked actions. |
-| [`EditorDocument`](../packages/payload-inplace/src/types.ts#L13) | type | Explicit provenance is never authorization; globals require native drafts just like collections. |
-| [`EditorExtension`](../packages/payload-inplace/src/types.ts#L180) | type | See the linked declaration for the exact typed contract. |
-| [`EditorFieldPanel`](../packages/payload-inplace/src/types.ts#L186) | interface | Paths are native schema names relative to the document or the stable selected block, never DOM text selectors. |
-| [`EditorLabel`](../packages/payload-inplace/src/types.ts#L127) | type | See the linked declaration for the exact typed contract. |
-| [`EditorPageScope`](../packages/payload-inplace/src/types.ts#L85) | interface | Authenticated activation is short lived and bound to the current Payload session and exact target. |
-| [`EditorPanelExtension`](../packages/payload-inplace/src/types.ts#L149) | interface | Panels mount inside the editor's native Form. Consumer components must use NativeFieldSlot for field ownership. |
-| [`EditorPreviewResponse`](../packages/payload-inplace/src/types.ts#L208) | type | Every preview read reauthorizes the exact activated target. Denial must be returned without redirecting/unmounting the working Form. |
-| [`EditorPreviewSnapshot`](../packages/payload-inplace/src/types.ts#L201) | interface | Authorized server-rendered presentation only; native Form data/persistence is never replaced by this read result. |
-| [`EditorTarget`](../packages/payload-inplace/src/types.ts#L15) | type | See the linked declaration for the exact typed contract. |
-| [`EditorTool`](../packages/payload-inplace/src/types.ts#L125) | type | Built-in tools are independently configurable; draft persistence still uses the single native Form. |
-| [`GlobalEditorDocument`](../packages/payload-inplace/src/types.ts#L10) | type | See the linked declaration for the exact typed contract. |
-| [`OperationalWritePolicy`](../packages/payload-inplace/src/types.ts#L113) | interface | A bounded exception for operational state such as capacity, independent from draft editorial publication. |
-| [`SectionPatternAdapter`](../packages/payload-inplace/src/types.ts#L230) | interface | Server-only optional storage contract. Every callback must retain tenant/native ACLs (Local API overrideAccess:false). No collection or migration is installed by the plugin. |
-| [`SectionPatternSummary`](../packages/payload-inplace/src/types.ts#L223) | interface | Consumer-owned pattern identity, scoped by the adapter's native read access. Copies are independent; asset references remain shared. |
-| [`VisualEditorOptions`](../packages/payload-inplace/src/types.ts#L21) | interface | Host permission is additional to native collection/document/field access. Never serialize this callback. |
+| [`CollectionEditorDocument`](../packages/payload-inplace/src/types.ts#L5) | type | Exact document scope for authoring. Root paths are validated against configured block schemas. |
+| [`ConcurrencyAdapter`](../packages/payload-inplace/src/types.ts#L108) | interface | Lock the exact write transaction before Payload reads the latest draft. Unsupported adapters must throw. |
+| [`EditContext`](../packages/payload-inplace/src/types.ts#L91) | interface | See the linked declaration for the exact typed contract. |
+| [`EditorActionBlock`](../packages/payload-inplace/src/types.ts#L182) | interface | Current location of a block action target in the authorized saved draft. |
+| [`EditorActionExtension`](../packages/payload-inplace/src/types.ts#L159) | interface | Actions are explicit, origin-checked server operations. Delegate writes to existing domain APIs with current req and overrideAccess:false. The plugin authorizes the document and capability again; a client-supplied subject is untrusted host input, never authority. |
+| [`EditorBlockControls`](../packages/payload-inplace/src/types.ts#L208) | interface | See the linked declaration for the exact typed contract. |
+| [`EditorCapability`](../packages/payload-inplace/src/types.ts#L137) | type | See the linked declaration for the exact typed contract. |
+| [`EditorCapabilityContext`](../packages/payload-inplace/src/types.ts#L131) | interface | Server-only capability inputs always come from the authenticated, freshly authorized target. |
+| [`EditorCatalogueEntry`](../packages/payload-inplace/src/types.ts#L228) | interface | Describes an allowed block in the active editor; it cannot widen native block/field access. |
+| [`EditorControlExtension`](../packages/payload-inplace/src/types.ts#L189) | interface | Consumer controls render inside the contextual surface and can use native fields or invoke capability-checked actions. |
+| [`EditorDocument`](../packages/payload-inplace/src/types.ts#L14) | type | Explicit provenance is never authorization; globals require native drafts just like collections. |
+| [`EditorExtension`](../packages/payload-inplace/src/types.ts#L195) | type | See the linked declaration for the exact typed contract. |
+| [`EditorFieldPanel`](../packages/payload-inplace/src/types.ts#L201) | interface | Paths are native schema names relative to the document or the stable selected block, never DOM text selectors. |
+| [`EditorLabel`](../packages/payload-inplace/src/types.ts#L128) | type | See the linked declaration for the exact typed contract. |
+| [`EditorPageScope`](../packages/payload-inplace/src/types.ts#L86) | interface | Authenticated activation is short lived and bound to the current Payload session and exact target. |
+| [`EditorPanelExtension`](../packages/payload-inplace/src/types.ts#L150) | interface | Panels mount inside the editor's native Form. Consumer components must use NativeFieldSlot for field ownership. |
+| [`EditorPreviewResponse`](../packages/payload-inplace/src/types.ts#L223) | type | Every preview read reauthorizes the exact activated target. Denial must be returned without redirecting/unmounting the working Form. |
+| [`EditorPreviewSnapshot`](../packages/payload-inplace/src/types.ts#L216) | interface | Authorized server-rendered presentation only; native Form data/persistence is never replaced by this read result. |
+| [`EditorTarget`](../packages/payload-inplace/src/types.ts#L16) | type | See the linked declaration for the exact typed contract. |
+| [`EditorTool`](../packages/payload-inplace/src/types.ts#L126) | type | Built-in tools are independently configurable; draft persistence still uses the single native Form. |
+| [`GlobalEditorDocument`](../packages/payload-inplace/src/types.ts#L11) | type | See the linked declaration for the exact typed contract. |
+| [`OperationalWritePolicy`](../packages/payload-inplace/src/types.ts#L114) | interface | A bounded exception for operational state such as capacity, independent from draft editorial publication. |
+| [`SectionPatternAdapter`](../packages/payload-inplace/src/types.ts#L245) | interface | Server-only optional storage contract. Every callback must retain tenant/native ACLs (Local API overrideAccess:false). No collection or migration is installed by the plugin. |
+| [`SectionPatternSummary`](../packages/payload-inplace/src/types.ts#L238) | interface | Consumer-owned pattern identity, scoped by the adapter's native read access. Copies are independent; asset references remain shared. |
+| [`VisualEditorOptions`](../packages/payload-inplace/src/types.ts#L22) | interface | Host permission is additional to native collection/document/field access. Never serialize this callback. |
 
 ## `payload-inplace/postgres`
 
@@ -127,7 +128,7 @@ Runtime entrypoints have different ownership: bindings are inert; server/RSC/nat
 | [`useEditorMessages`](../packages/ui/src/localization/EditorMessages.tsx#L48) | function | Consumers may use explicit options outside authoring; active controls normally inherit the current editor catalogue. |
 | [`useEditorObserver`](../packages/payload-inplace/src/frontend/lifecycle.tsx#L55) | function | Consumer import-map providers opt into metadata events. Changing callbacks neither reloads the document nor changes native submission behavior. |
 | [`useEditorPreviewData`](../packages/payload-inplace/src/frontend/preview-data.ts#L19) | function | Read an optimistic projection of the sole native Form, without another document store or persistence path. The initial authorized, populated document supplies relationship objects only while their IDs match. Rendering is held while the browser owns inline composition/caret; direct text is already visible in the DOM. This hook belongs exclusively to an activated client renderer. Keep data loading/domain effects in server slots. |
-| [`useVisualEditor`](../packages/payload-inplace/src/frontend/tools-context.tsx#L52) | function | Consumer controls share the current authorized target and native form; server actions recheck their own capability. |
+| [`useVisualEditor`](../packages/payload-inplace/src/frontend/tools-context.tsx#L54) | function | Consumer controls share the current authorized target and native form; server actions recheck their own capability. |
 
 ## `payload-inplace/launcher`
 
@@ -166,7 +167,7 @@ Runtime entrypoints have different ownership: bindings are inert; server/RSC/nat
 | Export | Kind | Contract |
 | --- | --- | --- |
 | [`createEditorMessages`](../packages/ui/src/localization/messages.ts#L22) | function | Construct an overridable UI catalogue for server renderers, launchers and active controls. Unknown locales fall back to English copy with their own Intl formatting/direction. |
-| [`EditorMessageKey`](../packages/ui/src/localization/catalogue.ts#L391) | type | See the linked declaration for the exact typed contract. |
+| [`EditorMessageKey`](../packages/ui/src/localization/catalogue.ts#L397) | type | See the linked declaration for the exact typed contract. |
 | [`EditorMessageOverrides`](../packages/ui/src/localization/messages.ts#L10) | type | See the linked declaration for the exact typed contract. |
 | [`EditorMessages`](../packages/ui/src/localization/messages.ts#L8) | type | See the linked declaration for the exact typed contract. |
 | [`EditorUIOptions`](../packages/ui/src/localization/messages.ts#L15) | interface | UI copy/formatting only. This configuration never selects a Payload content locale or expands document access. |

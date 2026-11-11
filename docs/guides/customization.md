@@ -26,6 +26,26 @@ Use `strategyProviders` plus `EditorFieldStrategy` for a compatible selected sca
 
 Use `extensions` for a full panel/control or explicit server action. Panels mount existing fields through `NativeFieldSlot`; `useVisualEditor` opens registered tools. Actions reauthorize on the server and delegate writes to your existing domain service. Scheduling, recipients and operational statuses remain app-owned, even if displayed on a page. [Test your control](../testing-and-extensions.md).
 
+### Add a block action
+
+Add `blockTypes` to a server action to show it in **More section actions** for matching selected blocks. Use the native block slugs from your Payload schema.
+
+```ts
+extensions: [
+  {
+    id: 'check-story',
+    kind: 'action',
+    label: { en: 'Check story section', de: 'Studio-Abschnitt prüfen' },
+    blockTypes: ['editorial'],
+    run: async ({ block }) => ({
+      message: `Checked the saved story at ${block?.path}.`,
+    }),
+  },
+],
+```
+
+The plugin resolves `block.identity`, `block.blockType` and `block.path` from the authorized saved document on each run. Use the stable identity for future lookups because the numeric path can change after a move. Use `canUse` for document-level capabilities and enforce domain permissions in your action service. Actions require the saved revision by default and can reuse the same confirmation options as dock actions. See the [demo configuration](../../apps/demo/payload.config.ts).
+
 ## Theme the editor
 
 Set inherited CSS variables on the activated website ancestor/root using your own styling system. The package ships its styles; you do not need to compile its Tailwind classes.

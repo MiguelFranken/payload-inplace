@@ -1,7 +1,7 @@
 /** Disclosure state only; native fields and documents never enter this reducer. */
 export type PanelState =
   | { kind: "closed" }
-  | { kind: "sections" | "settings" | "versions" | "conflict" }
+  | { kind: "sections" | "settings" | "versions" | "conflict" | "move-section" }
   | { kind: "extension"; id: string }
   | { kind: "validation"; path: string };
 
