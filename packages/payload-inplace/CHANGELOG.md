@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.0
+
+### Minor Changes
+
+- 00ffeb9: Compare drafts on the page with separate section and element highlights. The Elements mode outlines changed rendered field bindings and lets you jump between them in page order.
+- b7c69d4: Move a selected section one place at a time or choose its destination from the on-page actions menu. Consumers can register server actions for specific block types in that menu.
+
+### Patch Changes
+
+- c2f1048: Keep the storefront’s line wrapping and scroll position when opening inline rich-text editing. Place the caret where the editor was clicked and keep the rendered content visible if inline editing cannot initialize.
+
 ## 0.1.0
 
 ### Minor Changes
