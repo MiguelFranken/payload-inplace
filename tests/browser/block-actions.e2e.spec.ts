@@ -31,6 +31,9 @@ test("selected block arrows and position picker move the same draft row and supp
   const order = async () =>
     (await read()).layout.map((block: { id: string }) => block.id);
 
+  await page.addStyleTag({
+    content: `[data-ve-block="${ids[3]}"]:not([data-ve-field]):not([data-ve-fields]) { min-height: 1100px; }`,
+  });
   await selectStory();
   await expect(up).toBeEnabled();
   await expect(down).toBeEnabled();
@@ -38,6 +41,7 @@ test("selected block arrows and position picker move the same draft row and supp
   await down.click();
   await expect.poll(order).toEqual([ids[0], ids[1], ids[3], ids[2]]);
   await expect(down).toBeDisabled();
+  await expect(more).toBeInViewport();
   await expect(up).toBeEnabled();
   await up.click();
   await expect.poll(order).toEqual(ids);

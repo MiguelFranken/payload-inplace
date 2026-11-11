@@ -100,6 +100,7 @@ import { EditorToolsMenu } from "./EditorToolsMenu";
 import {
   BlockReorder,
   sectionElement,
+  scrollToSection,
   showSectionOnPage,
 } from "./BlockReorder";
 import type { NativeSection } from "../schema/tree";
@@ -212,6 +213,13 @@ export function FrontendControls({
     rootElement = useRef<HTMLDivElement>(null);
   const [actionResult, setActionResult] = useState("");
   const [moveAnnouncement, setMoveAnnouncement] = useState("");
+  const pendingReveal = useRef<{
+    selection: InspectionTarget;
+    destination: NativeSection;
+    anchor?: Element;
+    after: boolean;
+    expires: number;
+  }>(undefined);
   const form = useForm(),
     info = useDocumentInfo(),
     { config } = useConfig(),
@@ -700,7 +708,7 @@ export function FrontendControls({
         )
       : [];
   function moveSelection(destination: NativeSection) {
-    if (!selected) return false;
+    if (!selected || !selection) return false;
     if (
       commandFor(selected, {
         type: "move",
@@ -709,6 +717,13 @@ export function FrontendControls({
       })
     )
       return false;
+    pendingReveal.current = {
+      selection,
+      destination,
+      anchor: sectionElement(destination, documentReference(context.target)),
+      after: selected.index < destination.index,
+      expires: performance.now() + 10000,
+    };
     setMoveAnnouncement(
       t("sectionMoved", {
         label: title,
@@ -716,6 +731,27 @@ export function FrontendControls({
       }),
     );
     return true;
+  }
+  function revealMovedSection(element: Element, rect: DOMRect) {
+    const move = pendingReveal.current;
+    if (!move) return;
+    if (move.selection !== selection || performance.now() > move.expires) {
+      pendingReveal.current = undefined;
+      return;
+    }
+    if (!move.anchor?.isConnected)
+      move.anchor = sectionElement(
+        move.destination,
+        documentReference(context.target),
+      );
+    if (!move.anchor) return;
+    // Wait for the rendered reorder. The native row index can change before a server preview commits.
+    const expected = move.after
+      ? Node.DOCUMENT_POSITION_PRECEDING
+      : Node.DOCUMENT_POSITION_FOLLOWING;
+    if (!(element.compareDocumentPosition(move.anchor) & expected)) return;
+    pendingReveal.current = undefined;
+    if (rect.top >= innerHeight - 96 || rect.bottom < 96) scrollToSection(rect);
   }
   const configuredFields = selected?.block
     ? projectFields(selected.block.fields, profile?.fields)
@@ -948,6 +984,7 @@ export function FrontendControls({
                     sectionElement(selected, documentReference(context.target))
                 : undefined
             }
+            onSelectedRect={revealMovedSection}
             onPick={pick}
             accept={(target) =>
               !target.document ||

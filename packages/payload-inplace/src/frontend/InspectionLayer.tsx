@@ -78,6 +78,7 @@ export function InspectionLayer({
   highlighting = false,
   selected,
   resolveSelectedElement,
+  onSelectedRect,
   onPick,
   describe,
   hint,
@@ -91,6 +92,7 @@ export function InspectionLayer({
   highlighting?: boolean;
   selected?: InspectionTarget;
   resolveSelectedElement?: () => Element | undefined;
+  onSelectedRect?: (element: Element, rect: DOMRect) => void;
   onPick: (target: InspectionTarget) => void;
   describe: (target: InspectionTarget) => string;
   hint?: (target: InspectionTarget) => string;
@@ -107,6 +109,9 @@ export function InspectionLayer({
   // Native form/save renders change callbacks, not the pointer or selected target.
   const currentSelection = useEffectEvent(() => selected);
   const selectedElementNow = useEffectEvent(() => resolveSelectedElement?.());
+  const measureSelection = useEffectEvent((element: Element, rect: DOMRect) =>
+    onSelectedRect?.(element, rect),
+  );
   const label = useEffectEvent((target: InspectionTarget) =>
     target.element === selected?.element
       ? describe(target)
@@ -126,7 +131,7 @@ export function InspectionLayer({
       animate: boolean,
     ) {
       const rect = element?.isConnected ? elementRect(element) : null;
-      if (!box || !rect || rect.width <= 0 || rect.height <= 0) {
+      if (!box || !element || !rect || rect.width <= 0 || rect.height <= 0) {
         box?.setAttribute("hidden", "");
         return;
       }
@@ -145,6 +150,8 @@ export function InspectionLayer({
             box.style.setProperty(key, value);
       }
       box.removeAttribute("hidden");
+      if (box.hasAttribute("data-ve-selection-outline"))
+        measureSelection(element, rect);
       if (box === hover.current) {
         const pinned =
           Boolean(resolveSelectedElement) &&
