@@ -13,6 +13,7 @@ import {
 import { createPortal } from "react-dom";
 import { useField } from "@payloadcms/ui";
 import {
+  focusRichEditor,
   mountRichEditor,
   type RichFormat,
 } from "@payload-inplace/lexical/editor";
@@ -31,6 +32,7 @@ export function InlineRichText({
   element,
   path,
   label,
+  point,
   features,
   disabled,
   onSettings,
@@ -38,6 +40,7 @@ export function InlineRichText({
   element: HTMLElement;
   path: string;
   label: string;
+  point?: { x: number; y: number };
   features: readonly string[];
   disabled: boolean;
   onSettings: () => void;
@@ -55,6 +58,7 @@ export function InlineRichText({
     guard,
     disabled,
     label,
+    point,
     features,
     t,
   }));
@@ -65,23 +69,28 @@ export function InlineRichText({
     );
   });
   useLayoutEffect(() => {
-    const { field, guard, disabled, label, features } = current();
+    const { field, guard, disabled, label, features, point } = current();
     const {
       surface,
       editor: editable,
       theme,
       source,
     } = createRichSurface(element);
+    surface.setAttribute("data-ve-inline-surface", "");
     editable.setAttribute("data-ve-inline-active", "");
     editable.setAttribute("role", "textbox");
     editable.setAttribute("aria-multiline", "true");
     editable.setAttribute("aria-label", label);
-    editable.classList.add("pvi:focus:outline-none!", "pvi:min-h-[1lh]");
+    editable.classList.add(
+      "pvi:focus:outline-none!",
+      "pvi:forced-colors:focus:[outline:auto]!",
+    );
     const hidden = element.classList.contains("pvi:hidden!");
-    element.after(surface);
-    element.classList.add("pvi:hidden!");
-    const release = registerInlineSurface(element, surface);
-    guard.begin();
+    // Keep the editable at the original sibling index when possible. A final
+    // child stays final so host last-child selectors still apply.
+    if (element.nextElementSibling) element.before(surface);
+    else element.after(surface);
+    let release: (() => void) | undefined;
     const key = (event: KeyboardEvent) => {
       if (
         !(
@@ -97,7 +106,21 @@ export function InlineRichText({
     };
     surface.addEventListener("keydown", key);
     surface.addEventListener("click", click);
-    let releasePresentation = () => {};
+    let releasePresentation: (() => void) | undefined;
+    let initialized = false;
+    function restorePresentation() {
+      releasePresentation?.();
+      releasePresentation = undefined;
+      runtime.current?.dispose();
+      runtime.current = null;
+      surface.remove();
+      if (release) {
+        release();
+        release = undefined;
+        if (!hidden) element.classList.remove("pvi:hidden!");
+        guard.end();
+      }
+    }
     try {
       runtime.current = mountRichEditor({
         element: editable,
@@ -108,14 +131,24 @@ export function InlineRichText({
           setFormats((previous) =>
             previous.join() === next.join() ? previous : next,
           ),
-        onError: () => setError("nativeRichTextRequired"),
+        onError: (error) => {
+          if (!initialized) throw error;
+          setError("nativeRichTextRequired");
+        },
         disabled: disabled || field.disabled,
+        autofocus: false,
         features,
         unsupportedNodeLabel: (type) =>
           current().t("unsupportedRichNode", { type }),
       });
       releasePresentation = preserveRichClasses(runtime.current.editor, source);
+      element.classList.add("pvi:hidden!");
+      release = registerInlineSurface(element, surface);
+      guard.begin();
+      focusRichEditor(runtime.current.editor, point);
+      initialized = true;
     } catch {
+      restorePresentation();
       setError("nativeRichTextRequired");
     }
     let frame = 0;
@@ -171,9 +204,6 @@ export function InlineRichText({
     window.addEventListener("resize", schedule);
     schedule();
     return () => {
-      releasePresentation();
-      runtime.current?.dispose();
-      runtime.current = null;
       surface.removeEventListener("keydown", key);
       surface.removeEventListener("click", click);
       cancelAnimationFrame(frame);
@@ -181,10 +211,7 @@ export function InlineRichText({
       surface.ownerDocument.removeEventListener("selectionchange", schedule);
       window.removeEventListener("scroll", schedule, true);
       window.removeEventListener("resize", schedule);
-      release();
-      surface.remove();
-      if (!hidden) element.classList.remove("pvi:hidden!");
-      guard.end();
+      restorePresentation();
       element.dispatchEvent(
         new CustomEvent("pve:inline-geometry", { bubbles: true }),
       );

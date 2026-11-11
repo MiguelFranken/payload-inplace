@@ -229,7 +229,9 @@ export function InspectionLayer({
       if (
         ignored(event) ||
         (event.target instanceof Element &&
-          event.target.closest("[data-ve-inline-active]"))
+          event.target.closest(
+            "[data-ve-inline-active],[data-ve-inline-surface]",
+          ))
       )
         return;
       if (!inspecting) return;

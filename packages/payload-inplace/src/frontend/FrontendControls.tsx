@@ -934,6 +934,7 @@ export function FrontendControls({
                     element={selection.element as HTMLElement}
                     path={inlinePath!}
                     label={describe(selection)}
+                    point={selection.point}
                     features={lexicalFeatures || []}
                     disabled={disabled}
                     onSettings={() => setSettingsOpen(true)}

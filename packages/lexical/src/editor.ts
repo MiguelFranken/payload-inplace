@@ -4,8 +4,11 @@ import {
   $getSelection,
   $isRangeSelection,
   $createParagraphNode,
+  $createRangeSelectionFromDom,
+  $setSelection,
   FORMAT_TEXT_COMMAND,
   COMMAND_PRIORITY_HIGH,
+  SKIP_SCROLL_INTO_VIEW_TAG,
   type TextFormatType,
   type LexicalEditor,
   type EditorThemeClasses,
@@ -49,6 +52,74 @@ export type RichFormat =
   | "bullet"
   | "number"
   | "unlink";
+
+/** Adopt the clicked caret without scrolling either the page or a host scroll container. */
+export function focusRichEditor(
+  editor: LexicalEditor,
+  point?: { x: number; y: number },
+): void {
+  const root = editor.getRootElement();
+  if (!root || !editor.isEditable()) return;
+  const doc = root.ownerDocument;
+  const selection = doc.getSelection();
+  root.focus({ preventScroll: true });
+  let placed = false;
+  if (point && selection) {
+    const caret = doc.caretPositionFromPoint?.(point.x, point.y);
+    const range = caret ? null : doc.caretRangeFromPoint?.(point.x, point.y);
+    const node = caret?.offsetNode ?? range?.startContainer;
+    if (node && root.contains(node)) {
+      selection.collapse(node, caret?.offset ?? range?.startOffset ?? 0);
+      placed = true;
+    }
+  }
+  editor.update(
+    () => {
+      const caret = placed
+        ? $createRangeSelectionFromDom(selection, editor)
+        : null;
+      if (caret) $setSelection(caret);
+      else if (point) $getRoot().selectStart();
+      else $getRoot().selectEnd();
+    },
+    { discrete: true, tag: ["initialize", SKIP_SCROLL_INTO_VIEW_TAG] },
+  );
+}
+
+function attachRichRoot(
+  editor: LexicalEditor,
+  element: HTMLElement,
+  editable: boolean,
+): void {
+  const style = element.style;
+  const view = element.ownerDocument.defaultView;
+  const authored = ["white-space", "word-break"].map((name) => ({
+    name,
+    value: style.getPropertyValue(name),
+    priority: style.getPropertyPriority(name),
+  }));
+  const wrapping = ["line-break", "overflow-wrap"].map((name) => ({
+    name,
+    value: view?.getComputedStyle(element).getPropertyValue(name),
+  }));
+
+  element.contentEditable = String(editable);
+  editor.setRootElement(element);
+  // Lexical sets inline wrapping defaults. Restore the host's CSS cascade.
+  for (const { name, value, priority } of authored)
+    style.setProperty(name, value, priority);
+
+  // WebKit also applies wrapping defaults to editable elements. Keep inherited
+  // rules responsive by inheriting them again when that matches the source.
+  const computed = view?.getComputedStyle(element);
+  const parent = element.parentElement;
+  for (const { name, value } of wrapping) {
+    if (!value || value === computed?.getPropertyValue(name)) continue;
+    const inherited =
+      parent && view?.getComputedStyle(parent).getPropertyValue(name);
+    style.setProperty(name, value === inherited ? "inherit" : value);
+  }
+}
 
 /** Mount a lazily loaded, non-React Lexical surface. Native Form owns the value and persistence.
  * No server acknowledgement is applied to a focused editor; dispose before changing field ownership.
@@ -136,10 +207,7 @@ export function mountRichEditor({
   const state = editor.parseEditorState(JSON.stringify(document));
   state.read(() => rememberMetadata($getRoot(), document.root, metadata));
   editor.setEditorState(state);
-  if (element) {
-    element.contentEditable = String(!disabled);
-    editor.setRootElement(element);
-  }
+  if (element) attachRichRoot(editor, element, !disabled);
   const disposePlugins = mergeRegister(
     editor.registerCommand(
       FORMAT_TEXT_COMMAND,
@@ -150,15 +218,7 @@ export function mountRichEditor({
     registerList(editor),
     registerHistory(editor, createEmptyHistoryState(), 300),
   );
-  if (element && autofocus) {
-    editor.update(
-      () => {
-        $getRoot().selectEnd();
-      },
-      { discrete: true, tag: "initialize" },
-    );
-    editor.focus(undefined, { defaultSelection: "rootEnd" });
-  }
+  if (autofocus) focusRichEditor(editor);
   editor.update(() => {}, { discrete: true, tag: "initialize" });
   let previous = editor
     .getEditorState()
