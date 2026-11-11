@@ -80,7 +80,6 @@ import {
 import { InlineText } from "./InlineText";
 import { usePreviewStatus } from "./preview-status";
 import { useInlinePreviewGuard } from "./inline-preview";
-import { SectionComparisonPanel } from "./SectionComparisonPanel";
 import type { useSectionComparison } from "./controllers/section-comparison";
 import { Settings2, X } from "lucide-react";
 import { selectionReset } from "../schema/selection-reset";
@@ -116,6 +115,12 @@ const VersionBrowser = lazy(() =>
 const InlineRichText = lazy(() =>
   import("./InlineRichText").then((module) => ({
     default: module.InlineRichText,
+  })),
+);
+
+const SectionComparisonPanel = lazy(() =>
+  import("./SectionComparisonPanel").then((module) => ({
+    default: module.SectionComparisonPanel,
   })),
 );
 
@@ -1463,20 +1468,37 @@ export function FrontendControls({
               </div>
             )}
           {comparing && comparisonHost && (
-            <SectionComparisonPanel
-              comparison={comparison}
-              host={comparisonHost}
-              field={field}
-              blocks={
-                config.blocksMap as Record<
-                  string,
-                  import("payload").ClientBlock
-                >
+            <Suspense
+              fallback={
+                <div className="pve:pointer-events-auto pve:ms-auto pve:flex pve:w-max pve:max-w-full pve:items-center pve:gap-2 pve:rounded-xl pve:bg-[var(--pve-surface,var(--theme-bg,#fff))] pve:py-1 pve:ps-3 pve:pe-1 pve:shadow-lg">
+                  <p role="status" className="pve:m-0 pve:text-sm">
+                    {t("loadingSectionComparison")}
+                  </p>
+                  <ChromeButton
+                    size="small-icon"
+                    aria-label={t("closeSectionComparison")}
+                    onClick={closeComparison}
+                  >
+                    <X size={16} aria-hidden="true" />
+                  </ChromeButton>
+                </div>
               }
-              scope={documentReference(context.target)}
-              root={context.target.root}
-              onClose={closeComparison}
-            />
+            >
+              <SectionComparisonPanel
+                comparison={comparison}
+                host={comparisonHost}
+                field={field}
+                blocks={
+                  config.blocksMap as Record<
+                    string,
+                    import("payload").ClientBlock
+                  >
+                }
+                scope={documentReference(context.target)}
+                root={context.target.root}
+                onClose={closeComparison}
+              />
+            </Suspense>
           )}
           <div
             hidden={comparing}

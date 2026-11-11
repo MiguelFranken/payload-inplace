@@ -4,7 +4,7 @@ import { useLayoutEffect, useState } from "react";
 import { ComparisonMarker } from "@payload-inplace/ui/review/comparison-marker";
 import { useEditorMessages } from "@payload-inplace/ui/localization/EditorMessages";
 import { elementRect } from "../preview/geometry";
-import type { SectionChange } from "../state/section-comparison";
+import type { ComparisonTarget } from "./comparison-elements";
 
 const labels = {
   added: "sectionAdded",
@@ -40,40 +40,36 @@ export function comparisonElements(
 /** Measure visible markers after scroll, viewport and renderer changes, without inserting UI in the page flow. */
 export function SectionComparisonCanvas({
   host,
-  root,
-  scopeKey,
-  changes,
+  targets,
+  elementMode,
   current,
-  onVisible,
+  onRendered,
 }: {
   host: HTMLElement;
-  root: string;
-  scopeKey: string;
-  changes: readonly SectionChange[];
-  current?: string;
-  onVisible: (ids: string[]) => void;
+  targets: () => ComparisonTarget[];
+  elementMode: boolean;
+  current?: ComparisonTarget;
+  onRendered: (targets: ComparisonTarget[]) => void;
 }) {
   const { t } = useEditorMessages();
   const [markers, setMarkers] = useState<
-    { change: SectionChange; rect: DOMRect }[]
+    { change: ComparisonTarget; rect: DOMRect }[]
   >([]);
 
   useLayoutEffect(() => {
     let frame = 0;
-    let elements = new Map<string, HTMLElement>();
-    let previousIDs: string | undefined;
-    const changed = new Map(changes.map((change) => [change.id, change]));
+    let elements: ComparisonTarget[] = [];
+    let previous: ComparisonTarget[] | undefined;
     const resize = new ResizeObserver(schedule);
     const mutations = new MutationObserver(bind);
     function measure() {
       frame = 0;
-      const visible: { change: SectionChange; rect: DOMRect }[] = [];
-      const ids: string[] = [];
-      for (const [id, element] of elements) {
-        const change = changed.get(id);
-        const rect = change && elementRect(element);
+      const visible: { change: ComparisonTarget; rect: DOMRect }[] = [];
+      const rendered: ComparisonTarget[] = [];
+      for (const change of elements) {
+        const rect = elementRect(change.element);
         if (!rect) continue;
-        ids.push(id);
+        rendered.push(change);
         if (
           rect.bottom > 0 &&
           rect.top < innerHeight &&
@@ -82,10 +78,18 @@ export function SectionComparisonCanvas({
         )
           visible.push({ change, rect });
       }
-      const fingerprint = JSON.stringify(ids);
-      if (fingerprint !== previousIDs) {
-        previousIDs = fingerprint;
-        onVisible(ids);
+      if (
+        previous?.length !== rendered.length ||
+        rendered.some(
+          (item, index) =>
+            item.element !== previous?.[index]?.element ||
+            item.id !== previous[index]?.id ||
+            item.label !== previous[index]?.label ||
+            item.kind !== previous[index]?.kind,
+        )
+      ) {
+        previous = rendered;
+        onRendered(rendered);
       }
       setMarkers(visible);
     }
@@ -94,10 +98,9 @@ export function SectionComparisonCanvas({
     }
     function bind() {
       resize.disconnect();
-      elements = comparisonElements(host, root, scopeKey);
+      elements = targets();
       resize.observe(host);
-      for (const [id, element] of elements)
-        if (changed.has(id)) resize.observe(element);
+      for (const { element } of elements) resize.observe(element);
       schedule();
     }
     bind();
@@ -110,6 +113,8 @@ export function SectionComparisonCanvas({
         "data-ve-root",
         "data-ve-ancestors",
         "data-ve-document",
+        "data-ve-field",
+        "data-ve-fields",
         "hidden",
         "class",
       ],
@@ -118,22 +123,26 @@ export function SectionComparisonCanvas({
       capture: true,
       passive: true,
     });
-    window.addEventListener("resize", schedule, { passive: true });
+    window.addEventListener("resize", bind, { passive: true });
     return () => {
       cancelAnimationFrame(frame);
       mutations.disconnect();
       resize.disconnect();
       window.removeEventListener("scroll", schedule, true);
-      window.removeEventListener("resize", schedule);
+      window.removeEventListener("resize", bind);
     };
-  }, [host, root, scopeKey, changes, onVisible]);
+  }, [host, targets, onRendered]);
 
   return markers.map(({ change, rect }) => (
     <ComparisonMarker
       key={change.id}
       rect={rect}
-      label={t(labels[change.kind])}
-      current={change.id === current}
+      label={elementMode ? undefined : t(labels[change.kind])}
+      current={
+        elementMode
+          ? change.element === current?.element
+          : change.id === current?.id
+      }
     />
   ));
 }

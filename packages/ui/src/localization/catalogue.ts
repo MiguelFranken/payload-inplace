@@ -148,8 +148,16 @@ export const englishMessages = {
   savedVersions: "Saved versions",
   compareSections: "Compare sections",
   closeSectionComparison: "Close comparison",
-  sectionComparisonVersion: "Section version",
+  sectionComparisonVersion: "Version",
+  comparisonHighlight: "Highlight",
+  comparisonElements: "Elements",
   nextSectionChange: "Next changed section",
+  nextElementChange: "Next changed element",
+  noChangedElements: "No changed elements are visible in this version.",
+  elementComparisonCount: {
+    one: "{count} changed element",
+    other: "{count} changed elements",
+  },
   loadingSectionComparison: "Loading saved sections…",
   sectionComparisonUnavailable:
     "Could not load the comparison. Try again or reopen the editor.",
@@ -542,8 +550,17 @@ export const germanMessages = {
   savedVersions: "Gespeicherte Versionen",
   compareSections: "Abschnitte vergleichen",
   closeSectionComparison: "Vergleich schließen",
-  sectionComparisonVersion: "Version der Abschnitte",
+  sectionComparisonVersion: "Version",
+  comparisonHighlight: "Markieren",
+  comparisonElements: "Elemente",
   nextSectionChange: "Nächster geänderter Abschnitt",
+  nextElementChange: "Nächstes geändertes Element",
+  noChangedElements:
+    "In dieser Version sind keine geänderten Elemente sichtbar.",
+  elementComparisonCount: {
+    one: "{count} geändertes Element",
+    other: "{count} geänderte Elemente",
+  },
   loadingSectionComparison: "Gespeicherte Abschnitte werden geladen…",
   sectionComparisonUnavailable:
     "Der Vergleich konnte nicht geladen werden. Versuche es erneut oder öffne den Editor erneut.",

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useCallback,
   useEffect,
   useEffectEvent,
   useLayoutEffect,
@@ -14,14 +15,21 @@ import {
   type DocumentReference,
 } from "@payload-inplace/core/document-ref";
 import { useEditorMessages } from "@payload-inplace/ui/localization/EditorMessages";
-import { ComparisonToolbar } from "@payload-inplace/ui/review/comparison-toolbar";
-import { compareSections } from "../state/section-comparison";
+import {
+  ComparisonToolbar,
+  type ComparisonHighlight,
+} from "@payload-inplace/ui/review/comparison-toolbar";
+import {
+  comparisonBindings,
+  compareSections,
+} from "../state/section-comparison";
 import { elementRect } from "../preview/geometry";
 import { scrollToSection } from "./BlockReorder";
 import {
   comparisonElements,
   SectionComparisonCanvas,
 } from "./SectionComparisonCanvas";
+import { changedElements, type ComparisonTarget } from "./comparison-elements";
 import type { useSectionComparison } from "./controllers/section-comparison";
 
 export function SectionComparisonPanel({
@@ -46,8 +54,10 @@ export function SectionComparisonPanel({
   const { t, locale } = useEditorMessages();
   const snapshot = state.kind === "ready" ? state.snapshot : undefined;
   const side = state.kind === "ready" ? state.side : "draft";
-  const [current, setCurrent] = useState<string>();
-  const [bound, setBound] = useState<string[]>();
+  const [highlight, setHighlight] = useState<ComparisonHighlight>("sections");
+  const elementMode = highlight === "elements";
+  const [current, setCurrent] = useState<ComparisonTarget>();
+  const [bound, setBound] = useState<ComparisonTarget[]>();
   const available = bound ?? [];
   const close = useRef<HTMLButtonElement>(null);
   const scroll = useRef<() => void>(null);
@@ -74,11 +84,35 @@ export function SectionComparisonPanel({
       ) ?? [],
     [report, side],
   );
-  const position = current ? available.indexOf(current) : -1;
-  const focused =
-    position >= 0
-      ? sideChanges.find((change) => change.id === current)
-      : undefined;
+  const rows = snapshot?.[side];
+  const resolve = useMemo(
+    () =>
+      elementMode && rows ? comparisonBindings(rows, field, blocks) : undefined,
+    [elementMode, rows, field, blocks],
+  );
+  const targets = useCallback(() => {
+    if (resolve && report)
+      return changedElements({
+        host,
+        root,
+        scopeKey,
+        side,
+        fields: report.fields,
+        resolve,
+      });
+    if (elementMode) return [];
+    const sections = new Map(sideChanges.map((change) => [change.id, change]));
+    return [...comparisonElements(host, root, scopeKey)].flatMap(
+      ([id, element]) => {
+        const change = sections.get(id);
+        return change ? [{ ...change, element }] : [];
+      },
+    );
+  }, [host, root, scopeKey, side, report, sideChanges, elementMode, resolve]);
+  const position = available.findIndex((item) =>
+    elementMode ? item.element === current?.element : item.id === current?.id,
+  );
+  const focused = available[position];
   let status = "";
   const hints: string[] = [];
   if (state.kind === "loading") status = t("loadingSectionComparison");
@@ -92,13 +126,18 @@ export function SectionComparisonPanel({
         position: position + 1,
         total: available.length,
       });
-    else if (count) status = t("sectionComparisonCount", { count });
-    else if (snapshot.published !== null && !report.unmapped)
+    else if (elementMode && bound)
+      status = available.length
+        ? t("elementComparisonCount", { count: available.length })
+        : t("noChangedElements");
+    else if (!elementMode && count)
+      status = t("sectionComparisonCount", { count });
+    else if (!elementMode && snapshot.published !== null && !report.unmapped)
       status = t("noSectionChanges");
 
     if (snapshot.published === null)
       hints.push(t("sectionComparisonNoPublished"));
-    else if (sideChanges.length !== count)
+    else if (!elementMode && sideChanges.length !== count)
       hints.push(
         t(
           side === "draft"
@@ -106,7 +145,10 @@ export function SectionComparisonPanel({
             : "sectionComparisonShowAdded",
         ),
       );
-    if (report.unmapped || (bound && bound.length < sideChanges.length))
+    if (
+      !elementMode &&
+      (report.unmapped || (bound && bound.length < sideChanges.length))
+    )
       hints.push(t("sectionComparisonUnmapped"));
   }
 
@@ -161,35 +203,42 @@ export function SectionComparisonPanel({
     <>
       {snapshot && (
         <SectionComparisonCanvas
-          key={side}
+          key={`${side}-${highlight}`}
           host={host}
-          root={root}
-          scopeKey={scopeKey}
-          changes={sideChanges}
+          targets={targets}
+          elementMode={elementMode}
           current={current}
-          onVisible={setBound}
+          onRendered={setBound}
         />
       )}
       <ComparisonToolbar
         closeRef={close}
         side={side}
+        highlight={highlight}
         status={status}
         hint={hints.join(" ")}
         ready={Boolean(snapshot)}
         hasPublished={Boolean(snapshot?.published)}
         canNavigate={available.length > 0 && Boolean(snapshot)}
+        onHighlight={(next) => {
+          if (highlight === next) return;
+          setCurrent(undefined);
+          setBound(undefined);
+          setHighlight(next);
+        }}
         onSide={(next) => {
           if (next === side) return;
           scroll.current = captureScroll();
           setBound(undefined);
+          if (elementMode) setCurrent(undefined);
           select(next);
         }}
         onNext={() => {
-          const id = available[(position + 1) % available.length];
-          const target = id && comparisonElements(host, root, scopeKey).get(id);
-          const rect = target && elementRect(target);
-          if (!id || !rect) return;
-          setCurrent(id);
+          const target = available[(position + 1) % available.length];
+          const rect =
+            target?.element.isConnected && elementRect(target.element);
+          if (!rect) return;
+          setCurrent(target);
           scrollToSection(rect);
         }}
         onClose={closeView}

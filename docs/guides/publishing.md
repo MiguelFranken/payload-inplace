@@ -6,7 +6,7 @@ Drafts are **shared Payload drafts**, not private per-editor branches. Another a
 
 ## Compare sections on the page
 
-After the draft saves, choose **More tools → Compare sections**. The editor outlines changed sections in the page itself. Switch between **Draft** and **Published** to see how the saved content looks in context. [See both views in the tour](../tour.md#compare-sections-on-the-page) · [Set up the preview renderer](../integration.md#compare-sections-on-the-page)
+After the draft saves, choose **More tools → Compare sections**. Use **Sections** for a page overview and **Elements** to outline changed fields that render in the selected version. Switch between **Draft** and **Published** to see how the saved content looks in context. [See the comparison controls in the tour](../tour.md#compare-sections-on-the-page) · [Set up the preview renderer](../integration.md#compare-sections-on-the-page)
 
 ## Review before publishing
 

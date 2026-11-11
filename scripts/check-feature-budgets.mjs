@@ -57,6 +57,11 @@ function closure(entry) {
 
 const active = closure(entries.active);
 
+if (active.files.has(`${base}frontend/SectionComparisonPanel.js`))
+  throw Error(
+    "Optional comparison UI eagerly enters the active static closure",
+  );
+
 const observations = {};
 
 for (const [name, entry] of Object.entries(entries)) {
@@ -80,7 +85,8 @@ for (const [name, entry] of Object.entries(entries)) {
   };
 }
 
-const baselineFile = "packages/payload-inplace/tests/packaging/feature-budgets.json";
+const baselineFile =
+  "packages/payload-inplace/tests/packaging/feature-budgets.json";
 
 if (process.argv.includes("--record"))
   fs.writeFileSync(

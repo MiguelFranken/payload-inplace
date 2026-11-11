@@ -8,12 +8,14 @@ const meta = {
   title: "Editor/Review/Compare sections",
   args: {
     side: "draft",
+    highlight: "sections",
     status: "3 changed sections",
     hint: "Switch to Published to see removed sections.",
     ready: true,
     hasPublished: true,
     canNavigate: true,
     onSide: fn(),
+    onHighlight: fn(),
     onNext: fn(),
     onClose: fn(),
   },
@@ -35,6 +37,10 @@ export const Draft: Story = {
       canvas.getByRole("button", { name: "Next changed section" }),
     );
     await expect(args.onNext).toHaveBeenCalledOnce();
+    const elements = canvas.getByRole("button", { name: "Elements" });
+    await elements.focus();
+    await userEvent.keyboard("{Enter}");
+    await expect(args.onHighlight).toHaveBeenCalledWith("elements");
   },
 };
 

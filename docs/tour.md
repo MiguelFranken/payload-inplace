@@ -43,7 +43,9 @@ Open **More tools → Compare sections** once the draft has saved. The outline a
 
 </details>
 
-Use **Next changed section** to visit other changes. Switching views leaves the saved draft intact. [Enable on-page comparison](integration.md#compare-sections-on-the-page)
+Choose **Elements** to outline the changed heading and delivery estimate directly. The next-change button follows the chosen highlight mode. Switching views leaves the saved draft intact. [Enable on-page comparison](integration.md#compare-sections-on-the-page)
+
+![Element comparison outlines the changed product heading and delivery estimate](images/ecommerce-comparison-elements.png)
 
 ## Review the saved draft
 
