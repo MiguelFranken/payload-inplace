@@ -86,6 +86,41 @@ export function focusRichEditor(
   );
 }
 
+function attachRichRoot(
+  editor: LexicalEditor,
+  element: HTMLElement,
+  editable: boolean,
+): void {
+  const style = element.style;
+  const view = element.ownerDocument.defaultView;
+  const authored = ["white-space", "word-break"].map((name) => ({
+    name,
+    value: style.getPropertyValue(name),
+    priority: style.getPropertyPriority(name),
+  }));
+  const wrapping = ["line-break", "overflow-wrap"].map((name) => ({
+    name,
+    value: view?.getComputedStyle(element).getPropertyValue(name),
+  }));
+
+  element.contentEditable = String(editable);
+  editor.setRootElement(element);
+  // Lexical sets inline wrapping defaults. Restore the host's CSS cascade.
+  for (const { name, value, priority } of authored)
+    style.setProperty(name, value, priority);
+
+  // WebKit also applies wrapping defaults to editable elements. Keep inherited
+  // rules responsive by inheriting them again when that matches the source.
+  const computed = view?.getComputedStyle(element);
+  const parent = element.parentElement;
+  for (const { name, value } of wrapping) {
+    if (!value || value === computed?.getPropertyValue(name)) continue;
+    const inherited =
+      parent && view?.getComputedStyle(parent).getPropertyValue(name);
+    style.setProperty(name, value === inherited ? "inherit" : value);
+  }
+}
+
 /** Mount a lazily loaded, non-React Lexical surface. Native Form owns the value and persistence.
  * No server acknowledgement is applied to a focused editor; dispose before changing field ownership.
  */
@@ -172,19 +207,7 @@ export function mountRichEditor({
   const state = editor.parseEditorState(JSON.stringify(document));
   state.read(() => rememberMetadata($getRoot(), document.root, metadata));
   editor.setEditorState(state);
-  if (element) {
-    // Lexical's admin-oriented defaults would override the host's line breaks
-    // and whitespace. Restore the authored declarations, including inheritance.
-    const wrapping = ["white-space", "word-break"].map((name) => ({
-      name,
-      value: element.style.getPropertyValue(name),
-      priority: element.style.getPropertyPriority(name),
-    }));
-    element.contentEditable = String(!disabled);
-    editor.setRootElement(element);
-    for (const { name, value, priority } of wrapping)
-      element.style.setProperty(name, value, priority);
-  }
+  if (element) attachRichRoot(editor, element, !disabled);
   const disposePlugins = mergeRegister(
     editor.registerCommand(
       FORMAT_TEXT_COMMAND,

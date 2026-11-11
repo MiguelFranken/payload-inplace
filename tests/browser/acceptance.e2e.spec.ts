@@ -965,6 +965,8 @@ test("starting rich-text editing preserves responsive wrapping and the viewport"
         wrapping: [
           style.whiteSpace,
           style.wordBreak,
+          style.lineBreak,
+          style.overflowWrap,
           style.textAlign,
           style.letterSpacing,
         ],

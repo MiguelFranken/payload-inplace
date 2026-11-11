@@ -3,7 +3,10 @@
 The browser regression uses a long, justified German paragraph with bold spans,
 based on the Workshops homepage. Before the fix, entering inline editing
 changed `white-space` from `normal` to `pre-wrap`, changed `word-break` to
-`break-word`, and moved the viewport eight pixels in Chromium.
+`break-word`, and moved the viewport eight pixels in Chromium. WebKit also applied
+`line-break: after-white-space` on editable elements, changing the width and
+position of bold text in a justified paragraph. A plain contenteditable
+fixture reproduced the WebKit shift independently of Lexical.
 
 At 1280 and 320 px, the test compares the original and editable paragraph and
 bold span bounds, CSS wrapping rules and page scroll. It clicks into the first
