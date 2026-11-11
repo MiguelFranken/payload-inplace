@@ -81,7 +81,9 @@ The standard CMS remains the fallback. All edits use the single native Form and 
 
 ### Compare sections on the page
 
-Open **More tools → Compare sections** after the draft has saved. The editor outlines changed top-level sections. Nested field and block changes appear on their owning section. Use **Next changed section** to move through the visible changes in page order. **Draft** shows additions and **Published** shows removals. Escape closes comparison and returns focus to the toolbar.
+Open **More tools → Compare sections** after the draft has saved. Choose **Sections** to outline changed top-level sections or **Elements** to outline changed fields with rendered bindings in the selected version. The next-change button follows the selected highlight mode. **Draft** shows additions and **Published** shows removals where the corresponding content renders. Escape closes comparison and returns focus to the toolbar.
+
+Element highlighting uses the same field, group, and stable array-row bindings as on-page editing. Choose **Sections** to see whole-section additions, removals, and moves. [Bind rendered fields](nested-bindings.md)
 
 Comparison is available with the History tool and a client `preview` renderer that consumes `useEditorPreviewData`. Use the existing block bindings on the top-level section wrappers. The Published toggle substitutes the saved published blocks at the active root for display. Resolve published relationship and media IDs the same way the renderer resolves IDs after an optimistic change. Other roots, document fields outside the active root, and server-only slots keep their existing render source. Use **Review changes** for the document-wide diff and publication.
 

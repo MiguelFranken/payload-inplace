@@ -1339,7 +1339,11 @@ test("inline section comparison switches saved views without writes or navigatio
     data: {
       _veRevision: live._veRevision,
       layout: [
-        { ...hero, heading: "A new storefront heading" },
+        {
+          ...hero,
+          heading: "A new storefront heading",
+          action: { ...hero.action, label: "Browse the collection" },
+        },
         story,
         collection,
         { blockType: "editorial", heading: "A new draft section" },
@@ -1378,6 +1382,40 @@ test("inline section comparison switches saved views without writes or navigatio
     path: testInfo.outputPath("compare-draft-desktop.png"),
   });
 
+  const elements = compare.getByRole("button", { name: "Elements" });
+  await elements.press("Enter");
+  await expect(elements).toHaveAttribute("aria-pressed", "true");
+  await expect(compare.getByText("2 changed elements")).toBeVisible();
+  await compare
+    .getByRole("button", { name: "Next changed element" })
+    .press("Enter");
+  const currentMarker = page.locator(
+    "[data-ve-comparison-marker][data-current]",
+  );
+  const expectHeadingOutline = async () => {
+    await expect(currentMarker).toBeVisible();
+    await expect(currentMarker).toHaveCSS("outline-style", "solid");
+    await expect
+      .poll(async () => {
+        const rect = await heading.boundingBox();
+        const outline = await currentMarker.boundingBox();
+        return rect && outline
+          ? Math.max(
+              Math.abs(rect.x - outline.x),
+              Math.abs(rect.y - outline.y),
+              Math.abs(rect.width - outline.width),
+              Math.abs(rect.height - outline.height),
+            )
+          : Infinity;
+      })
+      .toBeLessThan(1);
+  };
+  await expectHeadingOutline();
+  await expect(marker.filter({ hasText: "Edited" })).toHaveCount(0);
+  await page.screenshot({
+    path: testInfo.outputPath("compare-elements-desktop.png"),
+  });
+
   await compare.getByRole("button", { name: "Published" }).press("Enter");
   await expect(heading).toHaveText(hero.heading);
   await expect(
@@ -1386,13 +1424,27 @@ test("inline section comparison switches saved views without writes or navigatio
   await expect(
     preview.locator(`[data-ve-block="${questions.id}"]`).first(),
   ).toBeAttached();
-  await expect(compare.getByText(/see added sections/)).toBeVisible();
 
   await page.setViewportSize({ width: 320, height: 740 });
   await page.emulateMedia({ reducedMotion: "reduce" });
   const box = await compare.boundingBox();
   expect(box!.x).toBeGreaterThanOrEqual(0);
   expect(box!.x + box!.width).toBeLessThanOrEqual(320);
+  await expect(elements).toHaveAttribute("aria-pressed", "true");
+  await expect(compare.getByText("2 changed elements")).toBeVisible();
+  await compare
+    .getByRole("button", { name: "Next changed element" })
+    .press("Enter");
+  await expectHeadingOutline();
+  await page.screenshot({
+    path: testInfo.outputPath("compare-elements-mobile.png"),
+  });
+
+  await compare.getByRole("button", { name: "Sections" }).press("Enter");
+  await expect(compare.getByText(/see added sections/)).toBeVisible();
+  await compare
+    .getByRole("button", { name: "Next changed section" })
+    .press("Enter");
   await compare
     .getByRole("button", { name: "Next changed section" })
     .press("Enter");

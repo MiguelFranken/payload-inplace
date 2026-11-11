@@ -166,7 +166,7 @@ Runtime entrypoints have different ownership: bindings are inert; server/RSC/nat
 | Export | Kind | Contract |
 | --- | --- | --- |
 | [`createEditorMessages`](../packages/ui/src/localization/messages.ts#L22) | function | Construct an overridable UI catalogue for server renderers, launchers and active controls. Unknown locales fall back to English copy with their own Intl formatting/direction. |
-| [`EditorMessageKey`](../packages/ui/src/localization/catalogue.ts#L383) | type | See the linked declaration for the exact typed contract. |
+| [`EditorMessageKey`](../packages/ui/src/localization/catalogue.ts#L391) | type | See the linked declaration for the exact typed contract. |
 | [`EditorMessageOverrides`](../packages/ui/src/localization/messages.ts#L10) | type | See the linked declaration for the exact typed contract. |
 | [`EditorMessages`](../packages/ui/src/localization/messages.ts#L8) | type | See the linked declaration for the exact typed contract. |
 | [`EditorUIOptions`](../packages/ui/src/localization/messages.ts#L15) | interface | UI copy/formatting only. This configuration never selects a Payload content locale or expands document access. |

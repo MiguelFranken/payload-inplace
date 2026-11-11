@@ -13,6 +13,7 @@ The `ecommerce-*.png` files are original browser captures from the synthetic Sti
 | `ecommerce-rich-text.png`            | Inline Lexical editing with a selected phrase and Bold active      |
 | `ecommerce-comparison-draft.png`     | Changed product section showing the saved draft                    |
 | `ecommerce-comparison-published.png` | The same section showing the published heading                     |
+| `ecommerce-comparison-elements.png`  | Changed heading and delivery estimate outlined on the draft        |
 
 ## Reproduce
 

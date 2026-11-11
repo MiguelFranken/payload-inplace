@@ -162,6 +162,18 @@ test("capture consumer documentation and validate responsive commerce layouts", 
   await expect(edited).toBeVisible();
   await capture(page, "ecommerce-comparison-draft");
 
+  await comparison
+    .getByRole("button", { name: "Elements", exact: true })
+    .click();
+  await expect(
+    comparison.getByText("2 changed elements", { exact: true }),
+  ).toBeVisible();
+  await expect(edited).toHaveCount(0);
+  await capture(page, "ecommerce-comparison-elements");
+  await comparison
+    .getByRole("button", { name: "Sections", exact: true })
+    .click();
+
   const published = comparison.getByRole("button", {
     name: "Published",
     exact: true,
