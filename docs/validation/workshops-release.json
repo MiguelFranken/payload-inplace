@@ -1,64 +1,47 @@
 {
   "packageName": "payload-inplace",
-  "packageVersion": "0.0.10",
-  "packageSourceSHA": "c24e604693bb7f4316422072bc7725871704bafa",
-  "packageSHA256": "fbd5c5dae596df10fe48da6e43e5bd0ad2c491c92c8f664bcdb8416ffccda0d9",
-  "packageValidationRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/42633940518",
-  "appSHA": "f8b1c7d8463b5f84bd787f5b25504f41425fe12f",
+  "packageVersion": "0.1.0",
+  "packageSourceSHA": "3d069dca2a42b4b2e66db66b93a047361ae32cc2",
+  "packageSHA256": "5a592db8c63d9734dd9eed30bb992af54bc6d31dc1cfc3be227bd9645e0b6ca0",
+  "packageValidationRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/42930193384",
+  "appSHA": "abdee5903c4335b03f9b339fcf94020d5cc3cd51",
   "appPullRequest": "https://github.com/MiguelFranken/fluid-bodies/pull/397",
   "result": "passed",
-  "previousReceipt": "2026-11-05-public-0.0.9-release.json",
+  "previousReceipt": "2026-11-09-public-0.0.10-release.json",
   "workshopsUnits": {
     "passed": 3,
     "files": 2
   },
   "productionBuild": {
     "result": "passed",
-    "archiveSHA256": "fbd5c5dae596df10fe48da6e43e5bd0ad2c491c92c8f664bcdb8416ffccda0d9",
-    "installedArchiveFilesByteIdentical": 438
+    "archiveSHA256": "5a592db8c63d9734dd9eed30bb992af54bc6d31dc1cfc3be227bd9645e0b6ca0",
+    "installedArchiveFilesByteIdentical": 466
   },
   "localAcceptance": {
-    "runId": "20261109T143824Z-42217",
+    "runId": "20261111T002204Z-81916",
     "mode": "prod",
     "fixtureScope": "editor",
     "workers": 1,
     "totals": {
       "failed": 0,
-      "passed": 2,
+      "passed": 3,
       "skipped": 0,
-      "total": 2
+      "total": 3
     },
     "tests": [
       {
-        "title": "chromium > visual-editor-fields.spec.ts > catalogue hover previews a text section without changing the native draft",
+        "title": "chromium > visual-editor-fields.spec.ts > accordion settings retain and focus the selected plain or rich answer",
         "status": "passed"
       },
       {
-        "title": "chromium > visual-editor-fields.spec.ts > accordion settings retain and focus the selected plain or rich answer",
+        "title": "chromium > visual-editor.spec.ts > website editing uses the installed native Form and keeps drafts private",
+        "status": "passed"
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > homepage-shaped blocks reorder by pointer without a render loop",
         "status": "passed"
       }
     ],
-    "reporter": "https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/570",
     "sourceOverlay": "Local dependency and lockfile override with the exact CI archive. Next generated isolated output paths in tsconfig.json."
-  },
-  "publication": {
-    "version": "0.0.10",
-    "distTag": "latest",
-    "status": "publicly available",
-    "method": "GitHub Actions trusted publisher OIDC",
-    "sha256": "fbd5c5dae596df10fe48da6e43e5bd0ad2c491c92c8f664bcdb8416ffccda0d9",
-    "integrity": "sha512-YXnipsYzrjXp9XAum21jial1ntEAEW1kNlA44Sh5a8SEn0inXMlgLsvTIFjoJ3PPDjv9hcMwMGGfviyK4n1cYg==",
-    "provenance": "https://registry.npmjs.org/-/npm/v1/attestations/payload-inplace@0.0.10",
-    "workflowRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/42636814953",
-    "githubRelease": "https://github.com/MiguelFranken/payload-inplace/releases/tag/v0.0.10"
-  },
-  "publicConsumer": {
-    "appSHA": "b2fc1caa8456eabb569379b5fae4b2bb3c321841",
-    "pullRequest": "https://github.com/MiguelFranken/fluid-bodies/pull/397",
-    "packagePin": "0.0.10",
-    "frozenInstall": "passed",
-    "typecheck": "passed",
-    "installedArchiveFilesByteIdentical": 438,
-    "ciRun": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/42637493272"
   }
 }

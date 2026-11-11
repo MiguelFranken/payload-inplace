@@ -1,0 +1,64 @@
+{
+  "packageName": "payload-inplace",
+  "packageVersion": "0.0.10",
+  "packageSourceSHA": "c24e604693bb7f4316422072bc7725871704bafa",
+  "packageSHA256": "fbd5c5dae596df10fe48da6e43e5bd0ad2c491c92c8f664bcdb8416ffccda0d9",
+  "packageValidationRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/42633940518",
+  "appSHA": "f8b1c7d8463b5f84bd787f5b25504f41425fe12f",
+  "appPullRequest": "https://github.com/MiguelFranken/fluid-bodies/pull/397",
+  "result": "passed",
+  "previousReceipt": "2026-11-05-public-0.0.9-release.json",
+  "workshopsUnits": {
+    "passed": 3,
+    "files": 2
+  },
+  "productionBuild": {
+    "result": "passed",
+    "archiveSHA256": "fbd5c5dae596df10fe48da6e43e5bd0ad2c491c92c8f664bcdb8416ffccda0d9",
+    "installedArchiveFilesByteIdentical": 438
+  },
+  "localAcceptance": {
+    "runId": "20261109T143824Z-42217",
+    "mode": "prod",
+    "fixtureScope": "editor",
+    "workers": 1,
+    "totals": {
+      "failed": 0,
+      "passed": 2,
+      "skipped": 0,
+      "total": 2
+    },
+    "tests": [
+      {
+        "title": "chromium > visual-editor-fields.spec.ts > catalogue hover previews a text section without changing the native draft",
+        "status": "passed"
+      },
+      {
+        "title": "chromium > visual-editor-fields.spec.ts > accordion settings retain and focus the selected plain or rich answer",
+        "status": "passed"
+      }
+    ],
+    "reporter": "https://playwright-reporter-nine.vercel.app/teams/fluid-bodies/projects/workshops/runs/570",
+    "sourceOverlay": "Local dependency and lockfile override with the exact CI archive. Next generated isolated output paths in tsconfig.json."
+  },
+  "publication": {
+    "version": "0.0.10",
+    "distTag": "latest",
+    "status": "publicly available",
+    "method": "GitHub Actions trusted publisher OIDC",
+    "sha256": "fbd5c5dae596df10fe48da6e43e5bd0ad2c491c92c8f664bcdb8416ffccda0d9",
+    "integrity": "sha512-YXnipsYzrjXp9XAum21jial1ntEAEW1kNlA44Sh5a8SEn0inXMlgLsvTIFjoJ3PPDjv9hcMwMGGfviyK4n1cYg==",
+    "provenance": "https://registry.npmjs.org/-/npm/v1/attestations/payload-inplace@0.0.10",
+    "workflowRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/42636814953",
+    "githubRelease": "https://github.com/MiguelFranken/payload-inplace/releases/tag/v0.0.10"
+  },
+  "publicConsumer": {
+    "appSHA": "b2fc1caa8456eabb569379b5fae4b2bb3c321841",
+    "pullRequest": "https://github.com/MiguelFranken/fluid-bodies/pull/397",
+    "packagePin": "0.0.10",
+    "frozenInstall": "passed",
+    "typecheck": "passed",
+    "installedArchiveFilesByteIdentical": 438,
+    "ciRun": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/42637493272"
+  }
+}
