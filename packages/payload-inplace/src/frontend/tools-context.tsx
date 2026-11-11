@@ -17,6 +17,7 @@ import type { Activation, BlockIdentity, EditorTool } from "../types";
 export interface ResolvedEditorExtension {
   showInDock?: boolean;
   requireSaved?: boolean;
+  blockTypes?: string[];
   id: string;
   kind: "panel" | "control" | "action";
   label: string;
@@ -43,6 +44,7 @@ interface VisualEditorContext {
     id: string,
     input?: unknown,
     subject?: string,
+    block?: BlockIdentity,
   ) => Promise<{ message: string; refresh?: boolean }>;
 }
 
@@ -87,7 +89,12 @@ export function EditorToolsProvider({
     [],
   );
   const runAction = useCallback(
-    async (id: string, input?: unknown, subject?: string) => {
+    async (
+      id: string,
+      input?: unknown,
+      subject?: string,
+      block?: BlockIdentity,
+    ) => {
       if (!extensions.some((e) => e.id === id && e.kind === "action"))
         throw new Error(t("actionUnavailable"));
       const response = await fetch(
@@ -102,6 +109,7 @@ export function EditorToolsProvider({
               form.getData()._veRevision ?? form.getData().updatedAt,
             input,
             subject,
+            block,
           }),
         },
       );

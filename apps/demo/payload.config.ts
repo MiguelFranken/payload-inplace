@@ -354,6 +354,15 @@ export const editorOptions: VisualEditorOptions = {
       Component: "./components/DemoPageTools#DemoPageTools",
     },
     {
+      id: "check-story",
+      kind: "action",
+      blockTypes: ["editorial"],
+      label: { en: "Check story section", de: "Studio-Abschnitt prüfen" },
+      run: async ({ block }) => ({
+        message: `Checked the saved story at ${block?.path}.`,
+      }),
+    },
+    {
       id: "check-content",
       kind: "action",
       confirmation: {

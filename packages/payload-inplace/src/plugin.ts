@@ -11,6 +11,7 @@ import { trustedEditorOrigins } from "./server/origins";
 import { readEditorCookie, validatePagePath } from "./server/page-context";
 import type { Config, Plugin } from "payload";
 import type { VisualEditorOptions } from "./types";
+import { resolveActionBlock } from "./server/action-block";
 import { resolveTools } from "./server/tools";
 import { configureCollections } from "./server/collections";
 import { candidateMatches, signDocumentReview } from "./server/review";
@@ -203,12 +204,28 @@ export function visualEditor(options: VisualEditorOptions): Plugin {
                   },
                   { status: 409, headers },
                 );
+              const block = action.blockTypes
+                ? await resolveActionBlock(
+                    { req, target: context.target, document },
+                    input.block,
+                    action.blockTypes,
+                  )
+                : undefined;
+              if (
+                Boolean(action.blockTypes) !== Boolean(block) ||
+                (!action.blockTypes && input.block !== undefined)
+              )
+                return Response.json(
+                  { error: "Action unavailable" },
+                  { status: 403, headers },
+                );
               const result = await action.run({
                 req,
                 target: context.target,
                 document,
                 input: input.input,
                 subject: input.subject,
+                block,
               });
               return Response.json(
                 {

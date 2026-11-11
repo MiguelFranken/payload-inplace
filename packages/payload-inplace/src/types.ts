@@ -1,4 +1,5 @@
 import type { PayloadComponent, PayloadRequest } from "payload";
+import type { BlockIdentity } from "@payload-inplace/core/types";
 
 /** Exact document scope for authoring. Root paths are validated against configured block schemas. */
 export type CollectionEditorDocument = {
@@ -157,10 +158,17 @@ export interface EditorPanelExtension extends ExtensionBase {
  */
 export interface EditorActionExtension extends ExtensionBase {
   kind: "action";
+  /** Restrict this action to the on-page menus of these block types. */
+  blockTypes?: string[];
   /** Domain actions normally operate on a saved revision. */
   requireSaved?: boolean;
   run: (
-    context: EditorCapabilityContext & { input: unknown; subject?: string },
+    context: EditorCapabilityContext & {
+      input: unknown;
+      subject?: string;
+      /** Resolved from the authorized saved draft for block actions. */
+      block?: EditorActionBlock;
+    },
   ) => Promise<{ message: string; refresh?: boolean }>;
   confirmation?: {
     title: EditorLabel;
@@ -168,6 +176,13 @@ export interface EditorActionExtension extends ExtensionBase {
     confirmLabel: EditorLabel;
     destructive?: boolean;
   };
+}
+
+/** Current location of a block action target in the authorized saved draft. */
+export interface EditorActionBlock {
+  identity: BlockIdentity;
+  blockType: string;
+  path: string;
 }
 
 /** Consumer controls render inside the contextual surface and can use native fields or invoke capability-checked actions. */

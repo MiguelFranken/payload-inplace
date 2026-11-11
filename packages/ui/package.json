@@ -25,6 +25,7 @@
     "./canvas/selection-outline": "./src/canvas/selection-outline/SelectionOutline.tsx",
     "./sections/catalogue": "./src/sections/catalogue/SectionCatalogueView.tsx",
     "./inline-editing/formatting-toolbar": "./src/inline-editing/formatting-toolbar/FormattingToolbar.tsx",
+    "./sections/block-actions": "./src/sections/block-actions/BlockActions.tsx",
     "./sections/section-row": "./src/sections/section-row/SectionRow.tsx",
     "./review/version-timeline": "./src/review/version-timeline/VersionTimeline.tsx",
     "./review/conflict-choices": "./src/review/conflict-choices/ConflictChoices.tsx"

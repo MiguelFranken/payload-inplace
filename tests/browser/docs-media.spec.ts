@@ -219,6 +219,33 @@ test("capture consumer documentation and validate responsive commerce layouts", 
   const phrase = "Built to last.";
   await createShopEditor(page, { richText: copy });
   const story = page.locator("#studio-story");
+  await story.evaluate((element) => {
+    element.scrollIntoView({ block: "start" });
+    window.scrollBy(0, -240);
+  });
+  await story.click({ position: { x: 12, y: 16 } });
+  const caption = page
+    .locator("[data-ve-selection-caption]")
+    .filter({ visible: true });
+  await expect(
+    caption.getByRole("button", { name: "Move section up" }),
+  ).toBeEnabled();
+  await caption.getByRole("button", { name: "More section actions" }).click();
+  const positionAction = page.getByRole("menuitem", {
+    name: "Move to position",
+  });
+  await expect(positionAction).toBeVisible();
+  await capture(page, "ecommerce-block-actions");
+  await positionAction.click();
+  const positions = page.getByRole("complementary", {
+    name: "Move to position",
+  });
+  await expect(
+    positions.getByRole("button", { name: /^Position 2/ }),
+  ).toBeFocused();
+  await capture(page, "ecommerce-block-positions");
+  await page.keyboard.press("Escape");
+  await expect(positions).toHaveCount(0);
   const description = story.locator('[data-ve-field="description"]');
   await description.click();
   await description.fill("");

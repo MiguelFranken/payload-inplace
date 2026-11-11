@@ -41,6 +41,10 @@ A server-only renderer can still insert native blocks but cannot display an unsa
 
 ## Reordering and history
 
-Canvas and list moves resolve stable section IDs against the current native Form and use the same structural command. The source and destination must share a blocks field. Permissions and the configured ordering constraints apply to both surfaces. Dragging makes no draft write until a valid drop. The Sections list provides a keyboard alternative when a dense layout leaves no space for canvas controls.
+Select a section background to show the arrows in its caption. Use **Move section up** or **Move section down** to swap with the previous or next section. Open **More section actions → Move to position** to jump to a specific position. The picker describes each destination relative to the section already there.
+
+![Move to position panel shows Position 2 before Fewer things. Better chosen. and Position 4 after Good to know](../images/ecommerce-block-positions.png)
+
+Caption, canvas and list moves resolve stable section IDs against the current native Form and use the same structural command. The source and destination must share a blocks field. Permissions and the configured ordering constraints apply to both surfaces. Dragging makes no draft write until a valid drop. The Sections list provides a keyboard alternative when a dense layout leaves no space for canvas controls.
 
 Undo and redo affect only the structural operation. They preserve newer text edits and unrelated rows. If the original parent or row has disappeared, the editor reports a conflict instead of moving the row now at the old index.

@@ -22,7 +22,7 @@ export const buttonVariants = cva(
         canvas:
           "pve:bg-[var(--pve-surface,#fff)] pve:text-[var(--pve-text,#202127)] pve:rounded-full pve:border-[var(--pve-selected-border,#a8abb4)] pve:shadow-[0_2px_10px_#00000026,0_0_0_4px_#ffffffb3] pve:hover:bg-[var(--pve-hover,#e9ebef)] pve:hover:border-[var(--pve-text,#202127)]",
         selection:
-          "pve:border-transparent pve:rounded-sm pve:bg-transparent pve:text-white pve:hover:bg-white/20 pve:focus-visible:ring-white pve:focus-visible:ring-offset-0",
+          "pve:border-transparent pve:rounded-sm pve:bg-transparent pve:text-white pve:hover:bg-white/20 pve:aria-expanded:bg-white/20 pve:focus-visible:ring-white pve:focus-visible:ring-offset-0",
         destructive:
           "pve:rounded-lg pve:border-transparent pve:bg-[var(--pve-danger-soft,#fff1f0)] pve:text-[var(--pve-danger,#b42318)] pve:hover:bg-red-100",
       },

@@ -8,6 +8,8 @@ The `ecommerce-*.png` files are original browser captures from the synthetic Sti
 | `ecommerce-editor.png`               | Direct product heading editing and joined selection caption        |
 | `ecommerce-media.png`                | Selected image and reusable contextual media library               |
 | `ecommerce-fields.png`               | Native array-item fields with the conditional lead-time control    |
+| `ecommerce-block-actions.png`        | Selected Studio story caption and its section actions menu         |
+| `ecommerce-block-positions.png`      | Eligible final positions for the selected Studio story             |
 | `ecommerce-sections.png`             | Searchable section catalogue and unsaved canvas example            |
 | `ecommerce-review.png`               | Field-level review with partial text and whole checkbox highlights |
 | `ecommerce-rich-text.png`            | Inline Lexical editing with a selected phrase and Bold active      |

@@ -97,7 +97,7 @@ export function EditorToolsMenu({
           </>
         )}
         {editorTools.extensions
-          .filter((e) => e.showInDock !== false)
+          .filter((e) => !e.blockTypes && e.showInDock !== false)
           .map((e) => (
             <DropdownMenuItem key={e.id} onClick={() => onExtension(e)}>
               <PanelsTopLeft size={16} />

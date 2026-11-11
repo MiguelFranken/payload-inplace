@@ -11,19 +11,19 @@ import {
   useFormProcessing,
   useFormBackgroundProcessing,
 } from "@payloadcms/ui";
-import {
-  useVisualEditor,
-  type ResolvedEditorExtension,
-} from "./tools-context";
+import { useVisualEditor, type ResolvedEditorExtension } from "./tools-context";
+import type { BlockIdentity } from "../types";
 import { chrome } from "../admin/chrome";
 import { useModalDismiss } from "../admin/native-accessibility";
 
 /** Explicit consumer action with optional confirmation, native busy state and a recoverable error. Nothing runs merely by opening a panel or visiting a URL. */
 export function ExtensionAction({
   extension,
+  block,
   onResult,
 }: {
   extension: ResolvedEditorExtension;
+  block?: BlockIdentity;
   onResult: (message: string) => void;
 }) {
   const { t } = useEditorMessages();
@@ -43,7 +43,12 @@ export function ExtensionAction({
     setBusy(true);
     setError("");
     try {
-      const result = await editor.runAction(extension.id);
+      const result = await editor.runAction(
+        extension.id,
+        undefined,
+        undefined,
+        block,
+      );
       onResult(result.message);
       setConfirm(false);
       closeModal(slug);

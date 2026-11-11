@@ -53,6 +53,14 @@ import { locateVersionChange } from "./controllers/version-location";
 import { resolveBinding } from "../schema/resolve-binding";
 import { canUpdateInlineField } from "../schema/inline-access";
 
+import {
+  BlockActions,
+  BlockPositions,
+} from "@payload-inplace/ui/sections/block-actions";
+import {
+  sectionMoveDestinations,
+  trackSectionMove,
+} from "./controllers/section-moves";
 import { sectionHeading } from "../schema/section-heading";
 import { useNativeStructure } from "./controllers/native-structure";
 import { usePanelNavigation } from "./controllers/panel-navigation";
@@ -95,6 +103,7 @@ import { EditorToolsMenu } from "./EditorToolsMenu";
 import {
   BlockReorder,
   sectionElement,
+  scrollToSection,
   showSectionOnPage,
 } from "./BlockReorder";
 import type { NativeSection } from "../schema/tree";
@@ -206,6 +215,11 @@ export function FrontendControls({
   const dock = useRef<HTMLElement>(null),
     rootElement = useRef<HTMLDivElement>(null);
   const [actionResult, setActionResult] = useState("");
+  const [moveAnnouncement, setMoveAnnouncement] = useState("");
+  const pendingReveal = useRef<{
+    selection: InspectionTarget;
+    track: ReturnType<typeof trackSectionMove>;
+  }>(undefined);
   const form = useForm(),
     info = useDocumentInfo(),
     { config } = useConfig(),
@@ -220,7 +234,8 @@ export function FrontendControls({
   const inspectButton = useRef<HTMLButtonElement>(null),
     sectionsButton = useRef<HTMLButtonElement>(null),
     toolsButton = useRef<HTMLButtonElement>(null),
-    launcherButton = useRef<HTMLButtonElement>(null);
+    launcherButton = useRef<HTMLButtonElement>(null),
+    blockActionsButton = useRef<HTMLButtonElement>(null);
   const modified = useFormModified(),
     processing = useFormProcessing(),
     background = useFormBackgroundProcessing();
@@ -382,6 +397,17 @@ export function FrontendControls({
           )
         )
       ) {
+        if (
+          panel.kind === "move-section" ||
+          (customTool &&
+            editorTools.extensions.some(
+              (entry) => entry.id === customTool && entry.blockTypes,
+            ))
+        ) {
+          closeView();
+          requestAnimationFrame(() => blockActionsButton.current?.focus());
+          return;
+        }
         const focus =
           validationPath || customTool || editorTools.openPanels.length
             ? toolsButton.current
@@ -409,6 +435,9 @@ export function FrontendControls({
     customTool,
     validationPath,
     editorTools.openPanels,
+    editorTools.extensions,
+    panel.kind,
+    closeView,
     outline,
   ]);
   function action(type: "up" | "down" | "duplicate" | "remove") {
@@ -653,6 +682,68 @@ export function FrontendControls({
     selected?.block?.slug || t("section"),
   );
   const profile = blockControls?.[selected?.block?.slug || ""];
+  const blockSelection =
+    selected && selection && !selection.field && !selection.fields;
+  const canMoveSections = editorTools.tools.includes("sections");
+  const destinations =
+    selected && canMoveSections && !disabled
+      ? sectionMoveDestinations(
+          selected,
+          sections,
+          form.getDataByPath(selected.parent) || [],
+          selected.parent === context.target.root ? policy?.first : undefined,
+        )
+      : [];
+  const above = destinations.find(
+    (section) => section.index === selected!.index - 1,
+  );
+  const below = destinations.find(
+    (section) => section.index === selected!.index + 1,
+  );
+  const movePanel = panel.kind === "move-section";
+  const blockActionEntries =
+    blockSelection && !disabled && selected.block
+      ? editorTools.extensions.filter((entry) =>
+          entry.blockTypes?.includes(selected.block!.slug),
+        )
+      : [];
+  function moveSelection(destination: NativeSection) {
+    if (!selected || !selection) return false;
+    if (
+      commandFor(selected, {
+        type: "move",
+        identity: selected.identity,
+        over: destination.identity,
+      })
+    )
+      return false;
+    pendingReveal.current = {
+      selection,
+      track: trackSectionMove(
+        () => sectionElement(destination, documentReference(context.target)),
+        selected.index < destination.index,
+      ),
+    };
+    setMoveAnnouncement(
+      t("sectionMoved", {
+        label: title,
+        position: destination.index + 1,
+      }),
+    );
+    return true;
+  }
+  function revealMovedSection(element: Element, rect: DOMRect) {
+    const move = pendingReveal.current;
+    if (!move) return;
+    if (move.selection !== selection) {
+      pendingReveal.current = undefined;
+      return;
+    }
+    const status = move.track(element, rect);
+    if (status === "waiting") return;
+    pendingReveal.current = undefined;
+    if (status === "offscreen") scrollToSection(rect);
+  }
   const configuredFields = selected?.block
     ? projectFields(selected.block.fields, profile?.fields)
     : [];
@@ -726,11 +817,24 @@ export function FrontendControls({
     });
   const inlinePending = strategy.kind === "pending";
   useEffect(() => {
-    if (selection && !canInline && !inlinePending && !disabled)
+    if (
+      selection &&
+      !blockSelection &&
+      !canInline &&
+      !inlinePending &&
+      !disabled
+    )
       setSettingsOpen(true);
     // Each pick is a fresh user intent, even when the DOM element and field are
     // unchanged. A closed row/settings panel must reopen on the next pick.
-  }, [selection, canInline, inlinePending, disabled, setSettingsOpen]);
+  }, [
+    selection,
+    blockSelection,
+    canInline,
+    inlinePending,
+    disabled,
+    setSettingsOpen,
+  ]);
   const fieldPanel =
     selected &&
     projectSectionFieldPanel({
@@ -752,6 +856,7 @@ export function FrontendControls({
     expanded &&
     (panel.kind === "versions" ||
       panel.kind === "conflict" ||
+      movePanel ||
       outline ||
       (selected && settingsOpen) ||
       Boolean(extension) ||
@@ -859,7 +964,18 @@ export function FrontendControls({
           <InspectionLayer
             inspecting={inspecting && !recovery.failure && !form.disabled}
             highlighting={highlighting && !hasPanel}
-            selected={hasPanel && !settingsOpen ? undefined : selection}
+            selected={
+              hasPanel && !settingsOpen && !movePanel && !extension?.blockTypes
+                ? undefined
+                : selection
+            }
+            resolveSelectedElement={
+              blockSelection
+                ? () =>
+                    sectionElement(selected, documentReference(context.target))
+                : undefined
+            }
+            onSelectedRect={revealMovedSection}
             onPick={pick}
             accept={(target) =>
               !target.document ||
@@ -891,6 +1007,24 @@ export function FrontendControls({
                   >
                     <Settings2 size={15} aria-hidden="true" />
                   </ChromeButton>
+                  {blockSelection && !settingsOpen && (
+                    <BlockActions
+                      triggerRef={blockActionsButton}
+                      showArrows={canMoveSections}
+                      onUp={above ? () => moveSelection(above) : undefined}
+                      onDown={below ? () => moveSelection(below) : undefined}
+                      onMove={
+                        destinations.length
+                          ? () => openView({ kind: "move-section" })
+                          : undefined
+                      }
+                      actions={blockActionEntries.map((entry) => ({
+                        id: entry.id,
+                        label: entry.label,
+                        onSelect: () => setCustomTool(entry.id),
+                      }))}
+                    />
+                  )}
                   {reset && (
                     <ChromeButton
                       variant="selection"
@@ -1097,7 +1231,7 @@ export function FrontendControls({
                     <ChromeButton
                       size="icon"
                       aria-label={t("moveSectionUp")}
-                      disabled={disabled || selected.index === 0}
+                      disabled={!above}
                       onClick={() => action("up")}
                     >
                       <ArrowUp size={16} />
@@ -1105,7 +1239,7 @@ export function FrontendControls({
                     <ChromeButton
                       size="icon"
                       aria-label={t("moveSectionDown")}
-                      disabled={disabled || fixedSelected}
+                      disabled={!below}
                       onClick={() => action("down")}
                     >
                       <ArrowDown size={16} />
@@ -1293,27 +1427,75 @@ export function FrontendControls({
               </div>
             </Floatable>
           )}
-          {expanded && extension && !outline && !settingsOpen && (
+          {expanded && movePanel && blockSelection && (
             <Floatable
-              title={extension.label}
-              returnFocus={toolsButton}
-              width={extension.width}
-              onClose={() => {
-                editorTools.closePanel(extension.id);
-                setCustomTool(null);
-              }}
+              title={t("moveSectionToPosition")}
+              returnFocus={blockActionsButton}
+              onClose={() => closeView("move-section")}
             >
-              {extension.kind === "action" ? (
-                <ExtensionAction
-                  extension={extension}
-                  onResult={setActionResult}
-                />
-              ) : (
-                extension.content
-              )}
+              <BlockPositions
+                positions={destinations.map((destination) => ({
+                  index: destination.index,
+                  label: t(
+                    destination.index < selected.index
+                      ? "moveBeforeSection"
+                      : "moveAfterSection",
+                    {
+                      label:
+                        sectionHeading(destination, form.getFields()) ||
+                        localizedLabel(
+                          destination.block?.labels?.singular,
+                          uiLocale,
+                          destination.block?.slug || t("section"),
+                        ),
+                    },
+                  ),
+                  onSelect: () => {
+                    if (!moveSelection(destination)) return;
+                    closeView("move-section");
+                    requestAnimationFrame(() =>
+                      blockActionsButton.current?.focus({
+                        preventScroll: true,
+                      }),
+                    );
+                  },
+                }))}
+              />
             </Floatable>
           )}
+          {expanded &&
+            extension &&
+            !outline &&
+            !settingsOpen &&
+            (!extension.blockTypes || blockSelection) && (
+              <Floatable
+                title={extension.label}
+                returnFocus={
+                  extension.blockTypes ? blockActionsButton : toolsButton
+                }
+                width={extension.width}
+                onClose={() => {
+                  editorTools.closePanel(extension.id);
+                  setCustomTool(null);
+                }}
+              >
+                {extension.kind === "action" ? (
+                  <ExtensionAction
+                    extension={extension}
+                    block={
+                      extension.blockTypes ? selected?.identity : undefined
+                    }
+                    onResult={setActionResult}
+                  />
+                ) : (
+                  extension.content
+                )}
+              </Floatable>
+            )}
         </div>
+        <p className="pve:sr-only" role="status">
+          {moveAnnouncement}
+        </p>
         <div
           ref={feedbackStack}
           className="pve:fixed pve:right-3 pve:bottom-3 pve:z-80 pve:max-w-[calc(100vw-24px)] pve:sm:right-5 pve:sm:bottom-4"
