@@ -2,6 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { createShopEditor } from "./testing/editor-fixtures";
 
 const output = path.resolve(
   process.env.DOCS_MEDIA_OUTPUT || "test-results/docs-media",
@@ -142,7 +143,38 @@ test("capture consumer documentation and validate responsive commerce layouts", 
   await expect(
     page.getByRole("button", { name: "Publish reviewed draft", exact: true }),
   ).toBeEnabled();
+  const availability = page.locator('[data-ve-diff-path$=".available"]');
+  await expect(availability.locator("del")).toHaveText("Yes");
+  await expect(availability.locator("ins")).toHaveText("No");
   await capture(page, "ecommerce-review");
+
+  await page.getByRole("button", { name: "Keep editing" }).click();
+  await page.getByRole("button", { name: "More tools" }).click();
+  await page.getByRole("menuitem", { name: "Compare sections" }).click();
+  const comparison = page.getByRole("region", { name: "Compare sections" });
+  const edited = page
+    .locator("[data-ve-comparison-marker]")
+    .filter({ hasText: "Edited" });
+  await expect(
+    comparison.getByRole("button", { name: "Draft", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(heading).toHaveText("Arc lounge chair — natural oak");
+  await expect(edited).toBeVisible();
+  await capture(page, "ecommerce-comparison-draft");
+
+  const published = comparison.getByRole("button", {
+    name: "Published",
+    exact: true,
+  });
+  await published.click();
+  await expect(published).toHaveAttribute("aria-pressed", "true");
+  await expect(heading).toHaveText("Arc lounge chair");
+  await expect(edited).toBeVisible();
+  await capture(page, "ecommerce-comparison-published");
+  await page.keyboard.press("Escape");
+  await expect(comparison).toHaveCount(0);
+  await expect(heading).toHaveText("Arc lounge chair — natural oak");
+
   await activate(page, "/shop");
   const hero = page.locator("main > [data-ve-block]").first();
   await hero.scrollIntoViewIfNeeded();
@@ -170,5 +202,45 @@ test("capture consumer documentation and validate responsive commerce layouts", 
       exact: true,
     }),
   ).toHaveCount(0);
+  const copy =
+    "Natural oak, a softly woven seat, and a solid frame. Built to last.";
+  const phrase = "Built to last.";
+  await createShopEditor(page, { richText: copy });
+  const story = page.locator("#studio-story");
+  const description = story.locator('[data-ve-field="description"]');
+  await description.click();
+  await description.fill("");
+  await expect(
+    page.getByRole("status", { name: "Draft saved", exact: true }),
+  ).toBeVisible();
+
+  const body = story.locator('[data-ve-field="body"]');
+  await body.click();
+  const editable = page.locator(
+    '[data-ve-inline-active][contenteditable="true"]',
+  );
+  const formatting = page.getByRole("toolbar", { name: "Text formatting" });
+  const bold = formatting.getByRole("button", { name: "Bold", exact: true });
+  await expect(editable).toHaveText(copy);
+  await editable.locator("p").evaluate((paragraph, phrase) => {
+    const text = document
+      .createTreeWalker(paragraph, NodeFilter.SHOW_TEXT)
+      .nextNode();
+    const start = text?.textContent?.indexOf(phrase) ?? -1;
+    if (!text || start < 0) throw new Error("Missing rich-text fixture phrase");
+    const range = document.createRange();
+    range.setStart(text, start);
+    range.setEnd(text, start + phrase.length);
+    const selection = getSelection()!;
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }, phrase);
+  await bold.click();
+  await expect(bold).toHaveAttribute("aria-pressed", "true");
+  await expect(editable.locator("strong")).toHaveText(phrase);
+  await expect(
+    page.getByRole("button", { name: "Review changes", exact: true }),
+  ).toBeEnabled();
+  await capture(page, "ecommerce-rich-text");
   expect(errors).toEqual([]);
 });

@@ -17,7 +17,9 @@ Import the binding helper from `payload-inplace/bindings` and `RichText` from yo
 
 ## What editors see
 
-Selecting compatible content opens an inline surface with compact formatting controls near the selection/caret. Bold, italic and underline reflect the current selection. Available commands follow the native field's enabled features. Settings in the selection caption switch to native fields, retaining the value and focusing the selected field.
+Selecting compatible content opens a formatting toolbar near the selection or caret. Bold, italic and underline reflect the current selection. Available commands follow the native field's enabled features. Settings in the selection caption switch to native fields, retaining the value and focusing the selected field.
+
+![A selected phrase in the studio story with the Bold button active above it](../images/ecommerce-rich-text.png)
 
 The inline adapter preserves the renderer's presentation wrapper chain and semantic node classes. Existing React output remains mounted while a temporary twin owns editable DOM; native `useField` owns structured JSON. Saving never converts the field to HTML or plain text. Newly added semantic nodes use compatible shared classes. Test your custom renderer at its actual responsive breakpoints; arbitrary selector-dependent layouts cannot be inferred universally.
 

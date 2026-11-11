@@ -1,12 +1,16 @@
 # A tour of the editor
 
-The bundled Still & Form commerce demo uses real native Payload schemas and synthetic content. These are unedited browser captures, not UI mockups. [Run the demo](../CONTRIBUTING.md#run-the-demo); its footer links to the synthetic login. Sign in, return to the page and press the edit icon.
+These browser captures come from the Still & Form demo, which uses native Payload schemas and synthetic content. The demo footer links to the test login. Sign in, return to the page, and press the edit icon. [Run the demo](../CONTRIBUTING.md#run-the-demo)
 
 ## Write directly on the website
 
 ![Inline product heading and compact editor dock](images/ecommerce-editor.png)
 
-Select a terminal heading or paragraph and type. Rich-text fields offer the compatible native-backed formatting surface. Optional hover highlighting helps find targets; direct selections work without it. Settings in the joined caption open native fields. [Bindings](nested-bindings.md) · [Rich text](guides/rich-text.md).
+Select a heading or paragraph and type. Turn on hover highlighting to find editable fields, or select a field directly. Use the settings icon in the selection caption to open native fields. [Bind rendered fields](nested-bindings.md)
+
+![The inline rich-text toolbar sits above the selected studio copy with Bold active](images/ecommerce-rich-text.png)
+
+Select part of a rich-text paragraph to see its active formatting in the toolbar. The text keeps the typography and layout of the site while you edit. [Set up inline rich text](guides/rich-text.md)
 
 ## Choose media visually
 
@@ -26,11 +30,26 @@ This finish is one row inside the product's array. Its SKU, native checkbox and 
 
 Hover or focus an option to preview it where the plus was opened. Closing cancels it without a save; insertion uses native defaults. Use the section list for locate, settings and pointer/keyboard reordering. [Catalogue configuration](guides/sections.md).
 
+## Compare sections on the page
+
+Open **More tools → Compare sections** once the draft has saved. The outline and **Edited** marker identify the product section containing changes. Switch between **Draft** and **Published** to compare the heading on the same page.
+
+![Draft comparison shows Arc lounge chair — natural oak inside the outlined product section](images/ecommerce-comparison-draft.png)
+
+<details>
+<summary>See the same section in Published view</summary>
+
+![Published comparison shows the original Arc lounge chair heading in the same outlined section](images/ecommerce-comparison-published.png)
+
+</details>
+
+Use **Next changed section** to visit other changes. Switching views leaves the saved draft intact. [Enable on-page comparison](integration.md#compare-sections-on-the-page)
+
 ## Review the saved draft
 
-![Changed-only review before publishing](images/ecommerce-review.png)
+![Review dialog with a highlighted heading suffix, a whole Yes-to-No change, and added lead time](images/ecommerce-review.png)
 
-Compare the draft with published content or the session baseline. Successful reviewed publication closes editing; another visit still sees published content until that action succeeds. [Publishing and saved versions](guides/publishing.md).
+**Review changes** shows the exact fields that differ from the published document or the draft when you opened the editor. The heading highlights the added words, while availability shows the complete **Yes** and **No** values. Publishing the reviewed draft closes editing. [Publishing and saved versions](guides/publishing.md)
 
 ## Your existing website stays yours
 

@@ -4,9 +4,17 @@ Inline input changes the native Form immediately. The optimistic renderer reflec
 
 Drafts are **shared Payload drafts**, not private per-editor branches. Another authorized editor or the native admin can change the same document. Postgres revision guards reject stale writes, and optional native advisory locks pause a foreign user's active session. See [conflicts and locks](../implementation/conflicts-and-locks.md).
 
+## Compare sections on the page
+
+After the draft saves, choose **More tools → Compare sections**. The editor outlines changed sections in the page itself. Switch between **Draft** and **Published** to see how the saved content looks in context. [See both views in the tour](../tour.md#compare-sections-on-the-page) · [Set up the preview renderer](../integration.md#compare-sections-on-the-page)
+
 ## Review before publishing
 
-Open Review changes from the icon dock. The changed-only comparison can use the published document or the draft present at the start of the current editing session. The latter means session changes, not a chronological list of individual keystrokes. Native labels describe changed leaves; moves/additions/removals follow stable row identity. Rich text, relationships and opaque JSON are compared as atomic native values.
+Open **Review changes** from the toolbar. Compare the saved draft with **Published** or use **Since opening** to compare it with the draft at the start of the session. The review lists changed fields, and section moves, additions, and removals follow stable row identities.
+
+![The review highlights added words in Heading and the full Yes and No values in Available](../images/ecommerce-review.png)
+
+Text can retain shared wording while highlighting the edit. Checkboxes, numbers, dates, choices, and references are shown as whole values. Formatting-only rich-text changes are called out when the visible text stays the same.
 
 The server signs the saved revision/content under current access. Publication must match that review; subsequent edits or another writer require a fresh review. Saving a draft does not publish it. Once reviewed publication succeeds, authoring closes and the same website returns to published mode; reopen Edit page to start again. Failed publication retains the editor and working copy.
 

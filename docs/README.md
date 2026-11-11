@@ -4,12 +4,12 @@ Edit your existing Payload v3 website without moving the work into the admin UI.
 
 ## Start here
 
-| Guide                                 | Use it to                                                                     |
-| ------------------------------------- | ----------------------------------------------------------------------------- |
-| [Getting started](getting-started.md) | Install, connect the same-page entries and verify your first saved draft      |
-| [Editor tour](tour.md)                | See text, media, native settings, sections and review in the commerce demo    |
-| [Compatibility](compatibility.md)     | Check exact Payload/Next peer versions before installing                      |
-| [Troubleshooting](troubleshooting.md) | Diagnose missing targets, blank fields, styling, previews and denied requests |
+| Guide                                 | Use it to                                                                              |
+| ------------------------------------- | -------------------------------------------------------------------------------------- |
+| [Getting started](getting-started.md) | Install, connect the same-page entries and verify your first saved draft               |
+| [Editor tour](tour.md)                | See inline editing, media, section previews and draft comparisons in the commerce demo |
+| [Compatibility](compatibility.md)     | Check exact Payload/Next peer versions before installing                               |
+| [Troubleshooting](troubleshooting.md) | Diagnose missing targets, blank fields, styling, previews and denied requests          |
 
 ## Build your integration
 
@@ -18,7 +18,7 @@ Edit your existing Payload v3 website without moving the work into the admin UI.
 - [Media selection](guides/media.md): register the shared image picker or your own authorized library.
 - [Sections and hover previews](guides/sections.md): catalogue examples, native defaults, insertion and reorder.
 - [Controls and theming](guides/customization.md): field profiles, panels, custom strategies and CSS variables.
-- [Drafts, review and publication](guides/publishing.md): shared drafts, two comparisons, versions and recovery.
+- [Drafts, review and publication](guides/publishing.md): shared drafts, on-page comparison, field-level review, versions and recovery.
 - [Same-page host integration](integration.md): complete runtime, routing and server-function contracts.
 - [Frontend component map](frontend-component-map.md): native fields without the admin application shell.
 - [Security and caching](guides/security.md): current-user access, trusted origins and published/active isolation.
