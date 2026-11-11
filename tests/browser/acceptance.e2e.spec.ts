@@ -897,6 +897,113 @@ test("compact rich-text toolbar follows selection and reflects existing formatti
   });
 });
 
+test("starting rich-text editing preserves responsive wrapping and the viewport", async ({
+  page,
+}, testInfo) => {
+  const paragraph = {
+    type: "paragraph",
+    version: 1,
+    format: "",
+    indent: 0,
+    direction: null,
+    children: [
+      ["In unserer  ", 0],
+      ["Schmuckwerkstatt in der Alten Feuerwache Köln", 1],
+      [" erwartet dich ein gemütlicher ", 0],
+      ["Workshop-Raum", 1],
+      [
+        ", in dem du verschiedene Techniken der Schmuckgestaltung ausprobieren kannst.",
+        0,
+      ],
+    ].map(([text, format]) => ({
+      type: "text",
+      version: 1,
+      text,
+      format,
+      detail: 0,
+      mode: "normal",
+      style: "",
+    })),
+  };
+  await createShopEditor(page, {
+    richBody: {
+      root: {
+        type: "root",
+        version: 1,
+        format: "",
+        indent: 0,
+        direction: null,
+        children: Array.from({ length: 7 }, () => paragraph),
+      },
+    },
+  });
+  await page.addStyleTag({
+    content: `
+      #studio-story [data-ve-field="body"]:last-child .payload-richtext {
+        white-space: normal;
+        word-break: normal;
+        text-align: justify;
+        letter-spacing: 0.02em;
+      }
+    `,
+  });
+  await page.evaluate(() => document.fonts.ready);
+  const body = page
+    .locator('#studio-story [data-ve-field="body"]')
+    .filter({ visible: true });
+  const editable = page.locator(
+    '[data-ve-inline-active][contenteditable="true"]',
+  );
+  const metrics = () =>
+    body.evaluate((field) => {
+      const paragraph = field.querySelector("p")!;
+      const box = paragraph.getBoundingClientRect();
+      const emphasis = paragraph.querySelector("strong")!;
+      const word = emphasis.getBoundingClientRect();
+      const style = getComputedStyle(paragraph);
+      return {
+        wrapping: [
+          style.whiteSpace,
+          style.wordBreak,
+          style.textAlign,
+          style.letterSpacing,
+        ],
+        emphasis: [word.x, word.y, word.width, word.height],
+        paragraph: [box.x, box.y, box.width, box.height],
+        scroll: scrollY,
+      };
+    });
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 760 });
+    const first = body.locator("p").first();
+    await first.evaluate((node) => {
+      node.scrollIntoView({ block: "start", behavior: "instant" });
+      window.scrollBy({ top: -130, behavior: "instant" });
+    });
+    const before = await metrics();
+    await page.screenshot({
+      path: testInfo.outputPath(`rich-parity-${width}-before.png`),
+    });
+    const { x, y } = (await first.boundingBox())!;
+    await page.mouse.click(x + 12, y + 10);
+    await expect(editable).toBeFocused();
+    expect(await metrics()).toEqual(before);
+    expect(
+      await editable.evaluate((node) =>
+        node
+          .querySelector("p")
+          ?.contains(node.ownerDocument.getSelection()?.anchorNode ?? null),
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: testInfo.outputPath(`rich-parity-${width}.png`),
+    });
+    await page.keyboard.press("Escape");
+    await expect(editable).toHaveCount(0);
+    expect(await metrics()).toEqual(before);
+  }
+});
+
 test("joined selection controls clear optional terminals and remove array rows through the native form", async ({
   page,
 }) => {

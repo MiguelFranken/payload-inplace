@@ -4,8 +4,11 @@ import {
   $getSelection,
   $isRangeSelection,
   $createParagraphNode,
+  $createRangeSelectionFromDom,
+  $setSelection,
   FORMAT_TEXT_COMMAND,
   COMMAND_PRIORITY_HIGH,
+  SKIP_SCROLL_INTO_VIEW_TAG,
   type TextFormatType,
   type LexicalEditor,
   type EditorThemeClasses,
@@ -49,6 +52,39 @@ export type RichFormat =
   | "bullet"
   | "number"
   | "unlink";
+
+/** Adopt the clicked caret without scrolling either the page or a host scroll container. */
+export function focusRichEditor(
+  editor: LexicalEditor,
+  point?: { x: number; y: number },
+): void {
+  const root = editor.getRootElement();
+  if (!root || !editor.isEditable()) return;
+  const doc = root.ownerDocument;
+  const selection = doc.getSelection();
+  root.focus({ preventScroll: true });
+  let placed = false;
+  if (point && selection) {
+    const caret = doc.caretPositionFromPoint?.(point.x, point.y);
+    const range = caret ? null : doc.caretRangeFromPoint?.(point.x, point.y);
+    const node = caret?.offsetNode ?? range?.startContainer;
+    if (node && root.contains(node)) {
+      selection.collapse(node, caret?.offset ?? range?.startOffset ?? 0);
+      placed = true;
+    }
+  }
+  editor.update(
+    () => {
+      const caret = placed
+        ? $createRangeSelectionFromDom(selection, editor)
+        : null;
+      if (caret) $setSelection(caret);
+      else if (point) $getRoot().selectStart();
+      else $getRoot().selectEnd();
+    },
+    { discrete: true, tag: ["initialize", SKIP_SCROLL_INTO_VIEW_TAG] },
+  );
+}
 
 /** Mount a lazily loaded, non-React Lexical surface. Native Form owns the value and persistence.
  * No server acknowledgement is applied to a focused editor; dispose before changing field ownership.
@@ -137,8 +173,17 @@ export function mountRichEditor({
   state.read(() => rememberMetadata($getRoot(), document.root, metadata));
   editor.setEditorState(state);
   if (element) {
+    // Lexical's admin-oriented defaults would override the host's line breaks
+    // and whitespace. Restore the authored declarations, including inheritance.
+    const wrapping = ["white-space", "word-break"].map((name) => ({
+      name,
+      value: element.style.getPropertyValue(name),
+      priority: element.style.getPropertyPriority(name),
+    }));
     element.contentEditable = String(!disabled);
     editor.setRootElement(element);
+    for (const { name, value, priority } of wrapping)
+      element.style.setProperty(name, value, priority);
   }
   const disposePlugins = mergeRegister(
     editor.registerCommand(
@@ -150,15 +195,7 @@ export function mountRichEditor({
     registerList(editor),
     registerHistory(editor, createEmptyHistoryState(), 300),
   );
-  if (element && autofocus) {
-    editor.update(
-      () => {
-        $getRoot().selectEnd();
-      },
-      { discrete: true, tag: "initialize" },
-    );
-    editor.focus(undefined, { defaultSelection: "rootEnd" });
-  }
+  if (autofocus) focusRichEditor(editor);
   editor.update(() => {}, { discrete: true, tag: "initialize" });
   let previous = editor
     .getEditorState()
