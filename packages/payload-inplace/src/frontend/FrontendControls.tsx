@@ -57,7 +57,10 @@ import {
   BlockActions,
   BlockPositions,
 } from "@payload-inplace/ui/sections/block-actions";
-import { sectionMoveDestinations } from "./controllers/section-moves";
+import {
+  sectionMoveDestinations,
+  trackSectionMove,
+} from "./controllers/section-moves";
 import { sectionHeading } from "../schema/section-heading";
 import { useNativeStructure } from "./controllers/native-structure";
 import { usePanelNavigation } from "./controllers/panel-navigation";
@@ -215,10 +218,7 @@ export function FrontendControls({
   const [moveAnnouncement, setMoveAnnouncement] = useState("");
   const pendingReveal = useRef<{
     selection: InspectionTarget;
-    destination: NativeSection;
-    anchor?: Element;
-    after: boolean;
-    expires: number;
+    track: ReturnType<typeof trackSectionMove>;
   }>(undefined);
   const form = useForm(),
     info = useDocumentInfo(),
@@ -719,10 +719,10 @@ export function FrontendControls({
       return false;
     pendingReveal.current = {
       selection,
-      destination,
-      anchor: sectionElement(destination, documentReference(context.target)),
-      after: selected.index < destination.index,
-      expires: performance.now() + 10000,
+      track: trackSectionMove(
+        () => sectionElement(destination, documentReference(context.target)),
+        selected.index < destination.index,
+      ),
     };
     setMoveAnnouncement(
       t("sectionMoved", {
@@ -735,23 +735,14 @@ export function FrontendControls({
   function revealMovedSection(element: Element, rect: DOMRect) {
     const move = pendingReveal.current;
     if (!move) return;
-    if (move.selection !== selection || performance.now() > move.expires) {
+    if (move.selection !== selection) {
       pendingReveal.current = undefined;
       return;
     }
-    if (!move.anchor?.isConnected)
-      move.anchor = sectionElement(
-        move.destination,
-        documentReference(context.target),
-      );
-    if (!move.anchor) return;
-    // Wait for the rendered reorder. The native row index can change before a server preview commits.
-    const expected = move.after
-      ? Node.DOCUMENT_POSITION_PRECEDING
-      : Node.DOCUMENT_POSITION_FOLLOWING;
-    if (!(element.compareDocumentPosition(move.anchor) & expected)) return;
+    const status = move.track(element, rect);
+    if (status === "waiting") return;
     pendingReveal.current = undefined;
-    if (rect.top >= innerHeight - 96 || rect.bottom < 96) scrollToSection(rect);
+    if (status === "offscreen") scrollToSection(rect);
   }
   const configuredFields = selected?.block
     ? projectFields(selected.block.fields, profile?.fields)

@@ -16,3 +16,24 @@ export function sectionMoveDestinations(
     return !fixedFirst || rows[first]?.blockType === fixedFirst;
   });
 }
+
+/** Follow a single move until the renderer reflects its new order or the preview wait expires. */
+export function trackSectionMove(
+  findAnchor: () => Element | undefined,
+  after: boolean,
+) {
+  let anchor = findAnchor();
+  const expires = performance.now() + 10000;
+  const expected = after
+    ? Node.DOCUMENT_POSITION_PRECEDING
+    : Node.DOCUMENT_POSITION_FOLLOWING;
+  return (element: Element, rect: DOMRect) => {
+    if (performance.now() > expires) return "expired";
+    if (!anchor?.isConnected) anchor = findAnchor();
+    if (!anchor || !(element.compareDocumentPosition(anchor) & expected))
+      return "waiting";
+    return rect.top >= innerHeight - 96 || rect.bottom < 96
+      ? "offscreen"
+      : "visible";
+  };
+}
