@@ -1,6 +1,10 @@
 # Add the contextual image picker
 
-The image library shown in the demo is a reusable package feature, not demo-only UI. Opt into it with an active import-map strategy provider.
+The contextual picker opens when you select a bound image. It shows the current image and lets you search for a replacement.
+
+![The selected product photo outlined beside the media picker, with the current image highlighted](../images/ecommerce-media.png)
+
+Opt into the picker with an active import-map strategy provider.
 
 ```tsx
 // components/MediaStrategies.tsx

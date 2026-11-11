@@ -6,10 +6,12 @@ export async function createShopEditor(
   {
     emptyCards = false,
     richBody,
+    richText = "Made with care. Built to last.",
     sourceText,
   }: {
     emptyCards?: boolean;
     richBody?: unknown;
+    richText?: string;
     sourceText?: { eyebrow: string; description: string };
   } = {},
 ) {
@@ -63,7 +65,7 @@ export async function createShopEditor(
             {
               type: "text",
               version: 1,
-              text: "Made with care. Built to last.",
+              text: richText,
               format: 0,
               style: "",
               detail: 0,

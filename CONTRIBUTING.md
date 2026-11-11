@@ -79,7 +79,7 @@ corepack pnpm docs:media
 
 It builds the synthetic demo with Turbopack, owns a disposable Mongo database and captures a real Chromium session at **1440 × 1000 CSS pixels / 2× density**. It also checks the storefront and product at 820px and 320px with Axe and horizontal-overflow assertions. This is a focused documentation flow, not the full acceptance suite. No external account, publication or customer data is involved.
 
-Review all images under `test-results/docs-media` before replacing the six `ecommerce-*.png` files in `docs/images`. Copy the original PNGs unchanged; do not upscale, retouch or include loading/error states. See [image provenance](docs/images/README.md). Normal CI acceptance does not run this opt-in config or rewrite README assets. Run `corepack pnpm docs:check` after updating Markdown; it checks generated API freshness and local file/heading links, including repository URLs used by npm's README.
+Review the images under `test-results/docs-media` and copy the selected `ecommerce-*.png` originals to `docs/images`. Use captures of completed UI states at their original resolution. See [image provenance](docs/images/README.md). Normal CI acceptance does not run this opt-in config or rewrite README assets. Run `corepack pnpm docs:check` after updating Markdown; it checks generated API freshness and local file/heading links, including repository URLs used by npm's README.
 
 ## Change and release workflow
 

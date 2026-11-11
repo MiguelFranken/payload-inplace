@@ -27,6 +27,8 @@ Use your real block slug and valid schema values. Label/description/group/thumbn
 
 ## Make hover preview work
 
+![Questions is highlighted in the section catalogue and previewed on the storefront at the selected gap](../images/ecommerce-sections.png)
+
 Three parts must agree:
 
 1. The catalogue entry has valid `example` values.
@@ -36,7 +38,6 @@ Three parts must agree:
 Hover/focus projects the example at the chosen gap; closing/Escape cancels it with no draft write or history entry. The picker retains its original gap when the preview changes page height. Choosing inserts **native Payload defaults**, not sample copy. Put intended initial content in your schema's `defaultValue`; use the separate opt-in [pattern adapter](../implementation/section-patterns.md) for saved independent section copies.
 
 A server-only renderer can still insert native blocks but cannot display an unsaved browser-side preview of arbitrary server work. Keep business requests/effects out of catalogue hover. The [commerce catalogue](../../apps/demo/payload.config.ts) and [consumer renderer](../../apps/demo/commerce/CommercePageView.tsx) are executable examples.
-
 
 ## Reordering and history
 
