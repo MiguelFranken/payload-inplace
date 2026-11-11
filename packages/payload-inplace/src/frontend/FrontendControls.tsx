@@ -979,7 +979,7 @@ export function FrontendControls({
                   >
                     <Settings2 size={15} aria-hidden="true" />
                   </ChromeButton>
-                  {blockSelection && (
+                  {blockSelection && !settingsOpen && (
                     <BlockActions
                       triggerRef={blockActionsButton}
                       showArrows={canMoveSections}
