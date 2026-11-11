@@ -1,24 +1,20 @@
 {
   "packageName": "payload-inplace",
-  "packageVersion": "0.1.0",
-  "packageSourceSHA": "3d069dca2a42b4b2e66db66b93a047361ae32cc2",
-  "packageSHA256": "5a592db8c63d9734dd9eed30bb992af54bc6d31dc1cfc3be227bd9645e0b6ca0",
-  "packageValidationRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/42930193384",
-  "appSHA": "abdee5903c4335b03f9b339fcf94020d5cc3cd51",
+  "packageVersion": "0.2.0",
+  "packageSourceSHA": "84f175c7010b9634c1d1117548c38da6bb41fc01",
+  "packageSHA256": "b08a049cb09ce86d026c5e004c92cfbfbf1062cf205f5b0b4f95492729bb9ce6",
+  "packageValidationRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/43004426849",
+  "appSHA": "137e3f9f2b9c705edebee4436195ff910a02d0e6",
   "appPullRequest": "https://github.com/MiguelFranken/fluid-bodies/pull/397",
   "result": "passed",
-  "previousReceipt": "2026-11-09-public-0.0.10-release.json",
-  "workshopsUnits": {
-    "passed": 3,
-    "files": 2
-  },
+  "previousReceipt": "2026-11-11-public-0.1.0-release.json",
   "productionBuild": {
     "result": "passed",
-    "archiveSHA256": "5a592db8c63d9734dd9eed30bb992af54bc6d31dc1cfc3be227bd9645e0b6ca0",
-    "installedArchiveFilesByteIdentical": 466
+    "archiveSHA256": "b08a049cb09ce86d026c5e004c92cfbfbf1062cf205f5b0b4f95492729bb9ce6",
+    "installedArchiveFilesByteIdentical": 474
   },
   "localAcceptance": {
-    "runId": "20261111T002204Z-81916",
+    "runId": "20261111T104851Z-47412",
     "mode": "prod",
     "fixtureScope": "editor",
     "workers": 1,
@@ -42,34 +38,6 @@
         "status": "passed"
       }
     ],
-    "sourceOverlay": "Local dependency and lockfile override with the exact CI archive. Next generated isolated output paths in tsconfig.json."
-  },
-  "publication": {
-    "version": "0.1.0",
-    "distTag": "latest",
-    "status": "publicly available",
-    "method": "GitHub Actions trusted publisher OIDC",
-    "sha256": "5a592db8c63d9734dd9eed30bb992af54bc6d31dc1cfc3be227bd9645e0b6ca0",
-    "integrity": "sha512-qGOBIPfbjRFRVxPAfLhi04SPtaKPVSs6hTS1LoBkUvEZQaobUxTr9CKTwuxf90/QYNY6EZNXApJiysQtkqfXSw==",
-    "provenance": "https://registry.npmjs.org/-/npm/v1/attestations/payload-inplace@0.1.0",
-    "workflowRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/42931354493",
-    "githubRelease": "https://github.com/MiguelFranken/payload-inplace/releases/tag/v0.1.0"
-  },
-  "publicConsumer": {
-    "appSHA": "4577c352419c57ffa53c91584b3de4c66baae14d",
-    "pullRequest": "https://github.com/MiguelFranken/fluid-bodies/pull/397",
-    "packagePin": "0.1.0",
-    "frozenInstall": "passed",
-    "typecheck": "passed",
-    "productionBuild": "passed",
-    "installedArchiveFilesByteIdentical": 466,
-    "ciRun": "https://github.com/MiguelFranken/fluid-bodies/actions/runs/42932863148",
-    "acceptanceRun": "20261111T003814Z-93923",
-    "acceptanceTotals": {
-      "failed": 0,
-      "passed": 3,
-      "skipped": 0,
-      "total": 3
-    }
+    "sourceOverlay": "Workshops installed the unmodified main CI archive via a temporary dependency and lockfile override."
   }
 }
