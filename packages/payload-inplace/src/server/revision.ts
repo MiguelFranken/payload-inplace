@@ -20,15 +20,17 @@ export function revisionGuard(
   operationalPolicy?: OperationalWritePolicy,
 ): CollectionBeforeOperationHook {
   return async ({ args, operation, req }) => {
-    if (
-      operation === "create" &&
-      req.user &&
-      (args as any).data?._status !== "draft"
-    )
-      throw new APIError(
-        "Save a draft first, then review and publish the saved revision.",
-        409,
-      );
+    if (operation === "create" && req.user) {
+      // Payload applies the draft option to data._status after beforeOperation.
+      const create = args as { draft?: boolean; data?: { _status?: string } };
+      const status =
+        create.data?._status ?? (create.draft === true ? "draft" : undefined);
+      if (status !== "draft")
+        throw new APIError(
+          "Save a draft first, then review and publish the saved revision.",
+          409,
+        );
+    }
     if (!["update", "restoreVersion", "delete"].includes(operation))
       return args;
     let id = (args as any).id;
