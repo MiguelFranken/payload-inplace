@@ -6,6 +6,7 @@ import {
   $createParagraphNode,
   $createRangeSelectionFromDom,
   $setSelection,
+  BEFORE_INPUT_COMMAND,
   FORMAT_TEXT_COMMAND,
   COMMAND_PRIORITY_HIGH,
   SKIP_SCROLL_INTO_VIEW_TAG,
@@ -209,6 +210,30 @@ export function mountRichEditor({
   editor.setEditorState(state);
   if (element) attachRichRoot(editor, element, !disabled);
   const disposePlugins = mergeRegister(
+    editor.registerCommand(
+      BEFORE_INPUT_COMMAND,
+      (event) => {
+        // With collapsing storefront CSS, Chromium places the caret before a newly
+        // typed trailing space. Preserve it in the edited paragraph before input.
+        if (
+          event.inputType === "insertText" &&
+          event.data === " " &&
+          editor.isEditable()
+        ) {
+          const selection = $getSelection();
+          if ($isRangeSelection(selection)) {
+            const node = editor.getElementByKey(selection.anchor.key);
+            const block = node?.closest<HTMLElement>(
+              "p,li,h1,h2,h3,h4,h5,h6,blockquote",
+            );
+            if (block && element?.contains(block))
+              block.style.setProperty("white-space-collapse", "preserve");
+          }
+        }
+        return false;
+      },
+      COMMAND_PRIORITY_HIGH,
+    ),
     editor.registerCommand(
       FORMAT_TEXT_COMMAND,
       (format) => features !== undefined && !features.includes(format),

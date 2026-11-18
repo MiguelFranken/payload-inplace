@@ -796,7 +796,7 @@ test("compact rich-text toolbar follows selection and reflects existing formatti
       },
     ],
   });
-  await createShopEditor(page, {
+  const { doc } = await createShopEditor(page, {
     richBody: {
       root: {
         type: "root",
@@ -813,6 +813,9 @@ test("compact rich-text toolbar follows selection and reflects existing formatti
         ],
       },
     },
+  });
+  await page.addStyleTag({
+    content: ".payload-richtext { white-space: normal }",
   });
   await page.locator('[data-ve-field="body"]').first().click();
   const rich = page.locator('[data-ve-inline-active][contenteditable="true"]');
@@ -895,6 +898,23 @@ test("compact rich-text toolbar follows selection and reflects existing formatti
   await page.screenshot({
     path: "test-results/rich-toolbar-selection-320.png",
   });
+  await select(last.locator("strong"));
+  await rich.press("ArrowRight");
+  await rich.pressSequentially(" AB");
+  await expect(last).toHaveText("Already bold AB");
+  await page.keyboard.press("ControlOrMeta+s");
+  await expect
+    .poll(async () => {
+      const saved = await (
+        await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+      ).json();
+      return saved.layout
+        .find((row: any) => row.blockType === "editorial")
+        .body.root.children.at(-1)
+        .children.map((node: any) => node.text)
+        .join("");
+    })
+    .toBe("Already bold AB");
 });
 
 test("starting rich-text editing preserves responsive wrapping and the viewport", async ({
@@ -1551,12 +1571,14 @@ test("inline section comparison switches saved views without writes or navigatio
 
   await compare.getByRole("button", { name: "Sections" }).press("Enter");
   await expect(compare.getByText(/see added sections/)).toBeVisible();
-  await compare
-    .getByRole("button", { name: "Next changed section" })
-    .press("Enter");
-  await compare
-    .getByRole("button", { name: "Next changed section" })
-    .press("Enter");
+  const nextSection = compare.getByRole("button", {
+    name: "Next changed section",
+  });
+  await expect(nextSection).toBeEnabled();
+  await nextSection.press("Enter");
+  await expect(compare.getByRole("status")).toContainText("1 of 4");
+  await nextSection.press("Enter");
+  await expect(compare.getByRole("status")).toContainText("2 of 4");
   await expect(marker.filter({ hasText: "Moved" }).first()).toBeVisible();
   await page.screenshot({
     path: testInfo.outputPath("compare-published-mobile.png"),

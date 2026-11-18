@@ -38,6 +38,17 @@ function fixture(
     guard({ operation, args, req } as unknown as Parameters<typeof guard>[0]);
   return { req, latest, adapter, calls, run };
 }
+it("accepts the native draft create option before Payload assigns the document status", async () => {
+  const { run } = fixture();
+  const args = { draft: true, data: { title: "First draft" } };
+  await expect(run("create", args)).resolves.toBe(args);
+  await expect(run("create", { data: {} })).rejects.toThrow(
+    "Save a draft first",
+  );
+  await expect(
+    run("create", { draft: true, data: { _status: "published" } }),
+  ).rejects.toThrow("Save a draft first");
+});
 it("locks before reading the current revision and rejects stale/missing/bulk expected revisions", async () => {
   const f = fixture();
   const args = {
