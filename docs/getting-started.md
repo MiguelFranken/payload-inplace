@@ -1,13 +1,13 @@
 # Add editing to an existing Next.js website
 
-This guide targets **Payload/UI/Next adapter 3.91.0, Next 16.4.6 App Router with Turbopack, React 19.2.x and Node 24+**. Keep Payload packages aligned; the native bridge checks exact supported versions. See [compatibility](compatibility.md).
+This guide targets **Payload/UI/Next adapter 3.94.0, Next 16.4.6 App Router with Turbopack, React 19.3.x and Node 24+**. Keep Payload packages aligned; the native bridge checks exact supported versions. See [compatibility](compatibility.md).
 
 You need an existing collection with drafts and a native blocks field, a page renderer, and a current-user editing policy. The plugin does not generate your website. For a working app before integrating yours, [run the commerce demo](../CONTRIBUTING.md#run-the-demo).
 
 ## 1. Install the public package
 
 ```sh
-pnpm add payload-inplace @payloadcms/richtext-lexical@3.91.0
+pnpm add payload-inplace @payloadcms/richtext-lexical@3.94.0
 ```
 
 The npm package contains its own compiled styles and private workspace code. You do not need Tailwind or Turborepo in your host. Do not import anything from `dist/` or `packages/core`.

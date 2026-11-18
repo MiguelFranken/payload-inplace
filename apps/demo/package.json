@@ -12,17 +12,17 @@
   "dependencies": {
     "payload-inplace": "workspace:*",
     "lucide-react": "1.66.0",
-    "@payloadcms/db-mongodb": "3.91.0",
-    "@payloadcms/db-postgres": "3.91.0",
-    "@payloadcms/next": "3.91.0",
-    "@payloadcms/richtext-lexical": "3.91.0",
-    "@payloadcms/translations": "3.91.0",
-    "@payloadcms/ui": "3.91.0",
+    "@payloadcms/db-mongodb": "3.94.0",
+    "@payloadcms/db-postgres": "3.94.0",
+    "@payloadcms/next": "3.94.0",
+    "@payloadcms/richtext-lexical": "3.94.0",
+    "@payloadcms/translations": "3.94.0",
+    "@payloadcms/ui": "3.94.0",
     "graphql": "^16.12.0",
     "next": "16.4.6",
-    "payload": "3.91.0",
-    "react": "19.2.6",
-    "react-dom": "19.2.6",
+    "payload": "3.94.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
     "sharp": "0.34.2"
   },
   "devDependencies": {
@@ -32,7 +32,7 @@
     "mongodb-memory-server": "10.1.4",
     "tsx": "4.21.0",
     "@types/node": "^24.0.0",
-    "@types/react": "19.2.14",
-    "@types/react-dom": "19.2.3"
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0"
   }
 }

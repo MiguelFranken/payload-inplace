@@ -1,10 +1,13 @@
 import { readFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 
+const previousPayload = "3.91.0";
+const currentPayload = "3.94.0";
+
 const nativePins = {
-  payload: "3.91.0",
-  "@payloadcms/ui": "3.91.0",
-  "@payloadcms/next": "3.91.0",
+  payload: currentPayload,
+  "@payloadcms/ui": currentPayload,
+  "@payloadcms/next": currentPayload,
   next: "16.4.6",
 } as const;
 
@@ -14,7 +17,11 @@ const nativePins = {
 export function assertNativeVersions(
   versions: Readonly<Record<keyof typeof nativePins, string>>,
 ): void {
-  for (const [name, expected] of Object.entries(nativePins)) {
+  for (const [name, pin] of Object.entries(nativePins)) {
+    const expected =
+      name !== "next" && versions.payload === previousPayload
+        ? previousPayload
+        : pin;
     const actual = versions[name as keyof typeof nativePins];
     if (actual !== expected)
       throw Error(
