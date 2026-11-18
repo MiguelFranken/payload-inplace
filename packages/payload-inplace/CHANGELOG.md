@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1
+
+### Patch Changes
+
+- 8b41e27: Accept Payload’s native draft option when creating the first draft without an explicit document status. Validate the Next.js bridge against the cache-isolation fixes in Next.js 16.4.6. Preserve typed spaces after formatted text when a storefront uses collapsing whitespace. Make comparison navigation ready when switching highlight modes.
+
 ## 0.2.0
 
 ### Minor Changes
