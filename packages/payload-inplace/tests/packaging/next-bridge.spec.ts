@@ -71,7 +71,7 @@ it("rejects unsupported native package combinations before field rendering", asy
     payload: "3.91.0",
     "@payloadcms/ui": "3.91.0",
     "@payloadcms/next": "3.91.0",
-    next: "16.4.2",
+    next: "16.4.6",
   };
   expect(() => assertNativeVersions(supported)).not.toThrow();
   for (const name of Object.keys(supported)) {

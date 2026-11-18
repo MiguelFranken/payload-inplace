@@ -75,7 +75,7 @@ The demo includes native `shops` and `products` schemas, a named-tab blocks root
 
 ## Quick start
 
-Target: **Payload 3.91.0 + Next.js 16.4.2 App Router / Turbopack, React 19.2.x, Node 24+**. This is an integration into your existing website, not an automatic page builder. You do not need Tailwind in your host to consume the package.
+Target: **Payload 3.91.0 + Next.js 16.4.6 App Router / Turbopack, React 19.2.x, Node 24+**. This is an integration into your existing website, not an automatic page builder. You do not need Tailwind in your host to consume the package.
 
 ```sh
 pnpm add payload-inplace @payloadcms/richtext-lexical@3.91.0
@@ -141,7 +141,7 @@ Developer references: [Host runtime contract](https://github.com/MiguelFranken/p
 | Runtime                                        | Tested contract                                                           |
 | ---------------------------------------------- | ------------------------------------------------------------------------- |
 | Payload / UI / Payload Next / database adapter | **3.91.0**, aligned exact versions                                        |
-| Next.js                                        | **16.4.2**, App Router, Turbopack                                         |
+| Next.js                                        | **16.4.6**, App Router, Turbopack                                         |
 | React / React DOM                              | **19.2.x**                                                                |
 | Node.js                                        | **24+**, release CI on Node 24                                            |
 | Database                                       | Postgres for transactional concurrency; Mongo single-writer demo fallback |

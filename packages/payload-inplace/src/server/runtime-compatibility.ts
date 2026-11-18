@@ -5,7 +5,7 @@ const nativePins = {
   payload: "3.91.0",
   "@payloadcms/ui": "3.91.0",
   "@payloadcms/next": "3.91.0",
-  next: "16.4.2",
+  next: "16.4.6",
 } as const;
 
 /** Private native handlers and schema caches have a narrower contract than semver.

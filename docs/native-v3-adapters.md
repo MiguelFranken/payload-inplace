@@ -1,6 +1,6 @@
 # Payload v3 compatibility adapters
 
-Only the declared Payload 3.91 / Next 16.4.2 matrix is verified. Keep every installed Payload package at the same exact version. These narrow bridges preserve native field preparation and persistence; they are not stable upstream APIs.
+Only the declared Payload 3.91 / Next 16.4.6 matrix is verified. Keep every installed Payload package at the same exact version. These narrow bridges preserve native field preparation and persistence; they are not stable upstream APIs.
 
 | Upstream behavior or dependency | Owner | Contract and verification |
 | --- | --- | --- |
