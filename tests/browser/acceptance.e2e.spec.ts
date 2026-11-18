@@ -1571,12 +1571,14 @@ test("inline section comparison switches saved views without writes or navigatio
 
   await compare.getByRole("button", { name: "Sections" }).press("Enter");
   await expect(compare.getByText(/see added sections/)).toBeVisible();
-  await compare
-    .getByRole("button", { name: "Next changed section" })
-    .press("Enter");
-  await compare
-    .getByRole("button", { name: "Next changed section" })
-    .press("Enter");
+  const nextSection = compare.getByRole("button", {
+    name: "Next changed section",
+  });
+  await expect(nextSection).toBeEnabled();
+  await nextSection.press("Enter");
+  await expect(compare.getByRole("status")).toContainText("1 of 4");
+  await nextSection.press("Enter");
+  await expect(compare.getByRole("status")).toContainText("2 of 4");
   await expect(marker.filter({ hasText: "Moved" }).first()).toBeVisible();
   await page.screenshot({
     path: testInfo.outputPath("compare-published-mobile.png"),

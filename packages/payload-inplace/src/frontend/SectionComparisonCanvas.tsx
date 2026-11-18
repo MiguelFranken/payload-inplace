@@ -96,14 +96,19 @@ export function SectionComparisonCanvas({
     function schedule() {
       if (!frame) frame = requestAnimationFrame(measure);
     }
-    function bind() {
+    function observeTargets() {
       resize.disconnect();
       elements = targets();
       resize.observe(host);
       for (const { element } of elements) resize.observe(element);
+    }
+    function bind() {
+      observeTargets();
       schedule();
     }
-    bind();
+    // Make keyboard navigation available on the first paint of the chosen mode.
+    observeTargets();
+    measure();
     mutations.observe(host, {
       childList: true,
       subtree: true,
