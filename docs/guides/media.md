@@ -49,3 +49,29 @@ Search uses the current user's same-origin native media API and supports debounc
 Set `apiPath` to the site-relative Payload REST mount. For example, `apiPath: "/cms/api"` searches `/cms/api/media`. A trailing slash is optional, and the root mount `/` searches `/media`.
 
 Need another library? Implement the typed `MediaLibraryAdapter` with authorized search and optional upload/progress. Handle abort/revocation, return collection/ID references and keep asset writes separate from document draft saves. See [adapter details](../implementation/media.md), [public API](../api-reference.md) and [native field fallback](../frontend-component-map.md).
+
+## Try a consumer-owned upload
+
+From the repository root, run `corepack pnpm build` and start the demo with
+`VE_DEMO_MEDIA_UPLOAD=1 corepack pnpm dev`. Use a disposable demo instance.
+
+1. Sign in as `admin@example.test`, open [the storefront](http://127.0.0.1:3127/shop)
+   and choose **Edit page**. Select the hero image, then **Upload media**. Use
+   a synthetic image such as
+   [studio.png](../../apps/demo/commerce/assets/studio.png). Wait for **Draft
+   saved**. The upload creates a media asset and the draft records its ID in
+   the selected image field.
+2. Sign in as `editor@example.test` and try uploading again. The opt-in demo
+   lets this role edit the page and choose media while Payload denies media
+   creation. The upload error offers **Open native media editor**.
+3. Open the native editor, remove the current reference, and use **Choose
+   from existing** to pick an asset. This replaces the draft's selected
+   reference through the native form.
+
+Use the synthetic password from [the demo setup](../../CONTRIBUTING.md#run-the-demo).
+The [client adapter](../../apps/demo/commerce/upload-demo-media.ts) reports
+transfer progress and aborts when the picker closes. The
+[upload route](<../../apps/demo/app/(payload)/api/demo-media-upload/route.ts>)
+delegates to Payload's native authenticated create handler. The demo flag
+enables the route, strategy, and sample ACL. Leave it unset to use the native
+media picker without the additional upload entry point.
