@@ -16,7 +16,7 @@ export async function createShopEditor(
     emptyCards?: boolean;
     arrangeLayout?: (layout: CommerceBlock[]) => CommerceBlock[];
     cards?: {
-      product: string | number;
+      product?: string | number | null;
       heading?: string;
       priceCaption?: string;
     }[];
@@ -90,15 +90,20 @@ export async function createShopEditor(
   if (emptyCards || cards)
     layout.find((block: any) => block.blockType === "productGrid").cards =
       cards ?? [];
-  const created = await page.request.post("/api/shops", {
-    data: {
-      title: "Roadmap acceptance",
-      slug: `roadmap-${Date.now()}-${Math.random().toString(16).slice(2)}`,
-      layout: arrangeLayout ? arrangeLayout(layout) : layout,
-      _status: "draft",
+  const created = await page.request.post(
+    cards?.some((card) => card.product == null)
+      ? "/api/shops?draft=true"
+      : "/api/shops",
+    {
+      data: {
+        title: "Roadmap acceptance",
+        slug: `roadmap-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        layout: arrangeLayout ? arrangeLayout(layout) : layout,
+        _status: "draft",
+      },
     },
-  });
-  expect(created.ok()).toBeTruthy();
+  );
+  expect(created.ok(), await created.text()).toBeTruthy();
   const doc = (await created.json()).doc;
   await page.goto(`/visual-editor/start?collection=shops&id=${doc.id}`);
   await page

@@ -626,3 +626,76 @@ test("storefront fragments reach the first matching section or the empty state b
     }
   }
 });
+
+test("shop cards expose their edit control when product references cannot be resolved", async ({
+  page,
+  browser,
+}) => {
+  const original = await productEditor(page);
+  const { createShopEditor } = await import("./testing/editor-fixtures");
+  const { doc } = await createShopEditor(page, {
+    cards: [{ heading: "A linked product", product: original.id }],
+  });
+  const card = page
+    .getByRole("article")
+    .filter({ hasText: "A linked product" });
+  await expect(
+    card.getByRole("link", { name: "Open A linked product" }),
+  ).toHaveAttribute("href", `/products/${original.slug}`);
+  await page
+    .getByRole("button", { name: "Review changes", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Publish reviewed draft", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Edit page", exact: true }),
+  ).toBeVisible();
+
+  await createShopEditor(page, {
+    cards: [
+      { heading: "Unresolved reference", product: original.id },
+      { heading: "Cleared reference", product: null },
+    ],
+  });
+  expect(
+    (await page.request.delete(`/api/products/${original.id}`)).ok(),
+  ).toBeTruthy();
+  const visitor = await browser.newPage();
+  try {
+    await visitor.goto(new URL(`/shops/${doc.slug}`, page.url()).href);
+    const publicCard = visitor
+      .getByRole("article")
+      .filter({ hasText: "A linked product" });
+    await expect(publicCard).toContainText("Product unavailable");
+    await expect(publicCard.getByRole("link")).toHaveCount(0);
+    await expect(publicCard.getByRole("button")).toHaveCount(0);
+    await visitor.setViewportSize({ width: 320, height: 900 });
+    await visitor.emulateMedia({ reducedMotion: "reduce" });
+    await expect(publicCard.getByText("Product unavailable")).toBeVisible();
+    expect(
+      await visitor.evaluate(() => document.documentElement.scrollWidth),
+    ).toBeLessThanOrEqual(320);
+  } finally {
+    await visitor.close();
+  }
+
+  await page.reload();
+  const select = page.getByRole("button", {
+    name: "Select content",
+    exact: true,
+  });
+  if ((await select.getAttribute("aria-pressed")) !== "true")
+    await select.click();
+  for (const label of ["Unresolved reference", "Cleared reference"]) {
+    const unavailable = page.getByRole("article").filter({ hasText: label });
+    await expect(unavailable).toContainText("Product unavailable");
+    await expect(unavailable.getByRole("link")).toHaveCount(0);
+    await unavailable
+      .getByRole("button", { name: "Choose a product" })
+      .press("Enter");
+    const panel = page.getByRole("complementary", { name: "Edit content" });
+    await expect(panel.getByRole("combobox")).toBeVisible();
+    await page.getByRole("button", { name: /^Close .* panel$/ }).click();
+  }
+});
