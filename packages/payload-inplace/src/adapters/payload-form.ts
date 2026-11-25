@@ -2,10 +2,7 @@ import { commandIssueText, type CommandIssue } from "../state/command-issue";
 import type { FormState } from "payload";
 import type { useForm } from "@payloadcms/ui";
 import type { BlockIdentity } from "../types";
-import {
-  snapshotRoot,
-  materializeStructuralRestore,
-} from "../state/history";
+import { snapshotRoot, materializeStructuralRestore } from "../state/history";
 import { indexBlocks, resolveIdentity } from "../state/identity";
 import { structureTransitionIssue } from "../state/policy";
 import type { StructuralPolicy } from "../state/policy";
@@ -51,16 +48,21 @@ export function applyCommand(
   const rootData = Array.isArray(rootValue) ? rootValue : [];
   const data = Array.isArray(containerValue) ? containerValue : [];
   const adding = command.type === "add" || command.type === "add-array";
-  const hit = adding
-    ? undefined
-    : resolveIdentity(indexBlocks(rootData, root), command.identity);
+  const fields = form.getFields();
+  const anchorIdentity =
+    command.type === "add" ? command.adjacent?.identity : undefined;
+  const sections =
+    !adding || anchorIdentity
+      ? indexBlocks(rootData, root, (path) => Array.isArray(fields[path]?.rows))
+      : [];
+  const hit = adding ? undefined : resolveIdentity(sections, command.identity);
   if (!adding && !hit) return failure({ code: "missing-section" });
   if (hit?.parent !== undefined && hit.parent !== container)
     return failure({ code: "nested-controls" });
   const index = hit?.index ?? data.length;
   const destination =
     command.type === "move"
-      ? resolveIdentity(indexBlocks(rootData, root), command.over)
+      ? resolveIdentity(sections, command.over)
       : undefined;
   if (
     command.type === "move" &&
@@ -72,10 +74,9 @@ export function applyCommand(
     command.type === "move"
       ? destination!.index
       : index + (command.type === "up" ? -1 : 1);
-  const anchor =
-    command.type === "add" && command.adjacent
-      ? resolveIdentity(indexBlocks(rootData, root), command.adjacent.identity)
-      : undefined;
+  const anchor = anchorIdentity
+    ? resolveIdentity(sections, anchorIdentity)
+    : undefined;
   if (
     command.type === "add" &&
     command.adjacent &&
@@ -114,7 +115,7 @@ export function applyCommand(
   const error = structureTransitionIssue(data, next, options.policy);
   if (error) return failure(error);
   if (
-    !options.history.checkpoint(form.getFields(), container, {
+    !options.history.checkpoint(fields, container, {
       kind: command.type === "add-array" ? "add" : command.type,
       id:
         adding || command.type === "duplicate"
@@ -136,7 +137,7 @@ export function applyCommand(
   else if (command.type === "remove")
     form.removeFieldRow({ path: container, rowIndex: index });
   else if (command.type === "duplicate") {
-    const state = duplicateRowState(form.getFields(), `${container}.${index}`);
+    const state = duplicateRowState(fields, `${container}.${index}`);
     form.addFieldRow({
       path: container,
       schemaPath,
