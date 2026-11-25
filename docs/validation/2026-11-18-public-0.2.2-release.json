@@ -1,0 +1,103 @@
+{
+  "packageName": "payload-inplace",
+  "packageVersion": "0.2.2",
+  "packageSourceSHA": "2e1495392a56d6d5ae31dd524bbcb7a1ab88da97",
+  "packageSHA256": "970f49257ace4bf83028c354fbf63c66869a6d69a03de688dc65cafdca4b5b20",
+  "packageValidationRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/44305916451",
+  "appSHA": "fd9553d10b62a592d3cd104a144922a41aabf0e3",
+  "appPullRequest": "https://github.com/MiguelFranken/fluid-bodies/pull/397",
+  "result": "passed",
+  "previousReceipt": "2026-11-11-public-0.2.0-release.json",
+  "productionBuild": {
+    "result": "passed",
+    "archiveSHA256": "970f49257ace4bf83028c354fbf63c66869a6d69a03de688dc65cafdca4b5b20",
+    "installedArchiveFilesByteIdentical": 474
+  },
+  "localAcceptance": {
+    "runId": "20261118T124357Z-66944",
+    "mode": "prod",
+    "fixtureScope": "editor",
+    "workers": 1,
+    "totals": {
+      "failed": 0,
+      "passed": 18,
+      "skipped": 0,
+      "total": 18
+    },
+    "tests": [
+      {
+        "title": "chromium > instant-navigation.spec.ts > Cached public navigation > homepage content is available in the initial shell",
+        "status": "passed"
+      },
+      {
+        "title": "chromium > instant-navigation.spec.ts > Cached public navigation > CMS content remains available during client navigation",
+        "status": "passed"
+      },
+      {
+        "title": "chromium > instant-navigation.spec.ts > Cached public navigation > the homepage workshop CTA prefetches the complete offer",
+        "status": "passed"
+      },
+      {
+        "title": "chromium > instant-navigation.spec.ts > Cached public navigation > a Workshop card prefetches the offer and its selected date",
+        "status": "passed"
+      },
+      {
+        "title": "chromium > instant-navigation.spec.ts > Cached public navigation > a warmed availability cache expires immediately after booking and cancellation",
+        "status": "passed"
+      },
+      {
+        "title": "chromium > visual-editor-fields.spec.ts > workshops rich-text terminals and media references use the shared inline and picker strategies",
+        "status": "passed"
+      },
+      {
+        "title": "chromium > visual-editor-fields.spec.ts > coupon and offset news rich text preserve storefront typography and layout while editing",
+        "status": "passed"
+      },
+      {
+        "title": "chromium > visual-editor-fields.spec.ts > catalogue hover previews a text section without changing the native draft",
+        "status": "passed"
+      },
+      {
+        "title": "chromium > visual-editor-fields.spec.ts > accordion settings retain and focus the selected plain or rich answer",
+        "status": "passed"
+      },
+      {
+        "title": "chromium > visual-editor-public-resources.spec.ts > public resources exclude editor work: anonymous",
+        "status": "passed"
+      },
+      {
+        "title": "chromium > visual-editor-public-resources.spec.ts > public resources exclude editor work: staff inactive",
+        "status": "passed"
+      },
+      {
+        "title": "chromium > visual-editor-security.spec.ts > warm public caches and stale Draft Mode never expose a private page after logout",
+        "status": "passed"
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > website editing uses the installed native Form and keeps drafts private",
+        "status": "passed"
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > workshop website editing preserves the empty booking state",
+        "status": "passed"
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > workshop website editing preserves the upcoming booking state",
+        "status": "passed"
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > workshop website editing preserves the sold-out booking state",
+        "status": "passed"
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > homepage-shaped blocks reorder by pointer without a render loop",
+        "status": "passed"
+      },
+      {
+        "title": "chromium > visual-editor.spec.ts > the configured preview alias activates the editor on the same homepage",
+        "status": "passed"
+      }
+    ],
+    "sourceOverlay": "Workshops used the unmodified main CI archive through a temporary dependency and lockfile override."
+  }
+}
