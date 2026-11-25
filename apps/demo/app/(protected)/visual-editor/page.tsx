@@ -71,7 +71,9 @@ export async function DocumentEditor({ identifier }: { identifier: string }) {
     process.env.VE_TEST_SCHEMA === "1"
       ? (await cookies()).get("demo-editor-ui")?.value
       : undefined;
-  const options = ["en", "de", "ar"].includes(demoUILocale || "")
+  const options = ["en", "de", "ar", "ar-Latn", "az-Arab", "ps"].includes(
+    demoUILocale || "",
+  )
     ? {
         ...editorOptions,
         ui: {

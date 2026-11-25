@@ -73,6 +73,53 @@ const placeholders = (value: Message) =>
     ),
   );
 
+// Scripts marked RTL in Unicode CLDR script metadata.
+// https://github.com/unicode-org/cldr/blob/main/common/properties/scriptMetadata.txt
+const rtlScripts = new Set([
+  "Adlm",
+  "Arab",
+  "Armi",
+  "Avst",
+  "Chrs",
+  "Cprt",
+  "Elym",
+  "Gara",
+  "Hatr",
+  "Hebr",
+  "Hung",
+  "Khar",
+  "Lydi",
+  "Mand",
+  "Mani",
+  "Mend",
+  "Merc",
+  "Mero",
+  "Narb",
+  "Nbat",
+  "Nkoo",
+  "Orkh",
+  "Ougr",
+  "Palm",
+  "Phli",
+  "Phlp",
+  "Phnx",
+  "Prti",
+  "Rohg",
+  "Samr",
+  "Sarb",
+  "Sidt",
+  "Sogd",
+  "Sogo",
+  "Syrc",
+  "Thaa",
+  "Yezi",
+]);
+
+function inferDirection(locale: string): "ltr" | "rtl" {
+  const script = new Intl.Locale(locale).maximize().script;
+  return script && rtlScripts.has(script) ? "rtl" : "ltr";
+}
+
 /** A framework-free typed formatter. Overrides with missing/extra placeholders fall back to the source definition; interpolation stays plain text, never HTML. */
 export function createMessages<const C extends Record<string, Message>>(
   catalogue: C,
@@ -84,9 +131,7 @@ export function createMessages<const C extends Record<string, Message>>(
   } catch {
     /* Invalid consumer locale safely uses English formatting. */
   }
-  const direction =
-    options.direction ||
-    (/^(ar|fa|he|ur)(?:-|$)/i.test(locale) ? "rtl" : "ltr");
+  const direction = options.direction ?? inferDirection(locale);
   const plural = new Intl.PluralRules(locale),
     numbers = new Intl.NumberFormat(locale);
   function t<K extends keyof C & string>(key: K, ...args: Args<C[K]>): string {

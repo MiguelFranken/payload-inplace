@@ -1143,16 +1143,21 @@ test("localized inline editing prepares and saves German fields without copying 
   await page.screenshot({ path: "test-results/roadmap-localized-fields.png" });
 });
 
-test("English German and RTL editor chrome stays scoped at desktop and narrow widths", async ({
+test("editor chrome follows the locale writing direction at desktop and narrow widths", async ({
   page,
   context,
 }) => {
   const { createShopEditor } = await import("./testing/editor-fixtures");
   const { doc } = await createShopEditor(page);
-  for (const [language, sections, close, file] of [
-    ["en", "Sections", "Close Sections panel", "english"],
-    ["de", "Abschnitte", "Abschnitte schließen", "german"],
+  const hostDirection = await page.locator("html").getAttribute("dir");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  for (const [language, sections, close, direction] of [
+    ["en", "Sections", "Close Sections panel", "ltr"],
+    ["de", "Abschnitte", "Abschnitte schließen", "ltr"],
     ["ar", "الأقسام", "Close الأقسام panel", "rtl"],
+    ["ar-Latn", "الأقسام", "Close الأقسام panel", "ltr"],
+    ["az-Arab", "Sections", "Close Sections panel", "rtl"],
+    ["ps", "Sections", "Close Sections panel", "rtl"],
   ] as const) {
     await context.addCookies([
       { name: "demo-editor-ui", value: language, url: page.url() },
@@ -1160,7 +1165,7 @@ test("English German and RTL editor chrome stays scoped at desktop and narrow wi
     await page.reload();
     const button = page.getByRole("button", { name: sections, exact: true });
     await expect(button).toBeVisible();
-    await button.click();
+    await button.press("Enter");
     const panel = page.getByRole("complementary", {
       name: sections,
       exact: true,
@@ -1172,20 +1177,18 @@ test("English German and RTL editor chrome stays scoped at desktop and narrow wi
       const bounds = await panel.boundingBox();
       expect(bounds!.x).toBeGreaterThanOrEqual(0);
       expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width + 1);
+      expect(
+        await panel.evaluate((element) => getComputedStyle(element).direction),
+      ).toBe(direction);
+      expect(await page.locator("html").getAttribute("dir")).toBe(
+        hostDirection,
+      );
       await page.screenshot({
-        path: `test-results/roadmap-ui-${file}-${width}.png`,
+        path: `test-results/roadmap-ui-${language}-${width}.png`,
       });
     }
-    expect(
-      await panel.evaluate((element) => getComputedStyle(element).direction),
-    ).toBe(language === "ar" ? "rtl" : "ltr");
-    expect(await page.locator("html").getAttribute("dir")).not.toBe("rtl");
-    await page.getByRole("button", { name: close, exact: true }).click();
+    await page.getByRole("button", { name: close, exact: true }).press("Enter");
     await expect(panel).not.toBeVisible();
-    await page.emulateMedia({ reducedMotion: "reduce" });
-    await button.click();
-    await expect(panel).toBeVisible();
-    await page.getByRole("button", { name: close, exact: true }).click();
     const current = await page.request.get(
       `/api/shops/${doc.id}?draft=true&depth=0`,
     );
