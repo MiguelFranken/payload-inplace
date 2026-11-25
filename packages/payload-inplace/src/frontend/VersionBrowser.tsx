@@ -67,7 +67,7 @@ export function VersionBrowser({
     processing = useFormProcessing(),
     background = useFormBackgroundProcessing();
   const [page, setPage] = useState(1),
-    [timeline, setTimeline] = useState<Result>(),
+    [timeline, setTimeline] = useState<Result & { locale: string }>(),
     [selected, setSelected] = useState<string>(),
     [snapshot, setSnapshot] = useState<Record<string, unknown>>(),
     [loading, setLoading] = useState(false),
@@ -77,6 +77,10 @@ export function VersionBrowser({
     generation = useRef(0),
     disposed = useRef(false);
   const de = i18n.language === "de";
+  const currentTimeline =
+    timeline?.page === page && timeline.locale === locale.code
+      ? timeline
+      : undefined;
   async function read(versionID?: string) {
     request.current?.abort();
     const controller = new AbortController();
@@ -109,7 +113,7 @@ export function VersionBrowser({
         if (!result.version)
           throw new EditorMessageError("versionNoLongerAvailable");
         setSnapshot(result.version);
-      } else setTimeline(result);
+      } else setTimeline({ ...result, locale: locale.code });
     } catch (error) {
       if (!controller.signal.aborted)
         setError(editorErrorKey(error, "savedVersionsUnavailable"));
@@ -127,7 +131,13 @@ export function VersionBrowser({
       request.current?.abort();
     };
   }, [page, locale.code]);
+  function changePage(nextPage: number) {
+    setTimeline(undefined);
+    setError(null);
+    setPage(nextPage);
+  }
   function choose(id: string) {
+    if (!currentTimeline) return;
     setSelected(id);
     setSnapshot(undefined);
     void read(id);
@@ -170,7 +180,8 @@ export function VersionBrowser({
       if (!disposed.current) setRestoring(false);
     }
   }
-  const busy = loading || restoring || processing || background;
+  const pending = loading || (!currentTimeline && !error);
+  const busy = pending || restoring || processing || background;
   const date = (version: SavedVersion) => {
     const value = new Date(version.updatedAt || version.createdAt || "");
     return Number.isNaN(value.getTime())
@@ -179,7 +190,7 @@ export function VersionBrowser({
   };
   return (
     <VersionTimeline
-      versions={timeline?.versions.map((version) => ({
+      versions={currentTimeline?.versions.map((version) => ({
         id: version.id,
         date: date(version),
         revision:
@@ -192,14 +203,14 @@ export function VersionBrowser({
       page={page}
       busy={busy}
       selectionDisabled={restoring || processing}
-      hasNextPage={Boolean(timeline?.hasNextPage)}
-      loading={loading}
+      hasNextPage={Boolean(currentTimeline?.hasNextPage)}
+      loading={pending}
       error={error}
       onChoose={choose}
-      onPageChange={setPage}
-      onRetry={() => void read(selected)}
+      onPageChange={changePage}
+      onRetry={() => void read(currentTimeline ? selected : undefined)}
     >
-      {snapshot && (
+      {currentTimeline && snapshot && (
         <>
           <DocumentReview
             before={info.data || form.getData()}
@@ -217,7 +228,7 @@ export function VersionBrowser({
           <Button
             variant="default"
             disabled={
-              !timeline?.restorable || busy || modified || form.disabled
+              !currentTimeline.restorable || busy || modified || form.disabled
             }
             onClick={() => void restore()}
           >

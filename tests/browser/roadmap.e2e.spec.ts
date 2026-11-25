@@ -584,6 +584,111 @@ test("the optional upload adapter saves one media reference and recovers from na
   }
 });
 
+test("timeline pagination isolates delayed and failed pages from old rows and details", async ({
+  page,
+}) => {
+  test.skip(
+    process.env.VE_DATABASE !== "postgres",
+    "Requires revision-guarded fixtures",
+  );
+  test.slow();
+  await page.setViewportSize({ width: 320, height: 840 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const { createShopEditor } = await import("./testing/editor-fixtures");
+  const { doc } = await createShopEditor(page);
+  let latest = doc;
+  for (let version = 2; version <= 21; version++) {
+    const saved = await page.request.patch(
+      `/api/shops/${doc.id}?draft=true&depth=0`,
+      {
+        data: {
+          title: `Timeline version ${version}`,
+          _veRevision: latest._veRevision,
+        },
+      },
+    );
+    expect(saved.ok(), await saved.text()).toBeTruthy();
+    latest = (await saved.json()).doc;
+  }
+
+  let pageTwoRequests = 0;
+  let detailRequests = 0;
+  let rejectPageTwo!: () => void;
+  const waitForFailure = new Promise<void>((resolve) => {
+    rejectPageTwo = resolve;
+  });
+  await page.route("**/api/visual-editor/versions**", async (route) => {
+    const { versionID, page: requestedPage } = route.request().postDataJSON();
+    if (versionID) detailRequests++;
+    if (!versionID && requestedPage === 2 && ++pageTwoRequests === 1) {
+      await waitForFailure;
+      await route.fulfill({ status: 503, json: {} });
+      return;
+    }
+    await route.continue();
+  });
+
+  await page.getByRole("button", { name: "More tools" }).click();
+  await page.getByRole("menuitem", { name: "Saved versions" }).click();
+  const rows = page.getByRole("button", { name: /^Compare version / });
+  const older = page.getByRole("button", { name: "Older versions" });
+  const newer = page.getByRole("button", { name: "Newer versions" });
+  const oldRow = page.getByRole("button", {
+    name: `Compare version ${latest._veRevision - 1}`,
+    exact: true,
+  });
+  await expect(rows).toHaveCount(20);
+  await oldRow.press("Enter");
+  const difference = page.locator('[data-ve-diff-path="title"]');
+  await expect(difference).toContainText("Timeline version 20");
+  const oldRowHandle = (await oldRow.elementHandle())!;
+
+  try {
+    await older.press("Enter");
+    await expect.poll(() => pageTwoRequests).toBe(1);
+    await expect(page.getByText("Page 2", { exact: true })).toBeVisible();
+    await expect(rows).toHaveCount(0);
+    await expect(difference).toHaveCount(0);
+    await expect(older).toBeDisabled();
+    await expect(newer).toBeDisabled();
+    // Simulate a late click on the row that was present before navigation.
+    await oldRowHandle.evaluate((button: HTMLButtonElement) => button.click());
+    await page.keyboard.press("Enter");
+    expect(detailRequests).toBe(1);
+    expect(pageTwoRequests).toBe(1);
+  } finally {
+    rejectPageTwo();
+  }
+
+  const retry = page.getByRole("button", { name: "Retry" });
+  await expect(retry).toBeVisible();
+  await expect(page.getByText("Page 2", { exact: true })).toBeVisible();
+  await expect(rows).toHaveCount(0);
+  await retry.press("Enter");
+  await expect(rows).toHaveCount(1);
+  await expect(rows.first()).toHaveAttribute(
+    "aria-label",
+    `Compare version ${doc._veRevision}`,
+  );
+  await expect(difference).toHaveCount(0);
+  expect(pageTwoRequests).toBe(2);
+  expect(detailRequests).toBe(1);
+
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await newer.press("Enter");
+  await expect(older).toBeEnabled();
+  await older.press("Enter");
+  await expect(newer).toBeEnabled();
+  await newer.press("Enter");
+  await expect(page.getByText("Page 1", { exact: true })).toBeVisible();
+  await expect(rows).toHaveCount(20);
+  await expect.poll(() => pageTwoRequests).toBe(3);
+  await oldRow.press("Enter");
+  await expect(difference).toContainText("Timeline version 20");
+  await expect(oldRow).toHaveAttribute("aria-pressed", "true");
+});
+
 test("contextual native media replacement saves only the document reference and keeps native fallback", async ({
   page,
 }) => {

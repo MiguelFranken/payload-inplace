@@ -38,10 +38,34 @@ const slug = (heading) =>
     .replace(/[^\p{L}\p{N}_\-\s]/gu, "")
     .replace(/ /g, "-");
 
+function outsideFences(source) {
+  let fence;
+  return source
+    .split(/\r?\n/)
+    .map((line) => {
+      const marker = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(line);
+      if (fence) {
+        if (
+          marker?.[1][0] === fence[0] &&
+          marker[1].length >= fence.length &&
+          !marker[2].trim()
+        )
+          fence = undefined;
+        return "";
+      }
+      if (marker && (marker[1][0] === "~" || !marker[2].includes("`"))) {
+        fence = marker[1];
+        return "";
+      }
+      return line;
+    })
+    .join("\n");
+}
+
 const headings = (source) => {
   const seen = new Map();
   return new Set(
-    [...source.matchAll(/^#{1,6}\s+(.+)$/gm)].map((match) => {
+    [...outsideFences(source).matchAll(/^#{1,6}[ \t]+(.+)$/gm)].map((match) => {
       const base = slug(match[1]);
       const count = seen.get(base) || 0;
       seen.set(base, count + 1);
@@ -51,9 +75,7 @@ const headings = (source) => {
 };
 
 for (const file of [...new Set(files)]) {
-  const text = fs
-    .readFileSync(file, "utf8")
-    .replace(/^```[^\n]*\n[\s\S]*?^```\s*$/gm, "");
+  const text = outsideFences(fs.readFileSync(file, "utf8"));
   const references = [
     ...[...text.matchAll(/\]\((<[^>]+>|[^\s)]+)(?:\s+"[^"]*")?\)/g)].map((m) =>
       m[1].replace(/^<|>$/g, ""),

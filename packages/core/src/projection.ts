@@ -46,6 +46,7 @@ function update(
 export function projectInsertion<T extends Record<string, unknown>>(
   document: T,
   projection: InsertionProjection | undefined,
+  isRowList?: (path: string) => boolean,
 ): T {
   if (!projection) return document;
   const target = projection.target,
@@ -63,7 +64,7 @@ export function projectInsertion<T extends Record<string, unknown>>(
   let section: ReturnType<typeof resolveIdentity>;
   try {
     section = identity
-      ? resolveIdentity(indexBlocks(rootRows, root), identity)
+      ? resolveIdentity(indexBlocks(rootRows, root, isRowList), identity)
       : undefined;
   } catch {
     return document;

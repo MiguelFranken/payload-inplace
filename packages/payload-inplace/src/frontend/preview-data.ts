@@ -35,6 +35,7 @@ export function useEditorPreviewData<T extends Record<string, any>>(
     return projectInsertion(
       data.current,
       transient.capable ? transient.projection : undefined,
+      (path) => Array.isArray(form.getField(path)?.rows),
     );
   }, [
     fields,
