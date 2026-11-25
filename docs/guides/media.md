@@ -46,4 +46,6 @@ Omit `edit: 'panel'` here: that explicitly requests native UI and takes preceden
 
 Search uses the current user's same-origin native media API and supports debounced, cancellable pagination. Selecting a result changes only this document's reference; shared media metadata remains unchanged. The built-in adapter delegates uploads and shared asset editing to native controls. Your optimistic renderer must resolve a newly selected ID and must not keep showing the old image while loading it.
 
+Set `apiPath` to the site-relative Payload REST mount. For example, `apiPath: "/cms/api"` searches `/cms/api/media`. A trailing slash is optional, and the root mount `/` searches `/media`.
+
 Need another library? Implement the typed `MediaLibraryAdapter` with authorized search and optional upload/progress. Handle abort/revocation, return collection/ID references and keep asset writes separate from document draft saves. See [adapter details](../implementation/media.md), [public API](../api-reference.md) and [native field fallback](../frontend-component-map.md).
