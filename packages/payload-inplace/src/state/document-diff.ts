@@ -168,7 +168,7 @@ export function documentChanges(
             );
           const rowLabels = [
               ...labels,
-              `${rowName} ${messages.number(Math.max(from, to) + 1)}`,
+              `${rowName} ${messages.number((to < 0 ? from : to) + 1)}`,
             ],
             rowPath = getArrayItemPath(path, id);
           if (from < 0 || to < 0 || old.blockType !== next.blockType) {
