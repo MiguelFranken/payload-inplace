@@ -9,3 +9,6 @@ The baseline includes Payload/React/Next/Lexical/Base UI peers in actual browser
 These localhost measurements are diagnostic guardrails. Browser byte/request ceilings allow 30% growth plus a small fixed allowance; action/execution ceilings account for CI variability. Existing 75-block input/frame and slow-save/caret/selection regressions remain separate behavioral gates.
 
 The visitor graph check requires three anonymous Chromium samples from the same production build. It verifies the running server’s build marker, requires the runtime entry chunks in every sample, and compares each observed JS/CSS digest against the build output. Active positive controls and an injected leak exercise the graph detector. The separate packed-consumer check compares enabled and disabled public resources byte for byte.
+
+The [long-page overlay benchmark](overlay-geometry.md) measures geometry reads,
+scroll frame intervals and canvas handle placement at desktop and 320px widths.
