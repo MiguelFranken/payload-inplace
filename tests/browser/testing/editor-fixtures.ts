@@ -1,4 +1,5 @@
 import { expect, type Locator, type Page } from "@playwright/test";
+import type { CommerceBlock } from "../../../apps/demo/commerce/render-data";
 
 /** Only synthetic records inside the caller's disposable demo database. Uses real native auth/create. */
 export async function createShopEditor(
@@ -6,12 +7,14 @@ export async function createShopEditor(
   {
     emptyCards = false,
     cards,
+    arrangeLayout,
     role = "admin",
     richBody,
     richText = "Made with care. Built to last.",
     sourceText,
   }: {
     emptyCards?: boolean;
+    arrangeLayout?: (layout: CommerceBlock[]) => CommerceBlock[];
     cards?: {
       product: string | number;
       heading?: string;
@@ -91,7 +94,7 @@ export async function createShopEditor(
     data: {
       title: "Roadmap acceptance",
       slug: `roadmap-${Date.now()}-${Math.random().toString(16).slice(2)}`,
-      layout,
+      layout: arrangeLayout ? arrangeLayout(layout) : layout,
       _status: "draft",
     },
   });
