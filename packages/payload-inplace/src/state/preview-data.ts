@@ -55,24 +55,44 @@ export function mergePreviewData(initial: unknown, current: unknown): unknown {
   return current;
 }
 
-/** Native Form represents empty array/block controls as count zero. Normalize only paths positively identified by native row metadata. */
-export function normalizePreviewRows(
-  data: Record<string, any>,
+function normalizeRowPath(
+  value: unknown,
+  path: string[],
+  index: number,
+): unknown {
+  const key = path[index];
+  if (key === undefined) return value === 0 ? [] : value;
+  if (!value || typeof value !== "object" || !Object.hasOwn(value, key))
+    return value;
+  const record = value as Record<string, unknown>;
+  const child = record[key];
+  const normalized = normalizeRowPath(child, path, index + 1);
+  if (Object.is(child, normalized)) return value;
+  const copy = (Array.isArray(value) ? [...value] : { ...record }) as Record<
+    string,
+    unknown
+  >;
+  copy[key] = normalized;
+  return copy;
+}
+
+/** Normalize native zero row counts by copying only the affected paths in the preview. */
+export function normalizePreviewRows<T extends Record<string, unknown>>(
+  data: T,
   fields: Record<string, { rows?: unknown }>,
-) {
+): T {
+  let projection: unknown = data;
   for (const [path, state] of Object.entries(fields)) {
     if (!Array.isArray(state.rows)) continue;
     const parts = path.split(".");
     if (
-      parts.some((key) =>
-        ["__proto__", "constructor", "prototype"].includes(key),
+      parts.some(
+        (key) =>
+          !key || ["__proto__", "constructor", "prototype"].includes(key),
       )
     )
       continue;
-    let parent: any = data;
-    for (const key of parts.slice(0, -1)) parent = parent?.[key];
-    const key = parts.at(-1)!;
-    if (parent && parent[key] === 0) parent[key] = [];
+    projection = normalizeRowPath(projection, parts, 0);
   }
-  return data;
+  return projection as T;
 }
