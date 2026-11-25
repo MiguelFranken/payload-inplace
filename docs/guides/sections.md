@@ -25,6 +25,8 @@ catalogue: {
 
 Use your real block slug and valid schema values. Label/description/group/thumbnail describe the option; `example` is transient presentation data. It is not a new schema default, saved draft or independent content model. Do not put credentials, private records or arbitrary relationship IDs into examples. Native field permissions filter transported examples.
 
+Preview projection considers at most the first `maxRows` rows of each nested blocks or array field. If the schema leaves `maxRows` unset, the projection considers the first 100 rows per field.
+
 ## Make hover preview work
 
 ![Questions is highlighted in the section catalogue and previewed on the storefront at the selected gap](../images/ecommerce-sections.png)
