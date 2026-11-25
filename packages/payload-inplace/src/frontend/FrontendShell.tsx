@@ -453,7 +453,10 @@ function NativeDocumentForm(
                 retry: savedPreview.retry,
               }}
             >
-              <SectionPatterns capabilities={props.patterns}>
+              <SectionPatterns
+                capabilities={props.patterns}
+                contentLocale={props.context.locale}
+              >
                 <NativeDocumentScopes
                   context={props.context}
                   scopes={props.pageScopes}

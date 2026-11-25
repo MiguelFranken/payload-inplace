@@ -32,9 +32,11 @@ const Context = createContext<PatternCommands | null>(null);
 export function SectionPatterns({
   capabilities,
   children,
+  contentLocale,
 }: {
   capabilities?: PatternCapabilities;
   children: ReactNode;
+  contentLocale?: string;
 }) {
   const form = useForm(),
     { config } = useConfig(),
@@ -49,16 +51,20 @@ export function SectionPatterns({
     input: Record<string, unknown>,
     signal: AbortSignal,
   ): Promise<T> {
+    const data = form.getData();
+    const localeQuery = contentLocale
+      ? `?locale=${encodeURIComponent(contentLocale)}&fallback-locale=null`
+      : "";
     const response = await fetch(
-      `${config.routes.api}/visual-editor/patterns`,
+      `${config.routes.api}/visual-editor/patterns${localeQuery}`,
       {
         method: "POST",
         signal,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...input,
-          proof: form.getData()._veActivation,
-          expectedRevision: form.getData()._veRevision,
+          proof: data._veActivation,
+          expectedRevision: data._veRevision ?? data.updatedAt,
         }),
       },
     );

@@ -1,5 +1,155 @@
 import { test, expect } from "@playwright/test";
 import { createShopEditor, moveCaretToEnd } from "./testing/editor-fixtures";
+import { observeAutosave } from "./testing/autosave";
+
+test("native admin and website history compare the same saved fields", async ({
+  page,
+}) => {
+  test.skip(
+    process.env.VE_DATABASE !== "postgres" ||
+      process.env.VE_TEST_SCHEMA !== "1",
+    "Requires guarded native restore and the nested review fixture",
+  );
+  test.slow();
+  async function login(role: "admin" | "editor") {
+    const response = await page.request.post("/api/users/login", {
+      data: {
+        email: `${role}@example.test`,
+        password: "synthetic-demo-password",
+      },
+    });
+    expect(response.ok()).toBeTruthy();
+  }
+  await login("admin");
+  const mediaResponse = await page.request.get("/api/media?limit=2&depth=0");
+  expect(mediaResponse.ok()).toBeTruthy();
+  const [initialAsset, latestAsset] = (await mediaResponse.json()).docs;
+  expect(initialAsset.id).not.toBe(latestAsset.id);
+  const initial = await page.request.post("/api/pages?draft=true&depth=0", {
+    data: {
+      title: "Version comparison",
+      slug: `scope-version-review-${Date.now()}`,
+      layout: [
+        {
+          blockType: "hero",
+          heading: "Version comparison",
+          privateNote: "Restricted historical note",
+          reviewWidgets: [
+            {
+              blockType: "versionReviewWidget",
+              title: "Historical widget headline",
+              settings: { mode: "early", nested: { visible: false } },
+              asset: initialAsset.id,
+            },
+          ],
+        },
+      ],
+    },
+  });
+  expect(initial.ok(), await initial.text()).toBeTruthy();
+  const historical = (await initial.json()).doc;
+  const [hero] = historical.layout;
+  const versionList = await page.request.get(
+    `/api/pages/versions?where[parent][equals]=${historical.id}&limit=1&depth=0`,
+  );
+  expect(versionList.ok()).toBeTruthy();
+  const [version] = (await versionList.json()).docs;
+  expect(version.version._veRevision).toBe(historical._veRevision);
+  const updated = await page.request.patch(
+    `/api/pages/${historical.id}?draft=true&depth=0`,
+    {
+      data: {
+        _veRevision: historical._veRevision,
+        layout: [
+          {
+            ...hero,
+            privateNote: "Restricted latest note",
+            reviewWidgets: [
+              {
+                ...hero.reviewWidgets[0],
+                title: "Latest widget headline",
+                settings: { mode: "late", nested: { visible: true } },
+                asset: latestAsset.id,
+              },
+            ],
+          },
+        ],
+      },
+    },
+  );
+  expect(updated.ok(), await updated.text()).toBeTruthy();
+  await login("editor");
+
+  const rows = page.locator("[data-ve-diff-path]");
+  const comparison = () =>
+    rows.evaluateAll((elements) =>
+      elements
+        .map((row) => ({
+          path: row.getAttribute("data-ve-diff-path"),
+          labels: Array.from(
+            row.querySelectorAll("h3 > span"),
+            (label) => label.textContent,
+          ),
+          values: Array.from(
+            row.querySelectorAll("p"),
+            (value) => value.textContent,
+          ),
+        }))
+        .sort((a, b) => a.path!.localeCompare(b.path!)),
+    );
+  await page.goto(`/visual-editor/start?collection=pages&id=${historical.id}`);
+  await page
+    .getByRole("button", { name: "Start editing", exact: true })
+    .press("Enter");
+  await page.getByRole("button", { name: "More tools" }).press("Enter");
+  await page.getByRole("menuitem", { name: "Saved versions" }).press("Enter");
+  await page
+    .getByRole("button", {
+      name: `Compare version ${historical._veRevision}`,
+      exact: true,
+    })
+    .press("Enter");
+  await expect(rows).toHaveCount(3);
+  const website = await comparison();
+  const widgetLabels = ["Layout", "Hero 1", "Version widgets", "Review card 1"];
+  expect(
+    website.map(({ path, labels }) => [path?.split(".").at(-1), labels]),
+  ).toEqual([
+    ["asset", [...widgetLabels, "Card image"]],
+    ["settings", [...widgetLabels, "Card options"]],
+    ["title", [...widgetLabels, "Card headline"]],
+  ]);
+  expect(website[0]!.values).toEqual([
+    String(latestAsset.id),
+    String(initialAsset.id),
+  ]);
+  expect(website[1]!.values).toEqual([
+    expect.stringContaining('"visible": true'),
+    expect.stringContaining('"visible": false'),
+  ]);
+  expect(website[2]!.values).toEqual([
+    "Latest widget headline",
+    "Historical widget headline",
+  ]);
+  await expect(
+    page.getByText(/Restricted (historical|latest) note/),
+  ).toHaveCount(0);
+
+  await page.setViewportSize({ width: 320, height: 840 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(
+    `/admin/collections/pages/${historical.id}/versions/${version.id}`,
+  );
+  await expect(
+    page.getByRole("heading", { name: "Restore version", exact: true }),
+  ).toBeVisible();
+  await expect(rows).toHaveCount(3);
+  expect(await comparison()).toEqual(website);
+  await expect(rows.last()).toBeVisible();
+  await expect(
+    page.getByText(/Restricted (historical|latest) note/),
+  ).toHaveCount(0);
+});
 
 test("rich-text formatting, safe paste and slow acknowledgements preserve structured native data", async ({
   page,
@@ -233,6 +383,7 @@ test("rich-text composition defers native submission until the composed value is
   page,
 }) => {
   const { doc } = await createShopEditor(page);
+  const autosave = await observeAutosave(page, `/api/shops/${doc.id}`);
   await page.locator('[data-ve-field="body"]').first().click();
   const rich = page.locator('[data-ve-inline-active][contenteditable="true"]');
   const writes: string[] = [];
@@ -243,11 +394,22 @@ test("rich-text composition defers native submission until the composed value is
     )
       writes.push(request.postData() || "");
   });
-  await rich.dispatchEvent("compositionstart", { data: "" });
-  await rich.pressSequentially("日本語");
-  await page.waitForTimeout(1900);
+  await expect(rich).toBeFocused();
+  await moveCaretToEnd(rich);
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("Input.imeSetComposition", {
+    text: "日本",
+    selectionStart: 2,
+    selectionEnd: 2,
+  });
+  await expect(rich).toContainText("日本");
+  await autosave.advanceIdleWindow();
   expect(writes).toHaveLength(0);
-  await rich.dispatchEvent("compositionend", { data: "日本語" });
+  const saved = autosave.response();
+  await cdp.send("Input.insertText", { text: "日本語" });
+  await autosave.advanceIdleWindow();
+  expect((await saved).ok()).toBe(true);
+  await cdp.detach();
   await expect
     .poll(async () =>
       JSON.stringify(
@@ -271,6 +433,7 @@ test("source text survives capitalize, NBSP, multiline and opaque renderer fallb
   const { doc } = await createShopEditor(page, {
     sourceText: { eyebrow, description },
   });
+  const autosave = await observeAutosave(page, `/api/shops/${doc.id}`);
   const read = async () =>
     await (
       await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
@@ -283,12 +446,14 @@ test("source text survives capitalize, NBSP, multiline and opaque renderer fallb
   await target.click();
   await expect(target).toHaveAttribute("contenteditable", "plaintext-only");
   await target.press("Tab");
-  await page.waitForTimeout(1800);
+  await autosave.advanceIdleWindow();
   expect((await read())._veRevision).toBe(doc._veRevision);
   expect((await read()).layout[0].eyebrow).toBe(eyebrow);
   await target.click();
   await moveCaretToEnd(target);
+  const eyebrowSave = autosave.response();
   await target.pressSequentially("!");
+  expect((await eyebrowSave).ok()).toBe(true);
   await expect
     .poll(async () => (await read()).layout[0].eyebrow)
     .toBe(`${eyebrow}!`);
@@ -300,7 +465,9 @@ test("source text survives capitalize, NBSP, multiline and opaque renderer fallb
   await multiline.press("Enter");
   await expect(multiline).toBeFocused();
   await expect(multiline).toHaveAttribute("contenteditable", "plaintext-only");
+  const descriptionSave = autosave.response();
   await multiline.pressSequentially("Third line");
+  expect((await descriptionSave).ok()).toBe(true);
   await expect
     .poll(async () => (await read()).layout[0].description)
     .toBe(`${description}\nThird line`);

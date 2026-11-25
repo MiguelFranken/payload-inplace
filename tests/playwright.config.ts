@@ -14,15 +14,7 @@ const results = artifactGroup
 export default defineConfig({
   testDir: "browser",
   outputDir: `${results}/browser`,
-  testMatch: [
-    "e2e.spec.ts",
-    "optimistic.e2e.spec.ts",
-    "commerce.e2e.spec.ts",
-    "roadmap.e2e.spec.ts",
-    "acceptance.e2e.spec.ts",
-    "block-actions.e2e.spec.ts",
-    "performance.e2e.spec.ts",
-  ],
+  testMatch: ["**/e2e.spec.ts", "**/*.e2e.spec.ts"],
   workers: 1,
   reporter: [["list"], ["json", { outputFile: `${results}/results.json` }]],
   timeout: 60000,
@@ -40,7 +32,12 @@ export default defineConfig({
           stdout: "pipe",
           stderr: "pipe",
           cwd: fileURLToPath(new URL("..", import.meta.url)),
-          command: "node apps/demo/start-server.mjs",
+          command:
+            process.platform === "win32"
+              ? "node apps/demo/start-server.mjs"
+              : "exec node apps/demo/start-server.mjs",
+          // Let the launcher stop its detached process groups and remove owned resources.
+          gracefulShutdown: { signal: "SIGTERM", timeout: 30000 },
           url: `${origin}/admin/login`,
           reuseExistingServer: false,
           timeout: 240000,

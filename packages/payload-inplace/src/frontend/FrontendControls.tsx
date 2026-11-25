@@ -1390,7 +1390,7 @@ export function FrontendControls({
                   }
                   onChoosePattern={
                     patterns?.canRead
-                      ? (pattern) =>
+                      ? (pattern, signal) =>
                           insertPattern(
                             {
                               kind: "list",
@@ -1398,6 +1398,7 @@ export function FrontendControls({
                               field: "",
                             },
                             pattern,
+                            signal,
                           )
                       : undefined
                   }

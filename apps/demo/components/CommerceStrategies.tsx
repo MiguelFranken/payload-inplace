@@ -8,6 +8,8 @@ import {
   createPayloadMediaLibrary,
 } from "payload-inplace/frontend";
 
+import { uploadDemoMedia } from "../commerce/upload-demo-media";
+
 const background = defineFieldStrategy({
   id: "commerce-background",
   types: ["select"],
@@ -28,6 +30,7 @@ const background = defineFieldStrategy({
             key={key}
             type="button"
             buttonStyle={value === key ? "primary" : "secondary"}
+            extraButtonProps={{ "aria-pressed": value === key }}
             disabled={disabled}
             onClick={() => setValue(key)}
           >
@@ -57,19 +60,28 @@ const mediaWithTestUpload = defineMediaFieldStrategy({
     return { id: doc.id, collection: "media", label: doc.filename };
   },
 });
+const mediaWithUpload = defineMediaFieldStrategy({
+  ...nativeMedia,
+  id: "demo-media-upload",
+  upload: uploadDemoMedia,
+});
 
 /** Registration is active-only and document-local. Options and persistence remain native. */
 export function CommerceStrategies({
+  enableExampleUpload = false,
   enableTestUpload = false,
 }: {
+  enableExampleUpload?: boolean;
   enableTestUpload?: boolean;
 }) {
+  let mediaStrategy = media;
+  if (enableExampleUpload) mediaStrategy = mediaWithUpload;
+  else if (enableTestUpload) mediaStrategy = mediaWithTestUpload;
+
   return (
     <>
       <EditorFieldStrategy definition={background} />
-      <EditorFieldStrategy
-        definition={enableTestUpload ? mediaWithTestUpload : media}
-      />
+      <EditorFieldStrategy definition={mediaStrategy} />
     </>
   );
 }

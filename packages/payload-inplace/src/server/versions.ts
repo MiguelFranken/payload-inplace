@@ -30,7 +30,7 @@ export async function readSavedVersions(
   const query = {
     ...(versionID ? { where: { id: { equals: versionID } } } : {}),
     limit: versionID ? 1 : 20,
-    page,
+    page: versionID ? 1 : page,
     sort: "-updatedAt",
     depth: 0,
     fallbackLocale: false as const,
@@ -59,7 +59,7 @@ export async function readSavedVersions(
     document,
     docs,
     hasNextPage: result.hasNextPage,
-    page: result.page ?? page,
+    page: result.page ?? query.page,
   };
 }
 

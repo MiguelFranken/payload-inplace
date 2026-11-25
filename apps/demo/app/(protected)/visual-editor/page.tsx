@@ -1,5 +1,6 @@
 import { readDemoDocument } from "../../../lib/read-demo-document";
 import { commercePath } from "../../../commerce/paths";
+import { translationPath } from "../../../lib/translation-path";
 import { cookies } from "next/headers";
 import { unstable_rethrow } from "next/navigation";
 import { handleEditorServerFunctions } from "payload-inplace/native";
@@ -71,7 +72,9 @@ export async function DocumentEditor({ identifier }: { identifier: string }) {
     process.env.VE_TEST_SCHEMA === "1"
       ? (await cookies()).get("demo-editor-ui")?.value
       : undefined;
-  const options = ["en", "de", "ar"].includes(demoUILocale || "")
+  const options = ["en", "de", "ar", "ar-Latn", "az-Arab", "ps"].includes(
+    demoUILocale || "",
+  )
     ? {
         ...editorOptions,
         ui: {
@@ -115,8 +118,13 @@ export async function DocumentEditor({ identifier }: { identifier: string }) {
       exitURL={
         context.target.kind === "global"
           ? "/shop"
-          : commercePath(context.target.collection, String(document.slug)) ||
-            `/${context.target.collection}/${document.slug}`
+          : context.target.collection === "localizedPages"
+            ? translationPath(
+                context.locale === "de" ? "de" : "en",
+                String(document.slug),
+              )
+            : commercePath(context.target.collection, String(document.slug)) ||
+              `/${context.target.collection}/${document.slug}`
       }
     >
       <RenderPage document={document} root={context.target.root} active />

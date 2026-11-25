@@ -30,7 +30,7 @@ export const patternCollection: CollectionConfig = {
 };
 
 export const patternAdapter: SectionPatternAdapter = {
-  allowedBlocks: ["text", "editorial", "productGrid"],
+  allowedBlocks: ["text", "editorial", "productGrid", "localeStory"],
   authorize: ({ req }) =>
     Boolean(req.user && ["admin", "editor"].includes(req.user.role)),
   list: async ({ req, page, limit }) => {

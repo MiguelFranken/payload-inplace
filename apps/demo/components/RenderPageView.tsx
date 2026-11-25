@@ -1,4 +1,5 @@
 import { CommercePageView } from "../commerce/CommercePageView";
+import { isCommerceBlock, pageRows } from "../commerce/render-data";
 import { RichText } from "@payloadcms/richtext-lexical/react";
 import {
   getBlockAttributes,
@@ -16,45 +17,36 @@ export function RenderPageView({
   resolveProduct,
   serverContent,
 }: {
-  document: any;
+  document: Record<string, unknown>;
   root: string;
   active?: boolean;
-  resolveProduct?: (product: any) => any;
-  renderImage?: (image: any) => import("react").ReactNode;
+  resolveProduct?: Parameters<typeof CommercePageView>[0]["resolveProduct"];
+  renderImage?: Parameters<typeof CommercePageView>[0]["renderImage"];
   serverContent?: Record<string, import("react").ReactNode>;
 }) {
-  const rows =
-    root.split(".").reduce((value, key) => value?.[key], document) || [];
-  if (
-    rows.some((block: any) =>
-      [
-        "collectionHero",
-        "productDetails",
-        "productGrid",
-        "editorial",
-        "faq",
-      ].includes(block.blockType),
-    )
-  )
+  const rows = pageRows(document, root);
+  const commerceBlocks = rows.filter(isCommerceBlock);
+  if (commerceBlocks.length)
     return (
       <CommercePageView
-        document={document}
+        blocks={commerceBlocks}
         root={root}
         active={active}
         renderImage={renderImage}
         resolveProduct={resolveProduct}
       />
     );
-  const layout = root.split(".").reduce((v, k) => v?.[k], document) ?? [];
   return (
     <main id="main-content">
-      {layout.map((block: any, index: number) => {
+      {rows.map((block: any, index: number) => {
         const identity = { root, blockId: block.id };
         if (block.hidden) return null;
         const Heading = index === 0 ? "h1" : "h2";
         const heading =
           block.heading ||
-          (block.blockType === "serverData" ? document.title : undefined);
+          (block.blockType === "serverData"
+            ? String(document.title ?? "")
+            : undefined);
         return (
           <section
             key={block.id}
@@ -69,7 +61,10 @@ export function RenderPageView({
             >
               {heading || (active ? "Add a heading" : "")}
             </Heading>
-            {(block.caption || (active && block.blockType === "hero")) && (
+            {(block.caption ||
+              (active &&
+                (block.blockType === "hero" ||
+                  block.blockType === "localeStory"))) && (
               <p
                 {...getFieldAttributes(
                   { ...identity, field: "caption" },
@@ -122,7 +117,7 @@ export function RenderPageView({
             )}
             {block.blockType === "serverData" &&
               (serverContent?.[block.id] || (
-                <p>Server result: {document.slug}</p>
+                <p>Server result: {String(document.slug ?? "")}</p>
               ))}
             {renderImage
               ? renderImage(block.image)

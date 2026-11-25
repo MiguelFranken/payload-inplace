@@ -112,3 +112,33 @@ it("redacts hidden/denied example content before transport and regenerates neste
   expect(catalogue.text.example).not.toHaveProperty("restricted");
   expect(catalogue.text.example).not.toHaveProperty("secret");
 });
+
+it("uses native row paths to resolve a projection anchor through atomic arrays", () => {
+  const child = { id: "child", blockType: "text" };
+  const doc = {
+    layout: [
+      {
+        id: "hero",
+        blockType: "hero",
+        json: [child, child],
+        children: [child],
+      },
+    ],
+  };
+  const preview = { id: "preview", blockType: "text" };
+  const projected = projectInsertion(
+    doc,
+    {
+      target: {
+        kind: "adjacent",
+        identity: { root: "layout", blockId: "child", ancestors: ["hero"] },
+        side: "after",
+      },
+      row: preview,
+    },
+    (path) => path === "layout.0.children",
+  );
+
+  expect(projected.layout[0]?.children).toEqual([child, preview]);
+  expect(projected.layout[0]?.json).toBe(doc.layout[0]?.json);
+});

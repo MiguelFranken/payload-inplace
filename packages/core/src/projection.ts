@@ -24,21 +24,23 @@ function update(
   parts: readonly string[],
   rows: unknown[],
 ): unknown {
+  if (parts.length === 0) return rows;
   const key = parts[0];
-  if (!key) return rows;
   if (
+    !key ||
     ["__proto__", "prototype", "constructor"].includes(key) ||
     !value ||
-    typeof value !== "object" ||
-    !Object.hasOwn(value, key)
+    typeof value !== "object"
   )
     return value;
+  const hasChild = Object.hasOwn(value, key);
+  // The picker already confirmed the list schema. Only the list leaf may be absent.
+  if (!hasChild && (parts.length > 1 || Array.isArray(value))) return value;
+  const child = hasChild ? (value as Record<string, unknown>)[key] : undefined;
+  const next = update(child, parts.slice(1), rows);
+  if (Object.is(child, next)) return value;
   const copy = Array.isArray(value) ? [...value] : { ...value };
-  (copy as Record<string, unknown>)[key] = update(
-    (value as Record<string, unknown>)[key],
-    parts.slice(1),
-    rows,
-  );
+  (copy as Record<string, unknown>)[key] = next;
   return copy;
 }
 
@@ -46,6 +48,7 @@ function update(
 export function projectInsertion<T extends Record<string, unknown>>(
   document: T,
   projection: InsertionProjection | undefined,
+  isRowList?: (path: string) => boolean,
 ): T {
   if (!projection) return document;
   const target = projection.target,
@@ -63,7 +66,7 @@ export function projectInsertion<T extends Record<string, unknown>>(
   let section: ReturnType<typeof resolveIdentity>;
   try {
     section = identity
-      ? resolveIdentity(indexBlocks(rootRows, root), identity)
+      ? resolveIdentity(indexBlocks(rootRows, root, isRowList), identity)
       : undefined;
   } catch {
     return document;

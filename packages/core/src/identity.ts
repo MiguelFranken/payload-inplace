@@ -9,11 +9,16 @@ export interface IndexedBlock {
   ancestors: string[];
 }
 
-/** Index all block/array descendants without turning positions into identities. Ambiguity fails closed. */
-export function indexBlocks(data: unknown, root: string): IndexedBlock[] {
+/** Index the blocks root and its row lists without turning positions into identities. */
+export function indexBlocks(
+  data: unknown,
+  root: string,
+  isRowList?: (path: string) => boolean,
+): IndexedBlock[] {
   const result: IndexedBlock[] = [];
   const visit = (value: unknown, path: string, ancestors: string[]) => {
     if (Array.isArray(value)) {
+      if (path !== root && isRowList && !isRowList(path)) return;
       const seen = new Set<string>();
       value.forEach((row, index) => {
         if (!row || typeof row !== "object") return;
@@ -53,11 +58,13 @@ export function resolveIdentity(
   index: IndexedBlock[],
   identity: BlockIdentity,
 ): IndexedBlock | undefined {
+  const ancestors = identity.ancestors ?? [];
   const hits = index.filter(
     (row) =>
       row.id === identity.blockId &&
       row.path.startsWith(`${identity.root}.`) &&
-      row.ancestors.join("/") === (identity.ancestors ?? []).join("/"),
+      row.ancestors.length === ancestors.length &&
+      row.ancestors.every((id, index) => id === ancestors[index]),
   );
   if (hits.length > 1) throw new Error("Ambiguous block identity");
   return hits[0];

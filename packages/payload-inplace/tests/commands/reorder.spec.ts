@@ -85,13 +85,19 @@ it("a cancelled/no-op drop has no native mutation or checkpoint", () => {
 });
 it("refuses cross-container drops even when both row identities are valid", () => {
   const { form, history, options } = fixture();
+  const child = { id: "nested", blockType: "text" };
   form.getDataByPath = () => [
     {
       id: "hero",
       blockType: "hero",
-      children: [{ id: "nested", blockType: "text" }],
+      children: [child],
     },
   ];
+  const getFields = form.getFields;
+  form.getFields = () => ({
+    ...getFields(),
+    "layout.0.children": { value: 1, rows: [child] },
+  });
   expect(
     applyCommand(
       form,

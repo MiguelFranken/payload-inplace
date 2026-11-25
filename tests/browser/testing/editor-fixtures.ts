@@ -5,11 +5,13 @@ export async function createShopEditor(
   page: Page,
   {
     emptyCards = false,
+    role = "admin",
     richBody,
     richText = "Made with care. Built to last.",
     sourceText,
   }: {
     emptyCards?: boolean;
+    role?: "admin" | "editor";
     richBody?: unknown;
     richText?: string;
     sourceText?: { eyebrow: string; description: string };
@@ -20,7 +22,7 @@ export async function createShopEditor(
     (
       await page.request.post("/api/users/login", {
         data: {
-          email: "admin@example.test",
+          email: `${role}@example.test`,
           password: "synthetic-demo-password",
         },
       })

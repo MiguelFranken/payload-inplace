@@ -45,6 +45,7 @@ export function revisionGuard(
         where: { id: { equals: id } },
         limit: 1,
         depth: 0,
+        fallbackLocale: false,
         req,
         overrideAccess: false,
       });

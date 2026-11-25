@@ -24,6 +24,8 @@ visualEditor({
 
 Plugin feedback retains typed message identities through asynchronous work. Translation changes do not restart media searches, saves or reconciliation requests. Native validation, native labels and consumer action results remain owned by Payload/the consumer. `EditorLabel` accepts English fallback plus arbitrary language/full-locale keys. Editor language/direction are scoped to its chrome; the website's `<html>` is unchanged. Canvas text still uses the website's typography and content language.
 
+Direction follows the locale's script. An explicit script subtag wins, so `ar-Latn` is left-to-right and `az-Arab` is right-to-left. When a tag omits its script, `Intl.Locale` supplies its likely script. An invalid tag falls back to English.
+
 ## Content scope
 
 Activation records one native content locale in its signed credential. The same locale is required on subsequent native writes, latest/version reads and lease requests. Reviewed publication is also locale-bound. `all` is not an editing locale. Changing content locale requires authorizing a new editing scope: the native Form, selection, structural history, review state and pending acknowledgement listeners are remounted for that scope. An old credential cannot write to another locale even if document/revision/content happen to match.

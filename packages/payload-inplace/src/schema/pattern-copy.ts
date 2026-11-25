@@ -45,7 +45,7 @@ export function copyPatternFields(
       for (const tab of field.tabs) {
         if ("name" in tab) {
           const own = child(permissions, tab.name);
-          if (!denied(own))
+          if (!denied(own) && Object.hasOwn(source, tab.name))
             result[tab.name] = copyPatternFields(
               tab.fields,
               source[tab.name],

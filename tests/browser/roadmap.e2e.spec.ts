@@ -1,5 +1,6 @@
 import { test, expect, type Route } from "@playwright/test";
 import { moveCaretToEnd } from "./testing/editor-fixtures";
+import { observeAutosave } from "./testing/autosave";
 
 test("inline edits preserve mixed-case source under uppercase CSS and keep the host page mounted", async ({
   page,
@@ -266,6 +267,7 @@ test("catalogue search and delayed canvas previews cancel without a native save 
 }) => {
   const { createShopEditor } = await import("./testing/editor-fixtures");
   const { doc } = await createShopEditor(page);
+  const autosave = await observeAutosave(page, `/api/shops/${doc.id}`);
   const patches: string[] = [];
   page.on("request", (request) => {
     if (
@@ -298,7 +300,7 @@ test("catalogue search and delayed canvas previews cancel without a native save 
   ).toBeVisible();
   await page.screenshot({ path: "test-results/roadmap-catalogue-preview.png" });
   // Native autosave's idle deadline passes while only the presentation delta exists.
-  await page.waitForTimeout(1800);
+  await autosave.advanceIdleWindow();
   expect(patches).toEqual([]);
   const saved = await (
     await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
@@ -320,6 +322,8 @@ test("catalogue search and delayed canvas previews cancel without a native save 
 test("a consumer scalar strategy saves through native Form and can hand back to the native field", async ({
   page,
 }) => {
+  await page.setViewportSize({ width: 320, height: 900 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
   const { createShopEditor } = await import("./testing/editor-fixtures");
   const { doc } = await createShopEditor(page);
   const select = page.getByRole("button", {
@@ -340,7 +344,13 @@ test("a consumer scalar strategy saves through native Form and can hand back to 
   await target.click({ position: { x: 8, y: 8 } });
   const presets = page.getByRole("group", { name: "Background presets" });
   await expect(presets).toBeVisible();
-  await presets.getByRole("button", { name: "Sand", exact: true }).click();
+  const sage = presets.getByRole("button", { name: "Sage", exact: true });
+  const sand = presets.getByRole("button", { name: "Sand", exact: true });
+  await expect(sage).toHaveAttribute("aria-pressed", "true");
+  await expect(sand).toHaveAttribute("aria-pressed", "false");
+  await sand.press("Space");
+  await expect(sand).toHaveAttribute("aria-pressed", "true");
+  await expect(sage).toHaveAttribute("aria-pressed", "false");
   await expect
     .poll(
       async () =>
@@ -356,9 +366,38 @@ test("a consumer scalar strategy saves through native Form and can hand back to 
     .getByRole("button", { name: "Open native field", exact: true })
     .click();
   await expect(presets).toHaveCount(0);
-  await expect(
-    page.getByRole("combobox", { name: "Background", exact: true }),
-  ).toBeVisible();
+  const panel = page.getByRole("complementary", { name: "Edit content" });
+  const native = panel.getByRole("combobox", {
+    name: "Background",
+    exact: true,
+  });
+  await expect(native).toBeVisible();
+  const path = `**/api/shops/${doc.id}?*`;
+  const requests: string[] = [];
+  await page.route(path, async (route) => {
+    if (route.request().method() === "PATCH") {
+      requests.push(route.request().method());
+      await route.fulfill({
+        status: 503,
+        json: { errors: [{ message: "Synthetic save unavailable" }] },
+      });
+    } else {
+      await route.continue();
+    }
+  });
+  await native.press("ArrowDown");
+  await native.press("Home");
+  await native.press("ArrowDown");
+  await native.press("Enter");
+  const options = page.getByRole("button", { name: "Options for Background" });
+  await expect(options).toBeDisabled();
+  await expect(panel.getByText("Sage", { exact: true })).toBeVisible();
+  await options.press("Enter");
+  await expect(panel.getByText("Sage", { exact: true })).toBeVisible();
+  expect(requests).toHaveLength(1);
+  await page.unroute(path);
+  await page.getByRole("button", { name: "Retry saving", exact: true }).click();
+  await expect(page.getByRole("status", { name: "Draft saved" })).toBeVisible();
   await expect(
     page.getByRole("navigation", { name: "Editing toolbar" }),
   ).toBeVisible();
@@ -369,6 +408,7 @@ test("saved versions reopen, compare changed content and restore a guarded draft
 }) => {
   const { createShopEditor } = await import("./testing/editor-fixtures");
   const { doc } = await createShopEditor(page);
+  const autosave = await observeAutosave(page, `/api/shops/${doc.id}`);
   const select = page.getByRole("button", {
     name: "Select content",
     exact: true,
@@ -476,7 +516,7 @@ test("saved versions reopen, compare changed content and restore a guarded draft
         document.querySelector("[data-test-site-header]"),
     ),
   ).toBe(true);
-  await page.waitForTimeout(1800);
+  await autosave.advanceIdleWindow();
   expect(writes).toHaveLength(1);
   await page.getByRole("button", { name: "More tools", exact: true }).click();
   await page
@@ -495,6 +535,198 @@ test("saved versions reopen, compare changed content and restore a guarded draft
   await expect(
     page.getByRole("heading", { name: "Saved versions", exact: true }),
   ).toBeVisible();
+});
+
+test("the optional upload adapter saves one media reference and recovers from native permission denial", async ({
+  page,
+}) => {
+  test.skip(
+    process.env.VE_DEMO_MEDIA_UPLOAD !== "1",
+    "Start the demo with VE_DEMO_MEDIA_UPLOAD=1",
+  );
+  const { readFile } = await import("node:fs/promises");
+  const { createShopEditor } = await import("./testing/editor-fixtures");
+  const buffer = await readFile(
+    new URL("../../apps/demo/commerce/assets/studio.png", import.meta.url),
+  );
+
+  for (const role of ["admin", "editor"] as const) {
+    const width = role === "admin" ? 1280 : 320;
+    await page.setViewportSize({ width, height: 900 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    const { doc } = await createShopEditor(page, { role });
+    const latest = async () =>
+      (
+        await (
+          await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+        ).json()
+      ).layout;
+    const original = await latest();
+    const select = page.getByRole("button", {
+      name: "Select content",
+      exact: true,
+    });
+    if ((await select.getAttribute("aria-pressed")) !== "true")
+      await select.click();
+    await page
+      .locator("main > [data-ve-block]")
+      .first()
+      .locator('[data-ve-field="image"]')
+      .click();
+    const accepted = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === "/api/demo-media-upload" &&
+        response.request().method() === "POST",
+    );
+    await page.getByLabel("Upload media").setInputFiles({
+      name: `demo-upload-${role}-${Date.now()}.png`,
+      mimeType: "image/png",
+      buffer,
+    });
+    const response = await accepted;
+
+    if (role === "admin") {
+      expect(response.status(), await response.text()).toBe(201);
+      const uploaded = (await response.json()).doc;
+      const expected = structuredClone(original);
+      expected[0].image = uploaded.id;
+      await expect.poll(latest).toEqual(expected);
+      await expect(page.locator("main img").first()).toHaveAttribute(
+        "src",
+        new RegExp(uploaded.filename),
+      );
+    } else {
+      expect(response.status()).toBe(403);
+      await expect(
+        page.getByRole("alert").filter({ hasText: "Upload failed." }),
+      ).toBeVisible();
+      expect(await latest()).toEqual(original);
+      await page
+        .getByRole("button", { name: "Open native media editor" })
+        .click();
+      await expect(page.getByLabel("Upload media")).toHaveCount(0);
+      const panel = page.getByRole("complementary", { name: "Edit content" });
+      await expect(panel.getByRole("heading", { name: "Image" })).toBeVisible();
+      await panel.locator(".upload-relationship-details__remove").click();
+      await panel.getByRole("button", { name: "Choose from existing" }).click();
+      await page.getByText("arc-chair.png", { exact: true }).click();
+      const selected = (
+        await (
+          await page.request.get(
+            "/api/media?where[filename][equals]=arc-chair.png",
+          )
+        ).json()
+      ).docs[0];
+      const expected = structuredClone(original);
+      expected[0].image = selected.id;
+      await expect.poll(latest).toEqual(expected);
+    }
+  }
+});
+
+test("timeline pagination isolates delayed and failed pages from old rows and details", async ({
+  page,
+}) => {
+  test.skip(
+    process.env.VE_DATABASE !== "postgres",
+    "Requires revision-guarded fixtures",
+  );
+  test.slow();
+  await page.setViewportSize({ width: 320, height: 840 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const { createShopEditor } = await import("./testing/editor-fixtures");
+  const { doc } = await createShopEditor(page);
+  let latest = doc;
+  for (let version = 2; version <= 21; version++) {
+    const saved = await page.request.patch(
+      `/api/shops/${doc.id}?draft=true&depth=0`,
+      {
+        data: {
+          title: `Timeline version ${version}`,
+          _veRevision: latest._veRevision,
+        },
+      },
+    );
+    expect(saved.ok(), await saved.text()).toBeTruthy();
+    latest = (await saved.json()).doc;
+  }
+
+  let pageTwoRequests = 0;
+  let detailRequests = 0;
+  let rejectPageTwo!: () => void;
+  const waitForFailure = new Promise<void>((resolve) => {
+    rejectPageTwo = resolve;
+  });
+  await page.route("**/api/visual-editor/versions**", async (route) => {
+    const { versionID, page: requestedPage } = route.request().postDataJSON();
+    if (versionID) detailRequests++;
+    if (!versionID && requestedPage === 2 && ++pageTwoRequests === 1) {
+      await waitForFailure;
+      await route.fulfill({ status: 503, json: {} });
+      return;
+    }
+    await route.continue();
+  });
+
+  await page.getByRole("button", { name: "More tools" }).click();
+  await page.getByRole("menuitem", { name: "Saved versions" }).click();
+  const rows = page.getByRole("button", { name: /^Compare version / });
+  const older = page.getByRole("button", { name: "Older versions" });
+  const newer = page.getByRole("button", { name: "Newer versions" });
+  const oldRow = page.getByRole("button", {
+    name: `Compare version ${latest._veRevision - 1}`,
+    exact: true,
+  });
+  await expect(rows).toHaveCount(20);
+  await oldRow.press("Enter");
+  const difference = page.locator('[data-ve-diff-path="title"]');
+  await expect(difference).toContainText("Timeline version 20");
+  const oldRowHandle = (await oldRow.elementHandle())!;
+
+  try {
+    await older.press("Enter");
+    await expect.poll(() => pageTwoRequests).toBe(1);
+    await expect(page.getByText("Page 2", { exact: true })).toBeVisible();
+    await expect(rows).toHaveCount(0);
+    await expect(difference).toHaveCount(0);
+    await expect(older).toBeDisabled();
+    await expect(newer).toBeDisabled();
+    // Simulate a late click on the row that was present before navigation.
+    await oldRowHandle.evaluate((button: HTMLButtonElement) => button.click());
+    await page.keyboard.press("Enter");
+    expect(detailRequests).toBe(1);
+    expect(pageTwoRequests).toBe(1);
+  } finally {
+    rejectPageTwo();
+  }
+
+  const retry = page.getByRole("button", { name: "Retry" });
+  await expect(retry).toBeVisible();
+  await expect(page.getByText("Page 2", { exact: true })).toBeVisible();
+  await expect(rows).toHaveCount(0);
+  await retry.press("Enter");
+  await expect(rows).toHaveCount(1);
+  await expect(rows.first()).toHaveAttribute(
+    "aria-label",
+    `Compare version ${doc._veRevision}`,
+  );
+  await expect(difference).toHaveCount(0);
+  expect(pageTwoRequests).toBe(2);
+  expect(detailRequests).toBe(1);
+
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await newer.press("Enter");
+  await expect(older).toBeEnabled();
+  await older.press("Enter");
+  await expect(newer).toBeEnabled();
+  await newer.press("Enter");
+  await expect(page.getByText("Page 1", { exact: true })).toBeVisible();
+  await expect(rows).toHaveCount(20);
+  await expect.poll(() => pageTwoRequests).toBe(3);
+  await oldRow.press("Enter");
+  await expect(difference).toContainText("Timeline version 20");
+  await expect(oldRow).toHaveAttribute("aria-pressed", "true");
 });
 
 test("contextual native media replacement saves only the document reference and keeps native fallback", async ({
@@ -563,7 +795,8 @@ for (const { width, status } of [
     page,
   }) => {
     test.skip(
-      process.env.VE_TEST_SCHEMA !== "1",
+      process.env.VE_TEST_SCHEMA !== "1" ||
+        process.env.VE_DEMO_MEDIA_UPLOAD === "1",
       "Requires the demo upload fixture",
     );
     await page.setViewportSize({ width, height: 850 });
@@ -659,14 +892,23 @@ test("lifecycle observers correlate failed and retried saves without leaking con
   const { doc } = await createShopEditor(page);
   await page.evaluate(() => {
     const target = window as Window & {
-      __demoRejectObserver?: boolean;
       __observed?: unknown[];
+      __observerFailures?: number;
     };
-    target.__demoRejectObserver = true;
     target.__observed = [];
+    target.__observerFailures = 0;
     window.addEventListener("payload-inplace:demo-event", (event) =>
       target.__observed!.push((event as CustomEvent).detail),
     );
+    const dispatch = window.dispatchEvent.bind(window);
+    window.dispatchEvent = (event) => {
+      const dispatched = dispatch(event);
+      if (event.type === "payload-inplace:demo-event") {
+        target.__observerFailures!++;
+        throw new Error("Synthetic observer failure");
+      }
+      return dispatched;
+    };
   });
   await page.route(`**/api/shops/${doc.id}?*`, async (route) => {
     if (route.request().method() === "PATCH")
@@ -745,6 +987,12 @@ test("lifecycle observers correlate failed and retried saves without leaking con
         }
       ).__observed || [],
   );
+  const observerFailures = await page.evaluate(
+    () =>
+      (window as Window & { __observerFailures?: number }).__observerFailures,
+  );
+  expect(observerFailures).toBe(events.length);
+  expect(observerFailures).toBeGreaterThan(0);
   expect(
     events.filter(
       (event) =>
@@ -1118,18 +1366,74 @@ test("localized inline editing prepares and saves German fields without copying 
     ).layout[0].heading,
   ).toBe("English headline");
   await page.screenshot({ path: "test-results/roadmap-localized-fields.png" });
+
+  const patternResponse = (operation: string) =>
+    page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === "/api/visual-editor/patterns" &&
+        response.request().postDataJSON()?.operation === operation,
+    );
+  const expectGermanPattern = async (
+    pending: ReturnType<typeof patternResponse>,
+  ) => {
+    const response = await pending;
+    expect(response.ok()).toBe(true);
+    expect(new URL(response.url()).searchParams.get("locale")).toBe("de");
+    return response;
+  };
+  const patternName = `German copy ${created.id}`;
+  await page
+    .getByRole("button", { name: "Save as pattern", exact: true })
+    .click();
+  await page
+    .getByRole("textbox", { name: "Pattern name", exact: true })
+    .fill(patternName);
+  const savedPattern = patternResponse("save");
+  await page.getByRole("button", { name: "Save copy", exact: true }).click();
+  await expectGermanPattern(savedPattern);
+
+  await page
+    .getByRole("button", { name: "Back to sections", exact: true })
+    .click();
+  await page
+    .getByRole("combobox", { name: "Add section", exact: true })
+    .click();
+  const listedPattern = patternResponse("list");
+  await page
+    .getByRole("button", { name: "Saved patterns", exact: true })
+    .click();
+  const list = await expectGermanPattern(listedPattern);
+  const { origin } = new URL(list.url());
+  const mismatch = await page.request.post(
+    "/api/visual-editor/patterns?locale=en",
+    {
+      headers: { origin },
+      data: list.request().postDataJSON(),
+    },
+  );
+  expect(mismatch.status()).toBe(403);
+
+  const readPattern = patternResponse("read");
+  await page.getByRole("option", { name: patternName, exact: true }).click();
+  const copy = await (await expectGermanPattern(readPattern)).json();
+  expect(copy.content.heading).toBe("Native deutsche Überschrift");
 });
 
-test("English German and RTL editor chrome stays scoped at desktop and narrow widths", async ({
+test("editor chrome follows the locale writing direction at desktop and narrow widths", async ({
   page,
   context,
 }) => {
   const { createShopEditor } = await import("./testing/editor-fixtures");
   const { doc } = await createShopEditor(page);
-  for (const [language, sections, close, file] of [
-    ["en", "Sections", "Close Sections panel", "english"],
-    ["de", "Abschnitte", "Abschnitte schließen", "german"],
+  const hostDirection = await page.locator("html").getAttribute("dir");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  for (const [language, sections, close, direction] of [
+    ["en", "Sections", "Close Sections panel", "ltr"],
+    ["de", "Abschnitte", "Abschnitte schließen", "ltr"],
     ["ar", "الأقسام", "Close الأقسام panel", "rtl"],
+    ["ar-Latn", "الأقسام", "Close الأقسام panel", "ltr"],
+    ["az-Arab", "Sections", "Close Sections panel", "rtl"],
+    ["ps", "Sections", "Close Sections panel", "rtl"],
   ] as const) {
     await context.addCookies([
       { name: "demo-editor-ui", value: language, url: page.url() },
@@ -1137,7 +1441,7 @@ test("English German and RTL editor chrome stays scoped at desktop and narrow wi
     await page.reload();
     const button = page.getByRole("button", { name: sections, exact: true });
     await expect(button).toBeVisible();
-    await button.click();
+    await button.press("Enter");
     const panel = page.getByRole("complementary", {
       name: sections,
       exact: true,
@@ -1149,20 +1453,18 @@ test("English German and RTL editor chrome stays scoped at desktop and narrow wi
       const bounds = await panel.boundingBox();
       expect(bounds!.x).toBeGreaterThanOrEqual(0);
       expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width + 1);
+      expect(
+        await panel.evaluate((element) => getComputedStyle(element).direction),
+      ).toBe(direction);
+      expect(await page.locator("html").getAttribute("dir")).toBe(
+        hostDirection,
+      );
       await page.screenshot({
-        path: `test-results/roadmap-ui-${file}-${width}.png`,
+        path: `test-results/roadmap-ui-${language}-${width}.png`,
       });
     }
-    expect(
-      await panel.evaluate((element) => getComputedStyle(element).direction),
-    ).toBe(language === "ar" ? "rtl" : "ltr");
-    expect(await page.locator("html").getAttribute("dir")).not.toBe("rtl");
-    await page.getByRole("button", { name: close, exact: true }).click();
+    await page.getByRole("button", { name: close, exact: true }).press("Enter");
     await expect(panel).not.toBeVisible();
-    await page.emulateMedia({ reducedMotion: "reduce" });
-    await button.click();
-    await expect(panel).toBeVisible();
-    await page.getByRole("button", { name: close, exact: true }).click();
     const current = await page.request.get(
       `/api/shops/${doc.id}?draft=true&depth=0`,
     );
@@ -1683,4 +1985,94 @@ test("plaintext and rich-text undo stay local while structural undo preserves ne
   expect(saved.layout[0].heading).toBe(retainedHeading);
   expect(saved._status).toBe("draft");
   expect(saved._veRevision).toBeGreaterThan(doc._veRevision);
+});
+
+test("the seeded translation walkthrough publishes a German caption and preserves English", async ({
+  page,
+  browser,
+}) => {
+  await page.setViewportSize({ width: 320, height: 900 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const german = "/translations/de/studio-visit";
+  const english = "/translations/en/studio-visit";
+  const originalCaption = "Saturday tours start at ten.";
+  const newCaption = "Samstags beginnen die Führungen um zehn Uhr.";
+
+  await page.goto(english);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Visit the studio",
+  );
+  await expect(page.getByText(originalCaption)).toBeVisible();
+  await page.getByRole("link", { name: "Deutsch" }).press("Enter");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Besuch im Studio",
+  );
+  await expect(page.getByText(originalCaption)).toHaveCount(0);
+  await expect(page.locator("main p")).toHaveText([
+    "Der Ausstellungsraum",
+    "Die Werkstatt",
+  ]);
+
+  const login = await page.request.post("/api/users/login", {
+    data: { email: "admin@example.test", password: "synthetic-demo-password" },
+  });
+  expect(login.ok()).toBeTruthy();
+  await page.reload();
+  await page.getByRole("button", { name: "Edit page", exact: true }).click();
+  const select = page.getByRole("button", {
+    name: "Select content",
+    exact: true,
+  });
+  if ((await select.getAttribute("aria-pressed")) !== "true")
+    await select.click();
+  const caption = page.locator('main [data-ve-field="caption"]');
+  await expect(caption).toHaveText("Add a caption");
+  await caption.click();
+  await expect(caption).toHaveAttribute("contenteditable", "plaintext-only");
+  await caption.fill(newCaption);
+  await expect(page.getByRole("status", { name: "Draft saved" })).toBeVisible();
+
+  const reader = await browser.newPage({
+    viewport: { width: 320, height: 900 },
+  });
+  try {
+    await reader.goto(new URL(german, page.url()).href);
+    await expect(reader.getByText(newCaption)).toHaveCount(0);
+    await page
+      .getByRole("button", { name: "Review changes", exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "Publish reviewed draft", exact: true })
+      .click();
+    await expect(page).toHaveURL(new RegExp(`${german}$`));
+    await reader.reload();
+    await expect(reader.getByText(newCaption)).toBeVisible();
+    await expect(reader.locator("main p")).toHaveText([
+      newCaption,
+      "Der Ausstellungsraum",
+      "Die Werkstatt",
+    ]);
+
+    await reader.getByRole("link", { name: "English" }).press("Enter");
+    await expect(reader.locator("main p")).toHaveText([
+      originalCaption,
+      "The showroom",
+      "The workshop",
+    ]);
+    const localized = async (locale: "en" | "de") =>
+      (
+        await (
+          await page.request.get(
+            `/api/localizedPages?where[slug][equals]=studio-visit&locale=${locale}&fallback-locale=null&depth=0`,
+          )
+        ).json()
+      ).docs[0];
+    const [en, de] = await Promise.all([localized("en"), localized("de")]);
+    expect(de.id).toBe(en.id);
+    expect(de.layout[0].items.map((item: { id: string }) => item.id)).toEqual(
+      en.layout[0].items.map((item: { id: string }) => item.id),
+    );
+  } finally {
+    await reader.close();
+  }
 });

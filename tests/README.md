@@ -10,3 +10,8 @@
   the packed npm artifact independently of the workspace link.
 
 See [Contributing](../CONTRIBUTING.md#validate-changes) for the full commands.
+
+Browser acceptance discovers `e2e.spec.ts` and `*.e2e.spec.ts` under
+`tests/browser`. Use the latter suffix for new feature specs.
+`corepack pnpm test:e2e --list` prints the discovered scenarios.
+Documentation captures use their own configuration and `docs-media.spec.ts`.

@@ -30,6 +30,16 @@ const dirname = path.dirname(fileURLToPath(import.meta.url));
 const editor = ({ req }: any) =>
   Boolean(req.user && ["admin", "editor"].includes(req.user.role));
 
+const versionReviewWidget: Block = {
+  slug: "versionReviewWidget",
+  labels: { singular: "Review card", plural: "Review cards" },
+  fields: [
+    { name: "title", label: "Card headline", type: "text" },
+    { name: "settings", label: "Card options", type: "json" },
+    { name: "asset", label: "Card image", type: "upload", relationTo: "media" },
+  ],
+};
+
 const blocks: Block[] = [
   {
     slug: "hero",
@@ -87,6 +97,17 @@ const blocks: Block[] = [
           update: ({ req }) => req.user?.role === "admin",
         },
       },
+      ...(process.env.VE_TEST_SCHEMA === "1"
+        ? [
+            {
+              name: "reviewWidgets",
+              label: "Version widgets",
+              type: "blocks" as const,
+              blocks: [],
+              blockReferences: [versionReviewWidget],
+            },
+          ]
+        : []),
     ],
   },
   {
@@ -297,7 +318,10 @@ export const editorOptions: VisualEditorOptions = {
       Component: {
         path: "./components/CommerceStrategies",
         exportName: "CommerceStrategies",
-        clientProps: { enableTestUpload: process.env.VE_TEST_SCHEMA === "1" },
+        clientProps: {
+          enableExampleUpload: process.env.VE_DEMO_MEDIA_UPLOAD === "1",
+          enableTestUpload: process.env.VE_TEST_SCHEMA === "1",
+        },
       },
     },
   ],
@@ -416,6 +440,7 @@ export const editorOptions: VisualEditorOptions = {
 
 export default buildConfig({
   sharp,
+  blocks: process.env.VE_TEST_SCHEMA === "1" ? [versionReviewWidget] : [],
   localization: { locales: ["en", "de"], defaultLocale: "en", fallback: true },
   i18n: { fallbackLanguage: "en", supportedLanguages: { en, de } },
   admin: {
@@ -518,7 +543,11 @@ export default buildConfig({
       },
       access: {
         read: () => true,
-        create: editor,
+        // The opt-in walkthrough lets editors observe an ordinary media create denial.
+        create: (args) =>
+          process.env.VE_DEMO_MEDIA_UPLOAD === "1"
+            ? args.req.user?.role === "admin"
+            : editor(args),
         update: editor,
         delete: editor,
       },

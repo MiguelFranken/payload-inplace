@@ -40,6 +40,7 @@ export const englishMessages = {
     "Pattern unavailable. Check access, save your draft and try again.",
   patternSaved: "Pattern saved. Inserted sections remain independent copies.",
   patternLoading: "Loading patterns…",
+  patternListFailed: "Could not load patterns.",
   loadMorePatterns: "More patterns",
   patternCopyHint:
     "Insert an independent copy. Shared assets keep their references.",
@@ -68,6 +69,8 @@ export const englishMessages = {
   restoreVersion: "Restore version",
   restoreCreatesADraftReviewItsChangesBeforePublishing:
     "Restore creates a draft. Review its changes before publishing.",
+  nativeCollectionRestoreScope:
+    "This comparison shows {locale}. Restoring replaces the draft in all content locales ({locales}).",
   currentDraft: "Current draft",
   selectedVersion: "Selected version",
   restoreAsDraft: "Restore as draft",
@@ -445,6 +448,7 @@ export const germanMessages = {
   patternSaved:
     "Vorlage gespeichert. Eingefügte Abschnitte bleiben eigenständige Kopien.",
   patternLoading: "Vorlagen werden geladen…",
+  patternListFailed: "Vorlagen konnten nicht geladen werden.",
   loadMorePatterns: "Weitere Vorlagen",
   patternCopyHint:
     "Eigenständige Kopie einfügen. Gemeinsame Medien behalten ihre Referenzen.",
@@ -475,6 +479,8 @@ export const germanMessages = {
   restoreVersion: "Version wiederherstellen",
   restoreCreatesADraftReviewItsChangesBeforePublishing:
     "Die Version wird als Entwurf wiederhergestellt. Danach Änderungen prüfen und veröffentlichen.",
+  nativeCollectionRestoreScope:
+    "Der Vergleich zeigt {locale}. Beim Wiederherstellen wird der Entwurf in allen Inhaltssprachen ({locales}) ersetzt.",
   currentDraft: "Aktueller Entwurf",
   selectedVersion: "Gewählte Version",
   restoreAsDraft: "Als Entwurf wiederherstellen",
