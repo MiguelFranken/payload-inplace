@@ -12,7 +12,7 @@ import {
 import { mergePreviewData, normalizePreviewRows } from "../state/preview-data";
 
 /** Read an optimistic projection of the sole native Form, without another document store or persistence path.
- * The initial authorized, populated document supplies relationship objects only while their IDs match.
+ * The initial authorized, populated document supplies relationship objects only while their identity matches.
  * Rendering is held while the browser owns inline composition/caret; direct text is already visible in the DOM.
  * This hook belongs exclusively to an activated client renderer. Keep data loading/domain effects in server slots.
  */
