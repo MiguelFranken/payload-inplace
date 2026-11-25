@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { createShopEditor, moveCaretToEnd } from "./testing/editor-fixtures";
+import { observeAutosave } from "./testing/autosave";
 
 test("rich-text formatting, safe paste and slow acknowledgements preserve structured native data", async ({
   page,
@@ -233,6 +234,7 @@ test("rich-text composition defers native submission until the composed value is
   page,
 }) => {
   const { doc } = await createShopEditor(page);
+  const autosave = await observeAutosave(page, `/api/shops/${doc.id}`);
   await page.locator('[data-ve-field="body"]').first().click();
   const rich = page.locator('[data-ve-inline-active][contenteditable="true"]');
   const writes: string[] = [];
@@ -243,11 +245,22 @@ test("rich-text composition defers native submission until the composed value is
     )
       writes.push(request.postData() || "");
   });
-  await rich.dispatchEvent("compositionstart", { data: "" });
-  await rich.pressSequentially("日本語");
-  await page.waitForTimeout(1900);
+  await expect(rich).toBeFocused();
+  await moveCaretToEnd(rich);
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("Input.imeSetComposition", {
+    text: "日本",
+    selectionStart: 2,
+    selectionEnd: 2,
+  });
+  await expect(rich).toContainText("日本");
+  await autosave.advanceIdleWindow();
   expect(writes).toHaveLength(0);
-  await rich.dispatchEvent("compositionend", { data: "日本語" });
+  const saved = autosave.response();
+  await cdp.send("Input.insertText", { text: "日本語" });
+  await autosave.advanceIdleWindow();
+  expect((await saved).ok()).toBe(true);
+  await cdp.detach();
   await expect
     .poll(async () =>
       JSON.stringify(
@@ -271,6 +284,7 @@ test("source text survives capitalize, NBSP, multiline and opaque renderer fallb
   const { doc } = await createShopEditor(page, {
     sourceText: { eyebrow, description },
   });
+  const autosave = await observeAutosave(page, `/api/shops/${doc.id}`);
   const read = async () =>
     await (
       await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
@@ -283,7 +297,7 @@ test("source text survives capitalize, NBSP, multiline and opaque renderer fallb
   await target.click();
   await expect(target).toHaveAttribute("contenteditable", "plaintext-only");
   await target.press("Tab");
-  await page.waitForTimeout(1800);
+  await autosave.advanceIdleWindow();
   expect((await read())._veRevision).toBe(doc._veRevision);
   expect((await read()).layout[0].eyebrow).toBe(eyebrow);
   await target.click();

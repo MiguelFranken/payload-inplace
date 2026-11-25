@@ -64,6 +64,7 @@ async function selectHeading(page: any) {
     .click();
   return page.locator('main [contenteditable="plaintext-only"]');
 }
+import { observeAutosave } from "./testing/autosave";
 
 test("instant inline edits and appearance survive delayed native saves and newer typing", async ({
   page,
@@ -445,6 +446,7 @@ test("sections drag on list and page keeps native order, undo, policy and keyboa
   page,
 }, testInfo) => {
   const doc = await createEditor(page);
+  const autosave = await observeAutosave(page, `/api/pages/${doc.id}`);
   await page.getByRole("button", { name: "Sections", exact: true }).click();
   const panel = page.getByRole("complementary", {
     name: "Sections",
@@ -473,7 +475,7 @@ test("sections drag on list and page keeps native order, undo, policy and keyboa
   await page.mouse.down();
   await page.mouse.move(from!.x + 20, from!.y + 10, { steps: 5 });
   // Observe longer than the demo autosave idle interval: dragging alone must not write.
-  await page.waitForTimeout(1700);
+  await autosave.advanceIdleWindow();
   expect(writes).toBe(0);
   await page.mouse.move(target!.x + 80, target!.y + target!.height / 2, {
     steps: 12,
@@ -1289,6 +1291,7 @@ test("focusing inline content does not save rendered whitespace until actual inp
 }) => {
   const original = "First line\nSecond line";
   const doc = await createEditor(page, "pages", original);
+  const autosave = await observeAutosave(page, `/api/pages/${doc.id}`);
   let writes = 0;
   page.on("request", (request) => {
     if (
@@ -1301,7 +1304,7 @@ test("focusing inline content does not save rendered whitespace until actual inp
   await heading.click();
   await expect(heading).toHaveAttribute("contenteditable", "plaintext-only");
   await heading.press("Tab");
-  await page.waitForTimeout(1700);
+  await autosave.advanceIdleWindow();
   expect(writes).toBe(0);
   expect(
     (
@@ -1923,6 +1926,7 @@ test("typing bursts save once after idle and composition never saves partial inp
   page,
 }) => {
   const doc = await createEditor(page);
+  const autosave = await observeAutosave(page, `/api/pages/${doc.id}`);
   let writes = 0;
   page.on("request", (request) => {
     if (
@@ -1936,25 +1940,31 @@ test("typing bursts save once after idle and composition never saves partial inp
   await inline.pressSequentially("AB", { delay: 250 });
   await expect(inline).toHaveText("Immediate headingAB");
   expect(writes).toBe(0);
-  await expect.poll(() => writes).toBe(1);
+  const typedSave = autosave.response();
+  await autosave.advanceIdleWindow();
+  expect((await typedSave).ok()).toBe(true);
+  expect(writes).toBe(1);
   await expect(
     page.getByRole("status", { name: "Draft saved", exact: true }),
   ).toBeVisible();
   await inline.press("Tab");
-  await page.waitForTimeout(1800);
+  await autosave.advanceIdleWindow();
   expect(writes).toBe(1);
   await inline.focus();
   await inline.dispatchEvent("compositionstart");
   await inline.fill("Composing text");
-  await page.waitForTimeout(1800);
+  await autosave.advanceIdleWindow();
   expect(writes).toBe(1);
+  const composedSave = autosave.response();
   await inline.dispatchEvent("compositionend", { data: "Composing text" });
   await expect(inline).toHaveText("Composing text");
-  await expect.poll(() => writes).toBe(2);
+  await autosave.advanceIdleWindow();
+  expect((await composedSave).ok()).toBe(true);
+  expect(writes).toBe(2);
   await expect(
     page.getByRole("status", { name: "Draft saved", exact: true }),
   ).toBeVisible();
-  await page.waitForTimeout(1800);
+  await autosave.advanceIdleWindow();
   expect(writes).toBe(2);
   const saved = await (
     await page.request.get(`/api/pages/${doc.id}?draft=true&depth=0`)
