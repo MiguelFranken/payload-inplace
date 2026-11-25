@@ -10,6 +10,7 @@ async function compareOldestOnPageTwo(
   const newer = page.getByRole("button", { name: "Newer versions" });
   const versions = page.getByRole("button", { name: /^Compare version / });
   await expect(versions).toHaveCount(20);
+  await expect(older).toBeEnabled();
   await older.press("Enter");
   await expect(page.getByText("Page 2", { exact: true })).toBeVisible();
   await expect(newer).toBeEnabled();
@@ -22,11 +23,14 @@ async function compareOldestOnPageTwo(
   await expect(oldest).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByText("Page 2", { exact: true })).toBeVisible();
 
+  await expect(newer).toBeEnabled();
   await newer.press("Enter");
   await expect(page.getByText("Page 1", { exact: true })).toBeVisible();
   await expect(headingChange).toHaveCount(0);
+  await expect(older).toBeEnabled();
   await older.press("Enter");
   await expect(page.getByText("Page 2", { exact: true })).toBeVisible();
+  await expect(newer).toBeEnabled();
   await expect(oldest).toHaveAttribute("aria-label", name);
 
   await page.route("**/api/visual-editor/versions**", async (route) => {
