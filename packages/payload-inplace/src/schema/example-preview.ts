@@ -1,5 +1,7 @@
 import type { ClientBlock, ClientField } from "payload";
 
+const defaultRowLimit = 100;
+
 /** Project only declared readable fields for example presentation. Never used as native insertion data.
  * Unknown keys, hidden fields and denied subtrees are omitted; each nested row receives a new preview-only ID.
  */
@@ -72,12 +74,15 @@ export function previewExample(
         id,
       );
     else if (field.type === "array" && Array.isArray(value))
-      result[field.name] = value.slice(0, field.maxRows ?? 100).map((row) => ({
-        ...previewExample(field.fields, row, children(own), blocksMap, id),
-        id: id(),
-      }));
-    else if (field.type === "blocks" && Array.isArray(value))
-      result[field.name] = value.flatMap((row) => {
+      result[field.name] = value
+        .slice(0, field.maxRows ?? defaultRowLimit)
+        .map((row) => ({
+          ...previewExample(field.fields, row, children(own), blocksMap, id),
+          id: id(),
+        }));
+    else if (field.type === "blocks" && Array.isArray(value)) {
+      const rows = value.slice(0, field.maxRows ?? defaultRowLimit);
+      result[field.name] = rows.flatMap((row) => {
         if (
           !row ||
           typeof row !== "object" ||
@@ -115,7 +120,7 @@ export function previewExample(
           },
         ];
       });
-    else result[field.name] = value;
+    } else result[field.name] = value;
   }
   return result;
 }
