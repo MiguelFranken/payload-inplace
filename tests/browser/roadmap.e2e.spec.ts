@@ -562,14 +562,23 @@ test("lifecycle observers correlate failed and retried saves without leaking con
   const { doc } = await createShopEditor(page);
   await page.evaluate(() => {
     const target = window as Window & {
-      __demoRejectObserver?: boolean;
       __observed?: unknown[];
+      __observerFailures?: number;
     };
-    target.__demoRejectObserver = true;
     target.__observed = [];
+    target.__observerFailures = 0;
     window.addEventListener("payload-inplace:demo-event", (event) =>
       target.__observed!.push((event as CustomEvent).detail),
     );
+    const dispatch = window.dispatchEvent.bind(window);
+    window.dispatchEvent = (event) => {
+      const dispatched = dispatch(event);
+      if (event.type === "payload-inplace:demo-event") {
+        target.__observerFailures!++;
+        throw new Error("Synthetic observer failure");
+      }
+      return dispatched;
+    };
   });
   await page.route(`**/api/shops/${doc.id}?*`, async (route) => {
     if (route.request().method() === "PATCH")
@@ -648,6 +657,12 @@ test("lifecycle observers correlate failed and retried saves without leaking con
         }
       ).__observed || [],
   );
+  const observerFailures = await page.evaluate(
+    () =>
+      (window as Window & { __observerFailures?: number }).__observerFailures,
+  );
+  expect(observerFailures).toBe(events.length);
+  expect(observerFailures).toBeGreaterThan(0);
   expect(
     events.filter(
       (event) =>
