@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.4
+
+### Patch Changes
+
+- aa6b4bd: Publish grouped GitHub release notes automatically after verifying the npm archive. This patch exercises the complete release workflow with the existing editor runtime.
+
 ## 0.2.3
 
 ### Patch Changes
