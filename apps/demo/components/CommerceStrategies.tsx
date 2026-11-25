@@ -30,6 +30,7 @@ const background = defineFieldStrategy({
             key={key}
             type="button"
             buttonStyle={value === key ? "primary" : "secondary"}
+            extraButtonProps={{ "aria-pressed": value === key }}
             disabled={disabled}
             onClick={() => setValue(key)}
           >
