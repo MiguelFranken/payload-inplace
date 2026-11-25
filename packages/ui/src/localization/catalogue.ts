@@ -69,6 +69,8 @@ export const englishMessages = {
   restoreVersion: "Restore version",
   restoreCreatesADraftReviewItsChangesBeforePublishing:
     "Restore creates a draft. Review its changes before publishing.",
+  nativeCollectionRestoreScope:
+    "This comparison shows {locale}. Restoring replaces the draft in all content locales ({locales}).",
   currentDraft: "Current draft",
   selectedVersion: "Selected version",
   restoreAsDraft: "Restore as draft",
@@ -477,6 +479,8 @@ export const germanMessages = {
   restoreVersion: "Version wiederherstellen",
   restoreCreatesADraftReviewItsChangesBeforePublishing:
     "Die Version wird als Entwurf wiederhergestellt. Danach Änderungen prüfen und veröffentlichen.",
+  nativeCollectionRestoreScope:
+    "Der Vergleich zeigt {locale}. Beim Wiederherstellen wird der Entwurf in allen Inhaltssprachen ({locales}) ersetzt.",
   currentDraft: "Aktueller Entwurf",
   selectedVersion: "Gewählte Version",
   restoreAsDraft: "Als Entwurf wiederherstellen",

@@ -18,6 +18,8 @@ export function GuardedRestore({
   revision,
   current,
   historical,
+  reviewedLocale,
+  restoreLocales = [],
 }: {
   collection?: string;
   global?: string;
@@ -28,10 +30,12 @@ export function GuardedRestore({
   revision: number;
   current: unknown;
   historical: unknown;
+  reviewedLocale?: string;
+  restoreLocales?: string[];
 }) {
   const { config, getEntityConfig } = useConfig(),
     { i18n } = useTranslation();
-  const { t } = useEditorMessages(undefined, i18n.language);
+  const { t, locale: uiLocale } = useEditorMessages(undefined, i18n.language);
 
   const locale = useLocale();
   const entity = getEntityConfig(
@@ -44,9 +48,14 @@ export function GuardedRestore({
     if (global || !collection || id == null) return;
     setBusy(true);
     setError("");
+    const query = new URLSearchParams({ draft: "true" });
+    if (reviewedLocale) {
+      query.set("locale", reviewedLocale);
+      query.set("fallback-locale", "null");
+    }
     try {
       const response = await fetch(
-        `${config.routes.api}/${collection}/versions/${versionID}?draft=true`,
+        `${config.routes.api}/${collection}/versions/${encodeURIComponent(versionID)}?${query}`,
         {
           method: "POST",
           headers: { "x-visual-editor-revision": String(revision) },
@@ -55,7 +64,7 @@ export function GuardedRestore({
       if (!response.ok)
         throw Error(t("restoreFailedReloadAndReviewTheLatestDraft"));
       window.location.assign(
-        `${config.routes.admin}/collections/${collection}/${id}`,
+        `${config.routes.admin}/collections/${collection}/${encodeURIComponent(id)}${reviewedLocale ? `?locale=${encodeURIComponent(reviewedLocale)}` : ""}`,
       );
     } catch (e) {
       setError((e as Error).message);
@@ -70,6 +79,14 @@ export function GuardedRestore({
           ? t("globalRestoreNativeUnsupported")
           : t("restoreCreatesADraftReviewItsChangesBeforePublishing")}
       </p>
+      {reviewedLocale && restoreLocales.length > 1 && (
+        <p>
+          {t("nativeCollectionRestoreScope", {
+            locale: reviewedLocale,
+            locales: new Intl.ListFormat(uiLocale).format(restoreLocales),
+          })}
+        </p>
+      )}
       <DocumentReview
         before={current as any}
         after={historical as any}
