@@ -1,0 +1,28 @@
+name: Publish GitHub Release
+on:
+  workflow_call:
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: github-release
+  cancel-in-progress: false
+jobs:
+  github-release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - name: Verify the npm archive and publish release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/github-release.mjs

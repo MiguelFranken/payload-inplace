@@ -26,7 +26,7 @@ Use Tailwind utilities exclusively for plugin and demo presentation. CSS inputs 
 
 ## Release completion
 
-A stable release is complete when the npm version is publicly downloadable and the matching GitHub Release is published. After verifying npm, follow “Publish the GitHub Release” in [the release runbook](docs/release.md). Tag the exact package source SHA from the validated receipt. Verify the public release, tag target and latest designation before reporting completion, and include both the npm and GitHub Release links.
+A stable release is complete when the npm version is publicly downloadable and the matching GitHub Release is published. Monitor the GitHub Actions bot after npm publication. For verification or a GitHub-only retry, follow “Publish the GitHub Release” in [the release runbook](docs/release.md). Tag the exact package source SHA from the validated receipt. Verify the public release, tag target and latest designation before reporting completion, and include both the npm and GitHub Release links.
 
 ## npm authentication with 1Password passkeys
 

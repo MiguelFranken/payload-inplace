@@ -51,19 +51,9 @@ Publication requires npm >=11.5.1 and Node >=22.14; Node24 is selected here. See
 
 ## Publish the GitHub Release
 
-After npm serves the stable version as `latest` and its downloaded tarball matches the validated archive, publish the matching release on [GitHub Releases](https://github.com/MiguelFranken/payload-inplace/releases). Changesets prepares the version PR. The trusted publishing workflow handles npm. The maintainer performing the release owns this final GitHub step.
+After trusted npm publication, `release.yml` calls `github-release.yml`. The GitHub Actions bot checks the public npm latest version and archive checksum against the Workshops receipt, then creates the version tag at the validated source commit and publishes the GitHub Release. Release notes group commits since the preceding stable tag by Conventional Commit type and link their PRs and commits.
 
-1. Read `packageVersion` and `packageSourceSHA` from the committed Workshops receipt matching the npm archive. The tag belongs on that validated source commit, which can precede the receipt commit on `main`.
-2. Check for an existing `v<version>` release and tag. Reuse a matching tag. If the tag exists at a different commit, stop and resolve the discrepancy before publishing. If npm already has the verified archive, resume here.
-3. Write release notes summarizing user-visible changes and linking the npm version, main validation run, Workshops receipt and publication run. For a new tag and release, use the following command with the verified values and notes file. For an existing matching tag, add `--verify-tag`. If the matching release already exists, verify it and complete any missing metadata in place.
-
-   ```sh
-   gh release create "v$version" --repo MiguelFranken/payload-inplace \
-     --target "$package_source_sha" --title "Payload Inplace $version" \
-     --notes-file "$notes_file" --latest
-   ```
-
-4. Confirm that the public release is published, is marked latest for this stable version, and that the tag resolves to `packageSourceSHA` (peel annotated tags to their commit). Include the npm version URL and GitHub Release URL in the delivery report.
+If npm publication succeeded and the GitHub step needs recovery, run **Publish GitHub Release** on main (`gh workflow run github-release.yml --ref main`). This workflow reads the committed receipt and updates an existing matching release in place. A tag pointing at another commit stops the workflow. Verify the bot run, latest release and tag target, and include the npm and GitHub Release URLs in the delivery report.
 
 ## Install, enable and upgrade
 
