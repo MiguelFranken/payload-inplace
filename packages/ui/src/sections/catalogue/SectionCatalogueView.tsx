@@ -37,6 +37,7 @@ export function SectionCatalogueView({
   onHighlight,
   onModeChange,
   onLoadMore,
+  onRetry,
   previewEnabled,
 }: {
   items: CatalogueOption[];
@@ -55,6 +56,7 @@ export function SectionCatalogueView({
   onHighlight?: (id: string | undefined) => void;
   onModeChange?: (mode: CatalogueMode) => void;
   onLoadMore?: () => void;
+  onRetry?: () => void;
   previewEnabled?: boolean;
 }) {
   const { t } = useEditorMessages(undefined, locale);
@@ -147,9 +149,9 @@ export function SectionCatalogueView({
                 {t("patternLoading")}
               </p>
             )}
-            {failed && (
+            {(failed || onRetry) && (
               <p role="alert" className="pve:m-0 pve:px-3 pve:py-2 pve:text-xs">
-                {t("patternFailed")}
+                {t(onRetry ? "patternListFailed" : "patternFailed")}
               </p>
             )}
             <div
@@ -166,15 +168,17 @@ export function SectionCatalogueView({
                 className="pve:h-11 pve:w-full pve:border-0 pve:bg-transparent pve:font-inherit pve:text-sm pve:text-inherit pve:outline-none"
               />
             </div>
-            <Combobox.Empty>
-              <p className="pve:m-0 pve:p-5 pve:text-sm pve:text-[var(--pve-muted,#646b78)]">
-                {t(
-                  mode === "patterns"
-                    ? "noMatchingPatterns"
-                    : "noMatchingSections",
-                )}
-              </p>
-            </Combobox.Empty>
+            {!busy && !onRetry && (
+              <Combobox.Empty>
+                <p className="pve:m-0 pve:p-5 pve:text-sm pve:text-[var(--pve-muted,#646b78)]">
+                  {t(
+                    mode === "patterns"
+                      ? "noMatchingPatterns"
+                      : "noMatchingSections",
+                  )}
+                </p>
+              </Combobox.Empty>
+            )}
             <Combobox.List className="pve:max-h-[min(55dvh,360px)] pve:overflow-auto pve:overscroll-contain pve:p-1.5">
               {(slug: string) => {
                 const entry = itemFor(slug);
@@ -209,14 +213,14 @@ export function SectionCatalogueView({
                 );
               }}
             </Combobox.List>
-            {mode === "patterns" && onLoadMore && (
+            {mode === "patterns" && (onRetry || onLoadMore) && (
               <Button
                 variant="secondary"
                 className="pve:w-full"
                 disabled={busy}
-                onClick={onLoadMore}
+                onClick={onRetry || onLoadMore}
               >
-                {t("loadMorePatterns")}
+                {t(onRetry ? "retry" : "loadMorePatterns")}
               </Button>
             )}
             {(previewEnabled || mode === "patterns") && (

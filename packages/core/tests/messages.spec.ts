@@ -6,6 +6,31 @@ const catalogue = {
   count: { one: "{count} change", other: "{count} changes" },
   close: "Close {name}",
 } as const;
+it.each([
+  ["ar-Latn", "ar-Latn", "ltr"],
+  ["az-Arab", "az-Arab", "rtl"],
+  ["ps", "ps", "rtl"],
+  ["de-DE", "de-DE", "ltr"],
+  ["not_a_locale", "en", "ltr"],
+] as const)(
+  "infers the writing direction for %s",
+  (locale, canonical, direction) => {
+    expect(createMessages(catalogue, { locale })).toMatchObject({
+      locale: canonical,
+      direction,
+    });
+  },
+);
+
+it("honors the explicit text direction", () => {
+  expect(
+    createMessages(catalogue, { locale: "az-Arab", direction: "ltr" })
+      .direction,
+  ).toBe("ltr");
+  expect(
+    createMessages(catalogue, { locale: "de", direction: "rtl" }).direction,
+  ).toBe("rtl");
+});
 it("formats typed parameters and plural categories independently of document locale", () => {
   const english = createMessages(catalogue);
   expect(english.t("count", { count: 1 })).toBe("1 change");

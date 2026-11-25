@@ -8,6 +8,8 @@ import {
   createPayloadMediaLibrary,
 } from "payload-inplace/frontend";
 
+import { uploadDemoMedia } from "../commerce/upload-demo-media";
+
 const background = defineFieldStrategy({
   id: "commerce-background",
   types: ["select"],
@@ -42,16 +44,26 @@ const background = defineFieldStrategy({
   ),
 });
 
-const media = defineMediaFieldStrategy(
-  createPayloadMediaLibrary({ collection: "media" }),
-);
+const nativeMedia = createPayloadMediaLibrary({ collection: "media" });
+const media = defineMediaFieldStrategy(nativeMedia);
+const mediaWithUpload = defineMediaFieldStrategy({
+  ...nativeMedia,
+  id: "demo-media-upload",
+  upload: uploadDemoMedia,
+});
 
 /** Registration is active-only and document-local. Options and persistence remain native. */
-export function CommerceStrategies() {
+export function CommerceStrategies({
+  enableExampleUpload = false,
+}: {
+  enableExampleUpload?: boolean;
+}) {
   return (
     <>
       <EditorFieldStrategy definition={background} />
-      <EditorFieldStrategy definition={media} />
+      <EditorFieldStrategy
+        definition={enableExampleUpload ? mediaWithUpload : media}
+      />
     </>
   );
 }

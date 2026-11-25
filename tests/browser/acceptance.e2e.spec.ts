@@ -1,6 +1,155 @@
 import { test, expect } from "@playwright/test";
 import { createShopEditor, moveCaretToEnd } from "./testing/editor-fixtures";
 
+test("native admin and website history compare the same saved fields", async ({
+  page,
+}) => {
+  test.skip(
+    process.env.VE_DATABASE !== "postgres" ||
+      process.env.VE_TEST_SCHEMA !== "1",
+    "Requires guarded native restore and the nested review fixture",
+  );
+  test.slow();
+  async function login(role: "admin" | "editor") {
+    const response = await page.request.post("/api/users/login", {
+      data: {
+        email: `${role}@example.test`,
+        password: "synthetic-demo-password",
+      },
+    });
+    expect(response.ok()).toBeTruthy();
+  }
+  await login("admin");
+  const mediaResponse = await page.request.get("/api/media?limit=2&depth=0");
+  expect(mediaResponse.ok()).toBeTruthy();
+  const [initialAsset, latestAsset] = (await mediaResponse.json()).docs;
+  expect(initialAsset.id).not.toBe(latestAsset.id);
+  const initial = await page.request.post("/api/pages?draft=true&depth=0", {
+    data: {
+      title: "Version comparison",
+      slug: `scope-version-review-${Date.now()}`,
+      layout: [
+        {
+          blockType: "hero",
+          heading: "Version comparison",
+          privateNote: "Restricted historical note",
+          reviewWidgets: [
+            {
+              blockType: "versionReviewWidget",
+              title: "Historical widget headline",
+              settings: { mode: "early", nested: { visible: false } },
+              asset: initialAsset.id,
+            },
+          ],
+        },
+      ],
+    },
+  });
+  expect(initial.ok(), await initial.text()).toBeTruthy();
+  const historical = (await initial.json()).doc;
+  const [hero] = historical.layout;
+  const versionList = await page.request.get(
+    `/api/pages/versions?where[parent][equals]=${historical.id}&limit=1&depth=0`,
+  );
+  expect(versionList.ok()).toBeTruthy();
+  const [version] = (await versionList.json()).docs;
+  expect(version.version._veRevision).toBe(historical._veRevision);
+  const updated = await page.request.patch(
+    `/api/pages/${historical.id}?draft=true&depth=0`,
+    {
+      data: {
+        _veRevision: historical._veRevision,
+        layout: [
+          {
+            ...hero,
+            privateNote: "Restricted latest note",
+            reviewWidgets: [
+              {
+                ...hero.reviewWidgets[0],
+                title: "Latest widget headline",
+                settings: { mode: "late", nested: { visible: true } },
+                asset: latestAsset.id,
+              },
+            ],
+          },
+        ],
+      },
+    },
+  );
+  expect(updated.ok(), await updated.text()).toBeTruthy();
+  await login("editor");
+
+  const rows = page.locator("[data-ve-diff-path]");
+  const comparison = () =>
+    rows.evaluateAll((elements) =>
+      elements
+        .map((row) => ({
+          path: row.getAttribute("data-ve-diff-path"),
+          labels: Array.from(
+            row.querySelectorAll("h3 > span"),
+            (label) => label.textContent,
+          ),
+          values: Array.from(
+            row.querySelectorAll("p"),
+            (value) => value.textContent,
+          ),
+        }))
+        .sort((a, b) => a.path!.localeCompare(b.path!)),
+    );
+  await page.goto(`/visual-editor/start?collection=pages&id=${historical.id}`);
+  await page
+    .getByRole("button", { name: "Start editing", exact: true })
+    .press("Enter");
+  await page.getByRole("button", { name: "More tools" }).press("Enter");
+  await page.getByRole("menuitem", { name: "Saved versions" }).press("Enter");
+  await page
+    .getByRole("button", {
+      name: `Compare version ${historical._veRevision}`,
+      exact: true,
+    })
+    .press("Enter");
+  await expect(rows).toHaveCount(3);
+  const website = await comparison();
+  const widgetLabels = ["Layout", "Hero 1", "Version widgets", "Review card 1"];
+  expect(
+    website.map(({ path, labels }) => [path?.split(".").at(-1), labels]),
+  ).toEqual([
+    ["asset", [...widgetLabels, "Card image"]],
+    ["settings", [...widgetLabels, "Card options"]],
+    ["title", [...widgetLabels, "Card headline"]],
+  ]);
+  expect(website[0]!.values).toEqual([
+    String(latestAsset.id),
+    String(initialAsset.id),
+  ]);
+  expect(website[1]!.values).toEqual([
+    expect.stringContaining('"visible": true'),
+    expect.stringContaining('"visible": false'),
+  ]);
+  expect(website[2]!.values).toEqual([
+    "Latest widget headline",
+    "Historical widget headline",
+  ]);
+  await expect(
+    page.getByText(/Restricted (historical|latest) note/),
+  ).toHaveCount(0);
+
+  await page.setViewportSize({ width: 320, height: 840 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(
+    `/admin/collections/pages/${historical.id}/versions/${version.id}`,
+  );
+  await expect(
+    page.getByRole("heading", { name: "Restore version", exact: true }),
+  ).toBeVisible();
+  await expect(rows).toHaveCount(3);
+  expect(await comparison()).toEqual(website);
+  await expect(rows.last()).toBeVisible();
+  await expect(
+    page.getByText(/Restricted (historical|latest) note/),
+  ).toHaveCount(0);
+});
+
 test("rich-text formatting, safe paste and slow acknowledgements preserve structured native data", async ({
   page,
 }) => {

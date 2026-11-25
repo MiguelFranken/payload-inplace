@@ -75,7 +75,7 @@ export default defineConfig({
         test: {
           name: "native-integration",
           root,
-          include: ["tests/integration/int.spec.ts"],
+          include: ["tests/integration/*.spec.ts"],
           environment: "node",
           testTimeout: 60000,
           hookTimeout: 120000,

@@ -40,6 +40,7 @@ export const englishMessages = {
     "Pattern unavailable. Check access, save your draft and try again.",
   patternSaved: "Pattern saved. Inserted sections remain independent copies.",
   patternLoading: "Loading patterns…",
+  patternListFailed: "Could not load patterns.",
   loadMorePatterns: "More patterns",
   patternCopyHint:
     "Insert an independent copy. Shared assets keep their references.",
@@ -447,6 +448,7 @@ export const germanMessages = {
   patternSaved:
     "Vorlage gespeichert. Eingefügte Abschnitte bleiben eigenständige Kopien.",
   patternLoading: "Vorlagen werden geladen…",
+  patternListFailed: "Vorlagen konnten nicht geladen werden.",
   loadMorePatterns: "Weitere Vorlagen",
   patternCopyHint:
     "Eigenständige Kopie einfügen. Gemeinsame Medien behalten ihre Referenzen.",

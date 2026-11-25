@@ -3,6 +3,7 @@
 import { useEditorMessages } from "@payload-inplace/ui/localization/EditorMessages";
 
 import { Button, useConfig, useTranslation, useLocale } from "@payloadcms/ui";
+import type { ClientBlock } from "payload";
 import { useState } from "react";
 import { DocumentReview } from "./DocumentReview";
 
@@ -32,11 +33,14 @@ export function GuardedRestore({
   reviewedLocale?: string;
   restoreLocales?: string[];
 }) {
-  const { config } = useConfig(),
+  const { config, getEntityConfig } = useConfig(),
     { i18n } = useTranslation();
   const { t, locale: uiLocale } = useEditorMessages(undefined, i18n.language);
 
   const locale = useLocale();
+  const entity = getEntityConfig(
+    global ? { globalSlug: global } : { collectionSlug: collection },
+  );
   const de = i18n.language === "de";
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
@@ -89,6 +93,8 @@ export function GuardedRestore({
         de={de}
         beforeLabel={t("currentDraft")}
         afterLabel={t("selectedVersion")}
+        fields={entity?.fields}
+        blocksMap={config.blocksMap as Record<string, ClientBlock>}
       />
       {error && <p role="alert">{error}</p>}
       {global ? (

@@ -497,6 +497,198 @@ test("saved versions reopen, compare changed content and restore a guarded draft
   ).toBeVisible();
 });
 
+test("the optional upload adapter saves one media reference and recovers from native permission denial", async ({
+  page,
+}) => {
+  test.skip(
+    process.env.VE_DEMO_MEDIA_UPLOAD !== "1",
+    "Start the demo with VE_DEMO_MEDIA_UPLOAD=1",
+  );
+  const { readFile } = await import("node:fs/promises");
+  const { createShopEditor } = await import("./testing/editor-fixtures");
+  const buffer = await readFile(
+    new URL("../../apps/demo/commerce/assets/studio.png", import.meta.url),
+  );
+
+  for (const role of ["admin", "editor"] as const) {
+    const width = role === "admin" ? 1280 : 320;
+    await page.setViewportSize({ width, height: 900 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    const { doc } = await createShopEditor(page, { role });
+    const latest = async () =>
+      (
+        await (
+          await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+        ).json()
+      ).layout;
+    const original = await latest();
+    const select = page.getByRole("button", {
+      name: "Select content",
+      exact: true,
+    });
+    if ((await select.getAttribute("aria-pressed")) !== "true")
+      await select.click();
+    await page
+      .locator("main > [data-ve-block]")
+      .first()
+      .locator('[data-ve-field="image"]')
+      .click();
+    const accepted = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === "/api/demo-media-upload" &&
+        response.request().method() === "POST",
+    );
+    await page.getByLabel("Upload media").setInputFiles({
+      name: `demo-upload-${role}-${Date.now()}.png`,
+      mimeType: "image/png",
+      buffer,
+    });
+    const response = await accepted;
+
+    if (role === "admin") {
+      expect(response.status(), await response.text()).toBe(201);
+      const uploaded = (await response.json()).doc;
+      const expected = structuredClone(original);
+      expected[0].image = uploaded.id;
+      await expect.poll(latest).toEqual(expected);
+      await expect(page.locator("main img").first()).toHaveAttribute(
+        "src",
+        new RegExp(uploaded.filename),
+      );
+    } else {
+      expect(response.status()).toBe(403);
+      await expect(
+        page.getByRole("alert").filter({ hasText: "Upload failed." }),
+      ).toBeVisible();
+      expect(await latest()).toEqual(original);
+      await page
+        .getByRole("button", { name: "Open native media editor" })
+        .click();
+      await expect(page.getByLabel("Upload media")).toHaveCount(0);
+      const panel = page.getByRole("complementary", { name: "Edit content" });
+      await expect(panel.getByRole("heading", { name: "Image" })).toBeVisible();
+      await panel.locator(".upload-relationship-details__remove").click();
+      await panel.getByRole("button", { name: "Choose from existing" }).click();
+      await page.getByText("arc-chair.png", { exact: true }).click();
+      const selected = (
+        await (
+          await page.request.get(
+            "/api/media?where[filename][equals]=arc-chair.png",
+          )
+        ).json()
+      ).docs[0];
+      const expected = structuredClone(original);
+      expected[0].image = selected.id;
+      await expect.poll(latest).toEqual(expected);
+    }
+  }
+});
+
+test("timeline pagination isolates delayed and failed pages from old rows and details", async ({
+  page,
+}) => {
+  test.skip(
+    process.env.VE_DATABASE !== "postgres",
+    "Requires revision-guarded fixtures",
+  );
+  test.slow();
+  await page.setViewportSize({ width: 320, height: 840 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const { createShopEditor } = await import("./testing/editor-fixtures");
+  const { doc } = await createShopEditor(page);
+  let latest = doc;
+  for (let version = 2; version <= 21; version++) {
+    const saved = await page.request.patch(
+      `/api/shops/${doc.id}?draft=true&depth=0`,
+      {
+        data: {
+          title: `Timeline version ${version}`,
+          _veRevision: latest._veRevision,
+        },
+      },
+    );
+    expect(saved.ok(), await saved.text()).toBeTruthy();
+    latest = (await saved.json()).doc;
+  }
+
+  let pageTwoRequests = 0;
+  let detailRequests = 0;
+  let rejectPageTwo!: () => void;
+  const waitForFailure = new Promise<void>((resolve) => {
+    rejectPageTwo = resolve;
+  });
+  await page.route("**/api/visual-editor/versions**", async (route) => {
+    const { versionID, page: requestedPage } = route.request().postDataJSON();
+    if (versionID) detailRequests++;
+    if (!versionID && requestedPage === 2 && ++pageTwoRequests === 1) {
+      await waitForFailure;
+      await route.fulfill({ status: 503, json: {} });
+      return;
+    }
+    await route.continue();
+  });
+
+  await page.getByRole("button", { name: "More tools" }).click();
+  await page.getByRole("menuitem", { name: "Saved versions" }).click();
+  const rows = page.getByRole("button", { name: /^Compare version / });
+  const older = page.getByRole("button", { name: "Older versions" });
+  const newer = page.getByRole("button", { name: "Newer versions" });
+  const oldRow = page.getByRole("button", {
+    name: `Compare version ${latest._veRevision - 1}`,
+    exact: true,
+  });
+  await expect(rows).toHaveCount(20);
+  await oldRow.press("Enter");
+  const difference = page.locator('[data-ve-diff-path="title"]');
+  await expect(difference).toContainText("Timeline version 20");
+  const oldRowHandle = (await oldRow.elementHandle())!;
+
+  try {
+    await older.press("Enter");
+    await expect.poll(() => pageTwoRequests).toBe(1);
+    await expect(page.getByText("Page 2", { exact: true })).toBeVisible();
+    await expect(rows).toHaveCount(0);
+    await expect(difference).toHaveCount(0);
+    await expect(older).toBeDisabled();
+    await expect(newer).toBeDisabled();
+    // Simulate a late click on the row that was present before navigation.
+    await oldRowHandle.evaluate((button: HTMLButtonElement) => button.click());
+    await page.keyboard.press("Enter");
+    expect(detailRequests).toBe(1);
+    expect(pageTwoRequests).toBe(1);
+  } finally {
+    rejectPageTwo();
+  }
+
+  const retry = page.getByRole("button", { name: "Retry" });
+  await expect(retry).toBeVisible();
+  await expect(page.getByText("Page 2", { exact: true })).toBeVisible();
+  await expect(rows).toHaveCount(0);
+  await retry.press("Enter");
+  await expect(rows).toHaveCount(1);
+  await expect(rows.first()).toHaveAttribute(
+    "aria-label",
+    `Compare version ${doc._veRevision}`,
+  );
+  await expect(difference).toHaveCount(0);
+  expect(pageTwoRequests).toBe(2);
+  expect(detailRequests).toBe(1);
+
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await newer.press("Enter");
+  await expect(older).toBeEnabled();
+  await older.press("Enter");
+  await expect(newer).toBeEnabled();
+  await newer.press("Enter");
+  await expect(page.getByText("Page 1", { exact: true })).toBeVisible();
+  await expect(rows).toHaveCount(20);
+  await expect.poll(() => pageTwoRequests).toBe(3);
+  await oldRow.press("Enter");
+  await expect(difference).toContainText("Timeline version 20");
+  await expect(oldRow).toHaveAttribute("aria-pressed", "true");
+});
+
 test("contextual native media replacement saves only the document reference and keeps native fallback", async ({
   page,
 }) => {
@@ -562,14 +754,23 @@ test("lifecycle observers correlate failed and retried saves without leaking con
   const { doc } = await createShopEditor(page);
   await page.evaluate(() => {
     const target = window as Window & {
-      __demoRejectObserver?: boolean;
       __observed?: unknown[];
+      __observerFailures?: number;
     };
-    target.__demoRejectObserver = true;
     target.__observed = [];
+    target.__observerFailures = 0;
     window.addEventListener("payload-inplace:demo-event", (event) =>
       target.__observed!.push((event as CustomEvent).detail),
     );
+    const dispatch = window.dispatchEvent.bind(window);
+    window.dispatchEvent = (event) => {
+      const dispatched = dispatch(event);
+      if (event.type === "payload-inplace:demo-event") {
+        target.__observerFailures!++;
+        throw new Error("Synthetic observer failure");
+      }
+      return dispatched;
+    };
   });
   await page.route(`**/api/shops/${doc.id}?*`, async (route) => {
     if (route.request().method() === "PATCH")
@@ -648,6 +849,12 @@ test("lifecycle observers correlate failed and retried saves without leaking con
         }
       ).__observed || [],
   );
+  const observerFailures = await page.evaluate(
+    () =>
+      (window as Window & { __observerFailures?: number }).__observerFailures,
+  );
+  expect(observerFailures).toBe(events.length);
+  expect(observerFailures).toBeGreaterThan(0);
   expect(
     events.filter(
       (event) =>
@@ -1021,18 +1228,74 @@ test("localized inline editing prepares and saves German fields without copying 
     ).layout[0].heading,
   ).toBe("English headline");
   await page.screenshot({ path: "test-results/roadmap-localized-fields.png" });
+
+  const patternResponse = (operation: string) =>
+    page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === "/api/visual-editor/patterns" &&
+        response.request().postDataJSON()?.operation === operation,
+    );
+  const expectGermanPattern = async (
+    pending: ReturnType<typeof patternResponse>,
+  ) => {
+    const response = await pending;
+    expect(response.ok()).toBe(true);
+    expect(new URL(response.url()).searchParams.get("locale")).toBe("de");
+    return response;
+  };
+  const patternName = `German copy ${created.id}`;
+  await page
+    .getByRole("button", { name: "Save as pattern", exact: true })
+    .click();
+  await page
+    .getByRole("textbox", { name: "Pattern name", exact: true })
+    .fill(patternName);
+  const savedPattern = patternResponse("save");
+  await page.getByRole("button", { name: "Save copy", exact: true }).click();
+  await expectGermanPattern(savedPattern);
+
+  await page
+    .getByRole("button", { name: "Back to sections", exact: true })
+    .click();
+  await page
+    .getByRole("combobox", { name: "Add section", exact: true })
+    .click();
+  const listedPattern = patternResponse("list");
+  await page
+    .getByRole("button", { name: "Saved patterns", exact: true })
+    .click();
+  const list = await expectGermanPattern(listedPattern);
+  const { origin } = new URL(list.url());
+  const mismatch = await page.request.post(
+    "/api/visual-editor/patterns?locale=en",
+    {
+      headers: { origin },
+      data: list.request().postDataJSON(),
+    },
+  );
+  expect(mismatch.status()).toBe(403);
+
+  const readPattern = patternResponse("read");
+  await page.getByRole("option", { name: patternName, exact: true }).click();
+  const copy = await (await expectGermanPattern(readPattern)).json();
+  expect(copy.content.heading).toBe("Native deutsche Überschrift");
 });
 
-test("English German and RTL editor chrome stays scoped at desktop and narrow widths", async ({
+test("editor chrome follows the locale writing direction at desktop and narrow widths", async ({
   page,
   context,
 }) => {
   const { createShopEditor } = await import("./testing/editor-fixtures");
   const { doc } = await createShopEditor(page);
-  for (const [language, sections, close, file] of [
-    ["en", "Sections", "Close Sections panel", "english"],
-    ["de", "Abschnitte", "Abschnitte schließen", "german"],
+  const hostDirection = await page.locator("html").getAttribute("dir");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  for (const [language, sections, close, direction] of [
+    ["en", "Sections", "Close Sections panel", "ltr"],
+    ["de", "Abschnitte", "Abschnitte schließen", "ltr"],
     ["ar", "الأقسام", "Close الأقسام panel", "rtl"],
+    ["ar-Latn", "الأقسام", "Close الأقسام panel", "ltr"],
+    ["az-Arab", "Sections", "Close Sections panel", "rtl"],
+    ["ps", "Sections", "Close Sections panel", "rtl"],
   ] as const) {
     await context.addCookies([
       { name: "demo-editor-ui", value: language, url: page.url() },
@@ -1040,7 +1303,7 @@ test("English German and RTL editor chrome stays scoped at desktop and narrow wi
     await page.reload();
     const button = page.getByRole("button", { name: sections, exact: true });
     await expect(button).toBeVisible();
-    await button.click();
+    await button.press("Enter");
     const panel = page.getByRole("complementary", {
       name: sections,
       exact: true,
@@ -1052,20 +1315,18 @@ test("English German and RTL editor chrome stays scoped at desktop and narrow wi
       const bounds = await panel.boundingBox();
       expect(bounds!.x).toBeGreaterThanOrEqual(0);
       expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width + 1);
+      expect(
+        await panel.evaluate((element) => getComputedStyle(element).direction),
+      ).toBe(direction);
+      expect(await page.locator("html").getAttribute("dir")).toBe(
+        hostDirection,
+      );
       await page.screenshot({
-        path: `test-results/roadmap-ui-${file}-${width}.png`,
+        path: `test-results/roadmap-ui-${language}-${width}.png`,
       });
     }
-    expect(
-      await panel.evaluate((element) => getComputedStyle(element).direction),
-    ).toBe(language === "ar" ? "rtl" : "ltr");
-    expect(await page.locator("html").getAttribute("dir")).not.toBe("rtl");
-    await page.getByRole("button", { name: close, exact: true }).click();
+    await page.getByRole("button", { name: close, exact: true }).press("Enter");
     await expect(panel).not.toBeVisible();
-    await page.emulateMedia({ reducedMotion: "reduce" });
-    await button.click();
-    await expect(panel).toBeVisible();
-    await page.getByRole("button", { name: close, exact: true }).click();
     const current = await page.request.get(
       `/api/shops/${doc.id}?draft=true&depth=0`,
     );

@@ -85,12 +85,12 @@ export function createPayloadMediaLibrary({
   if (
     !/^[a-zA-Z0-9_-]+$/.test(collection) ||
     !/^[a-zA-Z0-9_]+$/.test(labelField) ||
-    !/^\/[^/]*$/.test(apiPath) ||
-    /[?#]/.test(apiPath)
+    !/^\/(?:[^/\\?#\s]+\/)*[^/\\?#\s]*$/u.test(apiPath)
   )
     throw Error(
       "Native media library needs a same-origin API path and safe field/collection names",
     );
+  const collectionPath = `${apiPath.replace(/\/$/, "")}/${encodeURIComponent(collection)}`;
   return {
     id,
     collections: [collection],
@@ -106,10 +106,11 @@ export function createPayloadMediaLibrary({
         sort: "-createdAt",
       });
       if (query) params.set(`where[${labelField}][like]`, query);
-      const response = await fetch(
-        `${apiPath}/${encodeURIComponent(collection)}?${params}`,
-        { signal, credentials: "same-origin", cache: "no-store" },
-      );
+      const response = await fetch(`${collectionPath}?${params}`, {
+        signal,
+        credentials: "same-origin",
+        cache: "no-store",
+      });
       if (!response.ok)
         throw Error("Native media search denied or unavailable");
       const data = await response.json();

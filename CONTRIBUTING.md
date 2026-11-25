@@ -8,10 +8,10 @@ Node 24+; pnpm 10.28.0 through Corepack. No private services or credentials are 
 
 ```sh
 corepack pnpm install --frozen-lockfile
-corepack pnpm build
-corepack pnpm dev:generate-importmap
-corepack pnpm dev
+corepack pnpm dev:setup
 ```
+
+`dev:setup` builds the workspace package, generates the native admin import map, and launches the demo. Run `corepack pnpm dev` on later starts when the build and import map are current.
 
 Open `http://127.0.0.1:3127/shop` to explore the homewares demo. Use its footer’s **Try Payload Inplace** link to sign in, then activate the small edit button on the actual page. The native CMS remains at `/admin`. Synthetic accounts are `admin@example.test`, `editor@example.test`, and `reader@example.test`, each with password `synthetic-demo-password`. These accounts exist only in the disposable local demo. Native `/admin/login` prefills the admin account through Payload’s `admin.autoLogin.prefillOnly`; login still requires pressing the button. Public ecommerce routes are `/shop` and `/products/arc-chair`. Legacy `/pages/demo` and `/offers/demo` routes remain regression fixtures.
 

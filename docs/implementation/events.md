@@ -22,4 +22,21 @@ Scope contains only the collection/global reference and content locale. Events e
 
 Providers mount only in an authorized active native Form. Public/inactive visitors initialize no observer, event channel or telemetry request. Unmount removes listeners. Shared admin review controls emit only when an active frontend channel exists. The UI message language and content locale are separate concerns.
 
-Native browser acceptance exercises a synthetic rejected save, explicit retry, successful saved-preview correlation and review while the consumer observer deliberately rejects every callback. The working copy still saves and the event payload contains no copy or transport token. Pure tests cover one-time settlement, denied extra keys, subscription cleanup and synchronous/asynchronous observer failures. These events are observability contracts, not proof of database concurrency; real Postgres integration retains that responsibility.
+Native browser acceptance exercises a synthetic rejected save, explicit retry, successful saved-preview correlation and review while test instrumentation throws after forwarding each observer callback. The working copy still saves and the event payload contains no copy or transport token. Pure tests cover one-time settlement, denied extra keys, subscription cleanup and synchronous/asynchronous observer failures. These events are observability contracts, not proof of database concurrency; real Postgres integration retains that responsibility.
+
+## Inspect a synthetic save
+
+Open the demo editor and run this snippet in the browser console. Edit a
+synthetic heading to see the save result, duration, and document scope.
+
+```js
+window.addEventListener("payload-inplace:demo-event", ({ detail }) => {
+  if (detail.type === "operation-settled" && detail.operation === "save") {
+    console.info(detail.outcome, detail.durationMs, detail.scope);
+  }
+});
+```
+
+The [demo provider](../../apps/demo/components/DemoLifecycleObserver.tsx)
+forwards the event locally. You can use the same observer hook with your own
+telemetry client.
