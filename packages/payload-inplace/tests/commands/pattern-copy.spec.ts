@@ -1,6 +1,86 @@
 import { expect, it } from "vitest";
-import type { ClientField } from "payload";
+import type { ClientField, Field, PayloadRequest } from "payload";
+import { fieldSchemasToFormState } from "@payloadcms/ui/forms/fieldSchemasToFormState";
 import { copyPatternFields } from "../../src/schema/pattern-copy";
+
+it.each([
+  { name: "missing", root: {}, caption: "Native caption" },
+  { name: "empty", root: { details: {} }, caption: "Native caption" },
+  {
+    name: "populated",
+    root: { details: { caption: "Stored caption" } },
+    caption: "Stored caption",
+  },
+])(
+  "preserves a $name named tab through storage and native insertion preparation",
+  async ({ root, caption }) => {
+    const tabs = {
+      type: "tabs",
+      tabs: [
+        {
+          name: "details",
+          fields: [
+            { type: "text", name: "caption", defaultValue: "Native caption" },
+          ],
+        },
+      ],
+    } satisfies Field;
+    const fields = [
+      tabs,
+      { type: "array", name: "items", admin: {}, fields: [tabs] },
+    ] satisfies Field[];
+    const values = [
+      {},
+      { details: {} },
+      { details: { caption: "Nested caption" } },
+    ];
+    const source = {
+      ...root,
+      items: values.map((row, index) => ({ ...row, id: `source-${index}` })),
+    };
+    let count = 0;
+    const saved = copyPatternFields(
+      fields,
+      source,
+      true,
+      {},
+      () => `save-${count++}`,
+    );
+    expect(saved).toStrictEqual({
+      ...root,
+      items: values.map((row, index) => ({ ...row, id: `save-${index}` })),
+    });
+    const stored = JSON.parse(JSON.stringify(saved));
+    count = 0;
+    const candidate = copyPatternFields(
+      fields,
+      stored,
+      true,
+      {},
+      () => `insert-${count++}`,
+    );
+    expect(candidate).toStrictEqual({
+      ...root,
+      items: values.map((row, index) => ({ ...row, id: `insert-${index}` })),
+    });
+
+    const state = await fieldSchemasToFormState({
+      data: candidate,
+      fields,
+      fieldSchemaMap: undefined,
+      operation: "update",
+      permissions: true,
+      preferences: { fields: {} },
+      renderAllFields: true,
+      req: { payload: { blocks: {} } } as PayloadRequest,
+      schemaPath: "pages.layout.text",
+    });
+    expect(state["details.caption"]?.value).toBe(caption);
+    expect(state["items.0.details.caption"]?.value).toBe("Native caption");
+    expect(state["items.1.details.caption"]?.value).toBe("Native caption");
+    expect(state["items.2.details.caption"]?.value).toBe("Nested caption");
+  },
+);
 it("copies declared writable content with fresh nested row identities while keeping asset references", () => {
   let next = 0;
   const fields = [
