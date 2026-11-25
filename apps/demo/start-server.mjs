@@ -5,125 +5,166 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { randomBytes } from "node:crypto";
+import { setTimeout as delay } from "node:timers/promises";
 import { assertDemoPostgresUrl } from "./postgres-url.mjs";
 
+const port = process.env.VE_PORT || "3127";
 const postgres = process.env.VE_DATABASE === "postgres";
+
 if (postgres) assertDemoPostgresUrl(process.env.DATABASE_URL);
 
-const temporaryMedia = !process.env.VE_MEDIA_DIR;
-
-const mediaDirectory = temporaryMedia
-  ? fs.mkdtempSync(path.join(os.tmpdir(), "payload-ve-media-"))
-  : path.resolve(process.env.VE_MEDIA_DIR);
-
-fs.mkdirSync(mediaDirectory, { recursive: true });
-
-const port = process.env.VE_PORT || "3127";
-
-const database = postgres
-  ? null
-  : await MongoMemoryReplSet.create({
-      replSet: { count: 1, dbName: `visual_editor_${process.pid}` },
-    });
-
-const env = {
-  ...process.env,
-  DATABASE_URL: database?.getUri() || process.env.DATABASE_URL,
-  PAYLOAD_SECRET: randomBytes(32).toString("hex"),
-  VE_ORIGIN: `http://127.0.0.1:${port}`,
-  VE_MEDIA_DIR: mediaDirectory,
-  NEXT_TELEMETRY_DISABLED: "1",
-};
-
-if (process.env.VE_RUN_STATE && process.env.VE_RUN_ID)
-  fs.writeFileSync(
-    process.env.VE_RUN_STATE,
-    JSON.stringify({ runID: process.env.VE_RUN_ID, pid: process.pid }),
-    { mode: 0o600 },
-  );
-
+let ownedMedia;
+let ownedDatabase;
+let runState;
+let database;
 let child;
+let interrupted;
+const processGroups = process.platform !== "win32";
 
-let stopping = false;
-
-async function stop(signal = "SIGTERM") {
-  if (stopping) return;
-  stopping = true;
-  if (child && child.exitCode === null) {
-    child.kill(signal);
-    await new Promise((resolve) => {
-      child.once("exit", resolve);
-      setTimeout(resolve, 10000).unref();
-    });
+function signalChild(pid, signal) {
+  try {
+    process.kill(processGroups ? -pid : pid, signal);
+  } catch (error) {
+    if (error.code !== "ESRCH") throw error;
   }
-  await database?.stop();
-  if (temporaryMedia)
-    fs.rmSync(mediaDirectory, { recursive: true, force: true });
-  if (process.env.VE_RUN_STATE)
-    fs.rmSync(process.env.VE_RUN_STATE, { force: true });
 }
 
-for (const signal of ["SIGINT", "SIGTERM"])
+for (const signal of ["SIGINT", "SIGTERM"]) {
   process.on(signal, () => {
-    void stop(signal).then(() => process.exit(0));
-  });
-
-async function run(
-  args,
-  executable = fileURLToPath(import.meta.resolve("next/dist/bin/next")),
-  overrides = {},
-) {
-  child = spawn(process.execPath, [executable, ...args], {
-    env: { ...env, ...overrides },
-    stdio: "inherit",
-  });
-  return new Promise((resolve, reject) => {
-    child.once("error", reject);
-    child.once("exit", (code) =>
-      code === 0 ? resolve() : reject(new Error(`Next exited ${code}`)),
-    );
+    interrupted ??= signal;
+    if (child?.pid) signalChild(child.pid, signal);
   });
 }
 
-try {
-  const styles = spawn("corepack", ["pnpm", "build:demo:css"], {
+async function run(executable, args, env) {
+  if (interrupted) return;
+  const processHandle = spawn(executable, args, {
+    detached: processGroups,
     env,
     stdio: "inherit",
   });
-  await new Promise((resolve, reject) => {
-    styles.once("error", reject);
-    styles.once("exit", (code) =>
-      code === 0 ? resolve() : reject(new Error("Demo styles failed")),
-    );
-  });
-  await run(
-    ["apps/demo/prepare-db.ts"],
-    fileURLToPath(import.meta.resolve("tsx/cli")),
-    {
-      VE_SEED: "1",
-    },
-  );
-  if (process.env.VE_PRODUCTION === "1") {
-    await run(["build", "apps/demo", "--turbopack"]);
-    await run([
-      "start",
-      "apps/demo",
-      "--hostname",
-      "127.0.0.1",
-      "--port",
-      port,
-    ]);
-  } else
-    await run([
-      "dev",
-      "apps/demo",
-      "--turbopack",
-      "--no-server-fast-refresh",
-      "--hostname",
-      "127.0.0.1",
-      "--port",
-      port,
-    ]);
-} finally {
-  await stop();
+  child = processHandle;
+  const pid = processHandle.pid;
+  const cleanupController = new AbortController();
+  const escalate = () => {
+    if (!pid) return;
+    void delay(5000, undefined, {
+      signal: cleanupController.signal,
+      ref: false,
+    })
+      .then(() => signalChild(pid, "SIGKILL"))
+      .catch((error) => {
+        if (error.name !== "AbortError") throw error;
+      });
+  };
+  process.once("SIGINT", escalate);
+  process.once("SIGTERM", escalate);
+
+  try {
+    const code = await new Promise((resolve, reject) => {
+      processHandle.once("error", reject);
+      processHandle.once("exit", resolve);
+    });
+    if (code !== 0 && !interrupted)
+      throw Error(`${args.join(" ")} exited with code ${code}`);
+  } finally {
+    process.removeListener("SIGINT", escalate);
+    process.removeListener("SIGTERM", escalate);
+    cleanupController.abort();
+    child = undefined;
+    // Wrappers (pnpm, Next) can exit before their workers.
+    if (pid && processGroups) signalChild(pid, "SIGKILL");
+  }
 }
+
+try {
+  const mediaDirectory = process.env.VE_MEDIA_DIR
+    ? path.resolve(process.env.VE_MEDIA_DIR)
+    : (ownedMedia = fs.mkdtempSync(
+        path.join(os.tmpdir(), "payload-ve-media-"),
+      ));
+  fs.mkdirSync(mediaDirectory, { recursive: true });
+
+  if (!postgres) {
+    // Keep the path even if Mongo fails before it records its instance info.
+    ownedDatabase = fs.mkdtempSync(path.join(os.tmpdir(), "payload-ve-mongo-"));
+    database = new MongoMemoryReplSet({
+      instanceOpts: [{ dbPath: ownedDatabase }],
+      replSet: {
+        count: 1,
+        dbName: `visual_editor_${process.pid}`,
+        // The launcher owns Mongo shutdown even when Playwright signals its group.
+        spawn: { detached: processGroups },
+      },
+    });
+    await database.start();
+    await database.waitUntilRunning();
+  }
+
+  if (!interrupted) {
+    const env = {
+      ...process.env,
+      DATABASE_URL: database?.getUri() || process.env.DATABASE_URL,
+      PAYLOAD_SECRET: randomBytes(32).toString("hex"),
+      VE_ORIGIN: `http://127.0.0.1:${port}`,
+      VE_MEDIA_DIR: mediaDirectory,
+      NEXT_TELEMETRY_DISABLED: "1",
+    };
+
+    if (process.env.VE_RUN_STATE && process.env.VE_RUN_ID) {
+      fs.writeFileSync(
+        process.env.VE_RUN_STATE,
+        JSON.stringify({ runID: process.env.VE_RUN_ID, pid: process.pid }),
+        { mode: 0o600 },
+      );
+      runState = process.env.VE_RUN_STATE;
+    }
+
+    const next = fileURLToPath(import.meta.resolve("next/dist/bin/next"));
+    const address = ["--hostname", "127.0.0.1", "--port", port];
+    await run("corepack", ["pnpm", "build:demo:css"], env);
+    await run(
+      process.execPath,
+      [
+        fileURLToPath(import.meta.resolve("tsx/cli")),
+        "apps/demo/prepare-db.ts",
+      ],
+      { ...env, VE_SEED: "1" },
+    );
+    if (process.env.VE_PRODUCTION === "1") {
+      await run(
+        process.execPath,
+        [next, "build", "apps/demo", "--turbopack"],
+        env,
+      );
+      await run(
+        process.execPath,
+        [next, "start", "apps/demo", ...address],
+        env,
+      );
+    } else {
+      await run(
+        process.execPath,
+        [
+          next,
+          "dev",
+          "apps/demo",
+          "--turbopack",
+          "--no-server-fast-refresh",
+          ...address,
+        ],
+        env,
+      );
+    }
+  }
+} finally {
+  try {
+    await database?.stop();
+  } finally {
+    if (ownedDatabase)
+      fs.rmSync(ownedDatabase, { recursive: true, force: true });
+    if (ownedMedia) fs.rmSync(ownedMedia, { recursive: true, force: true });
+    if (runState) fs.rmSync(runState, { force: true });
+  }
+}
+if (interrupted) process.exitCode = 128 + os.constants.signals[interrupted];
