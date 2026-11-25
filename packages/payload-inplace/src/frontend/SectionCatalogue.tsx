@@ -46,10 +46,10 @@ export function SectionCatalogue({
   disabled?: boolean;
   locale?: string;
   onChoose: (slug: string) => void;
-  onChoosePattern?: (pattern: {
-    blockType: string;
-    content: Record<string, unknown>;
-  }) => Promise<void>;
+  onChoosePattern?: (
+    pattern: { blockType: string; content: Record<string, unknown> },
+    signal: AbortSignal,
+  ) => Promise<void>;
   onPreview?: (slug?: string) => void;
   className?: string;
 }) {
@@ -131,12 +131,19 @@ export function SectionCatalogue({
         : slug,
       locale,
     );
+  const cancelPatternWork = () => {
+    libraryRequest.current?.abort();
+    libraryRequest.current = null;
+    setBusy(false);
+    setListFailed(false);
+    setFailed(false);
+  };
   const close = () => {
+    cancelPatternWork();
+    setMode("sections");
     setOpen(false);
     setHighlight(undefined);
     onPreview?.();
-    libraryRequest.current?.abort();
-    setBusy(false);
   };
   const choose = (slug: string) => {
     if (slug) {
@@ -151,7 +158,8 @@ export function SectionCatalogue({
         void patterns
           .read(pattern.id, controller.signal)
           .then(async (value) => {
-            if (!controller.signal.aborted) await onChoosePattern(value);
+            if (!controller.signal.aborted)
+              await onChoosePattern(value, controller.signal);
             if (!controller.signal.aborted) close();
           })
           .catch(() => {
@@ -215,9 +223,10 @@ export function SectionCatalogue({
         patterns?.canRead && onChoosePattern
           ? (next) => {
               if (next === mode) return;
+              cancelPatternWork();
               setMode(next);
-              if (next === "sections") setFailed(false);
-              else {
+              setHighlight(undefined);
+              if (next === "patterns") {
                 setPageRequest({ page: 1 });
                 setNextPage(undefined);
                 setLibrary([]);

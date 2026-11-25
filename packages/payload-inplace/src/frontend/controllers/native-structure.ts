@@ -411,10 +411,12 @@ export function useNativeStructure({
   async function insertPattern(
     target: InsertionTarget,
     pattern: { blockType: string; content: Record<string, unknown> },
+    pickerSignal: AbortSignal,
   ) {
     patternPreparation.current?.abort();
     const request = new AbortController();
     patternPreparation.current = request;
+    const signal = AbortSignal.any([pickerSignal, request.signal]);
     const options = insertionOptions(target);
     if (
       !options ||
@@ -452,10 +454,10 @@ export function useNativeStructure({
       renderAllFields: true,
       returnLockStatus: false,
       skipValidation: false,
-      signal: request.signal,
+      signal,
     });
     if (
-      request.signal.aborted ||
+      signal.aborted ||
       form.disabled ||
       before !== authoredFieldKey(form.getFields())
     )

@@ -55,6 +55,7 @@ export function InsertionPoints({
   insertPattern?: (
     target: InsertionTarget,
     pattern: { blockType: string; content: Record<string, unknown> },
+    signal: AbortSignal,
   ) => Promise<void>;
   insert: (target: InsertionTarget, blockType?: string) => string | undefined;
 }) {
@@ -305,7 +306,7 @@ export function InsertionPoints({
                 locale={locale}
                 onChoosePattern={
                   insertPattern
-                    ? (pattern) => insertPattern(target, pattern)
+                    ? (pattern, signal) => insertPattern(target, pattern, signal)
                     : undefined
                 }
                 onChoose={(slug) => insert(target, slug)}
