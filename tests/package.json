@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "test:e2e": "cd .. && playwright test -c tests/playwright.config.ts",
+    "test:inline-engines": "cd .. && playwright test -c tests/playwright.inline-engines.config.ts",
     "test:storybook": "cd .. && playwright test -c tests/playwright.storybook.config.ts",
     "docs:media": "cd .. && playwright test -c tests/playwright.docs.config.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json"

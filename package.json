@@ -14,6 +14,7 @@
     "test:int": "vitest run --project native-integration",
     "test:int:postgres": "VE_DATABASE=postgres vitest run --project native-integration",
     "test:e2e": "pnpm --filter @payload-inplace/acceptance test:e2e",
+    "test:e2e:inline-engines": "pnpm --filter @payload-inplace/acceptance test:inline-engines",
     "test:e2e:prod": "VE_PRODUCTION=1 pnpm test:e2e",
     "dev": "node apps/demo/start-server.mjs",
     "dev:generate-importmap": "pnpm --filter @payload-inplace/demo generate:importmap",
