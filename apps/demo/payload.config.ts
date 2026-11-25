@@ -294,7 +294,13 @@ export const editorOptions: VisualEditorOptions = {
   strategyProviders: [
     {
       id: "commerce-strategies",
-      Component: "./components/CommerceStrategies#CommerceStrategies",
+      Component: {
+        path: "./components/CommerceStrategies",
+        exportName: "CommerceStrategies",
+        clientProps: {
+          enableExampleUpload: process.env.VE_DEMO_MEDIA_UPLOAD === "1",
+        },
+      },
     },
   ],
   catalogue: {
@@ -514,7 +520,11 @@ export default buildConfig({
       },
       access: {
         read: () => true,
-        create: editor,
+        // The opt-in walkthrough lets editors observe an ordinary media create denial.
+        create: (args) =>
+          process.env.VE_DEMO_MEDIA_UPLOAD === "1"
+            ? args.req.user?.role === "admin"
+            : editor(args),
         update: editor,
         delete: editor,
       },

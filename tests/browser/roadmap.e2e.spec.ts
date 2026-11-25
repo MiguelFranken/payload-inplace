@@ -497,6 +497,93 @@ test("saved versions reopen, compare changed content and restore a guarded draft
   ).toBeVisible();
 });
 
+test("the optional upload adapter saves one media reference and recovers from native permission denial", async ({
+  page,
+}) => {
+  test.skip(
+    process.env.VE_DEMO_MEDIA_UPLOAD !== "1",
+    "Start the demo with VE_DEMO_MEDIA_UPLOAD=1",
+  );
+  const { readFile } = await import("node:fs/promises");
+  const { createShopEditor } = await import("./testing/editor-fixtures");
+  const buffer = await readFile(
+    new URL("../../apps/demo/commerce/assets/studio.png", import.meta.url),
+  );
+
+  for (const role of ["admin", "editor"] as const) {
+    const width = role === "admin" ? 1280 : 320;
+    await page.setViewportSize({ width, height: 900 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    const { doc } = await createShopEditor(page, { role });
+    const latest = async () =>
+      (
+        await (
+          await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+        ).json()
+      ).layout;
+    const original = await latest();
+    const select = page.getByRole("button", {
+      name: "Select content",
+      exact: true,
+    });
+    if ((await select.getAttribute("aria-pressed")) !== "true")
+      await select.click();
+    await page
+      .locator("main > [data-ve-block]")
+      .first()
+      .locator('[data-ve-field="image"]')
+      .click();
+    const accepted = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === "/api/demo-media-upload" &&
+        response.request().method() === "POST",
+    );
+    await page.getByLabel("Upload media").setInputFiles({
+      name: `demo-upload-${role}-${Date.now()}.png`,
+      mimeType: "image/png",
+      buffer,
+    });
+    const response = await accepted;
+
+    if (role === "admin") {
+      expect(response.status(), await response.text()).toBe(201);
+      const uploaded = (await response.json()).doc;
+      const expected = structuredClone(original);
+      expected[0].image = uploaded.id;
+      await expect.poll(latest).toEqual(expected);
+      await expect(page.locator("main img").first()).toHaveAttribute(
+        "src",
+        new RegExp(uploaded.filename),
+      );
+    } else {
+      expect(response.status()).toBe(403);
+      await expect(
+        page.getByRole("alert").filter({ hasText: "Upload failed." }),
+      ).toBeVisible();
+      expect(await latest()).toEqual(original);
+      await page
+        .getByRole("button", { name: "Open native media editor" })
+        .click();
+      await expect(page.getByLabel("Upload media")).toHaveCount(0);
+      const panel = page.getByRole("complementary", { name: "Edit content" });
+      await expect(panel.getByRole("heading", { name: "Image" })).toBeVisible();
+      await panel.locator(".upload-relationship-details__remove").click();
+      await panel.getByRole("button", { name: "Choose from existing" }).click();
+      await page.getByText("arc-chair.png", { exact: true }).click();
+      const selected = (
+        await (
+          await page.request.get(
+            "/api/media?where[filename][equals]=arc-chair.png",
+          )
+        ).json()
+      ).docs[0];
+      const expected = structuredClone(original);
+      expected[0].image = selected.id;
+      await expect.poll(latest).toEqual(expected);
+    }
+  }
+});
+
 test("contextual native media replacement saves only the document reference and keeps native fallback", async ({
   page,
 }) => {
