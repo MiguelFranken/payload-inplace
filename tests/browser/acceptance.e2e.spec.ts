@@ -1252,7 +1252,9 @@ test("joined selection controls clear optional terminals and remove array rows t
   ).toHaveCount(0);
   await page.setViewportSize({ width: 1280, height: 900 });
   // An explicit row binding selects the item, while its child bindings stay terminal.
-  const card = page.locator('article[data-ve-field^="cards.@"]').first();
+  const cardRows = page.locator('article[data-ve-field^="cards.@"]');
+  const originalCount = await cardRows.count();
+  const card = cardRows.first();
   const imageHeight = (await card
     .locator("[data-ve-field]")
     .first()
@@ -1275,7 +1277,7 @@ test("joined selection controls clear optional terminals and remove array rows t
         ).layout.find((item: any) => item.blockType === "productGrid").cards
           .length,
     )
-    .toBe(0);
+    .toBe(originalCount - 1);
   await page.getByRole("button", { name: "Sections", exact: true }).click();
   await page
     .getByRole("button", { name: "Undo section change", exact: true })
@@ -1290,7 +1292,7 @@ test("joined selection controls clear optional terminals and remove array rows t
         ).layout.find((item: any) => item.blockType === "productGrid").cards
           .length,
     )
-    .toBe(1);
+    .toBe(originalCount);
   expect(errors).toEqual([]);
 });
 

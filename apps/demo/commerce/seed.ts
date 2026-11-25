@@ -142,6 +142,52 @@ export async function seedCommerce(payload: Payload) {
         _status: "published",
       } as any,
     }));
+  const {
+    docs: [existingTable],
+  } = await payload.find({
+    collection: "products",
+    where: { slug: { equals: "orbit-table" } },
+    pagination: false,
+    limit: 1,
+    depth: 0,
+    overrideAccess: true,
+  });
+  const table =
+    existingTable ??
+    (await payload.create({
+      collection: "products",
+      overrideAccess: true,
+      data: {
+        title: "Orbit side table",
+        slug: "orbit-table",
+        presentation: {
+          layout: [
+            {
+              blockType: "productDetails",
+              eyebrow: "The living collection",
+              heading: "Orbit side table",
+              description:
+                "A compact solid oak side table with a rounded edge and room for a book or a cup.",
+              image: studio.id,
+              pricing: { amount: 245, currency: "EUR" },
+              variants: [
+                {
+                  name: "Natural oak",
+                  sku: "ORBIT-OAK",
+                  available: true,
+                  details: { material: "Solid oak" },
+                },
+              ],
+              specifications: [
+                { label: "Dimensions", value: "W 40 × D 40 × H 47 cm" },
+              ],
+            },
+          ],
+        },
+        search: { title: "Orbit side table — Still & Form" },
+        _status: "published",
+      },
+    }));
   const { totalDocs: shops } = await payload.count({
     collection: "shops",
     where: { slug: { equals: "home" } },
@@ -168,7 +214,7 @@ room to slow down.`,
         {
           blockType: "productGrid",
           heading: "Fewer things. Better chosen.",
-          description: "Meet the first piece in our living collection.",
+          description: "Meet the Arc lounge chair and Orbit side table.",
           cards: [
             {
               product: product.id,
@@ -176,6 +222,13 @@ room to slow down.`,
               description: "Natural oak · Two upholstery finishes",
               priceCaption: "€640",
               image: chair.id,
+              linkLabel: "View product",
+            },
+            {
+              product: table.id,
+              heading: "Orbit side table",
+              description: "Solid oak · Compact round top",
+              image: studio.id,
               linkLabel: "View product",
             },
           ],

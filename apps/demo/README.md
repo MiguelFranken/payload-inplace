@@ -11,6 +11,17 @@ exports that npm consumers use. From the repository root, install with
 Open [the storefront](http://127.0.0.1:3127/shop) or the
 [native Payload login](http://127.0.0.1:3127/admin/login).
 
+## Switch a product link
+
+The seeded [Arc lounge chair](http://127.0.0.1:3127/products/arc-chair) and
+[Orbit side table](http://127.0.0.1:3127/products/orbit-table) each have a card on
+the storefront. Sign in as a demo editor, open **Edit page** on the storefront,
+and select a card's link arrow. In the native **Product** field, choose the other
+product and wait for **Draft saved**. Reload and check that the relationship
+remains selected. Use **Review changes** and **Publish reviewed draft**, then
+follow the card's arrow on the public storefront. Card headings, captions, and
+images have their own fields and stay as entered when the destination changes.
+
 See [Contributing](../../CONTRIBUTING.md#run-the-demo) for the demo login and
 [the test guide](../../tests/README.md) for repository validation.
 
