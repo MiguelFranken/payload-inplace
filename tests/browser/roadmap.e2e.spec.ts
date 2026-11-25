@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { moveCaretToEnd } from "./testing/editor-fixtures";
+import { observeAutosave } from "./testing/autosave";
 
 test("inline edits preserve mixed-case source under uppercase CSS and keep the host page mounted", async ({
   page,
@@ -266,6 +267,7 @@ test("catalogue search and delayed canvas previews cancel without a native save 
 }) => {
   const { createShopEditor } = await import("./testing/editor-fixtures");
   const { doc } = await createShopEditor(page);
+  const autosave = await observeAutosave(page, `/api/shops/${doc.id}`);
   const patches: string[] = [];
   page.on("request", (request) => {
     if (
@@ -298,7 +300,7 @@ test("catalogue search and delayed canvas previews cancel without a native save 
   ).toBeVisible();
   await page.screenshot({ path: "test-results/roadmap-catalogue-preview.png" });
   // Native autosave's idle deadline passes while only the presentation delta exists.
-  await page.waitForTimeout(1800);
+  await autosave.advanceIdleWindow();
   expect(patches).toEqual([]);
   const saved = await (
     await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
@@ -406,6 +408,7 @@ test("saved versions reopen, compare changed content and restore a guarded draft
 }) => {
   const { createShopEditor } = await import("./testing/editor-fixtures");
   const { doc } = await createShopEditor(page);
+  const autosave = await observeAutosave(page, `/api/shops/${doc.id}`);
   const select = page.getByRole("button", {
     name: "Select content",
     exact: true,
@@ -513,7 +516,7 @@ test("saved versions reopen, compare changed content and restore a guarded draft
         document.querySelector("[data-test-site-header]"),
     ),
   ).toBe(true);
-  await page.waitForTimeout(1800);
+  await autosave.advanceIdleWindow();
   expect(writes).toHaveLength(1);
   await page.getByRole("button", { name: "More tools", exact: true }).click();
   await page

@@ -64,6 +64,7 @@ async function selectHeading(page: any) {
     .click();
   return page.locator('main [contenteditable="plaintext-only"]');
 }
+import { observeAutosave } from "./testing/autosave";
 
 test("instant inline edits and appearance survive delayed native saves and newer typing", async ({
   page,
@@ -445,6 +446,7 @@ test("sections drag on list and page keeps native order, undo, policy and keyboa
   page,
 }, testInfo) => {
   const doc = await createEditor(page);
+  const autosave = await observeAutosave(page, `/api/pages/${doc.id}`);
   await page.getByRole("button", { name: "Sections", exact: true }).click();
   const panel = page.getByRole("complementary", {
     name: "Sections",
@@ -454,10 +456,10 @@ test("sections drag on list and page keeps native order, undo, policy and keyboa
     page.locator("main section > h1,main section > h2").allTextContents();
   const before = await order();
   const rows = panel.locator("[data-ve-sortable]");
-  const from = await rows
+  const listHandle = rows
     .nth(2)
-    .getByRole("button", { name: "Move Server data section", exact: true })
-    .boundingBox();
+    .getByRole("button", { name: "Move Server data section", exact: true });
+  const from = await listHandle.boundingBox();
   const target = await rows.nth(1).boundingBox();
   expect(from).toBeTruthy();
   expect(target).toBeTruthy();
@@ -472,8 +474,9 @@ test("sections drag on list and page keeps native order, undo, policy and keyboa
   await page.mouse.move(from!.x + 20, from!.y + 20);
   await page.mouse.down();
   await page.mouse.move(from!.x + 20, from!.y + 10, { steps: 5 });
+  await expect(listHandle).toHaveAttribute("aria-pressed", "true");
   // Observe longer than the demo autosave idle interval: dragging alone must not write.
-  await page.waitForTimeout(1700);
+  await autosave.advanceIdleWindow();
   expect(writes).toBe(0);
   await page.mouse.move(target!.x + 80, target!.y + target!.height / 2, {
     steps: 12,
@@ -502,22 +505,27 @@ test("sections drag on list and page keeps native order, undo, policy and keyboa
     .click();
   await expect.poll(order).toEqual(before);
 
-  const pageHandle = await page
+  const pageHandle = page
     .locator(`[data-ve-canvas-handle="${doc.layout[2].id}"]`)
-    .getByRole("button", { name: "Move Server data section", exact: true })
-    .boundingBox();
-  const pageTarget = await page
-    .locator(`main [data-ve-block="${doc.layout[1].id}"]:not([data-ve-field])`)
-    .boundingBox();
-  await page.mouse.move(pageHandle!.x + 20, pageHandle!.y + 20);
-  await page.mouse.down();
-  await page.mouse.move(pageHandle!.x + 20, pageHandle!.y + 10, { steps: 5 });
-  await page.mouse.move(
-    pageTarget!.x + 100,
-    pageTarget!.y + pageTarget!.height / 2,
-    { steps: 12 },
+    .getByRole("button", { name: "Move Server data section", exact: true });
+  const canvasTextSection = page.locator(
+    `[data-ve-canvas-handle="${doc.layout[1].id}"]`,
   );
-  await expect(page.locator("[data-ve-drop-indicator]")).toBeVisible();
+  // Undo changes the page order before the canvas handles are repositioned.
+  // Hover waits for this handle to be stable and receive the pointer.
+  await pageHandle.hover();
+  await page.mouse.down();
+  const targetPoint = await page
+    .locator(`main [data-ve-block="${doc.layout[1].id}"]:not([data-ve-field])`)
+    .evaluate((section) => {
+      const { x, y, height } = section.getBoundingClientRect();
+      return { x: x + 100, y: y + height / 2 };
+    });
+  await page.mouse.move(targetPoint.x, targetPoint.y, { steps: 12 });
+  await expect(pageHandle).toHaveAttribute("aria-pressed", "true");
+  await expect(
+    canvasTextSection.locator("[data-ve-drop-indicator]"),
+  ).toBeVisible();
   await page.mouse.up();
   await expect.poll(order).toEqual([before[0], before[2], before[1]]);
   await page.getByRole("button", { name: "More tools", exact: true }).click();
@@ -532,15 +540,14 @@ test("sections drag on list and page keeps native order, undo, policy and keyboa
     .evaluate((element: HTMLElement) => {
       element.style.minHeight = "1400px";
     });
-  const canvasText = page
-    .locator(`[data-ve-canvas-handle="${doc.layout[1].id}"]`)
-    .getByRole("button", { name: "Move Text section", exact: true });
+  const canvasText = canvasTextSection.getByRole("button", {
+    name: "Move Text section",
+    exact: true,
+  });
   await canvasText.focus();
   await page.keyboard.press("Space");
   await expect(canvasText).toHaveAttribute("aria-pressed", "true");
-  await expect(
-    page.locator(`[data-ve-canvas-handle="${doc.layout[1].id}"]`),
-  ).toHaveAttribute("data-ve-drag-over", "true");
+  await expect(canvasTextSection).toHaveAttribute("data-ve-drag-over", "true");
   // KeyboardSensor attaches its document movement listener asynchronously after
   // start; aria-pressed is already synchronous. Complete a browser frame cycle
   // before the next physical key, also allowing the tall fixture to be measured.
@@ -1289,6 +1296,7 @@ test("focusing inline content does not save rendered whitespace until actual inp
 }) => {
   const original = "First line\nSecond line";
   const doc = await createEditor(page, "pages", original);
+  const autosave = await observeAutosave(page, `/api/pages/${doc.id}`);
   let writes = 0;
   page.on("request", (request) => {
     if (
@@ -1301,7 +1309,7 @@ test("focusing inline content does not save rendered whitespace until actual inp
   await heading.click();
   await expect(heading).toHaveAttribute("contenteditable", "plaintext-only");
   await heading.press("Tab");
-  await page.waitForTimeout(1700);
+  await autosave.advanceIdleWindow();
   expect(writes).toBe(0);
   expect(
     (
@@ -1923,6 +1931,7 @@ test("typing bursts save once after idle and composition never saves partial inp
   page,
 }) => {
   const doc = await createEditor(page);
+  const autosave = await observeAutosave(page, `/api/pages/${doc.id}`);
   let writes = 0;
   page.on("request", (request) => {
     if (
@@ -1936,25 +1945,31 @@ test("typing bursts save once after idle and composition never saves partial inp
   await inline.pressSequentially("AB", { delay: 250 });
   await expect(inline).toHaveText("Immediate headingAB");
   expect(writes).toBe(0);
-  await expect.poll(() => writes).toBe(1);
+  const typedSave = autosave.response();
+  await autosave.advanceIdleWindow();
+  expect((await typedSave).ok()).toBe(true);
+  expect(writes).toBe(1);
   await expect(
     page.getByRole("status", { name: "Draft saved", exact: true }),
   ).toBeVisible();
   await inline.press("Tab");
-  await page.waitForTimeout(1800);
+  await autosave.advanceIdleWindow();
   expect(writes).toBe(1);
   await inline.focus();
   await inline.dispatchEvent("compositionstart");
   await inline.fill("Composing text");
-  await page.waitForTimeout(1800);
+  await autosave.advanceIdleWindow();
   expect(writes).toBe(1);
+  const composedSave = autosave.response();
   await inline.dispatchEvent("compositionend", { data: "Composing text" });
   await expect(inline).toHaveText("Composing text");
-  await expect.poll(() => writes).toBe(2);
+  await autosave.advanceIdleWindow();
+  expect((await composedSave).ok()).toBe(true);
+  expect(writes).toBe(2);
   await expect(
     page.getByRole("status", { name: "Draft saved", exact: true }),
   ).toBeVisible();
-  await page.waitForTimeout(1800);
+  await autosave.advanceIdleWindow();
   expect(writes).toBe(2);
   const saved = await (
     await page.request.get(`/api/pages/${doc.id}?draft=true&depth=0`)
