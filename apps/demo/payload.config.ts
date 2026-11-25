@@ -294,7 +294,11 @@ export const editorOptions: VisualEditorOptions = {
   strategyProviders: [
     {
       id: "commerce-strategies",
-      Component: "./components/CommerceStrategies#CommerceStrategies",
+      Component: {
+        path: "./components/CommerceStrategies",
+        exportName: "CommerceStrategies",
+        clientProps: { enableTestUpload: process.env.VE_TEST_SCHEMA === "1" },
+      },
     },
   ],
   catalogue: {

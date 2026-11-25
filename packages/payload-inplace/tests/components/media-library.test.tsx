@@ -2,6 +2,7 @@ import { expect, it, vi, afterEach } from "vitest";
 import { act, render, screen, fireEvent } from "@testing-library/react";
 import { MediaLibraryField } from "../../src/frontend/MediaLibraryField";
 import type {
+  MediaAsset,
   MediaPage,
   MediaLibraryAdapter,
 } from "../../src/frontend/media-library";
@@ -123,6 +124,49 @@ it("aborts an in-flight upload on revoked editing and never applies its late com
   await act(async () => resolve({ id: 3, collection: "media", label: "Late" }));
   expect(props.setValue).not.toHaveBeenCalled();
 });
+
+it.each(["success", "failure"])(
+  "keeps the existing selection after a late upload %s",
+  async (outcome) => {
+    vi.useFakeTimers();
+    const setValue = vi.fn();
+    let complete!: (asset: MediaAsset) => void;
+    let fail!: (error: Error) => void;
+    let signal!: AbortSignal;
+    const library: MediaLibraryAdapter = {
+      id: "test",
+      search: async () => ({
+        items: [{ id: 2, collection: "media", label: "Existing photo" }],
+      }),
+      upload: (input) => {
+        signal = input.signal;
+        input.onProgress(25);
+        return new Promise((resolve, reject) => {
+          complete = resolve;
+          fail = reject;
+        });
+      },
+    };
+    render(
+      <MediaLibraryField {...props} setValue={setValue} library={library} />,
+    );
+    await tick();
+    fireEvent.change(screen.getByLabelText("Upload media"), {
+      target: { files: [new File(["fixture"], "earlier.png")] },
+    });
+    expect(screen.getByRole("progressbar")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Existing photo" }));
+    expect(signal.aborted).toBe(true);
+    expect(screen.queryByRole("progressbar")).toBeNull();
+    await act(async () => {
+      if (outcome === "success")
+        complete({ id: 1, collection: "media", label: "Earlier upload" });
+      else fail(Error("Upload rejected"));
+    });
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(setValue).toHaveBeenCalledExactlyOnceWith(2);
+  },
+);
 it("uses native same-origin ACL search and never turns external URLs into asset IDs", async () => {
   const { createPayloadMediaLibrary } = await import(
     "../../src/frontend/media-library"

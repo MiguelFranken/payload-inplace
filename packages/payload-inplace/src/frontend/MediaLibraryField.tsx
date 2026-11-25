@@ -33,12 +33,8 @@ export function MediaLibraryField({
   const collections = mediaCollections(field),
     scope = JSON.stringify(collections);
   useEffect(() => {
-    if (disabled) {
-      upload.current?.abort();
-      failedUpload.current = null;
-      setError((current) => (current === "mediaUploadFailed" ? null : current));
-      setProgress(undefined);
-    }
+    setError((current) => (current === "mediaUploadFailed" ? null : current));
+    setProgress(undefined);
     return () => {
       upload.current?.abort();
       failedUpload.current = null;
@@ -142,7 +138,13 @@ export function MediaLibraryField({
           setRequest((current) => ({ ...current, retry: current.retry + 1 }));
         }
       }}
-      onSelect={(asset) => setValue(mediaReference(field, asset))}
+      onSelect={(asset) => {
+        upload.current?.abort();
+        failedUpload.current = null;
+        setProgress(undefined);
+        if (error === "mediaUploadFailed") setError(null);
+        setValue(mediaReference(field, asset));
+      }}
       onUpload={library.upload ? uploadFile : undefined}
       openNative={openNative}
       progress={progress}
