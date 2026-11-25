@@ -1,6 +1,7 @@
 import { createLocalReq } from "payload";
 import type { Payload } from "payload";
 import { seedCommerce } from "./commerce/seed";
+import { seedTranslation } from "./lib/translation-example";
 
 /** Deterministic synthetic content only; no consumer services or customer records. */
 export async function seed(payload: Payload) {
@@ -43,6 +44,7 @@ export async function seed(payload: Payload) {
     } as never,
   });
   await seedCommerce(payload);
+  await seedTranslation(payload, systemReq);
   for (const collection of ["pages", "offers"]) {
     const layout = [
       {

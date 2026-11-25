@@ -61,7 +61,10 @@ export function RenderPageView({
             >
               {heading || (active ? "Add a heading" : "")}
             </Heading>
-            {(block.caption || (active && block.blockType === "hero")) && (
+            {(block.caption ||
+              (active &&
+                (block.blockType === "hero" ||
+                  block.blockType === "localeStory"))) && (
               <p
                 {...getFieldAttributes(
                   { ...identity, field: "caption" },
