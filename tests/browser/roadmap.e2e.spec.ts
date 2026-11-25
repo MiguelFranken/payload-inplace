@@ -1848,3 +1848,93 @@ test("plaintext and rich-text undo stay local while structural undo preserves ne
   expect(saved._status).toBe("draft");
   expect(saved._veRevision).toBeGreaterThan(doc._veRevision);
 });
+
+test("the seeded translation walkthrough publishes a German caption and preserves English", async ({
+  page,
+  browser,
+}) => {
+  await page.setViewportSize({ width: 320, height: 900 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const german = "/translations/de/studio-visit";
+  const english = "/translations/en/studio-visit";
+  const originalCaption = "Saturday tours start at ten.";
+  const newCaption = "Samstags beginnen die Führungen um zehn Uhr.";
+
+  await page.goto(english);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Visit the studio",
+  );
+  await expect(page.getByText(originalCaption)).toBeVisible();
+  await page.getByRole("link", { name: "Deutsch" }).press("Enter");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Besuch im Studio",
+  );
+  await expect(page.getByText(originalCaption)).toHaveCount(0);
+  await expect(page.locator("main p")).toHaveText([
+    "Der Ausstellungsraum",
+    "Die Werkstatt",
+  ]);
+
+  const login = await page.request.post("/api/users/login", {
+    data: { email: "admin@example.test", password: "synthetic-demo-password" },
+  });
+  expect(login.ok()).toBeTruthy();
+  await page.reload();
+  await page.getByRole("button", { name: "Edit page", exact: true }).click();
+  const select = page.getByRole("button", {
+    name: "Select content",
+    exact: true,
+  });
+  if ((await select.getAttribute("aria-pressed")) !== "true")
+    await select.click();
+  const caption = page.locator('main [data-ve-field="caption"]');
+  await expect(caption).toHaveText("Add a caption");
+  await caption.click();
+  await expect(caption).toHaveAttribute("contenteditable", "plaintext-only");
+  await caption.fill(newCaption);
+  await expect(page.getByRole("status", { name: "Draft saved" })).toBeVisible();
+
+  const reader = await browser.newPage({
+    viewport: { width: 320, height: 900 },
+  });
+  try {
+    await reader.goto(new URL(german, page.url()).href);
+    await expect(reader.getByText(newCaption)).toHaveCount(0);
+    await page
+      .getByRole("button", { name: "Review changes", exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "Publish reviewed draft", exact: true })
+      .click();
+    await expect(page).toHaveURL(new RegExp(`${german}$`));
+    await reader.reload();
+    await expect(reader.getByText(newCaption)).toBeVisible();
+    await expect(reader.locator("main p")).toHaveText([
+      newCaption,
+      "Der Ausstellungsraum",
+      "Die Werkstatt",
+    ]);
+
+    await reader.getByRole("link", { name: "English" }).press("Enter");
+    await expect(reader.locator("main p")).toHaveText([
+      originalCaption,
+      "The showroom",
+      "The workshop",
+    ]);
+    const localized = async (locale: "en" | "de") =>
+      (
+        await (
+          await page.request.get(
+            `/api/localizedPages?where[slug][equals]=studio-visit&locale=${locale}&fallback-locale=null&depth=0`,
+          )
+        ).json()
+      ).docs[0];
+    const [en, de] = await Promise.all([localized("en"), localized("de")]);
+    expect(de.id).toBe(en.id);
+    expect(de.layout[0].items.map((item: { id: string }) => item.id)).toEqual(
+      en.layout[0].items.map((item: { id: string }) => item.id),
+    );
+  } finally {
+    await reader.close();
+  }
+});

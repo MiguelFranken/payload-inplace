@@ -78,8 +78,61 @@ it("resumes after accounts and midway through commerce without overwriting fixtu
     });
     await api.updateGlobal({ slug: "siteHeader", req, data: { layout: [] } });
 
+    const update = api.update.bind(api);
+    const interruptTranslation = vi
+      .spyOn(api, "update")
+      .mockImplementation(async (args) => {
+        if (args.collection === "localizedPages" && args.locale === "de")
+          throw new Error("interrupted before German translation");
+        return update(args);
+      });
+    await expect(seed(api)).rejects.toThrow(
+      "interrupted before German translation",
+    );
+    interruptTranslation.mockRestore();
+
+    const readTranslation = async (locale: "en" | "de") => {
+      const { docs } = await api.find({
+        collection: "localizedPages",
+        depth: 0,
+        locale,
+        fallbackLocale: false,
+      });
+      expect(docs).toHaveLength(1);
+      return docs[0];
+    };
+    const english = await readTranslation("en");
+    expect(english.title).toBe("Studio visit");
+    expect((await readTranslation("de")).title ?? null).toBeNull();
+
     await seed(api);
+    const german = await readTranslation("de");
+    expect(german.id).toBe(english.id);
+    expect(german.title).toBe("Studiobesuch");
+    expect(german.layout?.[0]?.id).toBe(english.layout?.[0]?.id);
+    expect(
+      german.layout?.[0]?.items?.map(({ id, label }) => ({ id, label })),
+    ).toEqual([
+      {
+        id: english.layout?.[0]?.items?.[0]?.id,
+        label: "Der Ausstellungsraum",
+      },
+      { id: english.layout?.[0]?.items?.[1]?.id, label: "Die Werkstatt" },
+    ]);
+    await api.update({
+      collection: "localizedPages",
+      locale: "de",
+      id: german.id,
+      req,
+      data: { title: "Edited translation" },
+    });
     await seed(api);
+    expect((await readTranslation("de")).title).toBe("Edited translation");
+    expect(await readTranslation("en")).toMatchObject({
+      id: english.id,
+      title: english.title,
+      layout: english.layout,
+    });
 
     expect((await find("users")).docs.map((user) => user.id).sort()).toEqual(
       accounts.map((user) => user.id).sort(),

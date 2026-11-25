@@ -1,6 +1,7 @@
 import { createLocalReq } from "payload";
 import type { Payload } from "payload";
 import { seedCommerce } from "./commerce/seed";
+import { seedTranslation } from "./lib/translation-example";
 
 /** Deterministic synthetic content only; no consumer services or customer records. */
 export async function seed(payload: Payload) {
@@ -26,6 +27,7 @@ export async function seed(payload: Payload) {
   });
   if (!header.updatedAt) await seedHeader(payload);
   await seedCommerce(payload);
+  await seedTranslation(payload);
   for (const collection of ["pages", "offers"] as const) {
     const { totalDocs } = await payload.count({
       collection,
