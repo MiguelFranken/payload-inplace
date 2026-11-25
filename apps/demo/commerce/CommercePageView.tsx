@@ -49,6 +49,9 @@ export function CommercePageView({
     product: ProductRelationship,
   ) => ProductDocument | undefined;
 }) {
+  // In CMS order, the first matching section owns each stable navigation target.
+  const collection = blocks.find((block) => block.blockType === "productGrid");
+  const story = blocks.find((block) => block.blockType === "editorial");
   const photo = (relationship: MediaRelationship, className = "") => {
     const image = populated(relationship);
     return (
@@ -381,7 +384,8 @@ export function CommercePageView({
         if (block.blockType === "productGrid")
           return (
             <section
-              id="collection"
+              id={block === collection ? "collection" : undefined}
+              tabIndex={block === collection ? -1 : undefined}
               key={block.id ?? index}
               {...attrs}
               className={`${sectionClass} demo:py-12 demo:md:py-16 ${tone(block.background)}`}
@@ -507,7 +511,8 @@ export function CommercePageView({
         if (block.blockType === "editorial")
           return (
             <section
-              id="studio-story"
+              id={block === story ? "studio-story" : undefined}
+              tabIndex={block === story ? -1 : undefined}
               key={block.id ?? index}
               {...attrs}
               className={tone(block.background)}
@@ -594,6 +599,20 @@ export function CommercePageView({
           );
         return null;
       })}
+      {root === "layout" && (!collection || !story) && (
+        <div className={`${sectionClass} demo:grid demo:gap-3 demo:py-8`}>
+          {!collection && (
+            <p id="collection" tabIndex={-1} className={copyClass}>
+              The collection is currently empty.
+            </p>
+          )}
+          {!story && (
+            <p id="studio-story" tabIndex={-1} className={copyClass}>
+              There is no studio story yet.
+            </p>
+          )}
+        </div>
+      )}
     </main>
   );
 }

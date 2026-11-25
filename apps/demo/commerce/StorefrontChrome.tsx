@@ -23,7 +23,7 @@ export function StorefrontHeader() {
           </a>
           <nav
             aria-label="Storefront navigation"
-            className="demo:flex demo:items-center demo:gap-5 demo:sm:gap-8"
+            className="demo:flex demo:items-center demo:gap-3 demo:sm:gap-8"
           >
             <a
               href="/shop#collection"
@@ -33,7 +33,7 @@ export function StorefrontHeader() {
             </a>
             <a
               href="/shop#studio-story"
-              className="demo:hidden demo:min-h-11 demo:items-center demo:text-sm demo:text-ink demo:no-underline demo:hover:underline demo:underline-offset-4 demo:sm:inline-flex"
+              className="demo:inline-flex demo:min-h-11 demo:items-center demo:text-sm demo:text-ink demo:no-underline demo:hover:underline demo:underline-offset-4"
             >
               Our story
             </a>

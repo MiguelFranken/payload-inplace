@@ -553,3 +553,76 @@ test("commerce prices retain cents in public and draft views while explicit card
     await visitor.close();
   }
 });
+
+test("storefront fragments reach the first matching section or the empty state by keyboard", async ({
+  page,
+  browser,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    const { createShopEditor } = await import("./testing/editor-fixtures");
+    const { doc } = await createShopEditor(page, {
+      arrangeLayout(layout) {
+        const hero = layout.find(
+          (block) => block.blockType === "collectionHero",
+        )!;
+        const grid = layout.find((block) => block.blockType === "productGrid")!;
+        const story = layout.find((block) => block.blockType === "editorial")!;
+        if (width === 320) return [hero];
+        return [
+          hero,
+          { ...story, heading: "Story moved first" },
+          { ...grid, heading: "Collection moved first" },
+          grid,
+          story,
+        ];
+      },
+    });
+    const collection = page.locator("#collection");
+    const story = page.locator("#studio-story");
+    await expect(collection).toHaveCount(1);
+    await expect(story).toHaveCount(1);
+    await expect(collection).toContainText(
+      width === 320
+        ? "The collection is currently empty."
+        : "Collection moved first",
+    );
+    await expect(story).toContainText(
+      width === 320 ? "There is no studio story yet." : "Story moved first",
+    );
+    await page
+      .getByRole("button", { name: "Review changes", exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "Publish reviewed draft", exact: true })
+      .click();
+    await expect(page).toHaveURL(new RegExp(`/shops/${doc.slug}$`));
+
+    const visitor = await browser.newPage({
+      viewport: { width, height: 900 },
+      reducedMotion: "reduce",
+    });
+    try {
+      await visitor.goto(new URL(`/shops/${doc.slug}`, page.url()).href);
+      const publicCollection = visitor.locator("#collection");
+      await expect(publicCollection).toHaveCount(1);
+      await expect(visitor.locator("#studio-story")).toHaveCount(1);
+      await visitor
+        .getByRole("link", { name: "Explore the collection" })
+        .press("Enter");
+      await expect(publicCollection).toBeFocused();
+      const nav = visitor.getByRole("navigation", {
+        name: "Storefront navigation",
+      });
+      await nav.getByRole("link", { name: "Collection" }).press("Enter");
+      await expect(visitor).toHaveURL(/\/shop#collection$/);
+      await expect(publicCollection).toBeFocused();
+      await nav.getByRole("link", { name: "Our story" }).press("Enter");
+      await expect(visitor).toHaveURL(/\/shop#studio-story$/);
+      await expect(visitor.locator("#studio-story")).toBeFocused();
+    } finally {
+      await visitor.close();
+    }
+  }
+});
