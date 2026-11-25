@@ -53,11 +53,13 @@ export function resolveIdentity(
   index: IndexedBlock[],
   identity: BlockIdentity,
 ): IndexedBlock | undefined {
+  const ancestors = identity.ancestors ?? [];
   const hits = index.filter(
     (row) =>
       row.id === identity.blockId &&
       row.path.startsWith(`${identity.root}.`) &&
-      row.ancestors.join("/") === (identity.ancestors ?? []).join("/"),
+      row.ancestors.length === ancestors.length &&
+      row.ancestors.every((id, index) => id === ancestors[index]),
   );
   if (hits.length > 1) throw new Error("Ambiguous block identity");
   return hits[0];
