@@ -14,16 +14,7 @@ const results = artifactGroup
 export default defineConfig({
   testDir: "browser",
   outputDir: `${results}/browser`,
-  testMatch: [
-    "e2e.spec.ts",
-    "optimistic.e2e.spec.ts",
-    "commerce.e2e.spec.ts",
-    "roadmap.e2e.spec.ts",
-    "acceptance.e2e.spec.ts",
-    "block-actions.e2e.spec.ts",
-    "performance.e2e.spec.ts",
-    "pattern-picker.e2e.spec.ts",
-  ],
+  testMatch: ["**/e2e.spec.ts", "**/*.e2e.spec.ts"],
   workers: 1,
   reporter: [["list"], ["json", { outputFile: `${results}/results.json` }]],
   timeout: 60000,
