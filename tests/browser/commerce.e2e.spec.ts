@@ -396,7 +396,7 @@ test("every storefront block exposes nested terminals, promotion settings and ow
   );
   await edit('main [data-ve-field="note"]', "Made for everyday life.");
   await expect(
-    page.locator('main a[data-ve-field^="cards."][data-ve-field$=".product"]'),
+    page.getByRole("link", { name: "Open Arc lounge chair" }),
   ).toHaveAttribute("href", "/products/arc-chair");
   await expect(
     page
@@ -697,5 +697,62 @@ test("shop cards expose their edit control when product references cannot be res
     const panel = page.getByRole("complementary", { name: "Edit content" });
     await expect(panel.getByRole("combobox")).toBeVisible();
     await page.getByRole("button", { name: /^Close .* panel$/ }).click();
+  }
+});
+
+test("a seeded card can switch to the second product and retain its published destination", async ({
+  page,
+  browser,
+}) => {
+  const { createShopEditor } = await import("./testing/editor-fixtures");
+  const { doc } = await createShopEditor(page);
+  const article = page
+    .getByRole("article")
+    .filter({ has: page.getByRole("heading", { name: "Arc lounge chair" }) });
+  const link = article.getByRole("link", { name: "Open Arc lounge chair" });
+  const second = page.getByRole("link", { name: "Open Orbit side table" });
+  await expect(second).toHaveAttribute("href", "/products/orbit-table");
+  await expect(link).toHaveAttribute("href", "/products/arc-chair");
+
+  const select = page.getByRole("button", {
+    name: "Select content",
+    exact: true,
+  });
+  if ((await select.getAttribute("aria-pressed")) !== "true")
+    await select.click();
+  await link.click();
+  const panel = page.getByRole("complementary", { name: "Edit content" });
+  const product = panel.getByRole("combobox");
+  await product.fill("Orbit side table");
+  await expect(
+    page.getByRole("option", { name: "Orbit side table", exact: true }),
+  ).toBeVisible();
+  await product.press("ArrowDown");
+  await product.press("Enter");
+  await saved(page);
+  await expect(link).toHaveAttribute("href", "/products/orbit-table");
+
+  await page.reload();
+  await expect(link).toHaveAttribute("href", "/products/orbit-table");
+  await page
+    .getByRole("button", { name: "Review changes", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Publish reviewed draft", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Edit page", exact: true }),
+  ).toBeVisible();
+
+  const visitor = await browser.newPage();
+  try {
+    await visitor.goto(new URL(`/shops/${doc.slug}`, page.url()).href);
+    await visitor.getByRole("link", { name: "Open Arc lounge chair" }).click();
+    await expect(visitor).toHaveURL(/\/products\/orbit-table$/);
+    await expect(visitor.getByRole("heading", { level: 1 })).toHaveText(
+      "Orbit side table",
+    );
+  } finally {
+    await visitor.close();
   }
 });

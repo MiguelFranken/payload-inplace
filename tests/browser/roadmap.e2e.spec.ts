@@ -1734,7 +1734,9 @@ test("native nested field gutters match admin without horizontal overflow at res
   const body = panel.locator("[data-ve-panel-body]");
   const cards = panel.locator("#field-layout__1__cards");
   await cards.getByRole("button", { name: "Show All", exact: true }).click();
-  const field = cards.getByRole("textbox", { name: "Heading", exact: true });
+  const field = cards
+    .getByRole("textbox", { name: "Heading", exact: true })
+    .first();
   await expect(field).toHaveValue("Arc lounge chair");
   const fieldNode = await field.elementHandle();
   const metrics = () =>

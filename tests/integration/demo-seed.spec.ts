@@ -54,8 +54,13 @@ it("resumes after accounts and midway through commerce without overwriting fixtu
       });
     await expect(seed(api)).rejects.toThrow("interrupted during commerce");
     interrupt.mockRestore();
-    const [product] = (await api.find({ collection: "products", depth: 0 }))
-      .docs;
+    const existingProducts = (await find("products")).docs;
+    expect(existingProducts.map(({ slug }) => slug).sort()).toEqual([
+      "arc-chair",
+      "orbit-table",
+    ]);
+    const product = existingProducts.find(({ slug }) => slug === "arc-chair")!;
+    const table = existingProducts.find(({ slug }) => slug === "orbit-table")!;
     const existingMedia = (await api.find({ collection: "media", depth: 0 }))
       .docs;
     expect(existingMedia).toHaveLength(2);
@@ -149,18 +154,25 @@ it("resumes after accounts and midway through commerce without overwriting fixtu
     expect(chair).toBeDefined();
     expect(studio).toBeDefined();
     const products = await api.find({ collection: "products", depth: 0 });
-    expect(products.docs).toEqual([
-      expect.objectContaining({
-        id: product.id,
-        title: "Edited product",
-        slug: "arc-chair",
-        presentation: expect.objectContaining({
-          layout: expect.arrayContaining([
-            expect.objectContaining({ image: chair?.id }),
-          ]),
+    expect(products.docs).toHaveLength(2);
+    expect(products.docs).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: product.id,
+          title: "Edited product",
+          slug: "arc-chair",
+          presentation: expect.objectContaining({
+            layout: expect.arrayContaining([
+              expect.objectContaining({ image: chair?.id }),
+            ]),
+          }),
         }),
-      }),
-    ]);
+        expect.objectContaining({
+          id: table.id,
+          slug: "orbit-table",
+        }),
+      ]),
+    );
     const shops = await api.find({ collection: "shops", depth: 0 });
     expect(shops.docs).toEqual([
       expect.objectContaining({
@@ -176,6 +188,10 @@ it("resumes after accounts and midway through commerce without overwriting fixtu
               expect.objectContaining({
                 product: product.id,
                 image: chair?.id,
+              }),
+              expect.objectContaining({
+                product: table.id,
+                image: studio?.id,
               }),
             ],
           }),
