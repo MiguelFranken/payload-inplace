@@ -302,7 +302,9 @@ test("source text survives capitalize, NBSP, multiline and opaque renderer fallb
   expect((await read()).layout[0].eyebrow).toBe(eyebrow);
   await target.click();
   await moveCaretToEnd(target);
+  const eyebrowSave = autosave.response();
   await target.pressSequentially("!");
+  expect((await eyebrowSave).ok()).toBe(true);
   await expect
     .poll(async () => (await read()).layout[0].eyebrow)
     .toBe(`${eyebrow}!`);
@@ -314,7 +316,9 @@ test("source text survives capitalize, NBSP, multiline and opaque renderer fallb
   await multiline.press("Enter");
   await expect(multiline).toBeFocused();
   await expect(multiline).toHaveAttribute("contenteditable", "plaintext-only");
+  const descriptionSave = autosave.response();
   await multiline.pressSequentially("Third line");
+  expect((await descriptionSave).ok()).toBe(true);
   await expect
     .poll(async () => (await read()).layout[0].description)
     .toBe(`${description}\nThird line`);
