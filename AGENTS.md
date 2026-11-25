@@ -24,6 +24,10 @@ Use the local `.agents/skills/better-interface/SKILL.md` and its six owning skil
 
 Use Tailwind utilities exclusively for plugin and demo presentation. CSS inputs contain Tailwind directives only; generated CSS is build output. Do not add handcrafted selectors, CSS-in-JS, or static inline styles. Runtime geometry may set narrowly scoped CSS variables. Package prefixed utilities without Preflight; native Payload controls retain their styles. Use `--pve-*` semantic variables with Payload theme fallbacks for consumer customization.
 
+## Release completion
+
+A stable release is complete when the npm version is publicly downloadable and the matching GitHub Release is published. After verifying npm, follow “Publish the GitHub Release” in [the release runbook](docs/release.md). Tag the exact package source SHA from the validated receipt. Verify the public release, tag target and latest designation before reporting completion, and include both the npm and GitHub Release links.
+
 ## npm authentication with 1Password passkeys
 
 Routine releases use the validated archive and GitHub Actions trusted publishing (OIDC), as described in `docs/release.md`. Use an interactive npm CLI session only when owner authentication is required, such as first publication or trusted-publisher configuration.

@@ -8,7 +8,7 @@ Every consumer-visible change includes a `.changeset/*.md` entry. Run `corepack 
 
 Normal versions use the owner-requested **0.0.x** baseline. Changesets generates the next normal patch; published versions remain immutable. New release dispatches target `latest`. Exact-version pins remain supported.
 
-Version PR merge → main validation archive → independent installed-consumer and Workshops acceptance → committed receipt → `release.yml` OIDC publication of the same bytes. Versioning never bypasses artifact or consumer gates.
+Version PR merge → main validation archive → independent installed-consumer and Workshops acceptance → committed receipt → `release.yml` OIDC publication of the same bytes → public npm verification → tagged GitHub Release. Versioning never bypasses artifact or consumer gates.
 
 ## Reproduce an immutable candidate
 
@@ -48,6 +48,22 @@ npm trust github payload-inplace --repo MiguelFranken/payload-inplace --file rel
 `--allow-publish` enables the reviewed direct-publication workflow rather than staged-only publishing. Verify this configuration, then complete a successful OIDC publication to bind the repository identity.
 
 Publication requires npm >=11.5.1 and Node >=22.14; Node24 is selected here. See [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/). No long-lived registry token belongs in PR CI. Stable publication requires a non-prerelease version and a new validation/consumer cycle; never relabel an untested build as stable.
+
+## Publish the GitHub Release
+
+After npm serves the stable version as `latest` and its downloaded tarball matches the validated archive, publish the matching release on [GitHub Releases](https://github.com/MiguelFranken/payload-inplace/releases). Changesets prepares the version PR. The trusted publishing workflow handles npm. The maintainer performing the release owns this final GitHub step.
+
+1. Read `packageVersion` and `packageSourceSHA` from the committed Workshops receipt matching the npm archive. The tag belongs on that validated source commit, which can precede the receipt commit on `main`.
+2. Check for an existing `v<version>` release and tag. Reuse a matching tag. If the tag exists at a different commit, stop and resolve the discrepancy before publishing. If npm already has the verified archive, resume here.
+3. Write release notes summarizing user-visible changes and linking the npm version, main validation run, Workshops receipt and publication run. For a new tag and release, use the following command with the verified values and notes file. For an existing matching tag, add `--verify-tag`. If the matching release already exists, verify it and complete any missing metadata in place.
+
+   ```sh
+   gh release create "v$version" --repo MiguelFranken/payload-inplace \
+     --target "$package_source_sha" --title "Payload Inplace $version" \
+     --notes-file "$notes_file" --latest
+   ```
+
+4. Confirm that the public release is published, is marked latest for this stable version, and that the tag resolves to `packageSourceSHA` (peel annotated tags to their commit). Include the npm version URL and GitHub Release URL in the delivery report.
 
 ## Install, enable and upgrade
 
