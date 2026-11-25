@@ -320,6 +320,8 @@ test("catalogue search and delayed canvas previews cancel without a native save 
 test("a consumer scalar strategy saves through native Form and can hand back to the native field", async ({
   page,
 }) => {
+  await page.setViewportSize({ width: 320, height: 900 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
   const { createShopEditor } = await import("./testing/editor-fixtures");
   const { doc } = await createShopEditor(page);
   const select = page.getByRole("button", {
@@ -340,7 +342,13 @@ test("a consumer scalar strategy saves through native Form and can hand back to 
   await target.click({ position: { x: 8, y: 8 } });
   const presets = page.getByRole("group", { name: "Background presets" });
   await expect(presets).toBeVisible();
-  await presets.getByRole("button", { name: "Sand", exact: true }).click();
+  const sage = presets.getByRole("button", { name: "Sage", exact: true });
+  const sand = presets.getByRole("button", { name: "Sand", exact: true });
+  await expect(sage).toHaveAttribute("aria-pressed", "true");
+  await expect(sand).toHaveAttribute("aria-pressed", "false");
+  await sand.press("Space");
+  await expect(sand).toHaveAttribute("aria-pressed", "true");
+  await expect(sage).toHaveAttribute("aria-pressed", "false");
   await expect
     .poll(
       async () =>
@@ -356,9 +364,38 @@ test("a consumer scalar strategy saves through native Form and can hand back to 
     .getByRole("button", { name: "Open native field", exact: true })
     .click();
   await expect(presets).toHaveCount(0);
-  await expect(
-    page.getByRole("combobox", { name: "Background", exact: true }),
-  ).toBeVisible();
+  const panel = page.getByRole("complementary", { name: "Edit content" });
+  const native = panel.getByRole("combobox", {
+    name: "Background",
+    exact: true,
+  });
+  await expect(native).toBeVisible();
+  const path = `**/api/shops/${doc.id}?*`;
+  const requests: string[] = [];
+  await page.route(path, async (route) => {
+    if (route.request().method() === "PATCH") {
+      requests.push(route.request().method());
+      await route.fulfill({
+        status: 503,
+        json: { errors: [{ message: "Synthetic save unavailable" }] },
+      });
+    } else {
+      await route.continue();
+    }
+  });
+  await native.press("ArrowDown");
+  await native.press("Home");
+  await native.press("ArrowDown");
+  await native.press("Enter");
+  const options = page.getByRole("button", { name: "Options for Background" });
+  await expect(options).toBeDisabled();
+  await expect(panel.getByText("Sage", { exact: true })).toBeVisible();
+  await options.press("Enter");
+  await expect(panel.getByText("Sage", { exact: true })).toBeVisible();
+  expect(requests).toHaveLength(1);
+  await page.unroute(path);
+  await page.getByRole("button", { name: "Retry saving", exact: true }).click();
+  await expect(page.getByRole("status", { name: "Draft saved" })).toBeVisible();
   await expect(
     page.getByRole("navigation", { name: "Editing toolbar" }),
   ).toBeVisible();
