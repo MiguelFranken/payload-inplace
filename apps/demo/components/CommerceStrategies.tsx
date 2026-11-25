@@ -47,6 +47,19 @@ const background = defineFieldStrategy({
 
 const nativeMedia = createPayloadMediaLibrary({ collection: "media" });
 const media = defineMediaFieldStrategy(nativeMedia);
+const mediaWithTestUpload = defineMediaFieldStrategy({
+  ...nativeMedia,
+  async upload({ file, signal }) {
+    signal.throwIfAborted();
+    const body = new FormData();
+    body.set("file", file);
+    // The browser fixture can settle this upload after the picker cancels it.
+    const response = await fetch("/api/media", { method: "POST", body });
+    if (!response.ok) throw Error("Demo upload failed");
+    const { doc } = await response.json();
+    return { id: doc.id, collection: "media", label: doc.filename };
+  },
+});
 const mediaWithUpload = defineMediaFieldStrategy({
   ...nativeMedia,
   id: "demo-media-upload",
@@ -56,15 +69,19 @@ const mediaWithUpload = defineMediaFieldStrategy({
 /** Registration is active-only and document-local. Options and persistence remain native. */
 export function CommerceStrategies({
   enableExampleUpload = false,
+  enableTestUpload = false,
 }: {
   enableExampleUpload?: boolean;
+  enableTestUpload?: boolean;
 }) {
+  let mediaStrategy = media;
+  if (enableExampleUpload) mediaStrategy = mediaWithUpload;
+  else if (enableTestUpload) mediaStrategy = mediaWithTestUpload;
+
   return (
     <>
       <EditorFieldStrategy definition={background} />
-      <EditorFieldStrategy
-        definition={enableExampleUpload ? mediaWithUpload : media}
-      />
+      <EditorFieldStrategy definition={mediaStrategy} />
     </>
   );
 }

@@ -320,6 +320,7 @@ export const editorOptions: VisualEditorOptions = {
         exportName: "CommerceStrategies",
         clientProps: {
           enableExampleUpload: process.env.VE_DEMO_MEDIA_UPLOAD === "1",
+          enableTestUpload: process.env.VE_TEST_SCHEMA === "1",
         },
       },
     },

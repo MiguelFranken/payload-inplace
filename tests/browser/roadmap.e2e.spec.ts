@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Route } from "@playwright/test";
 import { moveCaretToEnd } from "./testing/editor-fixtures";
 import { observeAutosave } from "./testing/autosave";
 
@@ -786,6 +786,104 @@ test("contextual native media replacement saves only the document reference and 
   ).toBeVisible();
   await page.screenshot({ path: "test-results/roadmap-media.png" });
 });
+
+for (const { width, status } of [
+  { width: 1280, status: 201 },
+  { width: 320, status: 503 },
+]) {
+  test(`media selection survives a late upload response (${status}, ${width}px)`, async ({
+    page,
+  }) => {
+    test.skip(
+      process.env.VE_TEST_SCHEMA !== "1" ||
+        process.env.VE_DEMO_MEDIA_UPLOAD === "1",
+      "Requires the demo upload fixture",
+    );
+    await page.setViewportSize({ width, height: 850 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    const { createShopEditor } = await import("./testing/editor-fixtures");
+    const { doc } = await createShopEditor(page);
+    const original = doc.layout[0].image?.id ?? doc.layout[0].image;
+    const { docs } = await (
+      await page.request.get("/api/media?depth=0")
+    ).json();
+    const replacement = docs.find(
+      (asset: { id: string | number }) => String(asset.id) !== String(original),
+    );
+    expect(replacement).toBeTruthy();
+    let upload: Route | undefined;
+    await page.route("**/api/media", async (route) => {
+      if (route.request().method() === "POST") upload = route;
+      else await route.fallback();
+    });
+    const image = page
+      .locator("main > [data-ve-block]")
+      .first()
+      .locator('[data-ve-field="image"]');
+    const option = page.getByRole("button", { name: replacement.filename });
+    const openMedia = async () => {
+      const select = page.getByRole("button", {
+        name: "Select content",
+        exact: true,
+      });
+      await expect(select).toBeVisible();
+      if ((await select.getAttribute("aria-pressed")) !== "true")
+        await select.click();
+      await image.click();
+      await expect(
+        page.getByLabel("Search media", { exact: true }),
+      ).toBeVisible();
+    };
+    await openMedia();
+    await page.getByLabel("Upload media", { exact: true }).setInputFiles({
+      name: "deferred.png",
+      mimeType: "image/png",
+      buffer: Buffer.from("synthetic upload"),
+    });
+    await expect.poll(() => Boolean(upload)).toBe(true);
+    await expect(
+      page.getByRole("progressbar", { name: "Upload progress" }),
+    ).toBeVisible();
+    await option.press("Enter");
+    await expect(
+      page.getByRole("progressbar", { name: "Upload progress" }),
+    ).toHaveCount(0);
+
+    const savedImage = async () =>
+      String(
+        (
+          await (
+            await page.request.get(`/api/shops/${doc.id}?draft=true&depth=0`)
+          ).json()
+        ).layout[0].image,
+      );
+    await expect.poll(savedImage).toBe(String(replacement.id));
+    const lateResponse = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === "/api/media" &&
+        response.request().method() === "POST",
+    );
+    await upload!.fulfill({
+      status,
+      json: { doc: { id: original, filename: "deferred.png" } },
+    });
+    expect((await lateResponse).status()).toBe(status);
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) => {
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+        }),
+    );
+    await expect(option).toHaveAttribute("aria-pressed", "true");
+    await expect(
+      page.getByRole("button", { name: "Retry upload" }),
+    ).toHaveCount(0);
+    await page.reload();
+    await openMedia();
+    await expect(option).toHaveAttribute("aria-pressed", "true");
+    expect(await savedImage()).toBe(String(replacement.id));
+  });
+}
 
 test("lifecycle observers correlate failed and retried saves without leaking content or breaking review", async ({
   page,
