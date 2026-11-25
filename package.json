@@ -18,6 +18,7 @@
     "test:e2e:prod": "VE_PRODUCTION=1 pnpm test:e2e",
     "dev:setup": "pnpm build && pnpm dev:generate-importmap && pnpm dev",
     "dev": "node apps/demo/start-server.mjs",
+    "dev:watch": "node apps/demo/start-server.mjs --watch",
     "dev:generate-importmap": "pnpm --filter @payload-inplace/demo generate:importmap",
     "pack:check": "node scripts/check-package.mjs",
     "test:consumer": "node scripts/check-consumer.mjs",

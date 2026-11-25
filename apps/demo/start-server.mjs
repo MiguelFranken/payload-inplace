@@ -5,11 +5,15 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { randomBytes } from "node:crypto";
-import { setTimeout as delay } from "node:timers/promises";
 import { assertDemoPostgresUrl } from "./postgres-url.mjs";
 
 const port = process.env.VE_PORT || "3127";
 const postgres = process.env.VE_DATABASE === "postgres";
+const production = process.env.VE_PRODUCTION === "1";
+const watching = process.argv.includes("--watch");
+
+if (watching && production)
+  throw Error("Watch mode requires the development demo");
 
 if (postgres) assertDemoPostgresUrl(process.env.DATABASE_URL);
 
@@ -17,7 +21,7 @@ let ownedMedia;
 let ownedDatabase;
 let runState;
 let database;
-let child;
+const children = new Map();
 let interrupted;
 const processGroups = process.platform !== "win32";
 
@@ -29,10 +33,26 @@ function signalChild(pid, signal) {
   }
 }
 
+async function stopChildren(signal) {
+  const active = [...children];
+  for (const [pid] of active) signalChild(pid, signal);
+  const timeout = setTimeout(() => {
+    for (const [pid] of active)
+      if (children.has(pid)) signalChild(pid, "SIGKILL");
+  }, 5000);
+  timeout.unref();
+  try {
+    await Promise.allSettled(active.map(([, exited]) => exited));
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 for (const signal of ["SIGINT", "SIGTERM"]) {
   process.on(signal, () => {
-    interrupted ??= signal;
-    if (child?.pid) signalChild(child.pid, signal);
+    if (interrupted) return;
+    interrupted = signal;
+    void stopChildren(signal);
   });
 }
 
@@ -43,35 +63,18 @@ async function run(executable, args, env) {
     env,
     stdio: "inherit",
   });
-  child = processHandle;
   const pid = processHandle.pid;
-  const cleanupController = new AbortController();
-  const escalate = () => {
-    if (!pid) return;
-    void delay(5000, undefined, {
-      signal: cleanupController.signal,
-      ref: false,
-    })
-      .then(() => signalChild(pid, "SIGKILL"))
-      .catch((error) => {
-        if (error.name !== "AbortError") throw error;
-      });
-  };
-  process.once("SIGINT", escalate);
-  process.once("SIGTERM", escalate);
-
+  const exited = new Promise((resolve, reject) => {
+    processHandle.once("error", reject);
+    processHandle.once("exit", resolve);
+  });
+  if (pid) children.set(pid, exited);
   try {
-    const code = await new Promise((resolve, reject) => {
-      processHandle.once("error", reject);
-      processHandle.once("exit", resolve);
-    });
+    const code = await exited;
     if (code !== 0 && !interrupted)
       throw Error(`${args.join(" ")} exited with code ${code}`);
   } finally {
-    process.removeListener("SIGINT", escalate);
-    process.removeListener("SIGTERM", escalate);
-    cleanupController.abort();
-    child = undefined;
+    children.delete(pid);
     // Wrappers (pnpm, Next) can exit before their workers.
     if (pid && processGroups) signalChild(pid, "SIGKILL");
   }
@@ -122,6 +125,7 @@ try {
 
     const next = fileURLToPath(import.meta.resolve("next/dist/bin/next"));
     const address = ["--hostname", "127.0.0.1", "--port", port];
+    if (watching) await run("corepack", ["pnpm", "build"], env);
     await run("corepack", ["pnpm", "build:demo:css"], env);
     await run(
       process.execPath,
@@ -131,7 +135,7 @@ try {
       ],
       { ...env, VE_SEED: "1" },
     );
-    if (process.env.VE_PRODUCTION === "1") {
+    if (production) {
       await run(
         process.execPath,
         [next, "build", "apps/demo", "--turbopack"],
@@ -143,7 +147,7 @@ try {
         env,
       );
     } else {
-      await run(
+      const server = run(
         process.execPath,
         [
           next,
@@ -155,10 +159,19 @@ try {
         ],
         env,
       );
+      if (watching) {
+        const watcher = run(
+          process.execPath,
+          ["apps/demo/watch-sources.mjs"],
+          env,
+        );
+        await Promise.race([server, watcher]);
+      } else await server;
     }
   }
 } finally {
   try {
+    await stopChildren(interrupted || "SIGTERM");
     await database?.stop();
   } finally {
     if (ownedDatabase)
