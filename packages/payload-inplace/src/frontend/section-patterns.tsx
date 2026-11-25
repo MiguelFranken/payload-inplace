@@ -49,6 +49,7 @@ export function SectionPatterns({
     input: Record<string, unknown>,
     signal: AbortSignal,
   ): Promise<T> {
+    const data = form.getData();
     const response = await fetch(
       `${config.routes.api}/visual-editor/patterns`,
       {
@@ -57,8 +58,8 @@ export function SectionPatterns({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...input,
-          proof: form.getData()._veActivation,
-          expectedRevision: form.getData()._veRevision,
+          proof: data._veActivation,
+          expectedRevision: data._veRevision ?? data.updatedAt,
         }),
       },
     );
