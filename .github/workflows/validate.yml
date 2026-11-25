@@ -47,15 +47,32 @@ jobs:
       - run: corepack enable
       - run: corepack pnpm install --frozen-lockfile
       - run: corepack pnpm build
+      - run: node --test tests/tooling/demo-*.test.mjs
       - run: corepack pnpm test:int
       - run: corepack pnpm --filter @payload-inplace/acceptance exec playwright install --with-deps chromium firefox webkit
       - name: Validate review and toolbar without transactional revision metadata
+        timeout-minutes: 6
         env:
           VE_BROWSER_ARTIFACTS: mongo
           VE_PORT: 3139
           VE_NEXT_DIST_DIR: .next-mongo
           VE_PRODUCTION: "1"
-        run: corepack pnpm test:e2e tests/browser/acceptance.e2e.spec.ts --grep 'media selection persists'
+        run: |
+          TMPDIR=$(mktemp -d "$RUNNER_TEMP/pve-mongo.XXXXXX")
+          trap 'rm -rf -- "$TMPDIR"' EXIT
+          export TMPDIR VE_RUN_ID=mongo-ci VE_RUN_STATE="$TMPDIR/launcher.json"
+          corepack pnpm test:e2e tests/browser/acceptance.e2e.spec.ts --grep 'media selection persists'
+
+          shopt -s nullglob
+          leftovers=("$TMPDIR"/payload-ve-media-* "$TMPDIR"/payload-ve-mongo-*)
+          if [[ -e "$VE_RUN_STATE" || ${#leftovers[@]} -ne 0 ]]; then
+            printf 'Demo launcher did not clean up its run state or temporary resources in %s\n' "$TMPDIR" >&2
+            exit 1
+          fi
+          if ( : > /dev/tcp/127.0.0.1/"$VE_PORT" ) 2>/dev/null; then
+            printf 'Demo server is still listening on port %s\n' "$VE_PORT" >&2
+            exit 1
+          fi
       - name: Verify inline editing in Chromium, Firefox and WebKit
         env:
           VE_BROWSER_ARTIFACTS: inline-engines

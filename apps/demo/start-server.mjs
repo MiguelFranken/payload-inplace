@@ -14,6 +14,7 @@ const postgres = process.env.VE_DATABASE === "postgres";
 if (postgres) assertDemoPostgresUrl(process.env.DATABASE_URL);
 
 let ownedMedia;
+let ownedDatabase;
 let runState;
 let database;
 let child;
@@ -85,8 +86,16 @@ try {
   fs.mkdirSync(mediaDirectory, { recursive: true });
 
   if (!postgres) {
+    // Keep the path even if Mongo fails before it records its instance info.
+    ownedDatabase = fs.mkdtempSync(path.join(os.tmpdir(), "payload-ve-mongo-"));
     database = new MongoMemoryReplSet({
-      replSet: { count: 1, dbName: `visual_editor_${process.pid}` },
+      instanceOpts: [{ dbPath: ownedDatabase }],
+      replSet: {
+        count: 1,
+        dbName: `visual_editor_${process.pid}`,
+        // The launcher owns Mongo shutdown even when Playwright signals its group.
+        spawn: { detached: processGroups },
+      },
     });
     await database.start();
     await database.waitUntilRunning();
@@ -152,6 +161,8 @@ try {
   try {
     await database?.stop();
   } finally {
+    if (ownedDatabase)
+      fs.rmSync(ownedDatabase, { recursive: true, force: true });
     if (ownedMedia) fs.rmSync(ownedMedia, { recursive: true, force: true });
     if (runState) fs.rmSync(runState, { force: true });
   }
