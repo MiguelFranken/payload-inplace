@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.2.3
+
+### Patch Changes
+
+- 601481e: Resolve nested sections by their ordered ancestor IDs, including IDs containing slashes.
+- b4affd5: Show the current position of moved sections and the original position of removed sections in document review.
+- 7fbda4d: Clear stale populated relationship data from the active preview when the collection or reference ID changes.
+- 4349024: Normalize empty native row lists in the active preview without mutating the baseline document.
+- 02f06fa: Resolve structural commands and insertion anchors through native Payload row lists so JSON and populated relationships cannot interfere with section identities.
+- 895d7b5: Show insertion previews for the first section in optional blocks lists that have no stored value yet.
+- 2469e29: Use the saved draft timestamp when copying a section pattern without a concurrency adapter.
+- 7de6353: Use the activated content locale when listing, reading, and saving section patterns.
+- 86a16c3: Offer a retry for failed pattern pages, keep previously loaded patterns, and omit duplicate entries.
+- 36256db: Cancel pending pattern operations when closing the section picker or switching back to ordinary sections.
+- d8b9b7b: Enforce nested block row limits in section catalogue previews, with a 100-row default when the schema sets no limit.
+- fceabc6: Keep the last selected media reference when an earlier upload completes or fails.
+- 88d0c83: Support nested, root, and trailing-slash Payload REST mounts in the native media library.
+- 3b60f46: Infer editor text direction from the locale's writing system and continue to honor explicit direction overrides.
+- af91c5b: Preserve missing and explicitly empty named tabs when saving and inserting section patterns.
+
 ## 0.2.2
 
 ### Patch Changes
