@@ -11,6 +11,7 @@ const base = "payload-inplace/src/";
 const entries = {
   registration: `${base}launcher/DeferredLauncher.js`,
   active: `${base}frontend/FrontendShell.js`,
+  comparison: `${base}frontend/SectionComparisonPanel.js`,
   catalogue: `${base}frontend/SectionCatalogue.js`,
   review: `${base}admin/DocumentReview.js`,
   versions: `${base}frontend/VersionBrowser.js`,
@@ -57,11 +58,6 @@ function closure(entry) {
 
 const active = closure(entries.active);
 
-if (active.files.has(`${base}frontend/SectionComparisonPanel.js`))
-  throw Error(
-    "Optional comparison UI eagerly enters the active static closure",
-  );
-
 const observations = {};
 
 for (const [name, entry] of Object.entries(entries)) {
@@ -80,6 +76,9 @@ for (const [name, entry] of Object.entries(entries)) {
     gzip: gzipSync(code, { level: 9 }).length,
     brotli: brotliCompressSync(code).length,
     modules: files.length,
+    ...(name === "comparison"
+      ? { modulePaths: files.map(([file]) => file) }
+      : {}),
     sha256: createHash("sha256").update(code).digest("hex"),
     excludedImports: [...graph.peers].sort(),
   };
@@ -122,26 +121,26 @@ function assertFeatureBudgets(sizes, ceilings) {
 
 assertFeatureBudgets(observations, limits);
 
-let rejected = false;
-
-try {
-  assertFeatureBudgets(
-    {
-      ...observations,
-      active: { ...observations.active, gzip: limits.active.gzip + 1 },
-    },
-    limits,
-  );
-} catch {
-  rejected = true;
+for (const name of ["active", "comparison"]) {
+  const regression = {
+    ...observations,
+    [name]: { ...observations[name], gzip: limits[name].gzip + 1 },
+  };
+  try {
+    assertFeatureBudgets(regression, limits);
+  } catch (error) {
+    if (error.message === `${name} gzip exceeds measured feature budget`)
+      continue;
+    throw error;
+  }
+  throw Error(`Feature regression negative control failed for ${name}`);
 }
-if (!rejected) throw Error("Feature regression negative control failed");
 
 fs.mkdirSync("test-results", { recursive: true });
 
 fs.writeFileSync(
   "test-results/feature-budgets.json",
-  JSON.stringify({ observations, negativeControl: rejected }, null, 2) + "\n",
+  JSON.stringify({ observations, negativeControl: true }, null, 2) + "\n",
 );
 
 console.log(

@@ -72,7 +72,7 @@ export default async function TranslationPage({
         ))}
       </nav>
       <div lang={locale}>
-        <RenderPage document={document} root="layout" />
+        <RenderPage document={{ ...document }} root="layout" />
       </div>
       {req && (
         <EditorLauncher
