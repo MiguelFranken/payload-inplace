@@ -27,8 +27,13 @@ it.each([
     } satisfies Field;
     const fields = [
       tabs,
-      { type: "array", name: "items", admin: {}, fields: [tabs] },
-    ] satisfies Field[];
+      {
+        type: "array",
+        name: "items",
+        admin: { initCollapsed: false, isSortable: true },
+        fields: [tabs],
+      },
+    ] satisfies ClientField[];
     const values = [
       {},
       { details: {} },
