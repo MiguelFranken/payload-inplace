@@ -60,13 +60,21 @@ export function SectionCatalogueView({
   previewEnabled?: boolean;
 }) {
   const { t } = useEditorMessages(undefined, locale);
+  const [query, setQuery] = useState("");
   const container = useChromePortal();
   const itemFor = (id: string) => items.find((item) => item.id === id);
   const itemLabel = (id: string) => itemFor(id)?.label || id;
+  const changeMode = (next: CatalogueMode) => {
+    if (next === mode) return;
+    setQuery("");
+    onModeChange?.(next);
+  };
   return (
     <Combobox.Root<string>
       items={items.map((item) => item.id)}
       value={null}
+      inputValue={query}
+      onInputValueChange={setQuery}
       open={open}
       onOpenChange={(next, details) => {
         if (!next && details.reason === "item-press" && mode === "patterns")
@@ -127,7 +135,7 @@ export function SectionCatalogueView({
                   size="sm"
                   aria-pressed={mode === "sections"}
                   variant={mode === "sections" ? "outline" : "ghost"}
-                  onClick={() => onModeChange("sections")}
+                  onClick={() => changeMode("sections")}
                 >
                   {t("sectionsLibrary")}
                 </Button>
@@ -135,7 +143,7 @@ export function SectionCatalogueView({
                   size="sm"
                   aria-pressed={mode === "patterns"}
                   variant={mode === "patterns" ? "outline" : "ghost"}
-                  onClick={() => onModeChange("patterns")}
+                  onClick={() => changeMode("patterns")}
                 >
                   {t("patternsLibrary")}
                 </Button>
