@@ -5,7 +5,9 @@ import {
   documentChanges,
   presentDocumentChange,
 } from "../../src/state/document-diff";
-import type { ClientField } from "payload";
+import type { BlocksFieldClientProps, ClientField } from "payload";
+import { locateVersionChange } from "../../src/frontend/controllers/version-location";
+import { collectSections } from "../../src/schema/tree";
 
 const fields = [
   {
@@ -170,6 +172,61 @@ it("preserves common ranks through large shifts and emits changed rows in docume
     ["rows.@21.$position", 22, 21],
     ["rows.@20.$position", 21, 22],
   ]);
+});
+
+it("labels surviving rows by destination and removed rows by source while Locate uses stable IDs", () => {
+  const first = rows[0]!;
+  const moved = { ...rows[1]!, id: "moved./" };
+  const removed = { id: "removed", blockType: "text" };
+  const saved = { layout: [{ ...moved, heading: "Edited" }, first] };
+  const changes = documentChanges(
+    { layout: [first, moved, removed] },
+    saved,
+    fields,
+    {},
+    "ar-EG",
+  );
+
+  expect(changes).toMatchObject([
+    {
+      path: "layout.@moved%2E%2F.$position",
+      labels: ["Layout", "Text section ١"],
+      kind: "moved",
+    },
+    {
+      path: "layout.@moved%2E%2F.heading",
+      labels: ["Layout", "Text section ١", "Heading"],
+      kind: "changed",
+    },
+    {
+      path: "layout.@a.$position",
+      labels: ["Layout", "Text section ٢"],
+      kind: "moved",
+    },
+    {
+      path: "layout.@removed",
+      labels: ["Layout", "Text section ٣"],
+      kind: "removed",
+    },
+  ]);
+
+  const working = { layout: [first, saved.layout[0]] };
+  const sections = collectSections({
+    field: fields[0] as BlocksFieldClientProps["field"],
+    data: working.layout,
+    root: "layout",
+  });
+  for (const change of changes.slice(0, 2)) {
+    expect(
+      locateVersionChange(
+        change.path,
+        working,
+        sections,
+        (section) =>
+          section.identity.blockId === moved.id && section.index === 1,
+      ),
+    ).toBe(true);
+  }
 });
 
 it("keeps ambiguous row identities atomic instead of matching an arbitrary row", () => {

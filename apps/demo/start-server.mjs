@@ -5,6 +5,10 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { randomBytes } from "node:crypto";
+import { assertDemoPostgresUrl } from "./postgres-url.mjs";
+
+const postgres = process.env.VE_DATABASE === "postgres";
+if (postgres) assertDemoPostgresUrl(process.env.DATABASE_URL);
 
 const temporaryMedia = !process.env.VE_MEDIA_DIR;
 
@@ -15,11 +19,6 @@ const mediaDirectory = temporaryMedia
 fs.mkdirSync(mediaDirectory, { recursive: true });
 
 const port = process.env.VE_PORT || "3127";
-
-const postgres = process.env.VE_DATABASE === "postgres";
-
-if (postgres && !process.env.DATABASE_URL?.includes("/visual_editor"))
-  throw Error("Provide an isolated visual_editor Postgres database");
 
 const database = postgres
   ? null
