@@ -18,6 +18,7 @@ import {
 } from "./render-data";
 
 import { money } from "./money";
+import { commercePath } from "./paths";
 
 type Identity = { root: string; blockId: string };
 
@@ -417,6 +418,9 @@ export function CommercePageView({
                   const product = resolveProduct
                     ? resolveProduct(card.product)
                     : populated(card.product);
+                  const productURL = product?.slug?.trim()
+                    ? commercePath("products", product.slug.trim())
+                    : undefined;
                   const details = product?.presentation?.layout?.find(
                     (row) => row.blockType === "productDetails",
                   );
@@ -457,26 +461,39 @@ export function CommercePageView({
                       >
                         {card.description}
                       </p>
-                      <div className="demo:mt-2 demo:flex demo:items-center demo:gap-1">
-                        <span
-                          {...field(identity, cardPath("linkLabel"))}
-                          className="demo:text-sm"
-                        >
-                          {card.linkLabel}
-                        </span>
-                        <a
-                          {...field(identity, cardPath("product"), "panel")}
-                          href={
-                            product?.slug
-                              ? `/products/${encodeURIComponent(product.slug)}`
-                              : undefined
-                          }
-                          aria-label={`Open ${card.heading || product?.title || "product"}`}
-                          className="demo:inline-flex demo:size-10 demo:items-center demo:justify-center demo:rounded-full demo:text-ink demo:hover:bg-soft demo:focus-visible:outline-2 demo:focus-visible:outline-offset-2 demo:focus-visible:outline-accent"
-                        >
-                          <ArrowRight size={18} aria-hidden="true" />
-                        </a>
-                      </div>
+                      {productURL ? (
+                        <div className="demo:mt-2 demo:flex demo:items-center demo:gap-1">
+                          <span
+                            {...field(identity, cardPath("linkLabel"))}
+                            className="demo:text-sm"
+                          >
+                            {card.linkLabel}
+                          </span>
+                          <a
+                            {...field(identity, cardPath("product"), "panel")}
+                            href={productURL}
+                            aria-label={`Open ${card.heading || product?.title || "product"}`}
+                            className="demo:inline-flex demo:size-11 demo:items-center demo:justify-center demo:rounded-full demo:text-ink demo:hover:bg-soft demo:focus-visible:outline-2 demo:focus-visible:outline-offset-2 demo:focus-visible:outline-accent"
+                          >
+                            <ArrowRight size={18} aria-hidden="true" />
+                          </a>
+                        </div>
+                      ) : (
+                        <div className="demo:mt-2 demo:flex demo:flex-wrap demo:items-center demo:gap-x-3">
+                          <p className="demo:m-0 demo:text-sm demo:text-muted">
+                            Product unavailable
+                          </p>
+                          {active && (
+                            <button
+                              type="button"
+                              {...field(identity, cardPath("product"), "panel")}
+                              className="demo:min-h-11 demo:cursor-pointer demo:border-0 demo:bg-transparent demo:p-0 demo:text-sm demo:font-medium demo:text-ink demo:underline demo:underline-offset-4 demo:focus-visible:outline-2 demo:focus-visible:outline-offset-2 demo:focus-visible:outline-accent"
+                            >
+                              Choose a product
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </article>
                   );
                 })}
