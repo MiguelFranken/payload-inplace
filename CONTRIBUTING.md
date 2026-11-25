@@ -43,6 +43,15 @@ dependency, and test directories from the project tree and file search.
 TypeScript can still return declaration files in Go to Implementation results.
 Use Go to Definition for a direct jump from a demo import to its source.
 
+## Watch editor and demo sources
+
+After installing dependencies, run `corepack pnpm dev:watch` from the repository
+root. The launcher builds the package and compiles the demo styles before
+starting Turbopack. It rebuilds the workspace package when its source changes
+and regenerates demo styles when demo sources or Tailwind inputs change. The app
+continues to use the built package exports. Stop the command to stop the server,
+build watchers, and disposable Mongo database.
+
 ## Review editor UI in Storybook
 
 Run `corepack pnpm storybook` and open [Storybook](http://localhost:6006).
