@@ -4,6 +4,168 @@ import path from "node:path";
 import { test, expect, type Request, type Response } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
+test("native collection restore keeps the reviewed locale and restores the whole draft", async ({
+  page,
+}) => {
+  test.skip(
+    process.env.VE_DATABASE !== "postgres",
+    "Requires guarded native restore",
+  );
+  test.slow();
+  const loginResponse = await page.request.post("/api/users/login", {
+    data: { email: "admin@example.test", password: "synthetic-demo-password" },
+  });
+  expect(loginResponse.ok()).toBeTruthy();
+  const path = "/api/localizedPages";
+  const localized = (locale: "de" | "en", draft: boolean) =>
+    `locale=${locale}&fallback-locale=null&depth=0&draft=${draft}`;
+  const created = await page.request.post(`${path}?${localized("en", true)}`, {
+    data: {
+      title: "Published English title",
+      slug: `restore-locale-${Date.now()}`,
+      layout: [
+        {
+          blockType: "localeStory",
+          heading: "English heading",
+          caption: "English fallback caption",
+        },
+      ],
+      _status: "draft",
+    },
+  });
+  expect(created.ok(), await created.text()).toBeTruthy();
+  let draft = (await created.json()).doc;
+  const id = draft.id;
+  const docURL = `${path}/${id}`;
+  async function read(locale: "de" | "en", isDraft: boolean) {
+    const response = await page.request.get(
+      `${docURL}?${localized(locale, isDraft)}`,
+    );
+    expect(response.ok(), await response.text()).toBeTruthy();
+    return response.json();
+  }
+  async function save(locale: "de" | "en", title: string, caption?: string) {
+    const current = await read(locale, true);
+    const response = await page.request.patch(
+      `${docURL}?${localized(locale, true)}`,
+      {
+        data: {
+          title,
+          _veRevision: current._veRevision,
+          ...(caption === undefined
+            ? {}
+            : { layout: [{ ...current.layout[0], caption }] }),
+        },
+      },
+    );
+    expect(response.ok(), await response.text()).toBeTruthy();
+    draft = (await response.json()).doc;
+  }
+  await save("de", "Veröffentlichter deutscher Titel");
+  const origin = new URL(loginResponse.url()).origin;
+  const review = await page.request.post(
+    `/api/visual-editor/review?${localized("de", true)}`,
+    {
+      headers: { Origin: origin },
+      data: {
+        target: { collection: "localizedPages", id, root: "layout" },
+        candidate: draft,
+      },
+    },
+  );
+  expect(review.ok(), await review.text()).toBeTruthy();
+  const publication = await page.request.patch(
+    `${docURL}?${localized("de", false)}`,
+    {
+      data: {
+        ...draft,
+        _status: "published",
+        _veReviewToken: (await review.json()).token,
+      },
+    },
+  );
+  expect(publication.ok(), await publication.text()).toBeTruthy();
+  const liveEN = await read("en", false);
+  const liveDE = await read("de", false);
+  expect(liveEN.title).toBe("Published English title");
+  expect(liveDE.title).toBe("Veröffentlichter deutscher Titel");
+
+  await save("en", "Historical English title");
+  await save("de", "Historischer deutscher Titel");
+  expect(draft.layout[0].caption ?? null).toBeNull();
+  const versions = await page.request.get(
+    `${path}/versions?where[parent][equals]=${id}&sort=-updatedAt&limit=1&${localized("de", true)}`,
+  );
+  expect(versions.ok(), await versions.text()).toBeTruthy();
+  const [selected] = (await versions.json()).docs;
+  expect(selected.version.title).toBe("Historischer deutscher Titel");
+  await save("en", "Latest English title", "Latest English caption");
+  await save(
+    "de",
+    "Aktueller deutscher Titel",
+    "Aktueller deutscher Untertitel",
+  );
+  const latestRevision = draft._veRevision;
+
+  const adminDoc = `/admin/collections/localizedPages/${id}`;
+  await page.goto(`${adminDoc}/versions/${selected.id}?locale=de`);
+  await expect(
+    page.getByRole("heading", { name: "Restore version", exact: true }),
+  ).toBeVisible();
+  const scope = page.getByText(
+    "This comparison shows de. Restoring replaces the draft in all content locales (en and de).",
+  );
+  await expect(scope).toBeVisible();
+  await page.setViewportSize({ width: 320, height: 840 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(scope).toBeVisible();
+  const title = page.locator('[data-ve-diff-path="title"]');
+  await expect(title).toContainText("Aktueller deutscher Titel");
+  await expect(title).toContainText("Historischer deutscher Titel");
+  const caption = page.locator('[data-ve-diff-path$=".caption"]');
+  await expect(caption).toContainText("Aktueller deutscher Untertitel");
+  await expect(caption).toContainText("Empty");
+  await expect(
+    page.getByText("English fallback caption", { exact: true }),
+  ).toHaveCount(0);
+
+  const restoredResponse = page.waitForResponse(
+    (response) =>
+      response.request().method() === "POST" &&
+      new URL(response.url()).pathname === `${path}/versions/${selected.id}`,
+  );
+  await page
+    .getByRole("button", { name: "Restore as draft", exact: true })
+    .press("Enter");
+  const restored = await restoredResponse;
+  expect(restored.ok()).toBeTruthy();
+  const requestQuery = new URL(restored.url()).searchParams;
+  expect(requestQuery.get("locale")).toBe("de");
+  expect(requestQuery.get("fallback-locale")).toBe("null");
+  expect(requestQuery.get("draft")).toBe("true");
+  await expect(page).toHaveURL(`${adminDoc}?locale=de`);
+  await expect(
+    page.getByRole("textbox", { name: /^Title/ }).first(),
+  ).toHaveValue("Historischer deutscher Titel");
+
+  const draftEN = await read("en", true);
+  const draftDE = await read("de", true);
+  expect(draftEN).toMatchObject({
+    title: "Historical English title",
+    _veRevision: latestRevision + 1,
+    _status: "draft",
+  });
+  expect(draftEN.layout[0].caption).toBe("English fallback caption");
+  expect(draftDE).toMatchObject({
+    title: "Historischer deutscher Titel",
+    _veRevision: latestRevision + 1,
+    _status: "draft",
+  });
+  expect(draftDE.layout[0].caption ?? null).toBeNull();
+  expect(await read("en", false)).toEqual(liveEN);
+  expect(await read("de", false)).toEqual(liveDE);
+});
+
 async function login(page: any, role = "admin") {
   await page.goto("/visual-editor/start?collection=pages&slug=demo");
   await page.waitForLoadState("networkidle");

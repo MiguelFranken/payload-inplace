@@ -1,5 +1,5 @@
 import { createEditorMessages } from "@payload-inplace/ui/localization/messages";
-import type { DocumentViewServerProps } from "payload";
+import type { DocumentViewServerProps, TypedLocale } from "payload";
 import { GuardedRestore } from "./NativeGuardedRestore";
 
 /** Keep the native restore endpoint while explicitly reviewing the current and historical revision. */
@@ -9,7 +9,7 @@ export async function GuardedVersionView({
 }: DocumentViewServerProps) {
   const { t } = createEditorMessages({}, initPageResult.req.i18n.language);
 
-  const { collectionConfig, globalConfig, docID, req } = initPageResult;
+  const { collectionConfig, globalConfig, docID, locale, req } = initPageResult;
   if (globalConfig) {
     const selected = routeSegments.at(-1);
     if (!selected) return <p>{t("versionUnavailable")}</p>;
@@ -46,30 +46,39 @@ export async function GuardedVersionView({
       />
     );
   }
-  if (!collectionConfig || docID === undefined)
+  const selected = routeSegments.at(-1);
+  if (!collectionConfig || docID === undefined || !selected)
     return <p>{t("versionUnavailable")}</p>;
+  const localization = req.payload.config.localization;
+  const reviewedLocale =
+    locale?.code ?? (localization ? localization.defaultLocale : undefined);
+  const readOptions = {
+    depth: 0,
+    fallbackLocale: false as const,
+    locale: reviewedLocale as TypedLocale | undefined,
+    overrideAccess: false,
+    req,
+    user: req.user,
+  };
   const result = await req.payload.findVersions({
     collection: collectionConfig.slug as any,
-    where: { id: { equals: routeSegments.at(-1) } },
+    where: {
+      and: [{ parent: { equals: docID } }, { id: { equals: selected } }],
+    },
     limit: 1,
-    depth: 0,
-    req,
-    overrideAccess: false,
+    ...readOptions,
   });
   const version = result.docs[0];
-  const parent: any = version?.parent;
-  if (
-    !version ||
-    String(typeof parent === "object" ? parent.id : parent) !== String(docID)
-  )
+  const parent: unknown = version?.parent;
+  const parentID =
+    parent && typeof parent === "object" && "id" in parent ? parent.id : parent;
+  if (!version || String(parentID) !== String(docID))
     return <p>{t("versionUnavailable")}</p>;
   const current: any = await req.payload.findByID({
     collection: collectionConfig.slug as any,
     id: docID,
     draft: true,
-    depth: 0,
-    req,
-    overrideAccess: false,
+    ...readOptions,
   });
   return (
     <GuardedRestore
@@ -79,6 +88,8 @@ export async function GuardedVersionView({
       revision={current._veRevision ?? 0}
       current={current}
       historical={version.version}
+      reviewedLocale={reviewedLocale}
+      restoreLocales={localization ? localization.localeCodes : undefined}
     />
   );
 }
