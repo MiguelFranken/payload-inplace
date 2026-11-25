@@ -5,12 +5,18 @@ export async function createShopEditor(
   page: Page,
   {
     emptyCards = false,
+    cards,
     role = "admin",
     richBody,
     richText = "Made with care. Built to last.",
     sourceText,
   }: {
     emptyCards?: boolean;
+    cards?: {
+      product: string | number;
+      heading?: string;
+      priceCaption?: string;
+    }[];
     role?: "admin" | "editor";
     richBody?: unknown;
     richText?: string;
@@ -78,8 +84,9 @@ export async function createShopEditor(
       ],
     },
   };
-  if (emptyCards)
-    layout.find((block: any) => block.blockType === "productGrid").cards = [];
+  if (emptyCards || cards)
+    layout.find((block: any) => block.blockType === "productGrid").cards =
+      cards ?? [];
   const created = await page.request.post("/api/shops", {
     data: {
       title: "Roadmap acceptance",

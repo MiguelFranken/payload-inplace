@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { money } from "./money";
 
 const action = (label: string, href: string) => ({ label, href });
 
@@ -74,13 +75,7 @@ export function completeCommerceDocument(
               ? { heading: detail?.heading || product.title }
               : {}),
             description: "Natural oak · Two upholstery finishes",
-            priceCaption: detail?.pricing
-              ? new Intl.NumberFormat("en-IE", {
-                  style: "currency",
-                  currency: detail.pricing.currency || "EUR",
-                  maximumFractionDigits: 0,
-                }).format(detail.pricing.amount)
-              : undefined,
+            priceCaption: detail?.pricing ? money(detail.pricing) : undefined,
             image: detail?.image || null,
             linkLabel: "View product",
           };

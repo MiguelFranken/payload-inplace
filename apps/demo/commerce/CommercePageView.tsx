@@ -13,10 +13,11 @@ import {
   populated,
   type CommerceBlock,
   type MediaRelationship,
-  type ProductDetails,
   type ProductDocument,
   type ProductRelationship,
 } from "./render-data";
+
+import { money } from "./money";
 
 type Identity = { root: string; blockId: string };
 
@@ -595,15 +596,6 @@ export function CommercePageView({
       })}
     </main>
   );
-}
-
-function money(pricing: ProductDetails["pricing"] | undefined) {
-  if (typeof pricing?.amount !== "number") return "";
-  return new Intl.NumberFormat("en-IE", {
-    style: "currency",
-    currency: pricing.currency || "EUR",
-    maximumFractionDigits: 0,
-  }).format(pricing.amount);
 }
 
 function tone(value?: string | null) {
