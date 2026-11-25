@@ -9,6 +9,15 @@ import {
   getFieldGroupAttributes,
 } from "payload-inplace/bindings";
 
+import {
+  populated,
+  type CommerceBlock,
+  type MediaRelationship,
+  type ProductDetails,
+  type ProductDocument,
+  type ProductRelationship,
+} from "./render-data";
+
 type Identity = { root: string; blockId: string };
 
 const sectionClass =
@@ -25,36 +34,39 @@ const linkClass =
 
 /** A consumer-owned ecommerce renderer shared by public RSC and the active optimistic preview. Bindings select native schema fields; they never grant writes to related documents. */
 export function CommercePageView({
-  document,
+  blocks,
   root,
   active = false,
   renderImage,
   resolveProduct,
 }: {
-  document: any;
+  blocks: readonly CommerceBlock[];
   root: string;
   active?: boolean;
-  renderImage?: (image: any) => ReactNode;
-  resolveProduct?: (product: any) => any;
+  renderImage?: (image: MediaRelationship) => ReactNode;
+  resolveProduct?: (
+    product: ProductRelationship,
+  ) => ProductDocument | undefined;
 }) {
-  const blocks =
-    root.split(".").reduce((value, key) => value?.[key], document) || [];
-  const photo = (image: any, className = "") => (
-    <div
-      className={`demo:overflow-hidden demo:bg-photo demo:outline demo:outline-1 demo:-outline-offset-1 demo:outline-black/10 demo:[&_img]:block demo:[&_img]:h-full demo:[&_img]:w-full demo:[&_img]:object-cover ${className}`}
-    >
-      {renderImage ? (
-        renderImage(image)
-      ) : image?.url ? (
-        <img
-          src={image.sizes?.card?.url || image.url}
-          alt={image.alt || ""}
-          width={image.sizes?.card?.width || image.width || 1200}
-          height={image.sizes?.card?.height || image.height || 900}
-        />
-      ) : null}
-    </div>
-  );
+  const photo = (relationship: MediaRelationship, className = "") => {
+    const image = populated(relationship);
+    return (
+      <div
+        className={`demo:overflow-hidden demo:bg-photo demo:outline demo:outline-1 demo:-outline-offset-1 demo:outline-black/10 demo:[&_img]:block demo:[&_img]:h-full demo:[&_img]:w-full demo:[&_img]:object-cover ${className}`}
+      >
+        {renderImage ? (
+          renderImage(relationship)
+        ) : image?.url ? (
+          <img
+            src={image.sizes?.card?.url || image.url}
+            alt={image.alt || ""}
+            width={image.sizes?.card?.width || image.width || 1200}
+            height={image.sizes?.card?.height || image.height || 900}
+          />
+        ) : null}
+      </div>
+    );
+  };
   const list = (identity: Identity, name: string) =>
     active
       ? { ...getBlockAttributes(identity, true), "data-ve-list": name }
@@ -70,13 +82,13 @@ export function CommercePageView({
       id="main-content"
       className="demo:pb-16"
     >
-      {blocks.map((block: any) => {
-        const identity = { root, blockId: block.id };
+      {blocks.map((block, index) => {
+        const identity = { root, blockId: block.id ?? "" };
         const attrs = getBlockAttributes(identity, active);
         if (block.blockType === "collectionHero")
           return (
             <section
-              key={block.id}
+              key={block.id ?? index}
               {...attrs}
               className={`${sectionClass} demo:grid demo:gap-8 demo:py-10 demo:lg:grid-cols-[0.9fr_1.1fr] demo:lg:items-center demo:lg:gap-16 demo:md:py-12 ${tone(block.background)}`}
             >
@@ -122,10 +134,12 @@ export function CommercePageView({
               </div>
             </section>
           );
-        if (block.blockType === "productDetails")
+        if (block.blockType === "productDetails") {
+          const firstVariant = block.variants?.[0];
+          const careInstructions = firstVariant?.details?.care;
           return (
             <section
-              key={block.id}
+              key={block.id ?? index}
               {...attrs}
               className={`${sectionClass} demo:py-8 demo:md:py-12 ${tone(block.background)}`}
             >
@@ -175,11 +189,15 @@ export function CommercePageView({
                     >
                       {block.finishesHeading}
                     </h2>
-                    {(block.variants || []).map((variant: any) => (
+                    {(block.variants || []).map((variant, index) => (
                       <div
-                        key={variant.id}
+                        key={variant.id ?? index}
                         {...getArrayItemAttributes(
-                          { ...identity, field: "variants", rowId: variant.id },
+                          {
+                            ...identity,
+                            field: "variants",
+                            rowId: variant.id ?? "",
+                          },
                           active,
                         )}
                         className="demo:flex demo:items-start demo:gap-3 demo:rounded-lg demo:border demo:border-solid demo:border-line demo:p-4"
@@ -201,7 +219,11 @@ export function CommercePageView({
                           <p
                             {...field(
                               identity,
-                              getArrayItemPath("variants", variant.id, "name"),
+                              getArrayItemPath(
+                                "variants",
+                                variant.id ?? "",
+                                "name",
+                              ),
                             )}
                             className="demo:m-0 demo:text-sm demo:font-medium"
                           >
@@ -212,7 +234,7 @@ export function CommercePageView({
                               identity,
                               getArrayItemPath(
                                 "variants",
-                                variant.id,
+                                variant.id ?? "",
                                 variant.available ? "deliveryNote" : "leadTime",
                               ),
                             )}
@@ -228,7 +250,7 @@ export function CommercePageView({
                                 identity,
                                 getArrayItemPath(
                                   "variants",
-                                  variant.id,
+                                  variant.id ?? "",
                                   "details.material",
                                 ),
                               )}
@@ -259,14 +281,14 @@ export function CommercePageView({
                     id="product-specifications"
                     className="demo:m-0 demo:divide-y demo:divide-line"
                   >
-                    {(block.specifications || []).map((spec: any) => (
+                    {(block.specifications || []).map((spec, index) => (
                       <div
-                        key={spec.id}
+                        key={spec.id ?? index}
                         {...getArrayItemAttributes(
                           {
                             ...identity,
                             field: "specifications",
-                            rowId: spec.id,
+                            rowId: spec.id ?? "",
                           },
                           active,
                         )}
@@ -277,7 +299,7 @@ export function CommercePageView({
                             identity,
                             getArrayItemPath(
                               "specifications",
-                              spec.id,
+                              spec.id ?? "",
                               "label",
                             ),
                           )}
@@ -290,7 +312,7 @@ export function CommercePageView({
                             identity,
                             getArrayItemPath(
                               "specifications",
-                              spec.id,
+                              spec.id ?? "",
                               "value",
                             ),
                           )}
@@ -301,7 +323,7 @@ export function CommercePageView({
                       </div>
                     ))}
                   </dl>
-                  {block.variants?.[0]?.details?.care?.length > 0 && (
+                  {careInstructions?.length ? (
                     <section
                       aria-label="Product care"
                       className="demo:rounded-lg demo:bg-soft demo:p-5"
@@ -313,20 +335,20 @@ export function CommercePageView({
                         {block.careHeading}
                       </h2>
                       <ul className="demo:m-0 demo:grid demo:gap-3 demo:ps-4 demo:text-sm demo:leading-relaxed demo:text-muted">
-                        {block.variants[0].details.care.map((care: any) => {
+                        {careInstructions.map((care, index) => {
                           const carePath = getArrayItemPath(
                             "variants",
-                            block.variants[0].id,
+                            firstVariant?.id ?? "",
                             "details.care",
                           );
                           return (
                             <li
-                              key={care.id}
+                              key={care.id ?? index}
                               {...getArrayItemAttributes(
                                 {
                                   ...identity,
                                   field: carePath,
-                                  rowId: care.id,
+                                  rowId: care.id ?? "",
                                 },
                                 active,
                               )}
@@ -336,7 +358,7 @@ export function CommercePageView({
                                   identity,
                                   getArrayItemPath(
                                     carePath,
-                                    care.id,
+                                    care.id ?? "",
                                     "instruction",
                                   ),
                                 )}
@@ -349,16 +371,17 @@ export function CommercePageView({
                         })}
                       </ul>
                     </section>
-                  )}
+                  ) : null}
                 </div>
               </div>
             </section>
           );
+        }
         if (block.blockType === "productGrid")
           return (
             <section
               id="collection"
-              key={block.id}
+              key={block.id ?? index}
               {...attrs}
               className={`${sectionClass} demo:py-12 demo:md:py-16 ${tone(block.background)}`}
             >
@@ -385,20 +408,20 @@ export function CommercePageView({
                 {...list(identity, "cards")}
                 className={`demo:grid demo:gap-7 demo:md:grid-cols-2 ${active && !block.cards?.length ? "demo:min-h-20" : ""}`}
               >
-                {(block.cards || []).map((card: any) => {
+                {(block.cards || []).map((card, index) => {
                   const product = resolveProduct
                     ? resolveProduct(card.product)
-                    : card.product;
+                    : populated(card.product);
                   const details = product?.presentation?.layout?.find(
-                    (row: any) => row.blockType === "productDetails",
+                    (row) => row.blockType === "productDetails",
                   );
                   const cardPath = (name: string) =>
-                    getArrayItemPath("cards", card.id, name);
+                    getArrayItemPath("cards", card.id ?? "", name);
                   return (
                     <article
-                      key={card.id}
+                      key={card.id ?? index}
                       {...getArrayItemAttributes(
-                        { ...identity, field: "cards", rowId: card.id },
+                        { ...identity, field: "cards", rowId: card.id ?? "" },
                         active,
                       )}
                       className="demo:min-w-0"
@@ -484,7 +507,7 @@ export function CommercePageView({
           return (
             <section
               id="studio-story"
-              key={block.id}
+              key={block.id ?? index}
               {...attrs}
               className={tone(block.background)}
             >
@@ -522,7 +545,7 @@ export function CommercePageView({
         if (block.blockType === "faq")
           return (
             <section
-              key={block.id}
+              key={block.id ?? index}
               {...attrs}
               className={`${sectionClass} demo:py-12 demo:md:grid demo:md:grid-cols-2 demo:md:gap-12 demo:lg:gap-20 demo:md:py-16 ${tone(block.background)}`}
             >
@@ -536,11 +559,11 @@ export function CommercePageView({
                 {...list(identity, "items")}
                 className={`demo:grid demo:gap-3 ${active && !block.items?.length ? "demo:min-h-20" : ""}`}
               >
-                {(block.items || []).map((item: any) => (
+                {(block.items || []).map((item, index) => (
                   <article
-                    key={item.id}
+                    key={item.id ?? index}
                     {...getArrayItemAttributes(
-                      { ...identity, field: "items", rowId: item.id },
+                      { ...identity, field: "items", rowId: item.id ?? "" },
                       active,
                     )}
                     className="demo:rounded-lg demo:border demo:border-solid demo:border-line demo:p-5"
@@ -548,7 +571,7 @@ export function CommercePageView({
                     <h3
                       {...field(
                         identity,
-                        getArrayItemPath("items", item.id, "question"),
+                        getArrayItemPath("items", item.id ?? "", "question"),
                       )}
                       className="demo:m-0 demo:text-sm demo:font-medium"
                     >
@@ -557,7 +580,7 @@ export function CommercePageView({
                     <p
                       {...field(
                         identity,
-                        getArrayItemPath("items", item.id, "answer"),
+                        getArrayItemPath("items", item.id ?? "", "answer"),
                       )}
                       className="demo:mb-0 demo:mt-4 demo:text-sm demo:leading-relaxed demo:text-muted"
                     >
@@ -574,7 +597,7 @@ export function CommercePageView({
   );
 }
 
-function money(pricing: any) {
+function money(pricing: ProductDetails["pricing"] | undefined) {
   if (typeof pricing?.amount !== "number") return "";
   return new Intl.NumberFormat("en-IE", {
     style: "currency",
@@ -583,7 +606,7 @@ function money(pricing: any) {
   }).format(pricing.amount);
 }
 
-function tone(value: string) {
+function tone(value?: string | null) {
   return value === "sage"
     ? "demo:bg-soft"
     : value === "sand"
