@@ -48,3 +48,44 @@ it("normalizes only native row-count sentinels, preserving real numeric fields",
     ),
   ).toEqual({ layout: [{ id: "a", items: [], count: 0 }] });
 });
+
+it("copies native row paths shared with a frozen initial document", () => {
+  const nested = Object.freeze({ id: "a", children: 0, count: 0 });
+  const untouched = Object.freeze({ count: 0 });
+  const group = Object.freeze({
+    rows: 0,
+    layout: 0,
+    nested: Object.freeze([nested]),
+    untouched,
+    count: 0,
+  });
+  const initial = Object.freeze({ group });
+  const merged = mergePreviewData(initial, {}) as typeof initial;
+  const fields = {
+    "group.rows": { rows: [] },
+    "group.layout": { rows: [] },
+    "group.nested.0.children": { rows: [] },
+    "group.count": {},
+    "group.missing.items": { rows: [] },
+    "group..items": { rows: [] },
+    "group.constructor.prototype": { rows: [] },
+  };
+  expect(merged.group).toBe(group);
+
+  const projection = normalizePreviewRows(merged, fields);
+  expect(projection).toEqual({
+    group: {
+      rows: [],
+      layout: [],
+      nested: [{ id: "a", children: [], count: 0 }],
+      untouched,
+      count: 0,
+    },
+  });
+  expect(projection.group.untouched).toBe(untouched);
+  expect(merged.group).toBe(group);
+  expect(initial.group.rows).toBe(0);
+  expect(initial.group.layout).toBe(0);
+  expect(nested.children).toBe(0);
+  expect(normalizePreviewRows(projection, fields)).toBe(projection);
+});
