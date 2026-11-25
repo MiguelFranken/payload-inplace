@@ -1192,6 +1192,28 @@ it("keeps consumer-owned pattern storage behind native record ACL without changi
       id: saved.id,
     }),
   ).rejects.toThrow();
+  if (!options.concurrency) {
+    expect(document._veRevision).toBeUndefined();
+    expect(typeof document.updatedAt).toBe("string");
+    const advanced = await payload.update({
+      collection: "pages",
+      id: document.id,
+      data: { title: "Updated after pattern activation" },
+      draft: true,
+      req,
+      overrideAccess: false,
+    });
+    expect(advanced.updatedAt).not.toBe(document.updatedAt);
+    await expect(
+      patternOperation(req, options, {
+        proof,
+        operation: "save",
+        label: "Stale copy",
+        identity: { root: "layout", blockId: section.id },
+        expectedRevision: document.updatedAt,
+      }),
+    ).rejects.toThrow("Save and review the current section");
+  }
 });
 
 it.skipIf(process.env.VE_DATABASE !== "postgres")(
