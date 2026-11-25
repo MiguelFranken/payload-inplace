@@ -58,8 +58,9 @@ export function SectionCatalogue({
   const patterns = useSectionPatterns();
   const [mode, setMode] = useState<"sections" | "patterns">("sections");
   const [library, setLibrary] = useState<SectionPatternSummary[]>([]),
-    [page, setPage] = useState(1),
-    [hasMore, setHasMore] = useState(false),
+    [pageRequest, setPageRequest] = useState({ page: 1 }),
+    [nextPage, setNextPage] = useState<number>(),
+    [listFailed, setListFailed] = useState(false),
     [busy, setBusy] = useState(false),
     [failed, setFailed] = useState(false);
   const libraryRequest = useRef<AbortController | null>(null);
@@ -68,24 +69,22 @@ export function SectionCatalogue({
   const loadPatterns = useEffectEvent(
     async (page: number, signal: AbortSignal) => {
       setBusy(true);
-      setFailed(false);
+      setListFailed(false);
       try {
         const result = await patterns!.list(page, signal);
         if (!signal.aborted) {
-          setLibrary((previous) =>
-            page === 1
-              ? result.docs
-              : [
-                  ...previous,
-                  ...result.docs.filter(
-                    (row) => !previous.some((item) => item.id === row.id),
-                  ),
-                ],
-          );
-          setHasMore(result.hasNextPage);
+          setLibrary((previous) => {
+            const rows = new Map(
+              (page === 1 ? [] : previous).map((row) => [row.id, row]),
+            );
+            for (const row of result.docs)
+              if (!rows.has(row.id)) rows.set(row.id, row);
+            return [...rows.values()];
+          });
+          setNextPage(result.hasNextPage ? page + 1 : undefined);
         }
       } catch {
-        if (!signal.aborted) setFailed(true);
+        if (!signal.aborted) setListFailed(true);
       } finally {
         if (!signal.aborted) setBusy(false);
       }
@@ -96,9 +95,9 @@ export function SectionCatalogue({
       return;
     const controller = new AbortController();
     libraryRequest.current = controller;
-    void loadPatterns(page, controller.signal);
+    void loadPatterns(pageRequest.page, controller.signal);
     return () => controller.abort();
-  }, [open, mode, page, patterns?.canRead, Boolean(onChoosePattern)]);
+  }, [open, mode, pageRequest, patterns?.canRead, Boolean(onChoosePattern)]);
   useEffect(() => () => libraryRequest.current?.abort(), []);
   const patternRows = library.filter((row) =>
     choices.some((block) => block.slug === row.blockType),
@@ -202,6 +201,11 @@ export function SectionCatalogue({
       mode={mode}
       busy={busy}
       failed={failed}
+      onRetry={
+        mode === "patterns" && listFailed
+          ? () => setPageRequest({ page: pageRequest.page })
+          : undefined
+      }
       open={open}
       className={className}
       onChoose={choose}
@@ -210,16 +214,23 @@ export function SectionCatalogue({
       onModeChange={
         patterns?.canRead && onChoosePattern
           ? (next) => {
+              if (next === mode) return;
               setMode(next);
               if (next === "sections") setFailed(false);
               else {
-                setPage(1);
+                setPageRequest({ page: 1 });
+                setNextPage(undefined);
+                setLibrary([]);
                 onPreview?.();
               }
             }
           : undefined
       }
-      onLoadMore={hasMore ? () => setPage((value) => value + 1) : undefined}
+      onLoadMore={
+        nextPage === undefined
+          ? undefined
+          : () => setPageRequest({ page: nextPage })
+      }
       previewEnabled={Boolean(onPreview)}
     />
   );

@@ -22,6 +22,7 @@ export default defineConfig({
     "acceptance.e2e.spec.ts",
     "block-actions.e2e.spec.ts",
     "performance.e2e.spec.ts",
+    "pattern-picker.e2e.spec.ts",
   ],
   workers: 1,
   reporter: [["list"], ["json", { outputFile: `${results}/results.json` }]],
