@@ -48,7 +48,7 @@ jobs:
       - run: corepack pnpm install --frozen-lockfile
       - run: corepack pnpm build
       - run: corepack pnpm test:int
-      - run: corepack pnpm --filter @payload-inplace/acceptance exec playwright install --with-deps chromium
+      - run: corepack pnpm --filter @payload-inplace/acceptance exec playwright install --with-deps chromium firefox webkit
       - name: Validate review and toolbar without transactional revision metadata
         env:
           VE_BROWSER_ARTIFACTS: mongo
@@ -56,6 +56,12 @@ jobs:
           VE_NEXT_DIST_DIR: .next-mongo
           VE_PRODUCTION: "1"
         run: corepack pnpm test:e2e tests/browser/acceptance.e2e.spec.ts --grep 'media selection persists'
+      - name: Verify inline editing in Chromium, Firefox and WebKit
+        env:
+          VE_BROWSER_ARTIFACTS: inline-engines
+          VE_PORT: 3140
+          VE_NEXT_DIST_DIR: .next-inline-engines
+        run: corepack pnpm test:e2e:inline-engines
       - run: VE_PORT=3137 corepack pnpm exec node scripts/postgres-test.mjs e2e
       - run: corepack pnpm test:graph
       - run: corepack pnpm exec node scripts/postgres-test.mjs
