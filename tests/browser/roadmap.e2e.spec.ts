@@ -1021,6 +1021,57 @@ test("localized inline editing prepares and saves German fields without copying 
     ).layout[0].heading,
   ).toBe("English headline");
   await page.screenshot({ path: "test-results/roadmap-localized-fields.png" });
+
+  const patternResponse = (operation: string) =>
+    page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === "/api/visual-editor/patterns" &&
+        response.request().postDataJSON()?.operation === operation,
+    );
+  const expectGermanPattern = async (
+    pending: ReturnType<typeof patternResponse>,
+  ) => {
+    const response = await pending;
+    expect(response.ok()).toBe(true);
+    expect(new URL(response.url()).searchParams.get("locale")).toBe("de");
+    return response;
+  };
+  const patternName = `German copy ${created.id}`;
+  await page
+    .getByRole("button", { name: "Save as pattern", exact: true })
+    .click();
+  await page
+    .getByRole("textbox", { name: "Pattern name", exact: true })
+    .fill(patternName);
+  const savedPattern = patternResponse("save");
+  await page.getByRole("button", { name: "Save copy", exact: true }).click();
+  await expectGermanPattern(savedPattern);
+
+  await page
+    .getByRole("button", { name: "Back to sections", exact: true })
+    .click();
+  await page
+    .getByRole("combobox", { name: "Add section", exact: true })
+    .click();
+  const listedPattern = patternResponse("list");
+  await page
+    .getByRole("button", { name: "Saved patterns", exact: true })
+    .click();
+  const list = await expectGermanPattern(listedPattern);
+  const { origin } = new URL(list.url());
+  const mismatch = await page.request.post(
+    "/api/visual-editor/patterns?locale=en",
+    {
+      headers: { origin },
+      data: list.request().postDataJSON(),
+    },
+  );
+  expect(mismatch.status()).toBe(403);
+
+  const readPattern = patternResponse("read");
+  await page.getByRole("option", { name: patternName, exact: true }).click();
+  const copy = await (await expectGermanPattern(readPattern)).json();
+  expect(copy.content.heading).toBe("Native deutsche Überschrift");
 });
 
 test("English German and RTL editor chrome stays scoped at desktop and narrow widths", async ({
