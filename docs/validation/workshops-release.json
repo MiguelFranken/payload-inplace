@@ -1,19 +1,19 @@
 {
   "packageName": "payload-inplace",
-  "packageVersion": "0.2.3",
-  "packageSourceSHA": "935e518dbc7b650e5a4fd0be44ab58efd5d46e79",
-  "packageSHA256": "c155093fb5eb88c95e631999549334b1290a5b40505a0c149763054a49b5712e",
-  "packageValidationRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/45695982986",
+  "packageVersion": "0.2.4",
+  "packageSourceSHA": "1a01678eebb77cd0755f80515a44bebc63b5efc2",
+  "packageSHA256": "10e1241b79eb27d339ccd6fc91c579cdfee3b3211b675ab00846f5bc763d4426",
+  "packageValidationRun": "https://github.com/MiguelFranken/payload-inplace/actions/runs/45712391228",
   "appSHA": "1b6fdb69016cbd441b0c6bbed71b1d496c32ea30",
   "result": "passed",
-  "previousReceipt": "2026-11-18-public-0.2.2-release.json",
+  "previousReceipt": "2026-11-25-public-0.2.3-release.json",
   "productionBuild": {
     "result": "passed",
-    "archiveSHA256": "c155093fb5eb88c95e631999549334b1290a5b40505a0c149763054a49b5712e",
+    "archiveSHA256": "10e1241b79eb27d339ccd6fc91c579cdfee3b3211b675ab00846f5bc763d4426",
     "installedArchiveFilesByteIdentical": 474
   },
   "localAcceptance": {
-    "runId": "20261125T204039Z-17922",
+    "runId": "20261125T223140Z-62115",
     "mode": "prod",
     "fixtureScope": "editor",
     "workers": 1,
@@ -97,6 +97,6 @@
         "status": "passed"
       }
     ],
-    "sourceOverlay": "Local candidate dependency and lockfile. The production build regenerated the import map and schema catalog."
+    "sourceOverlay": "Installed the main CI archive through a local dependency and lockfile override in an isolated Workshops checkout."
   }
 }
