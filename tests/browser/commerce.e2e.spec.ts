@@ -455,3 +455,101 @@ test("native schema hot reload synchronizes client and server maps before render
     card: "Arc lounge chair",
   });
 });
+
+test("commerce prices retain cents in public and draft views while explicit card captions win", async ({
+  page,
+  browser,
+}) => {
+  const document = await productEditor(page, "editor");
+  const productURL = page.url();
+  const amount = page.getByRole("spinbutton", { name: /^Amount/ });
+
+  await page.locator("main [data-ve-fields]").click();
+  await amount.fill("19.95");
+  await saved(page);
+  await expect(page.locator("main [data-ve-fields]")).toHaveText("€19.95");
+
+  await page.getByRole("button", { name: /^Close .* panel$/ }).click();
+  await page
+    .getByRole("button", { name: "Review changes", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Publish reviewed draft", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Edit page", exact: true }),
+  ).toBeVisible();
+
+  const { createShopEditor } = await import("./testing/editor-fixtures");
+  const { doc } = await createShopEditor(page, {
+    cards: [
+      { product: document.id, heading: "Automatic price" },
+      {
+        product: document.id,
+        heading: "Custom price",
+        priceCaption: "Ask for a quote",
+      },
+    ],
+  });
+  const automatic = page
+    .getByRole("article")
+    .filter({ has: page.getByRole("heading", { name: "Automatic price" }) });
+  const custom = page
+    .getByRole("article")
+    .filter({ has: page.getByRole("heading", { name: "Custom price" }) });
+  await expect(automatic).toContainText("€19.95");
+  await expect(custom).toContainText("Ask for a quote");
+  await page
+    .getByRole("button", { name: "Review changes", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Publish reviewed draft", exact: true })
+    .click();
+
+  const visitor = await browser.newPage();
+  try {
+    await visitor.goto(productURL);
+    await expect(visitor.getByText("€19.95", { exact: true })).toBeVisible();
+    await visitor.goto(new URL(`/shops/${doc.slug}`, productURL).href);
+    await expect(visitor.getByText("€19.95", { exact: true })).toBeVisible();
+    await expect(
+      visitor.getByText("Ask for a quote", { exact: true }),
+    ).toBeVisible();
+
+    await page.goto(productURL);
+    await page.getByRole("button", { name: "Edit page", exact: true }).click();
+    const select = page.getByRole("button", {
+      name: "Select content",
+      exact: true,
+    });
+    await expect(select).toBeEnabled();
+    if ((await select.getAttribute("aria-pressed")) !== "true")
+      await select.click();
+    await page.locator("main [data-ve-fields]").click();
+    const panel = page.getByRole("complementary", { name: "Edit content" });
+    await panel.getByRole("combobox", { name: "Currency" }).click();
+    await page.getByRole("option", { name: "USD", exact: true }).click();
+    await saved(page);
+    await expect(page.locator("main [data-ve-fields]")).toHaveText("US$19.95");
+    await page.getByRole("button", { name: /^Close .* panel$/ }).click();
+    await page
+      .getByRole("button", { name: "Review changes", exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "Publish reviewed draft", exact: true })
+      .click();
+    await expect(
+      page.getByRole("button", { name: "Edit page", exact: true }),
+    ).toBeVisible();
+
+    await visitor.reload();
+    await expect(visitor.getByText("US$19.95", { exact: true })).toBeVisible();
+    await expect(
+      visitor.getByText("Ask for a quote", { exact: true }),
+    ).toBeVisible();
+    await visitor.goto(productURL);
+    await expect(visitor.getByText("US$19.95", { exact: true })).toBeVisible();
+  } finally {
+    await visitor.close();
+  }
+});
