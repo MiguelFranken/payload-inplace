@@ -68,12 +68,32 @@ it("rejects unsupported native package combinations before field rendering", asy
     "../../src/server/runtime-compatibility"
   );
   const supported = {
-    payload: "3.94.0",
-    "@payloadcms/ui": "3.94.0",
-    "@payloadcms/next": "3.94.0",
+    payload: "3.94.2",
+    "@payloadcms/ui": "3.94.2",
+    "@payloadcms/next": "3.94.2",
     next: "16.4.6",
   };
   expect(() => assertNativeVersions(supported)).not.toThrow();
+  for (const patch of ["3.94.0", "3.94.1"])
+    expect(() =>
+      assertNativeVersions({
+        ...supported,
+        payload: patch,
+        "@payloadcms/ui": patch,
+        "@payloadcms/next": patch,
+      }),
+    ).not.toThrow();
+  expect(() =>
+    assertNativeVersions({ ...supported, "@payloadcms/ui": "3.94.0" }),
+  ).toThrow("unsupported @payloadcms/ui@3.94.0; expected 3.94.2");
+  expect(() =>
+    assertNativeVersions({
+      ...supported,
+      payload: "3.95.0",
+      "@payloadcms/ui": "3.95.0",
+      "@payloadcms/next": "3.95.0",
+    }),
+  ).toThrow("unsupported payload@3.95.0");
   const previous = {
     ...supported,
     payload: "3.91.0",
