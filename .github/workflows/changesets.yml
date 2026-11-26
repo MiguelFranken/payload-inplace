@@ -32,4 +32,4 @@ jobs:
           create-github-releases: false
           push-git-tags: false
 # No publish command here: release.yml alone publishes the exact CI artifact
-# after independent installed-consumer and Workshops acceptance receipts.
+# after the independent installed-consumer acceptance in main validation.

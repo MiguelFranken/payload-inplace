@@ -8,4 +8,4 @@ Restoring submits an `_veRestoreVersion` intent through the existing native Form
 
 Restore requires a concurrency adapter and no pending local changes. The native Form processes exactly one update. Success clears structural history and selection, keeps the website URL/chrome mounted and leaves publication to a fresh review. Failed/ambiguous writes never automatically retry. The current working copy remains in the Form and the existing conflict monitor prevents stale follow-up saves.
 
-For executed package/native/browser coverage, see the [current validation receipt](../validation/workshops-release.json) and [validation method](../validation.md).
+For executed package/native/browser coverage, see the [validation method](../validation.md).

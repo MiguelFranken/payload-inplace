@@ -94,6 +94,6 @@ Review the images under `test-results/docs-media` and copy the selected `ecommer
 
 Use [Conventional Commits](https://www.conventionalcommits.org/), for example `fix(editor): preserve inline selection while saving`. Include a `.changeset/*.md` entry for consumer-visible changes; `corepack pnpm changeset` creates one. Describe the user-facing outcome and choose the appropriate version bump.
 
-The Changesets workflow opens a version PR and generates the changelog. It does not publish. Publication uses the exact main-CI archive after independent installed-consumer and Workshops acceptance, through the separate OIDC release workflow. See [the release guide](docs/release.md).
+The Changesets workflow opens a version PR and generates the changelog. It does not publish. Publication uses the exact main-CI archive after independent installed-consumer acceptance, through the separate OIDC release workflow. See [the release guide](docs/release.md).
 
 Keep fixtures synthetic and never commit secrets or private consumer data. Preserve native Payload field access, one Form and one persistence queue. Public routes must remain free of the active editor runtime. For editor interface changes, use the repository's `better-interface` guidance and validate desktop, 320px, keyboard and reduced-motion behavior. Record meaningful validation evidence in `docs/validation`.

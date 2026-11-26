@@ -1,36 +1,34 @@
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
 import { setTimeout as delay } from "node:timers/promises";
 
 const repo = process.env.GITHUB_REPOSITORY;
 const url = `https://github.com/${repo}`;
-const receipt = JSON.parse(
-  readFileSync("docs/validation/workshops-release.json", "utf8"),
-);
-const {
-  packageVersion: version,
-  packageSourceSHA: source,
-  packageSHA256: digest,
-} = receipt;
-if (
-  !/^\d+\.\d+\.\d+$/.test(version) ||
-  !/^[a-f0-9]{40}$/.test(source) ||
-  !/^[a-f0-9]{64}$/.test(digest) ||
-  receipt.packageName !== "payload-inplace" ||
-  receipt.result !== "passed"
-) {
-  throw new Error("Invalid stable release receipt");
-}
-const tag = `v${version}`;
+const runID = process.env.VALIDATION_RUN ?? "";
+const digest = process.env.ARCHIVE_SHA256 ?? "";
+if (!/^[1-9][0-9]*$/.test(runID) || !/^[a-f0-9]{64}$/.test(digest))
+  throw new Error("Numeric validation run ID and archive SHA256 required");
 const git = (...args) => execFileSync("git", args, { encoding: "utf8" }).trim();
 const gh = (...args) => execFileSync("gh", args, { encoding: "utf8" }).trim();
+// The release source is the validated main commit; npm bytes must match the validated archive.
+const run = JSON.parse(gh("api", `repos/${repo}/actions/runs/${runID}`));
+if (
+  run.event !== "push" ||
+  run.head_branch !== "main" ||
+  run.conclusion !== "success" ||
+  run.path !== ".github/workflows/validate.yml" ||
+  !/^[a-f0-9]{40}$/.test(run.head_sha || "")
+)
+  throw new Error("Successful main validation run required");
+const source = run.head_sha;
 git("merge-base", "--is-ancestor", source, "HEAD");
 const manifest = JSON.parse(
   git("show", `${source}:packages/payload-inplace/package.json`),
 );
-if (manifest.version !== version || manifest.name !== receipt.packageName)
-  throw new Error("Source package mismatch");
+const version = manifest.version;
+if (manifest.name !== "payload-inplace" || !/^\d+\.\d+\.\d+$/.test(version))
+  throw new Error("Stable payload-inplace source package required");
+const tag = `v${version}`;
 if (git("tag", "--list", tag) && git("rev-parse", `${tag}^{commit}`) !== source)
   throw new Error("Tag points to another commit");
 
@@ -105,7 +103,7 @@ const notes =
   [
     `## [${tag}](${url}/compare/${previous}...${tag}) (${date})`,
     ...sections,
-    `[npm package](https://www.npmjs.com/package/payload-inplace/v/${version}) · [Validation](${receipt.packageValidationRun}) · [Workshops acceptance](${url}/blob/${git("rev-parse", "HEAD")}/docs/validation/workshops-release.json)`,
+    `[npm package](https://www.npmjs.com/package/payload-inplace/v/${version}) · [Validation](${run.html_url})`,
   ].join("\n\n") + "\n";
 const releases = gh(
   "api",

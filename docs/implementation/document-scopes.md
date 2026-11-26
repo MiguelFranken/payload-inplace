@@ -12,4 +12,4 @@ Activation cookies are bounded to one per exact page/document/root/locale and se
 
 Payload v3's raw global version restore bypasses before-change hooks. Enabled globals therefore reject that raw restore operation. The guarded native version view explains this and links to the editor timeline, which restores through a new native draft update with the same revision guard. Existing global hooks and configured publish controls are preserved; a custom publish control must obey the review contract.
 
-For executed package/native/browser coverage, see the [current validation receipt](../validation/workshops-release.json) and [validation method](../validation.md).
+For executed package/native/browser coverage, see the [validation method](../validation.md).
