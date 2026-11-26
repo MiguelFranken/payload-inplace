@@ -28,11 +28,10 @@ function proof() {
         cases: Array.from({ length: 3 }, () => ({ status: "passed" })),
       },
     },
-    workshop: { packageSHA256: hash, appSHA: "c".repeat(40), result: "passed" },
     tag: "next",
   };
 }
-it("accepts matching clean main validation and both installed consumers", () =>
+it("accepts matching clean main validation and the installed consumer", () =>
   expect(() => assertReleasePolicy(proof())).not.toThrow());
 it.each([
   "fork",
@@ -41,7 +40,6 @@ it.each([
   "dirty",
   "wrong archive",
   "consumer failure",
-  "workshop mismatch",
   "prerelease latest",
 ])("rejects %s release evidence", (kind) => {
   const p = proof();
@@ -52,7 +50,6 @@ it.each([
   if (kind === "wrong archive") p.receipt.sha256 = "e".repeat(64);
   if (kind === "consumer failure")
     p.installed.installed.cases[0].status = "failed";
-  if (kind === "workshop mismatch") p.workshop.packageSHA256 = "f".repeat(64);
   if (kind === "prerelease latest") p.tag = "latest";
   expect(() => assertReleasePolicy(p)).toThrow();
 });

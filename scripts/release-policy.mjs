@@ -5,7 +5,6 @@ export function assertReleasePolicy({
   expectedSHA256,
   receipt,
   installed,
-  workshop,
   tag,
 }) {
   if (
@@ -39,12 +38,6 @@ export function assertReleasePolicy({
     installed.disabled?.cases?.filter((c) => c.status === "passed").length < 3
   )
     throw new Error("Matching clean installed-consumer acceptance is required");
-  if (
-    workshop.packageSHA256 !== expectedSHA256 ||
-    !/^[a-f0-9]{40}$/.test(workshop.appSHA || "") ||
-    workshop.result !== "passed"
-  )
-    throw new Error("Matching committed Workshops acceptance is required");
   if (
     !["next", "latest"].includes(tag) ||
     (installed.package.version.includes("-") && tag !== "next")

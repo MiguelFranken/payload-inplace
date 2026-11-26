@@ -69,16 +69,12 @@ try {
     JSON.parse(fs.readFileSync(path.join(directory, relative), "utf8"));
   const receipt = read("test-results/package.json");
   const installed = read("test-results/installed-consumer.json");
-  const workshop = JSON.parse(
-    fs.readFileSync("docs/validation/workshops-release.json", "utf8"),
-  );
   assertReleasePolicy({
     run,
     sourceSHA,
     expectedSHA256,
     receipt,
     installed,
-    workshop,
     tag,
   });
   const archiveName = path.basename(receipt.archive);
@@ -116,7 +112,6 @@ try {
         sha256: expectedSHA256,
         validationRun: runID,
         tag,
-        workshop,
       },
       null,
       2,

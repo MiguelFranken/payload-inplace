@@ -99,7 +99,7 @@ Plugin presentation uses Tailwind 4 CLI, prefixed utilities and no Preflight. CS
 
 See the tested [compatibility contract](compatibility.md), [release and rollback procedure](release.md), and [changelog](../CHANGELOG.md).
 
-The package is published on public npm as `payload-inplace`. Normal 0.0.x releases are available on npm. See the [release guide](release.md) and [verified delivery receipt](validation/workshops-release.json) for artifact and deployment evidence. Local archives from `pack:check` are development candidates, with their checksum in `test-results/package.json`; rebuilding source does not reproduce or replace an already published version.
+The package is published on public npm as `payload-inplace`. Normal 0.0.x releases are available on npm. See the [release guide](release.md) for artifact evidence. Local archives from `pack:check` are development candidates, with their checksum in `test-results/package.json`; rebuilding source does not reproduce or replace an already published version.
 
 ## Existing operational writes
 

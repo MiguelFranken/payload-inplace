@@ -1,10 +1,10 @@
 # Validation: current evidence and how to verify your host
 
-Package builds, source tests, installed-archive acceptance, public npm availability and consumer deployment are separate facts. The [current machine-readable receipt](validation/workshops-release.json) records exact identities rather than treating a green demo as proof of a deployed consumer.
+Package builds, source tests, installed-archive acceptance, public npm availability and consumer deployment are separate facts. Each GitHub Release links the main validation run whose exact archive was published, rather than treating a green demo as proof of a deployed consumer.
 
 ## Release evidence
 
-Use the current receipt for the exact package version, source commit, archive digest and CI links. It also records which acceptance ran in Workshops. Previous public release receipts remain alongside it so regressions can be traced to a known archive.
+The `validation` artifact of that run holds the archive, its digest and source commit (`test-results/package.json`) and the installed-consumer receipt (`test-results/installed-consumer.json`). Receipts for releases up to 0.2.4 remain in `docs/validation` so regressions can be traced to a known archive.
 
 ## Match the check to the change
 

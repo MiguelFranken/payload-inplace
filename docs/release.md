@@ -1,6 +1,6 @@
 # Changesets releases and non-destructive rollback
 
-Public source: [MiguelFranken/payload-inplace](https://github.com/MiguelFranken/payload-inplace). Distribution policy: public npm, package `payload-inplace`, anonymous installation. The [delivery receipt](validation/workshops-release.json) records the current validated archive, consumer acceptance and publication/deployment status. The public package is established and routine releases use the configured GitHub trusted publisher with OIDC provenance. First-publication authentication is historical setup, documented in AGENTS.md for maintainer recovery only. Package publication and application production deployment remain separate steps.
+Public source: [MiguelFranken/payload-inplace](https://github.com/MiguelFranken/payload-inplace). Distribution policy: public npm, package `payload-inplace`, anonymous installation. Each GitHub Release links the main validation run whose archive was published. The public package is established and routine releases use the configured GitHub trusted publisher with OIDC provenance. First-publication authentication is historical setup, documented in AGENTS.md for maintainer recovery only. Package publication and application production deployment remain separate steps.
 
 ## Versioning with Changesets
 
@@ -8,7 +8,7 @@ Every consumer-visible change includes a `.changeset/*.md` entry. Run `corepack 
 
 Normal versions use the owner-requested **0.0.x** baseline. Changesets generates the next normal patch; published versions remain immutable. New release dispatches target `latest`. Exact-version pins remain supported.
 
-Version PR merge → main validation archive → independent installed-consumer and Workshops acceptance → committed receipt → `release.yml` OIDC publication of the same bytes → public npm verification → tagged GitHub Release. Versioning never bypasses artifact or consumer gates.
+Version PR merge → main validation archive with independent installed-consumer acceptance → `release.yml` OIDC publication of the same bytes → public npm verification → tagged GitHub Release. Versioning never bypasses artifact or consumer gates. Applications that consume the package run their own acceptance when they upgrade; it is not a publication gate.
 
 ## Reproduce an immutable candidate
 
@@ -29,13 +29,17 @@ corepack pnpm test:consumer
 corepack pnpm test:installed-consumer
 ```
 
-`test-results/package.json` records source cleanliness, SHA and archive checksum. `test-results/installed-consumer.json` records the exact installed archive, peer versions, independent template/lock hashes, active flows and disabled public comparisons. The public validation workflow uploads these with the archive. Install the downloaded archive into Workshops; do not repack it or use a source alias.
+`test-results/package.json` records source cleanliness, SHA and archive checksum. `test-results/installed-consumer.json` records the exact installed archive, peer versions, independent template/lock hashes, active flows and disabled public comparisons. The public validation workflow uploads these with the archive. To try a candidate in an application, install the downloaded archive; do not repack it or use a source alias.
 
 For acceptance before publication, install the exact downloaded `.tgz` with `corepack pnpm add /absolute/path/to/candidate.tgz`. Verify its SHA256 against the validation artifact before installation. Public peer dependencies install anonymously from npm; the temporary clean consumer proves that path without private credentials. For a published version, install from npm instead. The [integration guide](integration.md) and bundled demo describe the host integration.
 
 ## Manual trusted publication
 
-The `release.yml` workflow defaults to preparation only. It accepts a successful **main push** validation run, exact archive checksum and explicit `latest` channel. Fork/PR artifacts, dirty source, changed code after validation, mismatched consumer receipts and prereleases tagged `latest` are rejected. A committed `docs/validation/workshops-release.json` must identify the same archive hash, committed application SHA and passed acceptance. Evidence-only updates under `docs/validation` may follow candidate validation without forcing a rebuild of the artifact.
+The `release.yml` workflow defaults to preparation only. It accepts a successful **main push** validation run, exact archive checksum and explicit `latest` channel. Fork/PR artifacts, dirty source, changed code after validation, a mismatched or failed installed-consumer receipt and prereleases tagged `latest` are rejected. Evidence-only updates under `docs/validation` may follow candidate validation without forcing a rebuild of the artifact.
+
+```sh
+gh workflow run release.yml --ref main -f validation_run=<run id> -f archive_sha256=<sha256> -f dist_tag=latest -f publish=true
+```
 
 The optional publish job has OIDC permission only in that job, uses the `npm` environment, rechecks the archive checksum, runs no package scripts, and publishes the exact archive with public access and provenance. Configure repository environment protection and npm trusted publishing for owner `MiguelFranken`, repository `payload-inplace`, workflow filename `release.yml`, environment `npm` before enabling publication. That account configuration is not established by committing YAML. First publication/bootstrap may require an owner-controlled npm operation if the package does not yet exist.
 
@@ -51,9 +55,9 @@ Publication requires npm >=11.5.1 and Node >=22.14; Node24 is selected here. See
 
 ## Publish the GitHub Release
 
-After trusted npm publication, `release.yml` calls `github-release.yml`. The GitHub Actions bot checks the public npm latest version and archive checksum against the Workshops receipt, then creates the version tag at the validated source commit and publishes the GitHub Release. Release notes group commits since the preceding stable tag by Conventional Commit type and link their PRs and commits.
+After trusted npm publication, `release.yml` calls `github-release.yml` with the same validation run and checksum. The GitHub Actions bot derives the version and source commit from that run, checks the public npm latest version and archive checksum, then creates the version tag at the validated source commit and publishes the GitHub Release. Release notes group commits since the preceding stable tag by Conventional Commit type and link their PRs and commits.
 
-If npm publication succeeded and the GitHub step needs recovery, run **Publish GitHub Release** on main (`gh workflow run github-release.yml --ref main`). This workflow reads the committed receipt and updates an existing matching release in place. A tag pointing at another commit stops the workflow. Verify the bot run, latest release and tag target, and include the npm and GitHub Release URLs in the delivery report.
+If npm publication succeeded and the GitHub step needs recovery, run **Publish GitHub Release** on main (`gh workflow run github-release.yml --ref main -f validation_run=<run id> -f archive_sha256=<sha256>`). This workflow updates an existing matching release in place. A tag pointing at another commit stops the workflow. Verify the bot run, latest release and tag target, and include the npm and GitHub Release URLs in the delivery report.
 
 ## Install, enable and upgrade
 
@@ -67,6 +71,6 @@ If npm publication succeeded and the GitHub step needs recovery, run **Publish G
 
 First disable the frontend editor feature flag and restart the serving application. This removes activation/launcher authoring while normal website rendering and the native CMS remain available. Keep the plugin's persistence guards/revision fields installed: runtime disable is not schema removal. Revoke active contexts through the host authorization/expiry path.
 
-If needed, restore the previous tested package and its matching lockfile/import map, then rebuild; retain the additive revision columns and all published/draft content. Do not run down migrations, delete versions or rewrite documents to undo a UI release. An older package must understand the retained revision contract; otherwise use the native CMS with the current guards and the feature flag off. Independent installed-consumer disabled runs prove normal rendering without authoring. Workshops' rollout procedure additionally retains its operational capacity command and historical migration replay mode.
+If needed, restore the previous tested package and its matching lockfile/import map, then rebuild; retain the additive revision columns and all published/draft content. Do not run down migrations, delete versions or rewrite documents to undo a UI release. An older package must understand the retained revision contract; otherwise use the native CMS with the current guards and the feature flag off. Independent installed-consumer disabled runs prove normal rendering without authoring.
 
 Before production enablement, validate the intended CDN/proxy headers, cookies, HTML/RSC prefetch and any service worker with both warm-cache directions. That deployment is a separate delivery decision, not implied by local release preparation.

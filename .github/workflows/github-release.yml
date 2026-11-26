@@ -1,7 +1,23 @@
 name: Publish GitHub Release
 on:
   workflow_call:
+    inputs:
+      validation_run:
+        required: true
+        type: string
+      archive_sha256:
+        required: true
+        type: string
   workflow_dispatch:
+    inputs:
+      validation_run:
+        description: Successful main push validation run ID of the published archive
+        required: true
+        type: string
+      archive_sha256:
+        description: SHA256 of the published archive
+        required: true
+        type: string
 permissions: {}
 concurrency:
   group: github-release
@@ -13,6 +29,7 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: write
+      actions: read
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
         with:
@@ -25,4 +42,6 @@ jobs:
       - name: Verify the npm archive and publish release notes
         env:
           GH_TOKEN: ${{ github.token }}
+          VALIDATION_RUN: ${{ inputs.validation_run }}
+          ARCHIVE_SHA256: ${{ inputs.archive_sha256 }}
         run: node scripts/github-release.mjs
