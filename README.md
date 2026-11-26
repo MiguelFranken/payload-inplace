@@ -75,10 +75,10 @@ The demo includes native `shops` and `products` schemas, a named-tab blocks root
 
 ## Quick start
 
-Target: **Payload 3.94.0 + Next.js 16.4.6 App Router / Turbopack, React 19.3.x, Node 24+**. This is an integration into your existing website, not an automatic page builder. You do not need Tailwind in your host to consume the package.
+Target: **Payload 3.94.x + Next.js 16.4.6 App Router / Turbopack, React 19.3.x, Node 24+**. This is an integration into your existing website, not an automatic page builder. You do not need Tailwind in your host to consume the package.
 
 ```sh
-pnpm add payload-inplace @payloadcms/richtext-lexical@3.94.0
+pnpm add payload-inplace @payloadcms/richtext-lexical@3.94.2
 ```
 
 Configure an existing draft-enabled blocks root:

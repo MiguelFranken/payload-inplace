@@ -1,11 +1,11 @@
 # Supported runtime contract
 
-Payload and Next remain version-pinned. The current target is Payload 3.94.0 with React 19.3.1. The bridge also accepts the previously supported aligned Payload 3.91.0 packages with React 19.2.
+Payload and Next remain version-pinned. The current target is the Payload 3.94.x patch line (validated on 3.94.2, also accepting 3.94.0 and 3.94.1) with React 19.3.1. The bridge also accepts the previously supported aligned Payload 3.91.0 packages with React 19.2.
 
 | Surface                         | Verified scope                                                                                                                           | Boundary                                                                                            |
 | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Payload / UI / Lexical adapter / Postgres | 3.94.0                                                                                                                                   | All packages must match exactly                                                                     |
-| Same-page native handler bridge | Exact Payload Next 3.94.0 internal handler, app-relative Turbopack alias                                                                 | Requires `/next` configuration and `/native` import; other bundlers/peer versions unverified        |
+| Payload / UI / Lexical adapter / Postgres | 3.94.x                                                                                                                                   | All packages must share one exact version                                                                 |
+| Same-page native handler bridge | Payload Next 3.94.x internal handler (aligned exact version), app-relative Turbopack alias                                                                 | Requires `/next` configuration and `/native` import; other bundlers/peer versions unverified        |
 | Next / React / React DOM        | 16.4.6 / React 19.3.1 in the independent consumer and Workshops, production Turbopack | Other versions and bundlers are unverified                                                          |
 | Node / pnpm                     | Node 24 CI, Node 26 local; pnpm 10.28.0                                                                                                  | Node 24 is the release runtime                                                                      |
 | Database                        | Postgres 17.11, real transactional competing writers                                                                                     | Mongo is a development/demo single-writer fallback; no atomic concurrency guarantee                 |
@@ -20,7 +20,7 @@ The published 0.0.x line includes the roadmap features. The [current delivery re
 The plugin uses the consumer’s matching `@payloadcms/richtext-lexical` peer
 and its public Lexical re-exports. The inline editor mounts Lexical directly and
 retains one pinned dependency on `@lexical/history` for `registerHistory`, which
-Payload 3.94.0 does not re-export. The installed-consumer check verifies that
+Payload 3.94 does not re-export. The installed-consumer check verifies that
 history resolves the same Lexical runtime as Payload and exercises undo and redo.
 
 ## Public resources and permissions are different guarantees
@@ -35,4 +35,4 @@ CI uses a production build, an active-route graph positive control, an injected 
 
 ## Early compatibility failure
 
-`withVisualEditorNext` resolves the public entries of Payload, UI, Payload Next and Next, reads the owning package identity, and rejects versions outside the exact supported native pins before private-handler aliasing. `server/runtime-compatibility.ts` owns this assertion; `exports/next.ts` owns resolution and the Turbopack bridge. Contract tests include each wrong-version combination and the supported control. This intentionally fails early instead of allowing a mismatched schema cache to surface later as an undefined `clientField` error. React remains constrained by the declared 19.2 peer patch range.
+`withVisualEditorNext` resolves the public entries of Payload, UI, Payload Next and Next, reads the owning package identity, and rejects versions outside the supported native lines (3.91.0 or an aligned 3.94.x patch) before private-handler aliasing. `server/runtime-compatibility.ts` owns this assertion; `exports/next.ts` owns resolution and the Turbopack bridge. Contract tests include each wrong-version combination and the supported control. This intentionally fails early instead of allowing a mismatched schema cache to surface later as an undefined `clientField` error. React remains constrained by the declared 19.2 peer patch range.

@@ -2,30 +2,34 @@ import { readFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 const previousPayload = "3.91.0";
-const currentPayload = "3.94.0";
-
-const nativePins = {
-  payload: currentPayload,
-  "@payloadcms/ui": currentPayload,
-  "@payloadcms/next": currentPayload,
-  next: "16.4.6",
-} as const;
+/** Payload 3.94 patch releases keep the private handler and schema-cache contract used here. */
+const currentPayloadLine = /^3\.94\.\d+$/;
+const supportedNext = "16.4.6";
 
 /** Private native handlers and schema caches have a narrower contract than semver.
+ * Payload, UI and Payload Next must be one exact aligned version: 3.91.0 or a 3.94.x patch.
  * Reject a mismatched host during Next configuration, before an opaque field/render failure.
  */
 export function assertNativeVersions(
-  versions: Readonly<Record<keyof typeof nativePins, string>>,
+  versions: Readonly<
+    Record<"payload" | "@payloadcms/ui" | "@payloadcms/next" | "next", string>
+  >,
 ): void {
-  for (const [name, pin] of Object.entries(nativePins)) {
-    const expected =
-      name !== "next" && versions.payload === previousPayload
-        ? previousPayload
-        : pin;
-    const actual = versions[name as keyof typeof nativePins];
-    if (actual !== expected)
+  const payload = versions.payload;
+  if (payload !== previousPayload && !currentPayloadLine.test(payload))
+    throw Error(
+      `payload-inplace: unsupported payload@${payload}; expected ${previousPayload} or 3.94.x. Keep the supported Payload/Next packages aligned before enabling the native editor bridge.`,
+    );
+  const expected = {
+    "@payloadcms/ui": payload,
+    "@payloadcms/next": payload,
+    next: supportedNext,
+  } as const;
+  for (const [name, pin] of Object.entries(expected)) {
+    const actual = versions[name as keyof typeof expected];
+    if (actual !== pin)
       throw Error(
-        `payload-inplace: unsupported ${name}@${actual}; expected ${expected}. Keep the supported Payload/Next packages aligned before enabling the native editor bridge.`,
+        `payload-inplace: unsupported ${name}@${actual}; expected ${pin}. Keep the supported Payload/Next packages aligned before enabling the native editor bridge.`,
       );
   }
 }
